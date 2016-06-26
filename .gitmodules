@@ -1,0 +1,9 @@
+[submodule "daemon/third_party/asio"]
+	path = daemon/third_party/asio
+	url = ssh://git@github.com/cypherpunkengineering/asio
+[submodule "daemon/third_party/jsonrpc-lean"]
+	path = daemon/third_party/jsonrpc-lean
+	url = ssh://git@github.com/cypherpunkengineering/jsonrpc-lean
+[submodule "daemon/third_party/rapidjson"]
+	path = daemon/third_party/rapidjson
+	url = ssh://git@github.com/cypherpunkengineering/rapidjson
