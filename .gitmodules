@@ -7,3 +7,6 @@
 [submodule "daemon/third_party/rapidjson"]
 	path = daemon/third_party/rapidjson
 	url = ssh://git@github.com/cypherpunkengineering/rapidjson
+[submodule "daemon/third_party/websocketpp"]
+	path = daemon/third_party/websocketpp
+	url = ssh://git@github.com:cypherpunkengineering/websocketpp
