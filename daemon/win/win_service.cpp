@@ -52,9 +52,7 @@ bool IsWin64()
 #else
 	static bool is_wow64 = []() {
 		BOOL res = FALSE;
-		typedef BOOL(WINAPI *LPFN_ISWOW64PROCESS) (HANDLE, PBOOL);
-		auto fn = (LPFN_ISWOW64PROCESS)GetProcAddress(GetModuleHandle(_T("kernel32")), "IsWow64Process");
-		return fn && fn(GetCurrentProcess(), &res) && res;
+		return IsWow64Process(GetCurrentProcess(), &res) && res;
 	}();
 	return is_wow64;
 #endif
