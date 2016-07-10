@@ -48,6 +48,12 @@
     <ClInclude Include="win\win.h">
       <Filter>Header Files\win</Filter>
     </ClInclude>
+    <ClInclude Include="logger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="logger_file.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="win\win_service.cpp">
@@ -58,6 +64,9 @@
     </ClCompile>
     <ClCompile Include="win\win_util.cpp">
       <Filter>Source Files\win</Filter>
+    </ClCompile>
+    <ClCompile Include="logger.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

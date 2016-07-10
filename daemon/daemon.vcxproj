@@ -157,6 +157,8 @@
   <ItemGroup>
     <ClInclude Include="config.h" />
     <ClInclude Include="daemon.h" />
+    <ClInclude Include="logger_file.h" />
+    <ClInclude Include="logger.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="win\SampleService.h" />
     <ClInclude Include="win\ServiceBase.h" />
@@ -167,6 +169,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="daemon.cpp" />
+    <ClCompile Include="logger.cpp" />
     <ClCompile Include="win\win_service.cpp" />
     <ClCompile Include="win\win_util.cpp" />
   </ItemGroup>
