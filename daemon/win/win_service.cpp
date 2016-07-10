@@ -1,9 +1,14 @@
-#include "../config.h"
+#include "config.h"
 
-#include "../daemon.h"
+#include "daemon.h"
+#include "logger.h"
+#include "logger_file.h"
 
-#include <stdio.h>
+#include "win.h"
+
+#include <cstdio>
 #include <tchar.h>
+#include <direct.h>
 
 #include <string>
 
@@ -42,21 +47,10 @@ SERVICE_STATUS_HANDLE g_service_status_handle = NULL;
 HANDLE g_service_thread_handle = NULL;
 HANDLE g_service_wait_handle = NULL;
 
-#define PrintError(operation, error) _tcprintf(_T("%s failed with error 0x%08xlx\n"), _T(#operation), error)
-#define PrintLastError(operation) PrintError(operation, GetLastError())
+static FileLogger g_stdout_logger(stdout);
+static FileLogger g_stderr_logger(stderr);
+static FileLogger g_file_logger;
 
-bool IsWin64()
-{
-#ifdef _WIN64
-	return true;
-#else
-	static bool is_wow64 = []() {
-		BOOL res = FALSE;
-		return IsWow64Process(GetCurrentProcess(), &res) && res;
-	}();
-	return is_wow64;
-#endif
-}
 
 
 static DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
@@ -538,6 +532,19 @@ static int ConsoleMain(int argc, TCHAR *argv[])
 
 int _tmain(int argc, TCHAR *argv[])
 {
+	{
+		std::string path = convert<char>(argv[0]);
+		size_t last_slash = path.find_last_of('\\');
+		if (last_slash != std::string::npos)
+			path.resize(last_slash);
+		path += "\\logs";
+		auto test = convert<char>(path);
+		_tmkdir(convert<TCHAR>(path).c_str());
+		path += "\\daemon.log";
+		g_file_logger.Open(path);
+		Logger::Push(&g_file_logger);
+	}
+
 	SERVICE_TABLE_ENTRY table[] =
 	{
 		{ SERVICE_NAME, ServiceMain },
@@ -549,7 +556,7 @@ int _tmain(int argc, TCHAR *argv[])
 		DWORD error = GetLastError();
 		if (error == ERROR_FAILED_SERVICE_CONTROLLER_CONNECT)
 		{
-			// Being run as a console app
+			Logger::Push(&g_stderr_logger);
 			return ConsoleMain(argc, argv);
 		}
 		else
