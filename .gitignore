@@ -1,0 +1,8 @@
+[Dd]ebug/
+[Rr]elease/
+.vs/
+*.swp
+*.user
+*.VC.opendb
+*.VC.db
+
