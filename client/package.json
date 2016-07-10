@@ -1,0 +1,40 @@
+{
+  "name": "cypherpunk-desktop",
+  "productName": "Cypherpunk VPN desktop client",
+  "version": "0.1.0-prototype",
+  "description": "Desktop client for the Cypherpunk VPN service",
+  "main": "app/main.js",
+  "scripts": {
+    "start": "electron app/main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cypherpunkpartners/cypherpunk-desktop.git"
+  },
+  "keywords": [
+    "cypherpunk",
+    "vpn",
+    "client"
+  ],
+  "author": "Cypherpunk Partners",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/cypherpunkpartners/cypherpunk-desktop/issues"
+  },
+  "homepage": "https://cypherpunk.com/",
+
+  "dependencies": {
+    "jquery": "^2.2.2",
+    "mustache": "^2.2.1",
+    "request": "^2.69.0",
+    "tar": "^2.2.1",
+    "ws": "^1.0.1"
+  },
+  "devDependencies": {
+    "electron-rebuild": "^1.1.5",
+    "electron-packager": "^7.1.0",
+    "electron-prebuilt": "^1.2.5",
+    "rimraf": "^2.5.2",
+    "rcedit": "^0.4.0"
+  }
+}
