@@ -19,6 +19,8 @@
 
 #endif
 
+#define THREADSAFE_LOGGING
+
 #define ASIO_STANDALONE
 #define ASIO_NO_TYPEID
 #define ASIO_MSVC _MSC_VER
