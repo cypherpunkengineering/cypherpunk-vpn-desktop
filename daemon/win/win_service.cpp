@@ -541,7 +541,7 @@ static int ConsoleMain(int argc, TCHAR *argv[])
 	if (argc >= 2 && argv[1] && argv[1][0])
 	{
 		const TCHAR* cmd = argv[1];
-		if (cmd[0] == '/' || cmd[0] == '-')
+		while (cmd[0] == '/' || cmd[0] == '-')
 			cmd++;
 
 		if (0 == _tcsicmp(cmd, _T("install")))
