@@ -3,6 +3,7 @@
 #include "daemon.h"
 #include "logger.h"
 #include "logger_file.h"
+#include "openvpn.h"
 
 #include "win.h"
 
@@ -50,6 +51,34 @@ HANDLE g_service_wait_handle = NULL;
 static FileLogger g_stdout_logger(stdout);
 static FileLogger g_stderr_logger(stderr);
 static FileLogger g_file_logger;
+
+
+class WinOpenVPNProcess : public OpenVPNProcess
+{
+public:
+	WinOpenVPNProcess(asio::io_service& io) : OpenVPNProcess(io) {}
+
+	virtual void Run(const std::vector<std::string>& params) override
+	{
+
+	}
+
+	virtual void Kill() override
+	{
+
+	}
+};
+
+class WinCypherDaemon : public CypherDaemon
+{
+public:
+	virtual OpenVPNProcess* CreateOpenVPNProcess(asio::io_service& io) override
+	{
+		return new WinOpenVPNProcess(io);
+	}
+};
+
+
 
 
 
@@ -153,7 +182,7 @@ VOID WINAPI ServiceMain(DWORD argc, LPTSTR *argv)
 	if (g_service_status_handle = RegisterServiceCtrlHandlerEx(SERVICE_NAME, ServiceCtrlHandlerEx, NULL))
 	{
 		/*** INIT ***/
-		g_daemon = new CypherDaemon();
+		g_daemon = new WinCypherDaemon();
 
 		ReportServiceStatus(SERVICE_RUNNING);
 
@@ -449,7 +478,7 @@ static BOOL win_run_service(PCTSTR service_name)
 {
 	BOOL result = FALSE;
 
-	g_daemon = new CypherDaemon();
+	g_daemon = new WinCypherDaemon();
 
 	if (g_service_thread_handle = CreateThread(NULL, 0, ServiceWorkerThread, NULL, CREATE_SUSPENDED, NULL))
 	{

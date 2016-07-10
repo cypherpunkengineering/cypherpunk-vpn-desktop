@@ -2,20 +2,22 @@
 
 #include "config.h"
 
+#include <asio.hpp>
+
+#include <websocketpp/config/asio_no_tls.hpp>
+#include <websocketpp/server.hpp>
+#include <jsonrpc-lean/server.h>
+#include <jsonrpc-lean/client.h>
+
+#include <set>
+#include <thread>
+
 extern class CypherDaemon* g_daemon;
 
-enum LogLevel
-{
-	LEVEL_CRITICAL,
-	LEVEL_ERROR,
-	LEVEL_WARNING,
-	LEVEL_INFO,
-};
-
-#define LogCritical(fmt, ...) g_daemon->Log(LEVEL_CRITICAL, fmt, ## __VA_ARGS__)
-#define LogError(   fmt, ...) g_daemon->Log(LEVEL_ERROR,    fmt, ## __VA_ARGS__)
-#define LogWarning( fmt, ...) g_daemon->Log(LEVEL_WARNING,  fmt, ## __VA_ARGS__)
-#define LogInfo(    fmt, ...) g_daemon->Log(LEVEL_INFO,     fmt, ## __VA_ARGS__)
+class OpenVPNProcess;
+typedef websocketpp::server<websocketpp::config::asio> WebSocketServer;
+typedef jsonrpc::Server JsonRPCServer;
+typedef jsonrpc::Client JsonRPCClient;
 
 
 class CypherDaemon
@@ -31,7 +33,25 @@ public:
 	// the daemon or from another thread.
 	void RequestShutdown();
 
+protected:
+	typedef websocketpp::connection_hdl Connection;
+	typedef std::set<Connection, std::owner_less<Connection>> ConnectionList;
+
+	void SendToClient(Connection con, const std::shared_ptr<jsonrpc::FormattedData>& data);
+	void SendToAllClients(const std::shared_ptr<jsonrpc::FormattedData>& data);
+	void OnFirstClientConnected();
+	void OnLastClientDisconnected();
+	void OnReceiveMessage(Connection con, WebSocketServer::message_ptr msg);
+
+	WebSocketServer _ws_server;
+	ConnectionList _connections;
+	jsonrpc::JsonFormatHandler _json_handler;
+	JsonRPCServer _rpc_server;
+	JsonRPCClient _rpc_client;
+	class OpenVPNProcess* _process;
+
 public:
-	virtual void Log(LogLevel level, const char* fmt, ...) {}
+
+	virtual OpenVPNProcess* CreateOpenVPNProcess(asio::io_service& io) { return nullptr; }
 };
 
