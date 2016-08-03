@@ -25,7 +25,9 @@
 
   <script>
     // You can also require other files to run in this process
-    //require('./renderer.js')
+    //const daemon = require('./js/daemon.js');
+
+    // FIXME: All this code below was just for the temporary mockup; replace with actual webapp
 
     //require('./js/globals.js');
     //const path = require('path');
@@ -38,7 +40,8 @@
     
     var connectButton = document.getElementById('connect');
 
-    events.subscribe(function(evt) {
+    //events.subscribe(
+    var onEvent = function(evt) {
       switch (evt.type) {
         case 'output':
           console.log(evt.data.output);
@@ -77,12 +80,12 @@
           */
       }
       console.log(evt);
-    });
+    };
 
-    importer.importProfile(path.join(__dirname, 'cypher.ovpn'), prfls => {
+    /*importer.importProfile(path.join(__dirname, 'cypher.ovpn'), prfls => {
       prfl = prfls[0];
       document.getElementById("connect").style.visibility = 'visible';
-    });
+    });*/
 
     //const prfl = new profile.Profile(path.join(__dirname, 'cypher'));
     //prfl.load(() => {
@@ -95,11 +98,11 @@
       
 
       if (elm.className == 'disconnected') {
-        prfl.connect();
+        //prfl.connect();
         elm.className = 'connecting';
         elm.innerText = 'Connecting...';
       } else if (elm.className == 'connected') {
-        prfl.disconnect();
+        //prfl.disconnect();
         elm.className = 'disconnected';
         elm.innerText = 'Disconnecting...';
       }
