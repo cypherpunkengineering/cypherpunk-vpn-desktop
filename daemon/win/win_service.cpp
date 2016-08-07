@@ -54,6 +54,49 @@ static FileLogger g_stderr_logger(stderr);
 static FileLogger g_file_logger;
 
 
+template<typename RESULT, typename INPUT>
+void AppendQuotedCommandLineArgument(std::basic_string<RESULT>& result, const std::basic_string<INPUT>& arg, bool force = false)
+{
+	static const INPUT special_chars[] = { ' ', '\t', '\n', '\v', '"', 0 };
+
+	if (!force && !arg.empty() && arg.find_first_of(special_chars) == arg.npos)
+	{
+		result.append(arg.begin(), arg.end());
+	}
+	else
+	{
+		result.push_back('"');
+
+		for (auto it = arg.begin(); ; ++it)
+		{
+			size_t backslashes = 0;
+			while (it != arg.end() && *it == '\\')
+			{
+				++it;
+				++backslashes;
+			}
+			if (it == arg.end())
+			{
+				result.append(backslashes * 2, '\\');
+				break;
+			}
+			else if (*it == '"')
+			{
+				result.append(backslashes * 2 + 1, '\\');
+				result.push_back(*it);
+			}
+			else
+			{
+				result.append(backslashes, '\\');
+				result.push_back(*it);
+			}
+		}
+
+		result.push_back('"');
+	}
+}
+
+
 class WinOpenVPNProcess : public OpenVPNProcess
 {
 public:
@@ -61,7 +104,54 @@ public:
 
 	virtual void Run(const std::vector<std::string>& params) override
 	{
+		// Combine all parameters into a quoted command line string
+		std::tstring cmdline;
+		for (const auto& arg : params)
+		{
+			if (!cmdline.empty())
+				cmdline.push_back(' ');
+			AppendQuotedCommandLineArgument(cmdline, arg);
+		}
 
+		std::tstring executable = convert<TCHAR>(GetPath(OpenVPNExecutable));
+		std::tstring cwd = convert<TCHAR>(GetPath(OpenVPNDir));
+
+		STARTUPINFO startupinfo = { sizeof(STARTUPINFO), 0 };
+		PROCESS_INFORMATION processinfo = { 0 };
+		BOOL success = FALSE;
+
+		// Get a user token for the built-in Network Service user (seems appropriate for an OpenVPN process)
+		HANDLE network_service_token;
+		if (LogonUser(_T("NETWORK SERVICE"), _T("NT AUTHORITY"), NULL, LOGON32_LOGON_SERVICE, LOGON32_PROVIDER_DEFAULT, &network_service_token))
+		{
+			// Launch OpenVPN as the specified user
+			if (CreateProcessAsUser(network_service_token, executable.c_str(), &cmdline[0], NULL, NULL, FALSE, 0, NULL, cwd.c_str(), &startupinfo, &processinfo))
+			{
+				success = TRUE;
+				LOG(INFO) << "Successfully started OpenVPN as network service";
+			}
+			else
+				PLOG(WARNING) << "CreateProcessAsUser failed: " << LastError << " - retrying without impersonation";
+
+			CloseHandle(network_service_token);
+		}
+		else
+			PLOG(WARNING) << "LogonUser failed: " << LastError << " - retrying without impersonation";
+
+		if (!success)
+		{
+			if (CreateProcess(executable.c_str(), &cmdline[0], NULL, NULL, FALSE, 0, NULL, cwd.c_str(), &startupinfo, &processinfo))
+			{
+				success = TRUE;
+			}
+			else
+				PrintLastError(CreateProcess);
+		}
+
+		if (!success)
+		{
+			throw "unable to launch openvpn";
+		}
 	}
 
 	virtual void Kill() override
