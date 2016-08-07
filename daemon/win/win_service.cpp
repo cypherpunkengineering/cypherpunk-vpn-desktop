@@ -257,7 +257,11 @@ static VOID CALLBACK ServiceEndCallback(PVOID lpParameter, BOOLEAN TimerOrWaitFi
 	}
 
 	if (!UnregisterWaitEx(g_service_wait_handle, NULL))
-		PrintLastError(UnregisterWaitEx);
+	{
+		DWORD error = GetLastError();
+		if (error != ERROR_IO_PENDING)
+			PrintError(UnregisterWaitEx, error);
+	}
 	g_service_wait_handle = NULL;
 
 	if (!CloseHandle(g_service_thread_handle))
