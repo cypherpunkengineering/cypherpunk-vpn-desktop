@@ -2,6 +2,12 @@
 
 #include "config.h"
 
+#include <cstdarg>
+#include <sstream>
+#ifdef THREADSAFE_LOGGING
+#include <mutex>
+#endif
+
 enum LogLevel
 {
 	LEVEL_CRITICAL,
@@ -29,23 +35,17 @@ extern class Logger* g_logger;
 #define LogVerbose( fmt, ...) g_logger->Write(LEVEL_VERBOSE,  fmt,##__VA_ARGS__)
 
 #ifdef _DEBUG
-#define LOGWRITER(level) LogWriter(level, __func__, __FILE__, __LINE__)
+#define WITH_LOCATION (Location(__func__, __FILE__, __LINE__))
 #else
-#define LOGWRITER(level) LogWriter(level)
+#define WITH_LOCATION
 #endif
 
-#define LOG(level) (!(STATIC_LOG_ENABLED(level) && LOG_ENABLED(level))) ? (void)0 : Voidify() | LOGWRITER(level)
-#define CLOG LOG(LEVEL_CRITICAL)
-#define WLOG LOG(LEVEL_ERROR)
-#define ELOG LOG(LEVEL_WARNING)
-#define ILOG LOG(LEVEL_INFO)
-#define VLOG LOG(LEVEL_VERBOSE)
+#define LOG_EX(classname, level, condition, ...) (!(STATIC_LOG_ENABLED(level) && LOG_ENABLED(level) && (condition))) ? (void)0 : Voidify() | classname(__VA_ARGS__)(level) WITH_LOCATION
 
-#include <cstdarg>
-#include <sstream>
-#ifdef THREADSAFE_LOGGING
-#include <mutex>
-#endif
+#define LOG_IF(severity, condition)  LOG_EX(PrefixLogWriter<LogWriter>, LEVEL_##severity, condition)
+#define LOG(severity)                LOG_EX(PrefixLogWriter<LogWriter>, LEVEL_##severity, true)
+#define PLOG_IF(severity, condition) LOG_EX(PrefixLogWriter<ErrorLogWriter>, LEVEL_##severity, condition, Error::Get())
+#define PLOG(severity)               LOG_EX(PrefixLogWriter<ErrorLogWriter>, LEVEL_##severity, true, Error::Get())
 
 
 struct Voidify
@@ -53,22 +53,77 @@ struct Voidify
 	template<typename T> inline void operator|(T&&) const {}
 };
 
+struct Location
+{
+	const char* func;
+	const char* file;
+	int line;
+
+	inline Location(const char* fn, const char* f, int l) : func(fn), file(f), line(l) {}
+	inline Location(const char* fn) : func(fn), file(nullptr), line(0) {}
+	inline Location(const char* f, int l) : func(nullptr), file(f), line(l) {}
+};
+
+class Error
+{
+public:
+#ifdef _WIN32
+	typedef unsigned long Code;
+#else
+	typedef int Code;
+#endif
+	Code code;
+public:
+	constexpr Error(Code code) : code(code) {}
+	static Error Get();
+
+	friend std::ostream& operator<<(std::ostream& os, const Error& error);
+};
+class LastErrorWrapper {};
+extern const LastErrorWrapper LastError;
+
 class LogWriter
 {
+protected:
 	friend class Logger;
 	std::ostringstream _str;
 
 public:
-	LogWriter(LogLevel level);
-	LogWriter(LogLevel level, const char* func, const char* file = nullptr, unsigned int line = 0);
 	~LogWriter();
 
 	template<typename T>
-	inline LogWriter& operator<<(T&& arg)
-	{
-		_str << std::forward<T>(arg);
-		return *this;
-	}
+	inline LogWriter& operator<<(T&& arg) { _str << std::forward<T>(arg); return *this; }
+	LogWriter& operator<<(LogLevel level);
+	LogWriter& operator<<(const Location& location);
+	LogWriter& operator<<(const class LastErrorWrapper& error) { _str << Error::Get(); return *this; }
+};
+
+template<class WRITER>
+class PrefixLogWriter
+{
+	WRITER _writer;
+public:
+	template<typename... Args>
+	PrefixLogWriter(Args&&... args) : _writer(std::forward<Args>(args)...) {}
+
+	inline PrefixLogWriter& operator()() { return *this; }
+	PrefixLogWriter& operator()(LogLevel level) { _writer << level; return *this; }
+	PrefixLogWriter& operator()(const Location& location) { _writer << location; return *this; }
+
+	template<typename T>
+	inline WRITER& operator<<(T&& arg) { return _writer << ' ' << std::forward<T>(arg); }
+};
+
+class ErrorLogWriter : public LogWriter
+{
+	Error _error;
+
+public:
+	ErrorLogWriter(Error error) : _error(error) {}
+
+	template<typename T>
+	inline ErrorLogWriter& operator<<(T&& arg) { *(LogWriter*)this << std::forward<T>(arg); return *this; }
+	ErrorLogWriter& operator<<(const class LastErrorWrapper& error) { *(LogWriter*)this << _error; return *this; }
 };
 
 class Logger
@@ -131,10 +186,10 @@ public:
 	{
 		return
 			(level == LEVEL_CRITICAL) ? "CRITICAL" :
-			(level == LEVEL_ERROR   ) ? "ERROR"    :
-			(level == LEVEL_WARNING ) ? "WARNING"  :
-			(level == LEVEL_INFO    ) ? "INFO"     :
-			(level == LEVEL_VERBOSE ) ? "VERBOSE"  :
+			(level == LEVEL_ERROR) ? "ERROR" :
+			(level == LEVEL_WARNING) ? "WARNING" :
+			(level == LEVEL_INFO) ? "INFO" :
+			(level == LEVEL_VERBOSE) ? "VERBOSE" :
 			"";
 	}
 };

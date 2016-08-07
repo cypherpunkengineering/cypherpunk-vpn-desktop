@@ -7,22 +7,11 @@
 #include <vector>
 #include <string>
 
-#define PrintError(operation, error) ELOG << LastError(#operation, error)
-#define PrintLastError(operation) ELOG << LastError(#operation)
+#define PrintError(operation, error) LOG(ERROR) << #operation " failed: " << Error(error)
+#define PrintLastError(operation) PLOG(ERROR) << #operation " failed: " << LastError
 
 std::string GetLastErrorString(DWORD error);
 static inline std::string GetLastErrorString() { return GetLastErrorString(GetLastError()); }
-class LastError
-{
-	const char* _op;
-	DWORD _error;
-public:
-	LastError(const char* op, DWORD error) : _op(op), _error(error) {}
-	LastError(const char* op) : LastError(op, GetLastError()) {}
-
-	friend std::ostream& operator<<(std::ostream& os, const LastError& err);
-};
-
 
 namespace std {
 #ifdef UNICODE

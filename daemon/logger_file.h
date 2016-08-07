@@ -3,14 +3,16 @@
 #include "logger.h"
 
 #include <cstdio>
+#include <ctime>
 
 class FileLogger : public Logger
 {
 protected:
 	FILE* _file;
+	bool _timestamps;
 public:
-	FileLogger() : _file(nullptr) {}
-	FileLogger(FILE* file) : _file(file) {}
+	FileLogger() : _file(nullptr), _timestamps(false) {}
+	FileLogger(FILE* file) : _file(file), _timestamps(false) {}
 
 	bool Open(FILE* file)
 	{
@@ -19,7 +21,7 @@ public:
 	}
 	bool Open(const char* filename)
 	{
-		return Open(fopen(filename, "at"));
+		return _timestamps = Open(fopen(filename, "at"));
 	}
 	bool Open(const std::string& filename)
 	{
@@ -39,6 +41,7 @@ public:
 	{
 		if (_file)
 		{
+			WriteTimestampIfNeeded();
 			vfprintf(_file, fmt, args);
 			fputc('\n', _file);
 			fflush(_file);
@@ -50,10 +53,22 @@ public:
 	{
 		if (_file)
 		{
+			WriteTimestampIfNeeded();
 			fwrite(str.data(), 1, str.size(), _file);
 			fputc('\n', _file);
 			fflush(_file);
 		}
 		Logger::DoWrite(str);
+	}
+
+protected:
+	void WriteTimestampIfNeeded()
+	{
+		if (_file && _timestamps)
+		{
+			time_t t = time(0);   // get time now
+			struct tm * now = localtime(&t);
+			fprintf(_file, "[%04d-%02d-%02d %02d:%02d:%02d]", now->tm_year + 1900, now->tm_mon + 1, now->tm_mday, now->tm_hour, now->tm_min, now->tm_sec);
+		}
 	}
 };

@@ -91,7 +91,7 @@ void win_get_ipv4_routing_table()
 			free(table);
 		}
 		else
-			PrintError("malloc", 0);
+			PrintError(malloc, 0);
 	}
 	else
 		PrintError(GetIpForwardTable, error);
@@ -107,21 +107,13 @@ std::string GetLastErrorString(DWORD error)
 
 	if (len && errorText)
 	{
-		while (len > 0 && errorText[len - 1] == ' ') len--;
+		while (len > 0 && isspace(errorText[len - 1]) || errorText[len - 1] == '.') len--;
 		std::string result = convert<char>(errorText, errorText + len);
 		if (errorText)
 			LocalFree(errorText);
 		return std::move(result);
 	}
-	return "";
-}
-
-std::ostream& operator<<(std::ostream& os, const LastError& err)
-{
-	std::ios::fmtflags f(os.flags());
-	os << err._op << " failed with error " << std::hex << std::showbase /*<< std::setfill('0') << std::internal << std::setw(10)*/ << err._error << " - " << GetLastErrorString(err._error);
-	os.flags(f);
-	return os;
+	return "Unknown error";
 }
 
 template<> std::basic_string<char> convert<>(const wchar_t* wbegin, const wchar_t* const wend)

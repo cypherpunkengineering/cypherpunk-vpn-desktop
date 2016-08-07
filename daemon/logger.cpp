@@ -1,36 +1,44 @@
 #include "logger.h"
 
+#ifdef _WIN32
+#include "win/win.h"
+#include <Windows.h>
+#else
+#include <cerrno>
+#endif
+
 static Logger g_null_logger;
 Logger* g_logger = &g_null_logger;
 LogLevelMask Logger::levels = STATIC_LOG_LEVELS;
 #ifdef THREADSAFE_LOGGING
 std::recursive_mutex Logger::_mutex;
 #endif
+const LastErrorWrapper LastError;
 
-LogWriter::LogWriter(LogLevel level)
-{
-	_str << '[' << Logger::GetLevelString(level) << "] ";
-}
-
-LogWriter::LogWriter(LogLevel level, const char* func, const char* file, unsigned int line)
+LogWriter& LogWriter::operator<<(LogLevel level)
 {
 	_str << '[' << Logger::GetLevelString(level) << ']';
-	if (func && *func)
+	return *this;
+}
+
+LogWriter& LogWriter::operator<<(const Location& location)
+{
+	if (location.func)
 	{
-		_str << '[' << func << ']';
+		_str << '[' << location.func << ']';
 	}
-	if (file && *file)
+	if (location.file)
 	{
-		const char* name = file;
-		for (const char* p = file; *p; p++)
+		const char* name = location.file;
+		for (const char* p = name; *p; p++)
 			if (*p == '/' || *p == '\\')
 				name = p + 1;
 		if (*name)
 		{
-			_str << '[' << name << ':' << line << ']';
+			_str << '[' << name << ':' << location.line << ']';
 		}
 	}
-	_str << ' ';
+	return *this;
 }
 
 LogWriter::~LogWriter()
@@ -38,6 +46,31 @@ LogWriter::~LogWriter()
 	g_logger->Write(_str.str());
 }
 
+#ifndef _WIN32
+std::string GetLastErrorString(Error::Code code)
+{
+}
+#endif
+
+std::ostream& operator<<(std::ostream& os, const Error& error)
+{
+#ifdef _WIN32
+	extern std::string GetLastErrorString(DWORD error);
+#endif
+	std::ios::fmtflags f(os.flags());
+	os << GetLastErrorString(error.code) << " (" << std::hex << std::showbase << error.code << ')';
+	os.flags(f);
+	return os;
+}
+
+Error Error::Get()
+{
+#ifdef _WIN32
+	return GetLastError();
+#else
+	return errno;
+#endif
+}
 
 void Logger::Push(Logger* logger)
 {
