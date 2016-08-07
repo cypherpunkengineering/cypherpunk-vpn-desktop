@@ -183,7 +183,14 @@
   <ItemGroup>
     <Natvis Include="win\daemon.natvis" />
   </ItemGroup>
+  <ItemGroup>
+    <OpenVPNBinaries Include="third_party\openvpn_win\$(PlatformArchitecture)\*.*" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+
+  <Target Name="AfterBuild">
+    <Copy SourceFiles="@(OpenVPNBinaries)" DestinationFolder="$(OutDir)\openvpn" />
+  </Target>
 </Project>
