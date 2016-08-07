@@ -4,6 +4,7 @@
 #include "logger.h"
 #include "logger_file.h"
 #include "openvpn.h"
+#include "path.h"
 
 #include "win.h"
 
@@ -561,18 +562,11 @@ static int ConsoleMain(int argc, TCHAR *argv[])
 
 int _tmain(int argc, TCHAR *argv[])
 {
-	{
-		std::string path = convert<char>(argv[0]);
-		size_t last_slash = path.find_last_of('\\');
-		if (last_slash != std::string::npos)
-			path.resize(last_slash);
-		path += "\\logs";
-		auto test = convert<char>(path);
-		_tmkdir(convert<TCHAR>(path).c_str());
-		path += "\\daemon.log";
-		g_file_logger.Open(path);
-		Logger::Push(&g_file_logger);
-	}
+	InitPaths(argc > 0 ? convert<char>(argv[0]) : "./daemon.exe");
+
+	_tmkdir(convert<TCHAR>(GetPath(LogDir)).c_str());
+	g_file_logger.Open(GetPath(LogDir, "daemon.log"));
+	Logger::Push(&g_file_logger);
 
 	SERVICE_TABLE_ENTRY table[] =
 	{
