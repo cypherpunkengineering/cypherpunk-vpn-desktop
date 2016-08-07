@@ -1,5 +1,6 @@
 #include "config.h"
 #include "daemon.h"
+#include "openvpn.h"
 #include "logger.h"
 
 #include <thread>
@@ -23,7 +24,7 @@ CypherDaemon::CypherDaemon()
 
 int CypherDaemon::Run()
 {
-	ILOG << "Running CypherDaemon built on " __TIMESTAMP__;
+	LOG(INFO) << "Running CypherDaemon built on " __TIMESTAMP__;
 
 	_ws_server.set_message_handler(std::bind(&CypherDaemon::OnReceiveMessage, this, _1, _2));
 	_ws_server.set_open_handler([this](Connection c) {

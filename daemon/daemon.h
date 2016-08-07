@@ -51,7 +51,6 @@ protected:
 	class OpenVPNProcess* _process;
 
 public:
-
-	virtual OpenVPNProcess* CreateOpenVPNProcess(asio::io_service& io) { return nullptr; }
+	virtual OpenVPNProcess* CreateOpenVPNProcess(asio::io_service& io) = 0;
 };
 
