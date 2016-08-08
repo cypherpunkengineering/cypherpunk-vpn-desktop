@@ -1,11 +1,6 @@
 #pragma once
 
-#ifdef _WIN32
-
-// Including SDKDDKVer.h defines the highest available Windows platform.
-
-// If you wish to build your application for a previous Windows platform, include WinSDKVer.h and
-// set the _WIN32_WINNT macro to the platform you wish to support before including SDKDDKVer.h.
+#ifdef _WIN32 ///////////////////////////////////////////////// Windows //
 
 #include <SDKDDKVer.h>
 
@@ -15,9 +10,26 @@
 
 #ifdef _WIN64
 #define WIN64
+#define OS_WIN 64
+#else
+#define OS_WIN 32
 #endif
 
-#endif
+#elif __APPLE__ ////////////////////////////////////////////////// OS X //
+
+#define OS_OSX 1
+
+#elif __linux__ ///////////////////////////////////////////////// Linux //
+
+#define OS_LINUX 1
+
+#else ////////////////////////////////////////////////////// Unknown OS //
+
+#error "Unknown OS"
+
+#endif ///////////////////////////////////////////////////////////////////
+
+
 
 #define THREADSAFE_LOGGING
 
@@ -29,7 +41,8 @@
 
 #define _WEBSOCKETPP_CPP11_TYPE_TRAITS_
 
-#ifdef _MSC_VER
+#ifdef _MSC_VER ///////////////////////////////////////// Visual Studio //
+
 #define _CRT_SECURE_NO_WARNINGS
 #define _SCL_SECURE_NO_WARNINGS
 #include <vcruntime.h>
@@ -39,7 +52,9 @@
 #define _WEBSOCKETPP_CPP11_MEMORY_
 #define _WEBSOCKETPP_DEFAULT_DELETE_FUNCTIONS_
 #define _WEBSOCKETPP_MOVE_SEMANTICS_
-#else
-#define _WEBSOCKETPP_CPP11_STL_
-#endif
 
+#else ////////////////////////////////////////////////////////////////////
+
+#define _WEBSOCKETPP_CPP11_STL_
+
+#endif ///////////////////////////////////////////////////////////////////
