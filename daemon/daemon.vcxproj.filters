@@ -19,6 +19,12 @@
     <Filter Include="Header Files\win">
       <UniqueIdentifier>{0b6f144b-e891-4239-bf17-c39b91805f5e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\posix">
+      <UniqueIdentifier>{ac5e6fca-78ee-42fd-903d-c013898d908b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\posix">
+      <UniqueIdentifier>{c9521be6-98df-446b-917d-eacfb7cef2e3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="config.h">
@@ -79,6 +85,9 @@
     </ClCompile>
     <ClCompile Include="win\win_path.cpp">
       <Filter>Source Files\win</Filter>
+    </ClCompile>
+    <ClCompile Include="posix\posix_daemon.cpp">
+      <Filter>Source Files\posix</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
