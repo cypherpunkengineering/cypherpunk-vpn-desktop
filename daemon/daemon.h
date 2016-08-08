@@ -50,7 +50,8 @@ protected:
 	JsonRPCClient _rpc_client;
 	class OpenVPNProcess* _process;
 
-public:
+protected:
 	virtual OpenVPNProcess* CreateOpenVPNProcess(asio::io_service& io) = 0;
+	virtual int GetAvailablePort() = 0;
 };
 
