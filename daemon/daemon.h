@@ -52,6 +52,6 @@ protected:
 
 protected:
 	virtual OpenVPNProcess* CreateOpenVPNProcess(asio::io_service& io) = 0;
-	virtual int GetAvailablePort() = 0;
+	virtual int GetAvailablePort(int hint) = 0;
 };
 

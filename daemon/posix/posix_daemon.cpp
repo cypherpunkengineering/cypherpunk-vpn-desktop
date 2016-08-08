@@ -31,10 +31,10 @@ public:
 	{
 		return new PosixOpenVPNProcess(io);
 	}
-	virtual int GetAvailablePort() override
+	virtual int GetAvailablePort(int hint) override
 	{
 		//popen("netstat -a -n");
-		for (int i = 9337; ; i++)
+		for (int i = hint; ; i++)
 		{
 			if (/* port i not in use */)
 				return i;

@@ -167,6 +167,10 @@ public:
 	{
 		return new WinOpenVPNProcess(io);
 	}
+	virtual int GetAvailablePort(int hint) override
+	{
+		return hint;
+	}
 };
 
 
