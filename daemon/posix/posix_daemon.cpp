@@ -4,6 +4,7 @@
 #include "logger.h"
 #include "logger_file.h"
 #include "openvpn.h"
+#include "path.h"
 
 #include <signal.h>
 
@@ -15,7 +16,13 @@ public:
 
 	virtual void Run(const std::vector<std::string>& params) override
 	{
-
+		std::string cmdline = GetPath(OpenVPNExecutable);
+		for (const auto& param : params)
+		{
+			cmdline += ' ';
+			cmdline += param; // FIXME: quote/escape
+		}
+		// execute cmdline asynchronously - popen?
 	}
 
 	virtual void Kill() override
