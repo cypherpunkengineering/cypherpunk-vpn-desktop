@@ -182,7 +182,7 @@ var openMainWin = function() {
       main.maximizedPrev = null;
 
       main.loadUrl('file://' + path.join(__dirname, 'index2.html'));
-      
+
       //main.webContents.openDevTools({ mode: 'undocked' });
     }
 
