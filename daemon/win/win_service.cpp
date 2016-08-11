@@ -180,6 +180,16 @@ public:
 	{
 		return hint;
 	}
+	virtual std::string GetAvailableAdapter(int index) override
+	{
+		const auto& adapters = win_get_tap_adapters();
+		for (const auto& adapter : adapters)
+		{
+			// FIXME: Just return the first adapter for now; later improve to actually find an available one (see if they have a connected state?)
+			return adapter.guid;
+		}
+		throw "no adapters found";
+	}
 };
 
 

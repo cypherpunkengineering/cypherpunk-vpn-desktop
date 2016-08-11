@@ -41,6 +41,10 @@ public:
 		}
 		throw "unable to find an available port";
 	}
+	virtual std::string GetAvailableAdapter(int index) override
+	{
+		throw "not implemented";
+	}
 };
 
 void sigterm_handler(int signal)

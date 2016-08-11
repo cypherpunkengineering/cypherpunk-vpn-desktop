@@ -56,5 +56,7 @@ protected:
 	virtual OpenVPNProcess* CreateOpenVPNProcess(asio::io_service& io) = 0;
 	// Ask the system for an available TCP port (for listening), preferably >= 'hint'.
 	virtual int GetAvailablePort(int hint);
+	// Get the identifier (for --dev) for an available TAP adapter to use.
+	virtual std::string GetAvailableAdapter(int index) = 0;
 };
 
