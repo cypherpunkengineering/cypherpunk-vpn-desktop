@@ -693,7 +693,15 @@ int _tmain(int argc, TCHAR *argv[])
 		if (error == ERROR_FAILED_SERVICE_CONTROLLER_CONNECT)
 		{
 			Logger::Push(&g_stderr_logger);
-			return ConsoleMain(argc, argv);
+			int result = ConsoleMain(argc, argv);
+#ifdef _DEBUG
+			if (result != 0)
+			{
+				_putts(_T("Press any key to exit..."));
+				getchar();
+			}
+#endif
+			return result;
 		}
 		else
 		{
