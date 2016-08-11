@@ -1,6 +1,44 @@
-//require('./js/globals.js');
+const { app, dialog, BrowserWindow, Tray, Menu, ipcMain: ipc } = require('electron');
+const RPC = require('./js/rpc.js');
 
-const { app, dialog, BrowserWindow, Tray, Menu } = require('electron');
+var exiting = false;
+
+var daemon;
+var main;
+
+function eventPromise(emitter, name) {
+  return new Promise((resolve, reject) => {
+    emitter.once(name, resolve);
+  });
+}
+
+function timeoutPromise(promise, delay, timeoutIsSuccess = false) {
+  return new Promise((resolve, reject) => {
+    var timeout = setTimeout(() => { if (timeoutIsSuccess) resolve(); else reject(); }, delay);
+    promise.then(val => { clearTimeout(timeout); resolve(val); }, reject);
+  });
+}
+
+function connectToDaemon(port) {
+  return new Promise((resolve, reject) => {
+    daemon = new RPC({
+      url: 'ws://127.0.0.1:' + port,
+      onopen: evt => { resolve(daemon); },
+      onerror: evt => { reject(evt); },
+    });
+  });
+}
+
+app.on('will-quit', event => {
+  if (!exiting && daemon) {
+    exiting = true;
+    event.preventDefault();
+    timeoutPromise(daemon.disconnect(), 2000, true).then(() => {
+      daemon = null;
+      app.quit();
+    });
+  }
+});
 
 //var app = require('electron');
 var path = require('path');
@@ -17,32 +55,53 @@ var request = require('request');
 //var errors = require('./js/errors.js');
 //var logger = require('./js/logger.js');
 
-var main;
+const preinitPromises = [
+  eventPromise(app, 'ready'),
+  /*
+  connectToDaemon(9337).catch(err => {
+    dialog.showMessageBox({
+      type: 'warning',
+      buttons: [ "Exit" ], // FIXLOC
+      title: "Cypherpunk VPN", // FIXLOC
+      message: "Unable to communicate with helper service.\nPlease reinstall the application.", // FIXLOC
+    });
+    throw err;
+  })
+  */
+];
 
-app.on('ready', function() {
+timeoutPromise(Promise.all(preinitPromises), 2000).then(() => {
+  createMainWindow();
+}).catch(err => {
+  app.quit();
+});
+
+function createMainWindow() {
   main = new BrowserWindow({
-    title: 'CypherVPN',
+    title: 'Cypherpunk VPN',
     //icon: icon,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#222',
     show: false,
     frame: false,
     fullscreen: false,
     width: 300,
     height: 500,
-    'min-width': 300,
-    'min-height': 400,
-    'max-width': 600,
-    'max-height': 700
+    //resizable: false,
+    'minWidth': 300,
+    'minHeight': 400,
+    //'max-width': 600,
+    //'max-height': 700,
   });
+  main.setMenu(null);
   main.on('ready-to-show', function() {
     main.show();
   });
   main.maximizedPrev = null;
 
-  main.loadURL('file://' + path.join(__dirname, 'index.html'));
+  main.loadURL(`file://${__dirname}/index.html`);
 
   main.webContents.openDevTools({ mode: 'undocked' });
-});
+};
 
 app.on('window-all-closed', function() {
   app.quit();
