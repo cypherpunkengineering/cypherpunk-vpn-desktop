@@ -51,7 +51,10 @@ protected:
 	OpenVPNProcess* _process;
 
 protected:
+	// Create a platform-specific handler around an OpenVPN process.
+	// Note: the process isn't actually started until 'Run' is called on it.
 	virtual OpenVPNProcess* CreateOpenVPNProcess(asio::io_service& io) = 0;
-	virtual int GetAvailablePort(int hint) = 0;
+	// Ask the system for an available TCP port (for listening), preferably >= 'hint'.
+	virtual int GetAvailablePort(int hint);
 };
 

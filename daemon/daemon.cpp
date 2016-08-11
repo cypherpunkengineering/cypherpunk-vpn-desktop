@@ -110,6 +110,11 @@ void CypherDaemon::OnReceiveMessage(Connection connection, WebSocketServer::mess
 	}
 }
 
+int CypherDaemon::GetAvailablePort(int hint)
+{
+	return hint;
+}
+
 void WriteOpenVPNProfile(std::ostream& out, const Settings::Connection& connection)
 {
 	using namespace std;
