@@ -5,7 +5,8 @@
   "description": "Desktop client for the Cypherpunk VPN service",
   "main": "app/main.js",
   "scripts": {
-    "start": "electron app/main.js"
+    "start": "electron app/main.js",
+    "build": "cd semantic && gulp build"
   },
   "repository": {
     "type": "git",
@@ -35,6 +36,8 @@
     "electron-packager": "^7.1.0",
     "electron-prebuilt": "^1.2.5",
     "rimraf": "^2.5.2",
-    "rcedit": "^0.4.0"
+    "rcedit": "^0.4.0",
+    "gulp": "^3.9.1",
+    "semantic-ui": "^2.2.2"
   }
 }
