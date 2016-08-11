@@ -77,31 +77,50 @@ timeoutPromise(Promise.all(preinitPromises), 2000).then(() => {
 });
 
 function createMainWindow() {
-  main = new BrowserWindow({
-    title: 'Cypherpunk VPN',
-    //icon: icon,
-    backgroundColor: '#222',
-    show: false,
-    //frame: false,
-    fullscreen: false,
-    useContentSize: true,
-    width: 300,
-    height: 500,
-    //resizable: false,
-    minimizable: false,
-    maximizable: false,
-    minWidth: 300,
-    minHeight: 400,
-    maxWidth: 300,
-    //max-height: 700,
-  });
+  const useSemanticUi = (process.argv[2] == 'semantic');
+  if (useSemanticUi) {
+    main = new BrowserWindow({
+      title: 'Cypherpunk VPN (Semantic UI)',
+      //icon: icon,
+      backgroundColor: '#222',
+      show: false,
+      //frame: false,
+      fullscreen: false,
+      useContentSize: true,
+      width: 300,
+      height: 500,
+      //resizable: false,
+      minimizable: false,
+      maximizable: false,
+      minWidth: 300,
+      minHeight: 400,
+      maxWidth: 300,
+      //maxHeight: 700,
+    });
+  } else {
+    main = new BrowserWindow({
+      title: 'Cypherpunk VPN',
+      //icon: icon,
+      backgroundColor: '#222',
+      show: false,
+      //frame: false,
+      fullscreen: false,
+      width: 375,
+      height: 606,
+      resizable: false,
+      //'min-width': 300,
+      //'min-height': 400,
+      //'max-width': 600,
+      //'max-height': 700
+    });
+  }
   main.setMenu(null);
   main.on('ready-to-show', function() {
     main.show();
   });
   main.maximizedPrev = null;
 
-  if (process.argv[2] == 'semantic') {
+  if (useSemanticUi) {
     main.loadURL(`file://${__dirname}/index-semantic.html`);
   } else {
     main.loadURL(`file://${__dirname}/index.html`);
@@ -247,7 +266,7 @@ var openMainWin = function() {
       main.maximizedPrev = null;
 
       main.loadUrl('file://' + path.join(__dirname, 'index2.html'));
-      
+
       //main.webContents.openDevTools({ mode: 'undocked' });
     }
 

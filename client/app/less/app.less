@@ -1,0 +1,93 @@
+
+html, body, tfoot, tr, tr, td, article, aside, canvas, details, figure, hgroup, menu,
+nav, footer, header, section, summary, mark, audio, video {
+  border: 0; margin: 0; padding: 0;
+}
+
+h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, address, cit, code,
+del, dfn, em, ins, q, samp, small, strong, sub, sup, b, i, hr, dl, dt, dd,
+ol, ul, li, fieldset, legend, label {
+  border: 0; margin: 0; padding: 0;
+  font-size: 100%;
+  vertical-align: baseline;
+}
+
+article, aside, canvas, figure, figure img, figcaption, hgroup,
+footer, header, nav, section, audio, video {
+	display: block;
+}
+
+a img {
+  border: 0;
+}
+
+:focus {
+  outline: 0;
+}
+
+@font-light: #dfdfdf;
+@black02: #2f2f2f;
+@black01: #0c0c0c;
+@header-bg: #1a1a1a;
+
+.appgrad-dark(@deg) {
+  background: linear-gradient(@deg, @black01, @black02);
+}
+
+html, body {
+  height: 100%;
+	line-height: 1.5;
+}
+
+body {
+  font-family: 'Segoe UI', Arial, Helvetica; font-size: 100%;
+  letter-spacing: 0.2em;
+  text-align: center;
+  font-weight: 300;
+	color: @font-light;
+  .appgrad-dark(-23deg);
+  -webkit-app-region: drag;
+}
+
+
+header {
+  background: @header-bg;
+  margin-bottom: 20px;
+  height: 55px;
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  border-bottom: 3px solid @black02;
+}
+
+header div {
+  align-self: center;
+  flex-grow: 1;
+  width: 20%;
+}
+
+header img, span {
+  display: inline-block;
+  vertical-align:middle;
+  padding: 0 5px 0 5px;
+}
+
+header div:nth-child(2) {
+  width: 60%;
+  vertical-align: middle;
+}
+
+.region-select {
+  padding: 10px;
+  background: #2c2c2c;
+  border: 3px solid @black02;
+  width: 301px;
+  margin: 0 auto;
+  position: fixed;
+  left: 26px;
+  bottom: 32px;
+}
+
+.clicky {
+  -webkit-app-region: no-drag;
+}
