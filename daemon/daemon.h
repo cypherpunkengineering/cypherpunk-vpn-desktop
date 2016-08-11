@@ -27,11 +27,11 @@ public:
 
 public:
 	// The main entrypoint of the daemon; should block for the duration of the daemon.
-	int Run();
+	virtual int Run();
 
 	// Requests that the daemon begin shutting down. Can be called either from within
 	// the daemon or from another thread.
-	void RequestShutdown();
+	virtual void RequestShutdown();
 
 protected:
 	typedef websocketpp::connection_hdl Connection;

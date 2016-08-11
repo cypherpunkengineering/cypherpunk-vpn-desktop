@@ -163,6 +163,15 @@ public:
 class WinCypherDaemon : public CypherDaemon
 {
 public:
+	virtual int Run() override
+	{
+		if (win_get_tap_adapters().size() == 0)
+		{
+			LOG(CRITICAL) << "There are no installed TAP adapters on this machine!";
+			return -1;
+		}
+		return CypherDaemon::Run();
+	}
 	virtual OpenVPNProcess* CreateOpenVPNProcess(asio::io_service& io) override
 	{
 		return new WinOpenVPNProcess(io);
