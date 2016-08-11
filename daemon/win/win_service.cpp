@@ -105,7 +105,7 @@ public:
 	virtual void Run(const std::vector<std::string>& params) override
 	{
 		// Combine all parameters into a quoted command line string
-		std::tstring cmdline;
+		std::tstring cmdline = convert<TCHAR>("openvpn.exe");
 		for (const auto& arg : params)
 		{
 			if (!cmdline.empty())
