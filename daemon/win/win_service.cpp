@@ -631,6 +631,8 @@ static int win_print_usage()
 	_putts(_T("start      Starts the service."));
 	_putts(_T("stop       Stops the service."));
 	_putts(_T("run        Runs the daemon as a normal process."));
+	_putts(_T("addtap     Add a TAP adapter."));
+	_putts(_T("removetap  Remove all TAP adapters."));
 
 	return 0;
 }
@@ -653,6 +655,10 @@ static int ConsoleMain(int argc, TCHAR *argv[])
 			return !win_stop_service(SERVICE_NAME);
 		if (0 == _tcsicmp(cmd, _T("run")))
 			return !win_run_service(SERVICE_NAME);
+		if (0 == _tcsicmp(cmd, _T("addtap")))
+			return !win_install_tap_adapter();
+		if (0 == _tcsicmp(cmd, _T("removetap")))
+			return !win_uninstall_tap_adapters();
 	}
 	return win_print_usage();
 }

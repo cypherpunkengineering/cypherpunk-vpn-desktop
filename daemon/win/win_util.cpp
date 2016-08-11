@@ -1,10 +1,10 @@
 #include "win.h"
+#include "path.h"
 
 #include <vector>
 #include <memory>
-
-#include <stdio.h>
-
+#include <cstdio>
+#include <tchar.h>
 #include <winsock2.h>
 #include <windows.h>
 #include <ws2ipdef.h>
@@ -69,6 +69,33 @@ std::vector<win_tap_adapter> win_get_tap_adapters()
 		PrintError(GetAdaptersAddresses, error);
 
 	return std::move(result);
+}
+
+static BOOL win_tap_install(LPTSTR cmdline)
+{
+	std::tstring tap_path = convert<TCHAR>(GetPath(TapDriverDir));
+	std::tstring tap_install = convert<TCHAR>(GetPath(TapInstallExecutable));
+
+	STARTUPINFO si = { sizeof(si), 0 };
+	PROCESS_INFORMATION pi;
+	if (CreateProcess(tap_install.c_str(), cmdline, NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, tap_path.c_str(), &si, &pi))
+	{
+		DWORD exit_code;
+		return (WaitForSingleObject(pi.hProcess, INFINITE) == WAIT_OBJECT_0 && GetExitCodeProcess(pi.hProcess, &exit_code) && exit_code == 0);
+	}
+	else
+		PrintLastError(CreateProcess);
+	return FALSE;
+}
+
+BOOL win_install_tap_adapter()
+{
+	return win_tap_install(_T("tapinstall.exe install OemVista.inf tap0901"));
+}
+
+BOOL win_uninstall_tap_adapters()
+{
+	return win_tap_install(_T("tapinstall.exe remove tap0901"));
 }
 
 void win_get_ipv4_routing_table()

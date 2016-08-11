@@ -25,6 +25,7 @@ std::string GetPath(PredefinedFile file)
 	{
 	case DaemonExecutable: return g_argv0;
 	case OpenVPNExecutable: return GetPath(OpenVPNDir, "openvpn.exe");
+	case TapInstallExecutable: return GetPath(TapDriverDir, "tapinstall.exe");
 	default:
 		LOG(ERROR) << "Unknown file";
 		return std::string();
@@ -38,6 +39,7 @@ std::string GetPath(PredefinedDirectory dir)
 	case BaseDir: return g_argv0_path;
 	case LogDir: return GetPath(BaseDir, "logs");
 	case OpenVPNDir: return GetPath(BaseDir, "openvpn" /*, IsWin64() ? "64" : "32"*/);
+	case TapDriverDir: return GetPath(BaseDir, "tap" /*, IsWin64() ? "64" : "32"*/);
 	default:
 		LOG(ERROR) << "Unknown path";
 		return std::string();

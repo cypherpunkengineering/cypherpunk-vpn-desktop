@@ -7,6 +7,9 @@ enum PredefinedDirectory
 	BaseDir,
 	LogDir,
 	OpenVPNDir,
+#ifdef WIN32
+	TapDriverDir,
+#endif
 };
 enum PredefinedFile
 {
@@ -14,6 +17,9 @@ enum PredefinedFile
 	OpenVPNExecutable,
 	OpenVPNOutLog,
 	OpenVPNErrLog,
+#ifdef WIN32
+	TapInstallExecutable,
+#endif
 };
 
 extern void InitPaths(std::string argv0);
