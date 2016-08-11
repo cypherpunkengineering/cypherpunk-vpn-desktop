@@ -1,6 +1,7 @@
 #pragma once
 
 #include "config.h"
+#include "openvpn.h"
 #include "websocketpp.h"
 
 #include <asio.hpp>
@@ -46,7 +47,7 @@ protected:
 	jsonrpc::JsonFormatHandler _json_handler;
 	JsonRPCServer _rpc_server;
 	JsonRPCClient _rpc_client;
-	class OpenVPNProcess* _process;
+	OpenVPNProcess* _process;
 
 protected:
 	virtual OpenVPNProcess* CreateOpenVPNProcess(asio::io_service& io) = 0;
