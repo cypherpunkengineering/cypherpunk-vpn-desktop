@@ -162,7 +162,9 @@ public:
 	{
 		if (_process_handle != INVALID_HANDLE_VALUE)
 		{
-			TerminateProcess(_process_handle, -1);
+			if (!TerminateProcess(_process_handle, -1))
+				PrintLastError(TerminateProcess);
+			_process_handle = INVALID_HANDLE_VALUE;
 		}
 	}
 };
