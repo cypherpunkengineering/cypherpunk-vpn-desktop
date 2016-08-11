@@ -1,21 +1,30 @@
 // An implementation of JSON-RPC 2.0 over websockets. It attempts to stay
 // connected until the 'disconnect' method is explicitly called.
 
+// Workaround to make this work both in a Node.js and web context
+const WebSocket = (() => { return this.WebSocket || require('ws'); })();
+
 module.exports = class RPC {
-  constructor(url) {
+  constructor({ url, onerror, onopen }) {
     var self = this;
     self._queue = [];
     self._nextId = 1;
     self._callbacks = {};
+    self._handlers = {};
+    self.url = url;
+    self.onerror = onerror;
 
     // Helper function to connect to the websocket
     function connect() {
 
       // Helper to process any queued up commands
-      function onopen() {
+      function _onopen(evt) {
         self._queue.forEach(fn => fn());
         self._queue = [];
-        self._nextId = 1;
+        if (onopen) {
+          onopen(evt);
+          onopen = null;
+        }
       }
 
       // Helper to handle incoming websocket messages
@@ -23,7 +32,7 @@ module.exports = class RPC {
         var id = null;
         // Helper function to send a reply
         function reply(type, value) {
-          var msg = '{"jsonrpc":"2.0","' + type + '":' + JSON.stringify(value) + ',"id":' + JSON.stringify(id);
+          var msg = '{"jsonrpc":"2.0","' + type + '":' + JSON.stringify(value) + ',"id":' + JSON.stringify(id) + '}';
           if (self.socket && self.socket.readyState == WebSocket.OPEN) {
             socket.send(msg);
           } else {
@@ -47,15 +56,18 @@ module.exports = class RPC {
             if (typeof obj['method'] === 'string' && obj['method'] != "" &&
                 !obj.hasOwnProperty('result') && !obj.hasOwnProperty('error') &&
                 (typeof obj['params'] === 'undefined' || typeof obj['params'] === 'object' || Array.isArray(obj['params']))) {
-              if (typeof self.onrequest === 'function') {
-                self.onrequest(obj['method'], obj['params'], {
-                  send: function send(result) {
-                    if (validId) { reply('result', result); }
-                  },
-                  error: function error(code, message, data) {
-                    if (validId) { reply('error', { code: code, message: message, data: data }); }
-                  },
-                });
+              let res = {
+                send: function send(result) {
+                  if (validId) { reply('result', result); }
+                },
+                error: function error(code, message, data) {
+                  if (validId) { reply('error', { code: code, message: message, data: data }); }
+                },
+              };
+              if (typeof self._handlers[obj['method']] === 'function') {
+                self._handlers[obj['method']](obj['params'], res);
+              } else if (typeof self.onrequest === 'function') {
+                self.onrequest(obj['method'], obj['params'], res);
               }
               return;
             }
@@ -66,18 +78,26 @@ module.exports = class RPC {
                 delete self._callbacks[id];
                 cb(obj['result'], obj['error']);
               }
+              return;
             }
-            return;
           }
         }
         return reply('error', { code: -32600, message: "Not a valid RPC request" });
       }
 
+      // If there is an onerror handler, report the errors to the client, otherwise just try to reconnect
+      function onerror(evt) {
+        if (typeof self.onerror !== 'function' || self.onerror(evt))
+          reconnect();
+        else
+          self.disconnect();
+      }
+
 	    console.log("Connecting to " + url + "...");
       self.socket = new WebSocket(url);
-      self.socket.onerror = reconnect;
-      self.socket.onclose = reconnect;
-      self.socket.onopen = onopen;
+      self.socket.onerror = onerror;
+      self.socket.onclose = onerror;
+      self.socket.onopen = _onopen;
       self.socket.onmessage = onmessage;
     }
 
@@ -98,11 +118,26 @@ module.exports = class RPC {
   }
 
   disconnect() {
-    this.socket.onclose = null;
-    this.socket.close();
-    this.socket = null;
-    this._queue = [];
-    this._callbacks = {};
+    return new Promise((resolve, reject) => {
+      if (this.socket && this.socket.readyState != WebSocket.CLOSED) {
+        this.socket.onclose = resolve;
+        this.socket.close();
+      } else {
+        resolve();
+      }
+      this.socket = null;
+      this._queue = [];
+      this._callbacks = {};
+      this._handlers = {};
+    });
+  }
+
+  on(method, callback) {
+    this._handlers[method] = callback;
+  }
+
+  removeListener(method) {
+    delete this._handlers[method];
   }
 
   send(method, params, callback) {
@@ -128,6 +163,25 @@ module.exports = class RPC {
         self._queue.push(sendInternal);
       }
       return id;
+    } else {
+      if (callback) {
+        callback(undefined, { code: -32603, message: "WebSocket is not connected" });
+      }
     }
+  }
+
+  call(method, params) {
+    return new Promise((resolve, reject) => {
+      this.send(method, params, (result, error) => {
+        if (error)
+          reject(error);
+        else
+          resolve(result);
+      });
+    });
+  }
+
+  post(method, params) {
+    this.send(method, params);
   }
 };
