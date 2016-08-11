@@ -596,11 +596,19 @@ static BOOL win_run_service(PCTSTR service_name)
 		{
 			if (ResumeThread(g_service_thread_handle) != (DWORD)-1)
 			{
+				DWORD exit_code;
 				switch (WaitForSingleObject(g_service_thread_handle, INFINITE))
 				{
 				case WAIT_OBJECT_0:
-					_putts(_T("Daemon terminated successfully."));
-					result = TRUE;
+					if (!GetExitCodeThread(g_service_thread_handle, &exit_code))
+						_putts(_T("Daemon exited with an unknown error."));
+					else if (exit_code != 0)
+						_tcprintf(_T("Daemon exited with error code %d.\n"), exit_code);
+					else
+					{
+						_putts(_T("Daemon terminated successfully."));
+						result = TRUE;
+					}
 					break;
 				case WAIT_FAILED:
 					PrintLastError(WaitForSingleObject);
