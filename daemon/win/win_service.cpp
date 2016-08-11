@@ -100,7 +100,9 @@ void AppendQuotedCommandLineArgument(std::basic_string<RESULT>& result, const st
 class WinOpenVPNProcess : public OpenVPNProcess
 {
 public:
-	WinOpenVPNProcess(asio::io_service& io) : OpenVPNProcess(io) {}
+	WinOpenVPNProcess(asio::io_service& io) : OpenVPNProcess(io), _process_handle(INVALID_HANDLE_VALUE) {}
+
+	HANDLE _process_handle;
 
 	virtual void Run(const std::vector<std::string>& params) override
 	{
@@ -128,6 +130,7 @@ public:
 			if (CreateProcessAsUser(network_service_token, executable.c_str(), &cmdline[0], NULL, NULL, FALSE, 0, NULL, cwd.c_str(), &startupinfo, &processinfo))
 			{
 				success = TRUE;
+				_process_handle = processinfo.hProcess;
 				LOG(INFO) << "Successfully started OpenVPN as network service";
 			}
 			else
@@ -143,6 +146,7 @@ public:
 			if (CreateProcess(executable.c_str(), &cmdline[0], NULL, NULL, FALSE, 0, NULL, cwd.c_str(), &startupinfo, &processinfo))
 			{
 				success = TRUE;
+				_process_handle = processinfo.hProcess;
 			}
 			else
 				PrintLastError(CreateProcess);
@@ -156,7 +160,10 @@ public:
 
 	virtual void Kill() override
 	{
-
+		if (_process_handle != INVALID_HANDLE_VALUE)
+		{
+			TerminateProcess(_process_handle, -1);
+		}
 	}
 };
 
