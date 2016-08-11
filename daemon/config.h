@@ -39,6 +39,8 @@
 #define BOOST_DATE_TIME_NO_LIB
 #define BOOST_REGEX_NO_LIB
 
+#define RAPIDJSON_HAS_STDSTRING 1
+#define RAPIDJSON_NO_SIZETYPEDEFINE
 #define _WEBSOCKETPP_CPP11_TYPE_TRAITS_
 
 #ifdef _MSC_VER ///////////////////////////////////////// Visual Studio //
@@ -58,3 +60,6 @@
 #define _WEBSOCKETPP_CPP11_STL_
 
 #endif ///////////////////////////////////////////////////////////////////
+
+
+namespace rapidjson { typedef size_t SizeType; }
