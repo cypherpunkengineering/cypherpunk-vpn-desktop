@@ -6,6 +6,7 @@ const useSemanticUi = (process.argv[process.argv.length - 1] == 'semantic');
 let exiting = false;
 let daemon = null;
 let main = null;
+let tray = null;
 
 function eventPromise(emitter, name) {
   return new Promise((resolve, reject) => {
@@ -72,10 +73,49 @@ const preinitPromises = [
 ];
 
 timeoutPromise(Promise.all(preinitPromises), 2000).then(() => {
+  //createTray();
   createMainWindow();
 }).catch(err => {
   app.quit();
 });
+
+function createTray() {
+  tray = new Tray('app/img/tray_win.png');
+  function flag(code, name, checked) {
+    return {
+      label: name,
+      icon: 'app/img/flags/png16/' + code + '.png',
+      type: 'checkbox',
+      checked: checked
+    };
+  }
+  const menu = Menu.buildFromTemplate([
+    { label: 'Connect' },
+    { type: 'separator' },
+    {
+      label: 'Location: Germany',
+      icon: 'app/img/flags/png16/de.png',
+      submenu: [
+        flag('de', 'Germany', true),
+        flag('fr', 'France'),
+        flag('hk', 'Hong Kong'),
+        flag('us', 'USA East'),
+        flag('us', 'USA West'),
+        flag('gb', 'United Kingdom'),
+        flag('au', 'Australia'),
+      ]
+    },
+    { type: 'separator' },
+    { label: 'Protocol: IKEv2', enabled: false },
+    { label: 'IP: 43.233.13.210', enabled: false },
+    { label: 'Status: Disconnected', enabled: false },
+    { type: 'separator' },
+    { label: 'Sign out' },
+    { label: 'Quit', click: () => { app.quit(); } },
+  ]);
+  tray.setToolTip('Cypherpunk VPN');
+  tray.setContextMenu(menu);
+}
 
 function createMainWindow() {
   if (useSemanticUi) {
