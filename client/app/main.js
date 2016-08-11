@@ -1,10 +1,11 @@
 const { app, dialog, BrowserWindow, Tray, Menu, ipcMain: ipc } = require('electron');
 const RPC = require('./js/rpc.js');
 
-var exiting = false;
+const useSemanticUi = (process.argv[process.argv.length - 1] == 'semantic');
 
-var daemon;
-var main;
+let exiting = false;
+let daemon = null;
+let main = null;
 
 function eventPromise(emitter, name) {
   return new Promise((resolve, reject) => {
@@ -77,7 +78,6 @@ timeoutPromise(Promise.all(preinitPromises), 2000).then(() => {
 });
 
 function createMainWindow() {
-  const useSemanticUi = (process.argv[2] == 'semantic');
   if (useSemanticUi) {
     main = new BrowserWindow({
       title: 'Cypherpunk VPN (Semantic UI)',
@@ -114,6 +114,7 @@ function createMainWindow() {
       //'max-height': 700
     });
   }
+
   main.setMenu(null);
   main.on('ready-to-show', function() {
     main.show();
