@@ -25,14 +25,15 @@ app.on('ready', function() {
     //icon: icon,
     backgroundColor: '#ffffff',
     show: false,
-    frame: false,
+    frame: true,
     fullscreen: false,
-    width: 300,
-    height: 500,
-    'min-width': 300,
-    'min-height': 400,
-    'max-width': 600,
-    'max-height': 700
+    width: 375,
+    height: 606,
+    resizable: false,
+    //'min-width': 300,
+    //'min-height': 400,
+    //'max-width': 600,
+    //'max-height': 700
   });
   main.on('ready-to-show', function() {
     main.show();
