@@ -3,7 +3,73 @@
   <head>
     <meta charset="UTF-8">
     <title>Cypherpunk VPN</title>
+    <link rel="stylesheet" type="text/css" href="semantic/semantic.min.css">
+    <script>$=jQuery=require('jquery');</script>
+    <script src="semantic/semantic.min.js"></script>
     <style>
+      html, body { -webkit-user-select: none; user-select: none; cursor: default; min-width: 300px; }
+      body { background-color: #222; transition: 1s background-color; }
+      /*:not(input):not(textarea), :not(input):not(textarea)::after, :not(input):not(textarea)::before { -webkit-user-select: none; user-select: none; cursor: default; }*/
+      /*input, button, textarea, :focus { outline: none; }*/
+      /*a:not([draggable=true]), img:not([draggable=true]) { -webkit-user-drag: none; user-drag: none; }
+      a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: auto; user-drag: auto; }*/
+
+      #titlebar { -webkit-app-region: drag; background: linear-gradient(#333, #222) top; box-shadow: 0 0 5px 0 rgba(0,0,0,0.5); z-index: 10; }
+      #titlebar > .right > .item { -webkit-app-region: no-drag; padding: 0.5rem; color: grey }
+      #titlebar > .right > .item:hover { color: #eee; }
+      #settings > .menu { font-size: 1rem !important; }
+
+      #bgr { background-color: #766; }
+      .connecting #bgr { background-color: #666; }
+      .connected #bgr { background-color: #686; }
+
+      #bgr { position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: hidden; }
+      #bgr:before { content: ''; position: absolute; width: 100%; height: 100%; background: radial-gradient(circle 300px at 50% 200px, rgba(0,0,0,0), #444, #222); }
+      #bgr div { position: absolute; left: 50%; top: 200px; margin-left: -150px; margin-top: -150px; width: 300px; height: 300px; opacity: 0; transition: 2s opacity; }
+      #bgr img { position: absolute; -webkit-filter: saturate(0.0); transition: 3s -webkit-filter; }
+      #bgr.animating div { opacity: 1.0; }
+      .connected #bgr { }
+      .connected #bgr img { -webkit-filter: saturate(0.5); }
+      /*
+      #bgr .r1 { transform: scale(0.6) scale(1.00); opacity: 0.7; }
+      #bgr .r2 { transform: scale(0.6) scale(1.12); opacity: 0.6; }
+      #bgr .r3 { transform: scale(0.6) scale(1.25); opacity: 0.5; }
+      #bgr .r4 { transform: scale(0.6) scale(1.40); opacity: 0.4; }
+      #bgr .r5 { transform: scale(0.6) scale(1.57); opacity: 0.3; }
+      #bgr .r6 { transform: scale(0.6) scale(1.76); opacity: 0.2; }
+      #bgr .r7 { transform: scale(0.6) scale(1.97); opacity: 0.1; }
+      #bgr.animating .r1 { animation: bg1 6s linear infinite; }
+      #bgr.animating .r2 { animation: bg2 7s linear infinite; }
+      #bgr.animating .r3 { animation: bg3 8s linear infinite; }
+      #bgr.animating .r4 { animation: bg4 9s linear infinite; }
+      #bgr.animating .r5 { animation: bg5 10s linear infinite; }
+      #bgr.animating .r6 { animation: bg6 11s linear infinite; }
+      #bgr.animating .r7 { animation: bg7 12s linear infinite; }
+      @keyframes bg1 { from { transform: scale(0.6) scale(1.00) rotate(0deg); } to { transform: scale(0.6) scale(1.00) rotate(360deg); } }
+      @keyframes bg2 { from { transform: scale(0.6) scale(1.12) rotate(0deg); } to { transform: scale(0.6) scale(1.12) rotate(360deg); } }
+      @keyframes bg3 { from { transform: scale(0.6) scale(1.25) rotate(0deg); } to { transform: scale(0.6) scale(1.25) rotate(360deg); } }
+      @keyframes bg4 { from { transform: scale(0.6) scale(1.40) rotate(0deg); } to { transform: scale(0.6) scale(1.40) rotate(360deg); } }
+      @keyframes bg5 { from { transform: scale(0.6) scale(1.57) rotate(0deg); } to { transform: scale(0.6) scale(1.57) rotate(360deg); } }
+      @keyframes bg6 { from { transform: scale(0.6) scale(1.76) rotate(0deg); } to { transform: scale(0.6) scale(1.76) rotate(360deg); } }
+      @keyframes bg7 { from { transform: scale(0.6) scale(1.97) rotate(0deg); } to { transform: scale(0.6) scale(1.97) rotate(360deg); } }
+      */
+      #bgr img { visibility: hidden; }
+      #bgr.animating img { animation: bge 7s ease-in infinite, bgo 7s linear infinite; opacity: 0; visibility: visible; }
+      #bgr.animating .r1 { animation-delay: 0s; }
+      #bgr.animating .r2 { animation-delay: 1s; }
+      #bgr.animating .r3 { animation-delay: 2s; }
+      #bgr.animating .r4 { animation-delay: 3s; }
+      #bgr.animating .r5 { animation-delay: 4s; }
+      #bgr.animating .r6 { animation-delay: 5s; }
+      #bgr.animating .r7 { animation-delay: 6s; }
+      #bgr.animating.stop img { animation-iteration-count: 1; }
+      @keyframes bge { from { transform: scale(0.5) rotate(0deg); } to { transform: scale(1.5) rotate(360deg); } }
+      @keyframes bgo { 0% { opacity: 0 } 10% { opacity: 0.7; } 100% { opacity: 0 } }
+
+      #connect-container { position: absolute; left: 0; top: 100px; width: 100%; height: 200px; display: flex; align-items: center; justify-content: center; }
+      #connect { transition: 0.5s color; text-shadow: 0 0 15px rgba(0,0,0,0.25); }
+
+      /*
       html, body { margin: 0; padding: 0; font-family: 'Segoe UI', Arial, Helvetica; font-size: 10pt; background: linear-gradient(#999, #ddd) top / auto 200px repeat-x #ddd; }
       h1 { margin: 0; padding: 0.5em 1em; font-family: 'Segoe UI', Arial, Helvetica; font-weight: bold; font-variant: small-caps; font-size: 11pt; background: #555; color: #ccc; -webkit-app-region: drag; }
       #close { float: right; -webkit-app-region: no-drag; cursor: pointer; }
@@ -14,16 +80,65 @@
       #connect.disconnected { border-color: #d53; color: #d53; background-image: linear-gradient(rgba(224,160,128,0.4), rgba(224,160,128,1.0)); }
       #connect.connected { border-color: #5d3; color: #5d3; background-image: linear-gradient(rgba(160,224,128,0.4), rgba(160,224,128,1.0)); }
       #connect.connecting, #connect.disconnecting { border-color: #555; color: #555; cursor: auto; font-size: 12pt; }
+      */
     </style>
   </head>
   <body>
-    <h1>Cypherpunk VPN<span id="close" onclick="window.close()">&#10005;</span></h1>
-    <div>
-      <div id="connect" class="disconnected" style="visibility: hidden">Connect</div>
+    <div id="titlebar" class="ui fixed inverted borderless icon menu" style="height: 3.5em">
+      <div class="header item" style="font-size: 90%"><!--Cypherpunk VPN--></div>
+      <div class="right menu" style="font-size: 125%">
+        <a id="wifi" href="#" class="item"><i class="wifi icon"></i></a>
+        <!--<a id="minimize" href="#" class="item"><i class="angle down icon"></i></a>-->
+        <div id="settings" href="#" class="ui compact dropdown link item">
+          <i class="setting icon"></i><i class="small caret down icon"></i>
+          <div class="ui tiny menu">
+            <a href="#" class="item">Settings</a>
+            <a href="#" class="item" onclick="window.close()">Exit</a>
+          </div>
+        </div>
+        <!--<a id="close" href="#" class="right item" onclick="window.close()">&#10005;</a>-->
+      </div>
+    </div>
+
+    <div id="bgr">
+      <div>
+        <img class="r1" src="img/bgring3.png"/>
+        <img class="r2" src="img/bgring3.png"/>
+        <img class="r3" src="img/bgring3.png"/>
+        <img class="r4" src="img/bgring3.png"/>
+        <img class="r5" src="img/bgring3.png"/>
+        <img class="r6" src="img/bgring3.png"/>
+        <img class="r7" src="img/bgring3.png"/>
+      </div>
+    </div>
+
+    <div id="connect-container">
+      <i id="connect" class="ui red fitted massive power link icon"></i>
     </div>
   </body>
 
   <script>
+    $('#settings').dropdown({ action: 'hide' });
+    $('#connect').click(evt => {
+      var self = $('#connect');
+      var bgr = $('#bgr');
+      if (!self.hasClass('disabled')) {
+        if (!$(document.body).hasClass('connected')) {
+          self.addClass('disabled').removeClass('red link');
+          $(document.body).addClass('connecting');
+          bgr.addClass('animating');
+          setTimeout(() => {
+            $(document.body).addClass('connected').removeClass('connecting');
+            self.addClass('green link').removeClass('disabled');
+          }, 2000);
+        } else {
+          $(document.body).removeClass('connected');
+          bgr.removeClass('animating');
+          self.addClass('red link').removeClass('green');
+        }
+      }
+    });
+
     // You can also require other files to run in this process
     //const daemon = require('./js/daemon.js');
 

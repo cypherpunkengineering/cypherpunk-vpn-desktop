@@ -82,15 +82,18 @@ function createMainWindow() {
     //icon: icon,
     backgroundColor: '#222',
     show: false,
-    frame: false,
+    //frame: false,
     fullscreen: false,
+    useContentSize: true,
     width: 300,
     height: 500,
     //resizable: false,
-    'minWidth': 300,
-    'minHeight': 400,
-    //'max-width': 600,
-    //'max-height': 700,
+    minimizable: false,
+    maximizable: false,
+    minWidth: 300,
+    minHeight: 400,
+    maxWidth: 300,
+    //max-height: 700,
   });
   main.setMenu(null);
   main.on('ready-to-show', function() {
