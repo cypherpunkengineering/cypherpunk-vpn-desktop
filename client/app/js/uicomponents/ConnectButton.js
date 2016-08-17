@@ -13,7 +13,7 @@ export default class ConnectButton extends React.Component  {
     const vsizex = 200;
     const vsizey = 200;
     const bradout = 100
-    const bradin = bradout - 10;
+    const bradin = bradout - 12;
     return(
       <div>
       <svg height={vsizex} width={vsizex}>
