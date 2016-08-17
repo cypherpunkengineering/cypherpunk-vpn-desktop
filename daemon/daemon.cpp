@@ -36,10 +36,17 @@ int CypherDaemon::Run()
 		_connections.erase(c);
 		if (_connections.empty()) OnLastClientDisconnected();
 	});
+
+	{
+		using namespace websocketpp::log;
+		_ws_server.clear_access_channels(alevel::all);
+		_ws_server.clear_error_channels(elevel::all);
+		_ws_server.set_error_channels(elevel::fatal | elevel::rerror | elevel::warn);
 #ifdef _DEBUG
-	_ws_server.set_access_channels(websocketpp::log::alevel::all);
-	_ws_server.set_error_channels(websocketpp::log::elevel::all);
+		_ws_server.set_access_channels(alevel::access_core);
+		_ws_server.set_error_channels(elevel::info | elevel::library);
 #endif
+	}
 
 	_ws_server.init_asio();
 	_ws_server.listen(asio::ip::tcp::endpoint(asio::ip::address::from_string("127.0.0.1"), 9337));

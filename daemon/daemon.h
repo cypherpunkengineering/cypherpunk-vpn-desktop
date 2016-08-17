@@ -1,11 +1,11 @@
 #pragma once
 
 #include "config.h"
+#include "openvpn.h"
+#include "websocketpp.h"
 
 #include <asio.hpp>
 
-#include <websocketpp/config/asio_no_tls.hpp>
-#include <websocketpp/server.hpp>
 #include <jsonrpc-lean/server.h>
 #include <jsonrpc-lean/client.h>
 
@@ -15,7 +15,6 @@
 extern class CypherDaemon* g_daemon;
 
 class OpenVPNProcess;
-typedef websocketpp::server<websocketpp::config::asio> WebSocketServer;
 typedef jsonrpc::Server JsonRPCServer;
 typedef jsonrpc::Client JsonRPCClient;
 
@@ -48,7 +47,7 @@ protected:
 	jsonrpc::JsonFormatHandler _json_handler;
 	JsonRPCServer _rpc_server;
 	JsonRPCClient _rpc_client;
-	class OpenVPNProcess* _process;
+	OpenVPNProcess* _process;
 
 protected:
 	virtual OpenVPNProcess* CreateOpenVPNProcess(asio::io_service& io) = 0;

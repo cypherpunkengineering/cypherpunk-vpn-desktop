@@ -25,7 +25,7 @@ extern class Logger* g_logger;
 #define STATIC_LOG_LEVELS LEVEL_ALL
 #define STATIC_LOG_ENABLED(level) (STATIC_LOG_LEVELS & (1 << (level)))
 
-#define LOG_ENABLED(level) (Logger::levels & (1 << (level)))
+#define LOG_ENABLED(level) (STATIC_LOG_ENABLED(level) && (Logger::levels & (1 << (level))))
 
 #define Log( level, fmt, ...) g_logger->Write(level, fmt,##__VA_ARGS__)
 #define LogCritical(fmt, ...) g_logger->Write(LEVEL_CRITICAL, fmt,##__VA_ARGS__)
@@ -40,7 +40,7 @@ extern class Logger* g_logger;
 #define WITH_LOCATION
 #endif
 
-#define LOG_EX(classname, level, condition, ...) (!(STATIC_LOG_ENABLED(level) && LOG_ENABLED(level) && (condition))) ? (void)0 : Voidify() | classname(__VA_ARGS__)(level) WITH_LOCATION
+#define LOG_EX(classname, level, condition, ...) (!(LOG_ENABLED(level) && (condition))) ? (void)0 : Voidify() | classname(__VA_ARGS__)(level) WITH_LOCATION
 
 #define LOG_IF(severity, condition)  LOG_EX(PrefixLogWriter<LogWriter>, LEVEL_##severity, condition)
 #define LOG(severity)                LOG_EX(PrefixLogWriter<LogWriter>, LEVEL_##severity, true)
@@ -131,6 +131,7 @@ class Logger
 private:
 	Logger* _next;
 
+public:
 #ifdef THREADSAFE_LOGGING
 	static std::recursive_mutex _mutex;
 #define LOG_LOCK() std::lock_guard<std::recursive_mutex> lock(_mutex)
