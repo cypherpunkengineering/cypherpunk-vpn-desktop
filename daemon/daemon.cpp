@@ -109,3 +109,64 @@ void CypherDaemon::OnReceiveMessage(Connection connection, WebSocketServer::mess
 		SendToClient(connection, result);
 	}
 }
+
+void WriteOpenVPNProfile(std::ostream& out, const Settings::Connection& connection)
+{
+	using namespace std;
+
+	// Generic parameters for all server endpoints
+	out << "client" << endl;
+	out << "nobind" << endl;
+	out << "dev tun" << endl;
+	out << "resolv-retry infinite" << endl;
+
+	// Server endpoint specific parameters
+	out << "proto ";
+	if (connection.protocol.empty())
+		out << "udp" << endl;
+	else
+		out << connection.protocol << endl;
+	out << "remote " << connection.remoteIP << ' ' << connection.remotePort << endl;
+	if (connection.mtu != 0)
+		out << "tun-mtu " + connection.mtu << endl;
+	out << "cipher " << connection.cipher << endl;
+
+	// Depending on routing settings
+	out << "redirect-gateway def1" << endl;
+	//out << "route IP MASK GW METRIC" << endl;
+	//out << "route-delay 0" << endl;
+
+	if (!connection.certificateAuthority.empty())
+	{
+		out << "<ca>" << endl;
+		if (connection.certificateAuthority.front() != "-----BEGIN CERTIFICATE-----")
+			out << "-----BEGIN CERTIFICATE-----" << endl;
+		for (const auto& line : connection.certificateAuthority)
+			out << line << endl;
+		if (connection.certificateAuthority.back() != "-----END CERTIFICATE-----")
+			out << "-----END CERTIFICATE-----" << endl;
+		out << "</ca>" << endl;
+	}
+	if (!connection.certificate.empty())
+	{
+		out << "<cert>" << endl;
+		if (connection.certificate.front() != "-----BEGIN CERTIFICATE-----")
+			out << "-----BEGIN CERTIFICATE-----" << endl;
+		for (const auto& line : connection.certificate)
+			out << line << endl;
+		if (connection.certificate.back() != "-----END CERTIFICATE-----")
+			out << "-----END CERTIFICATE-----" << endl;
+		out << "</cert>" << endl;
+	}
+	if (!connection.privateKey.empty())
+	{
+		out << "<key>" << endl;
+		if (connection.privateKey.front() != "-----BEGIN PRIVATE KEY-----")
+			out << "-----BEGIN PRIVATE KEY-----" << endl;
+		for (const auto& line : connection.privateKey)
+			out << line << endl;
+		if (connection.privateKey.back() != "-----END PRIVATE KEY-----")
+			out << "-----END PRIVATE KEY-----" << endl;
+		out << "</key>" << endl;
+	}
+}

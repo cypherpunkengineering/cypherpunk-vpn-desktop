@@ -2,6 +2,7 @@
 
 #include "config.h"
 #include "openvpn.h"
+#include "settings.h"
 #include "websocketpp.h"
 
 #include <asio.hpp>
