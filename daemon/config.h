@@ -19,6 +19,8 @@
 
 #define OS_OSX 1
 
+#include <sys/param.h>
+
 #elif __linux__ ///////////////////////////////////////////////// Linux //
 
 #define OS_LINUX 1

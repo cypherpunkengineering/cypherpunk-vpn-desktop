@@ -43,7 +43,7 @@ public:
 		//popen("netstat -a -n");
 		for (int i = hint; ; i++)
 		{
-			if (/* port i not in use */)
+			if (1) // /* port i not in use */
 				return i;
 		}
 		throw "unable to find an available port";

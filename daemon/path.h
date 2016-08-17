@@ -28,13 +28,6 @@ extern std::string GetPath(PredefinedDirectory dir);
 
 extern const char PATH_SEPARATOR;
 
-template<typename... Args>
-static inline std::string GetPath(PredefinedDirectory root, Args&&... components)
-{
-	std::string result = GetPath(root);
-	return CombinePath(result, std::forward<Args>(components)...);
-}
-
 template<typename First>
 static inline First&& CombinePath(First&& first) { return std::forward<First>(first); }
 template<typename First, typename Next, typename... Rest>
@@ -47,3 +40,9 @@ static inline std::string CombinePath(First&& first, Next&& next, Rest&&... rest
 	return CombinePath(result, std::forward<Rest>(rest)...);
 }
 
+template<typename... Args>
+static inline std::string GetPath(PredefinedDirectory root, Args&&... components)
+{
+	std::string result = GetPath(root);
+	return CombinePath(result, std::forward<Args>(components)...);
+}

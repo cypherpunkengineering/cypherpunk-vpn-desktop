@@ -13,7 +13,9 @@ LogLevelMask Logger::levels = STATIC_LOG_LEVELS;
 #ifdef THREADSAFE_LOGGING
 std::recursive_mutex Logger::_mutex;
 #endif
+#ifdef _WIN32
 const LastErrorWrapper LastError;
+#endif
 
 LogWriter& LogWriter::operator<<(LogLevel level)
 {
