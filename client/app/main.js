@@ -25,7 +25,7 @@ app.on('ready', function() {
     //icon: icon,
     backgroundColor: '#ffffff',
     show: false,
-    frame: true,
+    frame: false,
     fullscreen: false,
     width: 375,
     height: 606,
