@@ -34,7 +34,7 @@ module.exports = class RPC {
         function reply(type, value) {
           var msg = '{"jsonrpc":"2.0","' + type + '":' + JSON.stringify(value) + ',"id":' + JSON.stringify(id) + '}';
           if (self.socket && self.socket.readyState == WebSocket.OPEN) {
-            socket.send(msg);
+            self.socket.send(msg);
           } else {
             self._queue.push(() => socket.send(msg));
           }
