@@ -1,5 +1,5 @@
 {
-  "name": "cypherpunk-desktop",
+  "name": "cypherpunk-vpn-desktop",
   "productName": "Cypherpunk VPN desktop client",
   "version": "0.1.0-prototype",
   "description": "Desktop client for the Cypherpunk VPN service",
