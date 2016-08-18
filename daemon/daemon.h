@@ -22,6 +22,9 @@ typedef jsonrpc::Client JsonRPCClient;
 
 class CypherDaemon
 {
+	static const int DEFAULT_RPC_PORT = 9337;
+	static const int DEFAULT_OPENVPN_PORT_BASE = 9338;
+
 public:
 	CypherDaemon();
 
@@ -42,6 +45,9 @@ protected:
 	void OnFirstClientConnected();
 	void OnLastClientDisconnected();
 	void OnReceiveMessage(Connection con, WebSocketServer::message_ptr msg);
+
+	bool RPC_connect(const jsonrpc::Value::Struct& params);
+	void RPC_disconnect();
 
 	WebSocketServer _ws_server;
 	ConnectionList _connections;

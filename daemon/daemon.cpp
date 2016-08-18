@@ -19,6 +19,7 @@ using namespace std::placeholders;
 
 CypherDaemon::CypherDaemon()
 	: _rpc_client(_json_handler)
+	, _process(nullptr)
 {
 }
 
@@ -56,12 +57,8 @@ int CypherDaemon::Run()
 		_rpc_server.RegisterFormatHandler(_json_handler);
 		{
 			auto& d = _rpc_server.GetDispatcher();
-			d.AddMethod("test", [](int a, std::string b, double c) {
-				return "result";
-			});
-			d.AddMethod("disconnect", []() {
-				//_process->
-			});
+			d.AddMethod("connect", &CypherDaemon::RPC_connect, *this);
+			d.AddMethod("disconnect", &CypherDaemon::RPC_disconnect, *this);
 		}
 
 		_ws_server.run();
@@ -173,5 +170,91 @@ void WriteOpenVPNProfile(std::ostream& out, const Settings::Connection& connecti
 		if (connection.privateKey.back() != "-----END PRIVATE KEY-----")
 			out << "-----END PRIVATE KEY-----" << endl;
 		out << "</key>" << endl;
+	}
+}
+
+bool CypherDaemon::RPC_connect(const jsonrpc::Value::Struct& params)
+{
+	if (_process)
+		return false;
+
+	const auto& lines = params.at("profile").AsArray();
+	int index = 0;
+
+	auto vpn = CreateOpenVPNProcess(_ws_server.get_io_service());
+	std::vector<std::string> args;
+
+	int port = GetAvailablePort(DEFAULT_OPENVPN_PORT_BASE + index);
+	args.push_back("--management");
+	args.push_back("127.0.0.1");
+	args.push_back(std::to_string(port));
+	args.push_back("--management-hold");
+
+	args.push_back("--dev-node");
+	args.push_back(GetAvailableAdapter(index));
+
+	args.push_back("--config");
+	args.push_back("cypher.ovpn");
+
+	vpn->Run(args);
+	vpn->StartManagementInterface(asio::ip::tcp::endpoint(asio::ip::address::from_string("127.0.0.1"), port));
+
+	vpn->OnManagementResponse("HOLD", [=](const std::string& line) {
+		vpn->SendManagementCommand("\nhold release\n");
+	});
+	vpn->OnManagementResponse("STATE", [=](const std::string& line) {
+		std::deque<jsonrpc::Value> params;
+		size_t pos, last = 0;
+		while ((pos = line.find(',', last)) != line.npos)
+		{
+			params.emplace_back(line.substr(last, pos - last));
+			last = pos + 1;
+		}
+		if (last != line.size())
+		{
+			params.emplace_back(line.substr(last));
+		}
+		if (params.size() >= 2 && params.at(1).AsString() == "EXITING")
+		{
+			_process = nullptr;
+		}
+		SendToAllClients(_rpc_client.BuildNotificationData("state", params));
+	});
+	vpn->OnManagementResponse("BYTECOUNT", [=](const std::string& line) {
+		std::deque<jsonrpc::Value> params;
+		size_t pos, last = 0;
+		while ((pos = line.find(',', last)) != line.npos)
+		{
+			params.emplace_back(line.substr(last, pos - last));
+			last = pos + 1;
+		}
+		if (last != line.size())
+		{
+			params.emplace_back(line.substr(last));
+		}
+		SendToAllClients(_rpc_client.BuildNotificationData("bytecount", params));
+	});
+
+	vpn->SendManagementCommand("\nstate on\nbytecount 5\n");
+
+	//vpn->SendManagementCommand("signal SIGTERM\n");
+	//vpn->SendManagementCommand("exit\n");
+
+	//vpn->StopManagementInterface();
+	//delete vpn;
+
+	_process = vpn;
+
+	return true;
+}
+
+void CypherDaemon::RPC_disconnect()
+{
+	if (_process)
+	{
+		_process->SendManagementCommand("\nsignal SIGTERM\n");
+		// FIXME: Shut down asynchronously
+		//delete _process;
+		//_process = nullptr;
 	}
 }
