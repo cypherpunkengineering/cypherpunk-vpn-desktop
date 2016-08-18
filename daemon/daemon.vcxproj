@@ -32,6 +32,7 @@
     <CharacterSet>Unicode</CharacterSet>
     <OutDir>$(SolutionDir)out\$(Configuration)\$(PlatformArchitecture)\</OutDir>
     <IntDir>int\$(Configuration)\$(PlatformArchitecture)\</IntDir>
+    <TargetName>service</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <UseDebugLibraries>true</UseDebugLibraries>
