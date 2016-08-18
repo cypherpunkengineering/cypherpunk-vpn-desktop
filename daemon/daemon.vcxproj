@@ -30,7 +30,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-    <OutDir>$(SolutionDir)out\$(Configuration)\$(PlatformArchitecture)\</OutDir>
+    <OutDir>..\out\$(Configuration)\$(PlatformArchitecture)\</OutDir>
     <IntDir>int\$(Configuration)\$(PlatformArchitecture)\</IntDir>
     <TargetName>service</TargetName>
   </PropertyGroup>
