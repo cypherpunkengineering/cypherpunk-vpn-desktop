@@ -118,24 +118,54 @@
   </body>
 
   <script>
+    // Setup connection to the background helper
+    const RPC = require('./js/rpc.js');
+    let daemon = new RPC({
+      url: 'ws://127.0.0.1:9337/',
+      // Note: Disabling the error handler will make the RPC attempt to reconnect infinitely in the background
+      //onerror: () => { window.alert("Unable to connect to background service.", "Cypherpunk VPN"); require('electron').remote.app.quit(); },
+    });
+    // Listen for OpenVPN state changes (FIXME: API will change later)
+    daemon.on('state', ([timestamp, state, desc, local, remote]) => {
+      console.log("state", timestamp, state, desc, local, remote);
+      if (state == 'CONNECTED') { // VPN tunnel established
+        onConnected();
+      } else if (state == 'EXITING') { // OpenVPN shutting down, tunnel closed
+        onDisconnected();
+      }
+    });
+    // Subscribe to the traffic counter
+    daemon.on('bytecount', ([inCount, outCount]) => {
+      console.log("bytecount", inCount, outCount);
+    });
+    // Disconnect before unload
+    window.onbeforeonload = evt => {
+      daemon.post('disconnect', []);
+    };
+
+    function onConnected() {
+      $(document.body).addClass('connected').removeClass('connecting');
+      $('#connect').addClass('green').removeClass('disabled');
+    }
+    function onDisconnected() {
+      $(document.body).removeClass('connected');
+      $('#bgr').removeClass('animating');
+      $('#connect').addClass('red').removeClass('green');
+    }
+
     $('#settings').dropdown({ action: 'hide' });
     $('#connect').click(evt => {
       var self = $('#connect');
       var bgr = $('#bgr');
-      if (!self.hasClass('disabled')) {
-        if (!$(document.body).hasClass('connected')) {
-          self.addClass('disabled').removeClass('red link');
-          $(document.body).addClass('connecting');
-          bgr.addClass('animating');
-          setTimeout(() => {
-            $(document.body).addClass('connected').removeClass('connecting');
-            self.addClass('green link').removeClass('disabled');
-          }, 2000);
-        } else {
-          $(document.body).removeClass('connected');
-          bgr.removeClass('animating');
-          self.addClass('red link').removeClass('green');
-        }
+      if (!self.hasClass('disabled') && !$(document.body).hasClass('connected')) {
+        self.addClass('disabled').removeClass('red');
+        $(document.body).addClass('connecting');
+        bgr.addClass('animating');
+        // Ask daemon to connect (FIXME: API will change)
+        daemon.post('connect', [{ profile: [] }]);
+      } else {
+        // Ask daemon to disconnect (FIXME: API will change)
+        daemon.post('disconnect', []);
       }
     });
 
