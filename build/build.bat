@@ -5,26 +5,32 @@ if exist "%ProgramFiles%\MSBuild\14.0\bin\MSBuild.exe" set MSBUILD="%ProgramFile
 
 pushd %~dp0
 
-pushd ..\daemon
+cd ..\daemon
 echo Building 32-bit service...
-%MSBUILD% daemon.vcxproj /p:Configuration=Release /p:Platform=Win32
-if %errorlevel% neq 0 exit /b %errorlevel%
+%MSBUILD% daemon.vcxproj /nologo /v:q /p:Configuration=Release /p:Platform=Win32
+if %errorlevel% neq 0 goto error
 echo Building 64-bit service...
-%MSBUILD% daemon.vcxproj /p:Configuration=Release /p:Platform=x64
-if %errorlevel% neq 0 exit /b %errorlevel%
-popd
+%MSBUILD% daemon.vcxproj /nologo /v:q /p:Configuration=Release /p:Platform=x64
+if %errorlevel% neq 0 goto error
 
-pushd ..\client
+cd ..\client
 echo Updating Node modules...
-call npm install
-if %errorlevel% neq 0 exit /b %errorlevel%
+call npm --loglevel=silent install
+if %errorlevel% neq 0 goto error
 echo Rebuilding Electron modules...
 del node_modules\nslog\build\Release\nslog.node
 call node_modules\.bin\electron-rebuild.cmd --arch=ia32
-if %errorlevel% neq 0 exit /b %errorlevel%
+if %errorlevel% neq 0 goto error
 echo Packaging Electron app...
-call node_modules\.bin\electron-packager.cmd .\ cyphervpn --overwrite --platform=win32 --arch=ia32 --icon=app\img\logo.ico --out=out\ --prune --asar
-if %errorlevel% neq 0 exit /b %errorlevel%
-popd
+call node_modules\.bin\electron-packager.cmd .\ cyphervpn --overwrite --platform=win32 --arch=ia32 --icon=app\img\logo.ico --out=..\out\client\ --prune --asar
+if %errorlevel% neq 0 goto error
 
+echo Build successful!
+
+:end
 popd
+exit /b %errorlevel%
+
+:error
+echo Build failed with error %errorlevel%!
+goto end
