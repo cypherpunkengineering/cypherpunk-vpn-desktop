@@ -143,7 +143,7 @@ function createMainWindow() {
       //icon: icon,
       backgroundColor: '#222',
       show: false,
-      //frame: false,
+      frame: false,
       fullscreen: false,
       width: 375,
       height: 606,
