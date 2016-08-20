@@ -107,9 +107,4 @@
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
-  <ItemGroup>
-    <Natvis Include="win\daemon.natvis">
-      <Filter>Resource Files</Filter>
-    </Natvis>
-  </ItemGroup>
 </Project>

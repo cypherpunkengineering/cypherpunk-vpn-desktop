@@ -163,9 +163,6 @@
     <ResourceCompile Include="daemon.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Natvis Include="win\daemon.natvis" />
-  </ItemGroup>
-  <ItemGroup>
     <OpenVPNBinaries Include="third_party\openvpn_win\$(PlatformArchitecture)\*.dll" />
     <OpenVPNExecutable Include="third_party\openvpn_win\$(PlatformArchitecture)\openvpn.exe" />
     <TapDrivers Include="third_party\tuntap_win\$(PlatformArchitecture)\*.*" />
