@@ -312,6 +312,8 @@ bool CypherDaemon::RPC_connect(const jsonrpc::Value::Struct& params)
 		return false;
 	}
 
+	_bytesReceived = 0;
+	_bytesSent = 0;
 	_state = CONNECTING;
 	OnStateChanged();
 
@@ -401,10 +403,16 @@ bool CypherDaemon::RPC_connect(const jsonrpc::Value::Struct& params)
 						_localIP = params.at(3);
 						_remoteIP = params.at(4);
 					}
-					_bytesReceived = 0;
-					_bytesSent = 0;
 					_state = CONNECTED;
 					OnStateChanged();
+				}
+				else if (s == "RECONNECTING")
+				{
+					if (_state == CONNECTED)
+					{
+						_state = CONNECTING;
+						OnStateChanged();
+					}
 				}
 				else if (s == "EXITING")
 				{
