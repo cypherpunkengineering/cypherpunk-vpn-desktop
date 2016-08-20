@@ -158,6 +158,7 @@
     <ClCompile Include="win\win_path.cpp" />
     <ClCompile Include="win\win_service.cpp" />
     <ClCompile Include="win\win_util.cpp" />
+    <ClCompile Include="win\win_firewall.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="daemon.rc" />
