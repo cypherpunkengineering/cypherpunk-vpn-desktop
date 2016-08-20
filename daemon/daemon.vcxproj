@@ -163,6 +163,7 @@
   <ItemGroup>
     <OpenVPNBinaries Include="third_party\openvpn_win\$(PlatformArchitecture)\*.*" />
     <TapDrivers Include="third_party\tuntap_win\$(PlatformArchitecture)\*.*" />
+    <OpenVPNProfiles Include="*.ovpn" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
@@ -171,5 +172,6 @@
   <Target Name="AfterBuild">
     <Copy SourceFiles="@(OpenVPNBinaries)" DestinationFolder="$(OutDir)\openvpn" />
     <Copy SourceFiles="@(TapDrivers)" DestinationFolder="$(OutDir)\tap" />
+    <Copy SourceFiles="@(OpenVPNProfiles)" DestinationFolder="$(OutDir)\openvpn" />
   </Target>
 </Project>
