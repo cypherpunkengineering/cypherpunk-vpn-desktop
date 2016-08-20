@@ -98,21 +98,27 @@ enum FWDirection
 	Outgoing
 };
 
-template<FWP_ACTION_TYPE ACTION, FWDirection DIRECTION, FWP_IP_VERSION VERSION>
+enum FWIPVersion
+{
+	IPv4,
+	IPv6
+};
+
+template<FWP_ACTION_TYPE ACTION, FWDirection DIRECTION, FWIPVersion VERSION>
 struct FWBasicFilter : public FWFilter
 {
 	FWBasicFilter()
 	{
 		if (DIRECTION == Incoming)
-			layerKey = (VERSION == FWP_IP_VERSION_V6) ? FWPM_LAYER_ALE_AUTH_RECV_ACCEPT_V6 : FWPM_LAYER_ALE_AUTH_RECV_ACCEPT_V4;
+			layerKey = (VERSION == IPv6) ? FWPM_LAYER_ALE_AUTH_RECV_ACCEPT_V6 : FWPM_LAYER_ALE_AUTH_RECV_ACCEPT_V4;
 		else if (DIRECTION == Outgoing)
-			layerKey = (VERSION == FWP_IP_VERSION_V6) ? FWPM_LAYER_ALE_AUTH_CONNECT_V6 : FWPM_LAYER_ALE_AUTH_CONNECT_V4;
+			layerKey = (VERSION == IPv6) ? FWPM_LAYER_ALE_AUTH_CONNECT_V6 : FWPM_LAYER_ALE_AUTH_CONNECT_V4;
 		action.type = ACTION;
 	}
 	FWBasicFilter& SetWeight(UINT8 weight) { this->weight.uint8 = weight; return *this; }
 };
 
-template<size_t NUM_CONDITIONS, FWP_ACTION_TYPE ACTION, FWDirection DIRECTION, FWP_IP_VERSION VERSION>
+template<size_t NUM_CONDITIONS, FWP_ACTION_TYPE ACTION, FWDirection DIRECTION, FWIPVersion VERSION>
 struct FWConditionFilter : public FWBasicFilter<ACTION, DIRECTION, VERSION>
 {
 	FWPM_FILTER_CONDITION _conds[NUM_CONDITIONS];
@@ -131,10 +137,10 @@ struct FWConditionFilter : public FWBasicFilter<ACTION, DIRECTION, VERSION>
 	}
 };
 
-template<FWDirection DIRECTION, FWP_IP_VERSION VERSION> struct AllowLocalHostFilter;
+template<FWDirection DIRECTION, FWIPVersion VERSION> struct AllowLocalHostFilter;
 
 template<FWDirection DIRECTION>
-struct AllowLocalHostFilter<DIRECTION, FWP_IP_VERSION_V4> : public FWConditionFilter<1, FWP_ACTION_PERMIT, DIRECTION, FWP_IP_VERSION_V4>
+struct AllowLocalHostFilter<DIRECTION, IPv4> : public FWConditionFilter<1, FWP_ACTION_PERMIT, DIRECTION, IPv4>
 {
 	FWP_V4_ADDR_AND_MASK _addr;
 	AllowLocalHostFilter()
@@ -147,7 +153,7 @@ struct AllowLocalHostFilter<DIRECTION, FWP_IP_VERSION_V4> : public FWConditionFi
 };
 
 template<FWDirection DIRECTION>
-struct AllowLocalHostFilter<DIRECTION, FWP_IP_VERSION_V6> : public FWConditionFilter<1, FWP_ACTION_PERMIT, DIRECTION, FWP_IP_VERSION_V6>
+struct AllowLocalHostFilter<DIRECTION, IPv6> : public FWConditionFilter<1, FWP_ACTION_PERMIT, DIRECTION, IPv6>
 {
 	FWP_V6_ADDR_AND_MASK _addr;
 	AllowLocalHostFilter()
@@ -160,10 +166,10 @@ struct AllowLocalHostFilter<DIRECTION, FWP_IP_VERSION_V6> : public FWConditionFi
 	}
 };
 
-template<FWP_IP_VERSION VERSION> struct AllowDHCPFilter;
+template<FWIPVersion VERSION> struct AllowDHCPFilter;
 
 template<>
-struct AllowDHCPFilter<FWP_IP_VERSION_V4> : public FWConditionFilter<2, FWP_ACTION_PERMIT, Outgoing, FWP_IP_VERSION_V4>
+struct AllowDHCPFilter<IPv4> : public FWConditionFilter<2, FWP_ACTION_PERMIT, Outgoing, IPv4>
 {
 	AllowDHCPFilter()
 	{
@@ -174,7 +180,7 @@ struct AllowDHCPFilter<FWP_IP_VERSION_V4> : public FWConditionFilter<2, FWP_ACTI
 };
 
 template<>
-struct AllowDHCPFilter<FWP_IP_VERSION_V6> : public FWConditionFilter<2, FWP_ACTION_PERMIT, Outgoing, FWP_IP_VERSION_V6>
+struct AllowDHCPFilter<IPv6> : public FWConditionFilter<2, FWP_ACTION_PERMIT, Outgoing, IPv6>
 {
 	AllowDHCPFilter()
 	{
@@ -184,7 +190,7 @@ struct AllowDHCPFilter<FWP_IP_VERSION_V6> : public FWConditionFilter<2, FWP_ACTI
 	}
 };
 
-template<FWP_IP_VERSION VERSION>
+template<FWIPVersion VERSION>
 struct AllowDNSFilter : public FWConditionFilter<1, FWP_ACTION_PERMIT, Outgoing, VERSION>
 {
 	AllowDNSFilter()
@@ -194,7 +200,7 @@ struct AllowDNSFilter : public FWConditionFilter<1, FWP_ACTION_PERMIT, Outgoing,
 	}
 };
 
-template<FWDirection DIRECTION, FWP_IP_VERSION VERSION>
+template<FWDirection DIRECTION, FWIPVersion VERSION>
 struct AllowAppFilter : public FWConditionFilter<1, FWP_ACTION_PERMIT, DIRECTION, VERSION>
 {
 	FWP_BYTE_BLOB* _appBlob = NULL;
@@ -210,7 +216,7 @@ struct AllowAppFilter : public FWConditionFilter<1, FWP_ACTION_PERMIT, DIRECTION
 	}
 };
 
-template<FWDirection DIRECTION, FWP_IP_VERSION VERSION>
+template<FWDirection DIRECTION, FWIPVersion VERSION>
 struct BlockAllFilter : public FWBasicFilter<FWP_ACTION_BLOCK, DIRECTION, VERSION>
 {
 	BlockAllFilter()

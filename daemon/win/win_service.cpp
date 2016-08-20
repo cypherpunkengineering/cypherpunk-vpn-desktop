@@ -214,16 +214,18 @@ public:
 				if (enable)
 				{
 					fw.InstallProvider();
-					_filters.push_back(fw.AddFilter(AllowLocalHostFilter<Outgoing, FWP_IP_VERSION_V4>()));
-					_filters.push_back(fw.AddFilter(AllowLocalHostFilter<Outgoing, FWP_IP_VERSION_V6>()));
-					_filters.push_back(fw.AddFilter(AllowDHCPFilter<FWP_IP_VERSION_V4>()));
-					_filters.push_back(fw.AddFilter(AllowDHCPFilter<FWP_IP_VERSION_V6>()));
-					//_filters.push_back(fw.AddFilter(AllowDNSFilter<FWP_IP_VERSION_V4>()));
-					_filters.push_back(fw.AddFilter(AllowAppFilter<Outgoing, FWP_IP_VERSION_V4>(GetPath(ClientExecutable))));
-					_filters.push_back(fw.AddFilter(AllowAppFilter<Outgoing, FWP_IP_VERSION_V4>(GetPath(DaemonExecutable))));
-					_filters.push_back(fw.AddFilter(AllowAppFilter<Outgoing, FWP_IP_VERSION_V4>(GetPath(OpenVPNExecutable))));
-					_filters.push_back(fw.AddFilter(BlockAllFilter<Outgoing, FWP_IP_VERSION_V4>()));
-					_filters.push_back(fw.AddFilter(BlockAllFilter<Outgoing, FWP_IP_VERSION_V6>()));
+					FWTransaction tx(fw);
+					_filters.push_back(fw.AddFilter(AllowLocalHostFilter<Outgoing, IPv4>()));
+					_filters.push_back(fw.AddFilter(AllowLocalHostFilter<Outgoing, IPv6>()));
+					_filters.push_back(fw.AddFilter(AllowDHCPFilter<IPv4>()));
+					_filters.push_back(fw.AddFilter(AllowDHCPFilter<IPv6>()));
+					//_filters.push_back(fw.AddFilter(AllowDNSFilter<IPv4>()));
+					_filters.push_back(fw.AddFilter(AllowAppFilter<Outgoing, IPv4>(GetPath(ClientExecutable))));
+					_filters.push_back(fw.AddFilter(AllowAppFilter<Outgoing, IPv4>(GetPath(DaemonExecutable))));
+					_filters.push_back(fw.AddFilter(AllowAppFilter<Outgoing, IPv4>(GetPath(OpenVPNExecutable))));
+					_filters.push_back(fw.AddFilter(BlockAllFilter<Outgoing, IPv4>()));
+					_filters.push_back(fw.AddFilter(BlockAllFilter<Outgoing, IPv6>()));
+					tx.Commit();
 				}
 				else
 				{
