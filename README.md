@@ -14,8 +14,32 @@ You also need to have an instance of the background daemon running.
 Then, run the following from your command line:
 
 ```bash
-# Go into the repository
+# Go into the client directory
 cd client
-# Install dependencies and run the app
-npm install && npm start
+# Install dependencies
+npm install
+# Run the app
+npm start
 ```
+
+The `npm start` command takes the following parameters:
+
+* `--debug`: Open a Web Inspector window for the main window.
+* `--background`: Create but initially don't show the main window (used at system startup).
+* `--semantic`: Launch the alternative Semantic UI version.
+
+## Building installer on Windows
+
+In addition to the prerequisites above, you'll need the following installed on your machine:
+
+* [Visual Studio 2015](https://beta.visualstudio.com/vs/community/) (with C++ support) or [Visual C++ Build Tools](http://landinghub.visualstudio.com/visual-cpp-build-tools)
+* [Inno Setup 5](http://www.jrsoftware.org/isdl.php)
+
+Then, run the following from your command line:
+
+```bash
+cd build
+build.bat
+```
+
+If you get build errors related to node-gyp, you may need [this workaround](https://www.npmjs.com/package/npm-windows-upgrade).
