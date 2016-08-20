@@ -59,12 +59,14 @@ public:
 			os << e._from << " failed";
 		else
 			os << "Exception thrown";
+#ifdef _DEBUG
 		if (e._file)
 		{
 			os << " at " << GetBaseName(e._file);
 			if (e._line)
 				os << ':' << std::to_string(e._line);
 		}
+#endif
 		os << ": " << e.what();
 		return os;
 	}
