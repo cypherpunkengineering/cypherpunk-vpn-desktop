@@ -2,6 +2,8 @@
 
 if exist "%ProgramFiles(x86)%\MSBuild\14.0\bin\MSBuild.exe" set MSBUILD="%ProgramFiles(x86)%\MSBuild\14.0\bin\MSBuild.exe"
 if exist "%ProgramFiles%\MSBuild\14.0\bin\MSBuild.exe" set MSBUILD="%ProgramFiles%\MSBuild\14.0\bin\MSBuild.exe"
+if exist "%ProgramFiles(x86)%\Inno Setup 5\ISCC.exe" set ISCC="%ProgramFiles(x86)%\Inno Setup 5\ISCC.exe"
+if exist "%ProgramFiles%\Inno Setup 5\ISCC.exe" set ISCC="%ProgramFiles%\Inno Setup 5\ISCC.exe"
 
 pushd %~dp0
 
@@ -32,6 +34,11 @@ if %errorlevel% neq 0 goto error
 
 echo * Packaging Electron app...
 call node_modules\.bin\electron-packager.cmd .\ cyphervpn --overwrite --platform=win32 --arch=ia32 --icon=app\img\logo.ico --out=..\out\client\ --prune --asar
+if %errorlevel% neq 0 goto error
+
+cd ..\build
+echo * Creating installer...
+%ISCC% /Q setup.iss
 if %errorlevel% neq 0 goto error
 
 echo.
