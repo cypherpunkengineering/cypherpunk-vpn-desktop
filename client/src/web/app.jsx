@@ -253,12 +253,6 @@ class ConnectScreen extends React.Component {
           <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.receivedBytes)}</div><div class="label">Received</div></div></div>
           <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.sentBytes)}</div><div class="label">Sent</div></div></div>
         </div>
-        <div class="ui center aligned grid" style={{ marginTop: "30px" }}>
-          <div class="ui toggle checkbox">
-            <input id="firewall" type="checkbox" onChange={this.handleFirewallChange}/>
-            <label for="firewall" style={{ color: "#ddd !important" }}>Enable Firewall</label>
-          </div>
-        </div>
       </div>
     );
   }
@@ -342,9 +336,6 @@ class AccountScreen extends React.Component  {
 
 class RootContainer extends React.Component {
   render() {
-    function WithTitleBar(inner) {
-      return [ <Titlebar/>, ]
-    }
     return(
       <div class="full screen" style={{visibility: 'visible'}}>
         <MainBackground/>
