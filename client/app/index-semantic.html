@@ -126,7 +126,7 @@
       //onerror: () => { window.alert("Unable to connect to background service.", "Cypherpunk VPN"); require('electron').remote.app.quit(); },
     });
     // Listen for OpenVPN state changes (FIXME: API will change later)
-    daemon.on('state', ([timestamp, state, desc, local, remote]) => {
+    daemon.on('state', (timestamp, state, desc, local, remote) => {
       console.log("state", timestamp, state, desc, local, remote);
       if (state == 'CONNECTED') { // VPN tunnel established
         onConnected();
@@ -135,12 +135,12 @@
       }
     });
     // Subscribe to the traffic counter
-    daemon.on('bytecount', ([inCount, outCount]) => {
+    daemon.on('bytecount', (inCount, outCount) => {
       console.log("bytecount", inCount, outCount);
     });
     // Disconnect before unload
     window.onbeforeonload = evt => {
-      daemon.post('disconnect', []);
+      daemon.post.disconnect();
     };
 
     function onConnected() {
@@ -162,10 +162,10 @@
         $(document.body).addClass('connecting');
         bgr.addClass('animating');
         // Ask daemon to connect (FIXME: API will change)
-        daemon.post('connect', [{ profile: [] }]);
+        daemon.post.connect({ profile: [] });
       } else {
         // Ask daemon to disconnect (FIXME: API will change)
-        daemon.post('disconnect', []);
+        daemon.post.disconnect();
       }
     });
 
