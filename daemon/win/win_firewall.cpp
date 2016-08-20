@@ -196,7 +196,8 @@ void win_firewall_test()
 		std::vector<GUID> filters;
 		filters.push_back(fw.AddFilter(AllowLocalHostFilter<Outgoing, FWP_IP_VERSION_V4>()));
 		filters.push_back(fw.AddFilter(AllowLocalHostFilter<Outgoing, FWP_IP_VERSION_V6>()));
-		filters.push_back(fw.AddFilter(AllowDHCPFilter()));
+		filters.push_back(fw.AddFilter(AllowDHCPFilter<FWP_IP_VERSION_V4>()));
+		filters.push_back(fw.AddFilter(AllowDHCPFilter<FWP_IP_VERSION_V6>()));
 		filters.push_back(fw.AddFilter(AllowDNSFilter<FWP_IP_VERSION_V4>()));
 		filters.push_back(fw.AddFilter(AllowAppFilter<Outgoing, FWP_IP_VERSION_V4>("C:\\Program Files (x86)\\Opera\\39.0.2256.48\\opera.exe")));
 		filters.push_back(fw.AddFilter(AllowAppFilter<Outgoing, FWP_IP_VERSION_V4>(GetPath(ClientExecutable))));

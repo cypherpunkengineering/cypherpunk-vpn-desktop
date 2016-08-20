@@ -216,7 +216,8 @@ public:
 					fw.InstallProvider();
 					_filters.push_back(fw.AddFilter(AllowLocalHostFilter<Outgoing, FWP_IP_VERSION_V4>()));
 					_filters.push_back(fw.AddFilter(AllowLocalHostFilter<Outgoing, FWP_IP_VERSION_V6>()));
-					_filters.push_back(fw.AddFilter(AllowDHCPFilter()));
+					_filters.push_back(fw.AddFilter(AllowDHCPFilter<FWP_IP_VERSION_V4>()));
+					_filters.push_back(fw.AddFilter(AllowDHCPFilter<FWP_IP_VERSION_V6>()));
 					//_filters.push_back(fw.AddFilter(AllowDNSFilter<FWP_IP_VERSION_V4>()));
 					_filters.push_back(fw.AddFilter(AllowAppFilter<Outgoing, FWP_IP_VERSION_V4>(GetPath(ClientExecutable))));
 					_filters.push_back(fw.AddFilter(AllowAppFilter<Outgoing, FWP_IP_VERSION_V4>(GetPath(DaemonExecutable))));
