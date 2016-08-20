@@ -39,6 +39,10 @@ app.on('will-quit', event => {
       daemon = null;
       app.quit();
     });
+    return;
+  }
+  if (tray) {
+    tray.destroy();
   }
 });
 
@@ -115,6 +119,11 @@ function createTray() {
   ]);
   tray.setToolTip('Cypherpunk VPN');
   tray.setContextMenu(menu);
+  tray.on('click', (evt, bounds) => {
+    if (main) {
+      main.show();
+    }
+  });
 }
 
 function createMainWindow() {
