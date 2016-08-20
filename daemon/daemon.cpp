@@ -164,7 +164,7 @@ static inline const char* GetStateString(CypherDaemon::State state)
 void CypherDaemon::OnStateChanged()
 {
 	jsonrpc::Value::Struct params;
-	params.insert_or_assign("state", GetStateString(_state));
+	params["state"] = GetStateString(_state);
 	if (_state == CONNECTED)
 	{
 		params["localIP"] = _localIP;
