@@ -64,6 +64,7 @@ int CypherDaemon::Run()
 	}
 
 	_ws_server.init_asio();
+	_ws_server.set_reuse_addr(true);
 	_ws_server.listen(asio::ip::tcp::endpoint(asio::ip::address::from_string("127.0.0.1"), 9337));
 	_ws_server.start_accept();
 
@@ -230,13 +231,16 @@ bool CypherDaemon::RPC_connect(const jsonrpc::Value::Struct& params)
 	index++; // FIXME: Just make GetAvailablePort etc. work properly instead
 
 	auto vpn = CreateOpenVPNProcess(_ws_server.get_io_service());
+
+	int port = vpn->StartManagementInterface();
+
 	std::vector<std::string> args;
 
-	int port = GetAvailablePort(DEFAULT_OPENVPN_PORT_BASE + index);
 	args.push_back("--management");
 	args.push_back("127.0.0.1");
 	args.push_back(std::to_string(port));
 	args.push_back("--management-hold");
+	args.push_back("--management-client");
 
 	args.push_back("--verb");
 	args.push_back("4");
@@ -285,12 +289,6 @@ bool CypherDaemon::RPC_connect(const jsonrpc::Value::Struct& params)
 	}
 	args.push_back(profile_filename);
 
-	vpn->Run(args);
-#if OS_OSX
-	sleep(1);
-#endif
-	vpn->StartManagementInterface(asio::ip::tcp::endpoint(asio::ip::address::from_string("127.0.0.1"), port));
-
 	vpn->OnManagementResponse("HOLD", [=](const std::string& line) {
 		vpn->SendManagementCommand("\nhold release\n");
 	});
@@ -326,6 +324,8 @@ bool CypherDaemon::RPC_connect(const jsonrpc::Value::Struct& params)
 		}
 		SendToAllClients(_rpc_client.BuildNotificationData("bytecount", params));
 	});
+
+	vpn->Run(args);
 
 	vpn->SendManagementCommand("\nstate on\nbytecount 5\nhold release\n");
 

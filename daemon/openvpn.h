@@ -16,9 +16,10 @@ class OpenVPNProcess
 	OpenVPNProcess& operator=(const OpenVPNProcess&) = delete;
 
 protected:
-	OpenVPNProcess(asio::io_service& io) : _io(io), _management_socket(io) {}
+	OpenVPNProcess(asio::io_service& io);
 
 	asio::io_service& _io;
+	asio::ip::tcp::acceptor _management_acceptor;
 	asio::ip::tcp::socket _management_socket;
 	std::deque<std::string> _management_write_queue;
 	asio::streambuf _management_readbuf;
@@ -37,7 +38,7 @@ public:
 	virtual ~OpenVPNProcess();
 
 public:
-	void StartManagementInterface(const asio::ip::tcp::endpoint& endpoint);
+	int StartManagementInterface();
 	void StopManagementInterface();
 	void SendManagementCommand(const std::string& cmd);
 	void OnManagementResponse(const std::string& prefix, std::function<void(const std::string&)> callback);

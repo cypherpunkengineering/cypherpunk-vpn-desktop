@@ -5,16 +5,27 @@
 
 using namespace std::placeholders;
 
+OpenVPNProcess::OpenVPNProcess(asio::io_service& io)
+	: _io(io)
+	, _management_acceptor(io, asio::ip::tcp::endpoint(asio::ip::address::from_string("127.0.0.1"), 0), true)
+	, _management_socket(io)
+{
+
+}
+
 OpenVPNProcess::~OpenVPNProcess()
 {
 
 }
 
-void OpenVPNProcess::StartManagementInterface(const asio::ip::tcp::endpoint& endpoint)
+int OpenVPNProcess::StartManagementInterface()
 {
+	int port = _management_acceptor.local_endpoint().port();
+
 	_io.post([=]() {
 		_management_write_queue.emplace_back("\n\n\n");
-		_management_socket.async_connect(endpoint, [this](const asio::error_code& error) {
+		_management_acceptor.listen(1);
+		_management_acceptor.async_accept(_management_socket, [this](const asio::error_code& error) {
 			if (!error)
 			{
 				asio::async_read_until(_management_socket, _management_readbuf, '\n', std::bind(&OpenVPNProcess::HandleManagementReadLine, this, _1, _2));
@@ -24,11 +35,14 @@ void OpenVPNProcess::StartManagementInterface(const asio::ip::tcp::endpoint& end
 				LOG(WARNING) << error << " : " << error.message();
 		});
 	});
+
+	return port;
 }
 
 void OpenVPNProcess::StopManagementInterface()
 {
 	_io.post([=]() {
+		_management_socket.shutdown(asio::ip::tcp::socket::shutdown_both);
 		_management_socket.close();
 	});
 }
