@@ -66,6 +66,8 @@ public:
 	// the daemon or from another thread.
 	virtual void RequestShutdown();
 
+	void OnOpenVPNProcessExited(OpenVPNProcess* process);
+
 protected:
 	typedef websocketpp::connection_hdl Connection;
 	typedef std::set<Connection, std::owner_less<Connection>> ConnectionList;
@@ -75,7 +77,9 @@ protected:
 	void OnFirstClientConnected();
 	void OnLastClientDisconnected();
 	void OnReceiveMessage(Connection con, WebSocketServer::message_ptr msg);
+	void OnStateChanged();
 
+	jsonrpc::Value::Struct RPC_getState();
 	// Instruct the daemon to connect to the specified server. If already connected,
 	// this instructs the daemon to seamlessly switch over to a different server.
 	bool RPC_connect(const jsonrpc::Value::Struct& params);
@@ -90,6 +94,8 @@ protected:
 	OpenVPNProcess *_process, *_next_process;
 	State _state;
 	FirewallMode _firewallMode;
+	std::string _localIP, _remoteIP;
+	int64_t _bytesReceived, _bytesSent;
 
 protected:
 	// Create a platform-specific handler around an OpenVPN process.

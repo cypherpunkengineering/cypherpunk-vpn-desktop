@@ -71,6 +71,7 @@ int CypherDaemon::Run()
 	_rpc_server.RegisterFormatHandler(_json_handler);
 	{
 		auto& d = _rpc_server.GetDispatcher();
+		d.AddMethod("getState", &CypherDaemon::RPC_getState, *this);
 		d.AddMethod("connect", &CypherDaemon::RPC_connect, *this);
 		d.AddMethod("disconnect", &CypherDaemon::RPC_disconnect, *this);
 		d.AddMethod("setFirewall", &CypherDaemon::RPC_setFirewall, *this);
@@ -124,9 +125,61 @@ void CypherDaemon::OnReceiveMessage(Connection connection, WebSocketServer::mess
 	}
 }
 
+void CypherDaemon::OnOpenVPNProcessExited(OpenVPNProcess* process)
+{
+	if (process == _process)
+	{
+		_process = nullptr;
+		if (_state != DISCONNECTED)
+		{
+			_state = DISCONNECTED;
+			OnStateChanged();
+		}
+	}
+}
+
 int CypherDaemon::GetAvailablePort(int hint)
 {
 	return hint;
+}
+
+static inline const char* GetStateString(CypherDaemon::State state)
+{
+	switch (state)
+	{
+#define CASE(n) case CypherDaemon::n: return #n;
+	CASE(STARTING)
+	CASE(DISCONNECTED)
+	CASE(CONNECTING)
+	CASE(CONNECTED)
+	CASE(SWITCHING)
+	CASE(DISCONNECTING)
+	CASE(EXITING)
+	CASE(EXITED)
+#undef CASE
+	}
+	return "";
+}
+
+void CypherDaemon::OnStateChanged()
+{
+	jsonrpc::Value::Struct params;
+	params.insert_or_assign("state", GetStateString(_state));
+	if (_state == CONNECTED)
+	{
+		params["localIP"] = _localIP;
+		params["remoteIP"] = _remoteIP;
+		params["bytesReceived"] = _bytesReceived;
+		params["bytesSent"] = _bytesSent;
+	}
+	SendToAllClients(_rpc_client.BuildNotificationData("state", params));
+}
+
+jsonrpc::Value::Struct CypherDaemon::RPC_getState()
+{
+	jsonrpc::Value::Struct result;
+	result.insert(std::make_pair("state", jsonrpc::Value(GetStateString(_state))));
+	return std::move(result);
 }
 
 void WriteOpenVPNProfile(std::ostream& out, const Settings::Connection& connection)
@@ -211,6 +264,38 @@ void WriteOpenVPNProfile(std::ostream& out, const Settings::Connection& connecti
 	}
 }
 
+template<typename CB>
+static inline size_t SplitToIterators(const std::string& text, char sep, const CB& cb)
+{
+	size_t pos, last = 0, count = 0;
+	auto begin = text.cbegin();
+	while ((pos = text.find(sep, last)) != text.npos)
+	{
+		cb(begin + last, begin + pos);
+		last = pos + 1;
+		count++;
+	}
+	if (last != text.size())
+	{
+		cb(begin + last, text.cend());
+		count++;
+	}
+	return count;
+}
+
+template<typename CB>
+static inline size_t SplitToStrings(const std::string& text, char sep, const CB& cb)
+{
+	return SplitToIterators(text, sep, [&](const std::string::const_iterator& b, const std::string::const_iterator& e) { return std::string(b, e); });
+}
+
+static inline std::vector<std::string> SplitToVector(const std::string& text, char sep)
+{
+	std::vector<std::string> result;
+	SplitToIterators(text, sep, [&](const std::string::const_iterator& b, const std::string::const_iterator& e) { result.emplace_back(b, e); });
+	return std::move(result);
+}
+
 bool CypherDaemon::RPC_connect(const jsonrpc::Value::Struct& params)
 {
 	Settings::Connection c(params);
@@ -218,8 +303,8 @@ bool CypherDaemon::RPC_connect(const jsonrpc::Value::Struct& params)
 	if (_state == CONNECTED)
 	{
 		// Check if we're being asked to connect to the same place
-		if (_process->IsSameServer(c))
-			return true;
+		return _process->IsSameServer(c);
+		// TODO: Support switching to different server
 	}
 	else if (_state != State::DISCONNECTED)
 	{
@@ -227,12 +312,17 @@ bool CypherDaemon::RPC_connect(const jsonrpc::Value::Struct& params)
 		return false;
 	}
 
+	_state = CONNECTING;
+	OnStateChanged();
+
 	static int index = 0;
 	index++; // FIXME: Just make GetAvailablePort etc. work properly instead
 
 	auto vpn = CreateOpenVPNProcess(_ws_server.get_io_service());
 
 	int port = vpn->StartManagementInterface();
+
+	_process = vpn;
 
 	std::vector<std::string> args;
 
@@ -293,36 +383,57 @@ bool CypherDaemon::RPC_connect(const jsonrpc::Value::Struct& params)
 		vpn->SendManagementCommand("\nhold release\n");
 	});
 	vpn->OnManagementResponse("STATE", [=](const std::string& line) {
-		std::deque<jsonrpc::Value> params;
-		size_t pos, last = 0;
-		while ((pos = line.find(',', last)) != line.npos)
+		try
 		{
-			params.emplace_back(line.substr(last, pos - last));
-			last = pos + 1;
+			auto params = SplitToVector(line, ',');
+			if (params.size() >= 2)
+			{
+				const auto& s = params.at(1);
+				if (s == "CONNECTED")
+				{
+					if (_state == DISCONNECTING)
+					{
+						_process->SendManagementCommand("\nsignal SIGTERM\n");
+						return;
+					}
+					if (params.size() >= 5)
+					{
+						_localIP = params.at(3);
+						_remoteIP = params.at(4);
+					}
+					_bytesReceived = 0;
+					_bytesSent = 0;
+					_state = CONNECTED;
+					OnStateChanged();
+				}
+				else if (s == "EXITING")
+				{
+					_process = nullptr;
+					_state = DISCONNECTED;
+					OnStateChanged();
+				}
+			}
 		}
-		if (last != line.size())
+		catch (const std::exception& e)
 		{
-			params.emplace_back(line.substr(last));
+			LOG(ERROR) << e;
+			_state = DISCONNECTED;
+			if (_process)
+			{
+				_process->Kill();
+				_process = nullptr;
+			}
 		}
-		if (params.size() >= 2 && params.at(1).AsString() == "EXITING")
-		{
-			_process = nullptr;
-		}
-		SendToAllClients(_rpc_client.BuildNotificationData("state", params));
 	});
 	vpn->OnManagementResponse("BYTECOUNT", [=](const std::string& line) {
-		std::deque<jsonrpc::Value> params;
-		size_t pos, last = 0;
-		while ((pos = line.find(',', last)) != line.npos)
+		try
 		{
-			params.emplace_back(line.substr(last, pos - last));
-			last = pos + 1;
+			auto params = SplitToVector(line, ',');
+			_bytesReceived = std::stoll(params[0]);
+			_bytesSent = std::stoll(params[1]);
+			OnStateChanged();
 		}
-		if (last != line.size())
-		{
-			params.emplace_back(line.substr(last));
-		}
-		SendToAllClients(_rpc_client.BuildNotificationData("bytecount", params));
+		catch (const std::exception& e) { LOG(WARNING) << e; }
 	});
 
 	vpn->Run(args);
@@ -335,19 +446,16 @@ bool CypherDaemon::RPC_connect(const jsonrpc::Value::Struct& params)
 	//vpn->StopManagementInterface();
 	//delete vpn;
 
-	_process = vpn;
-
 	return true;
 }
 
 void CypherDaemon::RPC_disconnect()
 {
-	if (_process)
+	if (_state == CONNECTING || _state == CONNECTED)
 	{
+		_state = DISCONNECTING;
+		OnStateChanged();
 		_process->SendManagementCommand("\nsignal SIGTERM\n");
-		// FIXME: Shut down asynchronously
-		//delete _process;
-		//_process = nullptr;
 	}
 }
 

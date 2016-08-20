@@ -14,8 +14,12 @@ import daemon from './daemon.js';
 
 import SettingsScreen from './SettingsScreen.jsx';
 
-daemon.call.ping().then(() => {
-  History.push('/main');
+var daemonState = null;
+
+daemon.call.getState().then(state => {
+  console.log(state);
+  daemonState = state;
+  History.push('/login');
 });
 
 
@@ -178,21 +182,26 @@ class ConnectScreen extends React.Component {
   constructor(props) {
     super(props);
 
-    // Listen for OpenVPN state changes (FIXME: API will change later)
-    daemon.on('state', (timestamp, state, desc, local, remote) => {
-      console.log("state", timestamp, state, desc, local, remote);
-      var newState = {
+    // TODO: Subscripe to the daemon state globally somewhere (in the main process?)
+    var translateDaemonState = (params) => {
+      console.log("state", params);
+      var newState = {};
+      var stateString = {
+        'CONNECTING': 'connecting',
         'CONNECTED': 'connected',
-        'EXITING': 'disconnected'
-      }[state];
-      if (newState)
-        this.setState({ connectionState: newState });
-    });
-    // Subscribe to the traffic counter
-    daemon.on('bytecount', (inCount, outCount) => {
-      console.log("bytecount", inCount, outCount);
-      this.setState({ receivedBytes: inCount, sentBytes: outCount });
-    });
+        'DISCONNECTING': 'disconnecting',
+        'DISCONNECTED': 'disconnected',
+      }[params.state];
+      if (stateString)
+        newState.connectionState = stateString;
+      if (params.bytesReceived !== undefined)
+        newState.receivedBytes = params.bytesReceived;
+      if (params.bytesSent !== undefined)
+        newState.sentBytes = params.bytesSent;
+      return newState;
+    }
+    Object.assign(this.state, translateDaemonState(daemonState));
+    daemon.on('state', params => this.setState(translateDaemonState(params)));
 
     this.handleConnectClick = this.handleConnectClick.bind(this);
     this.handleRegionSelect = this.handleRegionSelect.bind(this);

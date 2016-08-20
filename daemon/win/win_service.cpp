@@ -235,7 +235,7 @@ public:
 				_firewall_enabled = enable;
 				return true;
 			}
-			catch (const Win32Exception& e)
+			catch (const Win32Exception&)
 			{
 				fw.RemoveAllFilters();
 				_firewall_enabled = false;
