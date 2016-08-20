@@ -17,6 +17,15 @@ std::recursive_mutex Logger::_mutex;
 const LastErrorWrapper LastError;
 #endif
 
+const char* GetBaseName(const char* path)
+{
+	const char* name = path;
+	for (const char* p = name; *p; p++)
+		if (*p == '/' || *p == '\\')
+			name = p + 1;
+	return name;
+}
+
 LogWriter& LogWriter::operator<<(LogLevel level)
 {
 	_str << '[' << Logger::GetLevelString(level) << ']';

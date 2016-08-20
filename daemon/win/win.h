@@ -35,15 +35,39 @@ static inline std::string GetLastErrorString() { return GetLastErrorString(GetLa
 
 class Win32Exception : public std::runtime_error
 {
+protected:
 	DWORD _code;
+	const char* _from;
 	IFDEBUG( const char* _file; int _line; )
 public:
-	inline Win32Exception(DWORD code _DEBUG_ARGS_DECL) : _code(code), std::runtime_error(GetLastErrorString(code)) IFDEBUG( , _file(file), _line(line) ) {}
-	inline Win32Exception(DWORD code, const char* operation _DEBUG_ARGS_DECL) : _code(code), std::runtime_error(operation ? (std::string(operation) + " failed: " + GetLastErrorString(code)) : GetLastErrorString(code)) IFDEBUG(, _file(file), _line(line)) {}
+	inline Win32Exception(DWORD code _DEBUG_ARGS_DECL) : _code(code), _from(nullptr), std::runtime_error(GetLastErrorString(code)) IFDEBUG( , _file(file), _line(line) ) {}
+	inline Win32Exception(DWORD code, const char* from _DEBUG_ARGS_DECL) : _code(code), _from(from), std::runtime_error(GetLastErrorString(code)) IFDEBUG(, _file(file), _line(line)) {}
 	DWORD code() const { return _code; }
-	const char* file() const { return IFDEBUG(_file) IFNDEBUG(""); }
+	const char* from() const { return _from; }
+	const char* file() const { return IFDEBUG(_file) IFNDEBUG(nullptr); }
 	int line() const { return IFDEBUG(_line) IFNDEBUG(0); }
-	std::string where() const { if (file()) return std::string(file()) + ":" + std::to_string(line()); else return std::string(); }
+	std::string where() const
+	{
+		if (file())
+			return std::string(file()) + ":" + std::to_string(line());
+		else
+			return std::string("<unknown>");
+	}
+	friend inline std::ostream& operator<<(std::ostream& os, const Win32Exception& e)
+	{
+		if (e._from)
+			os << e._from << " failed";
+		else
+			os << "Exception thrown";
+		if (e._file)
+		{
+			os << " at " << GetBaseName(e._file);
+			if (e._line)
+				os << ':' << std::to_string(e._line);
+		}
+		os << ": " << e.what();
+		return os;
+	}
 };
 
 #define THROW_WIN32EXCEPTION(code, api) throw Win32Exception(code, #api _DEBUG_ARGS_CALL)
@@ -78,16 +102,14 @@ template<typename T> static inline T      ThrowLastErrorIfNonNull (T&&    result
 #define PrintError(operation, error) LOG(ERROR) << #operation " failed: " << Error(error)
 #define PrintLastError(operation)   PLOG(ERROR) << #operation " failed: " << LastError
 
-#define DECLARE_HANDLE_CLOSER(name, close) \
-	struct name { static inline void Close(HANDLE handle) { close(handle); } };
-
-DECLARE_HANDLE_CLOSER(Win32HandleCloser, CloseHandle)
-template<class CLOSER = Win32HandleCloser>
+template<class DERIVED = Win32Handle>
 class Win32Handle : protected noncopyable
 {
 protected:
 	HANDLE _handle;
-	void Free() { if (_handle) CLOSER::Close(_handle); }
+private:
+	void Free() { if (_handle) DERIVED::Close(_handle); }
+	static void Close(HANDLE handle) { CloseHandle(handle); }
 public:
 	Win32Handle() : _handle(NULL) {}
 	explicit Win32Handle(HANDLE handle) : _handle(handle) {}
@@ -97,6 +119,7 @@ public:
 	operator HANDLE() const { return _handle; }
 	operator bool() const { return _handle != NULL; }
 	HANDLE Release() { return std::exchange(_handle, NULL); }
+	void Close() { Free(); _handle = NULL; }
 };
 
 namespace std {

@@ -16,6 +16,7 @@ enum PredefinedDirectory
 enum PredefinedFile
 {
 	DaemonExecutable,
+	ClientExecutable,
 	OpenVPNExecutable,
 	OpenVPNOutLog,
 	OpenVPNErrLog,

@@ -1,153 +1,159 @@
 #include "config.h"
+#include "win_firewall.h"
+
 #include "logger.h"
 #include "path.h"
-#include "win.h"
 #include "util.h"
 
-#include <fwpvi.h>
-#include <fwpmu.h>
 #include <accctrl.h>
 #include <aclapi.h>
+#include <rpc.h>
 
 #pragma comment (lib, "fwpuclnt.lib")
 #pragma comment (lib, "advapi32.lib")
+#pragma comment (lib, "rpcrt4.lib")
 
 
 static wchar_t DEFAULT_FIREWALL_NAME[] = L"Cypherpunk VPN Firewall";
 static wchar_t DEFAULT_FIREWALL_DESCRIPTION[] = L"Implements the various firewall protection features of Cypherpunk VPN.";
 
-// {4C60C564-E8D2-4D21-B717-C343999EFC59}
-static GUID g_wfp_provider_key =
-{ 0x4c60c564, 0xe8d2, 0x4d21,{ 0xb7, 0x17, 0xc3, 0x43, 0x99, 0x9e, 0xfc, 0x59 } };
+static FWPM_PROVIDER g_wfp_provider = {
+	// {4C60C564-E8D2-4D21-B717-C343999EFC59}
+	{ 0x4c60c564, 0xe8d2, 0x4d21,{ 0xb7, 0x17, 0xc3, 0x43, 0x99, 0x9e, 0xfc, 0x59 } },
+	{ DEFAULT_FIREWALL_NAME, DEFAULT_FIREWALL_DESCRIPTION },
+	FWPM_PROVIDER_FLAG_PERSISTENT,
+	{ 0, NULL },
+	NULL
+};
 
-// {7BD5536B-B532-4C0B-BF38-DBB9DAE739E1}
-static const GUID g_wfp_sublayer_key =
-{ 0x7bd5536b, 0xb532, 0x4c0b,{ 0xbf, 0x38, 0xdb, 0xb9, 0xda, 0xe7, 0x39, 0xe1 } };
-
-
-
-struct WinFirewallFilter : public FWPM_FILTER { WinFirewallFilter(); };
-
-
-typedef UINT64 WinFirewallFilterId;
-
-DECLARE_HANDLE_CLOSER(WinFirewallEngineCloser, FwpmEngineClose)
-class WinFirewallEngine : public Win32Handle<WinFirewallEngineCloser>
-{
-public:
-	WinFirewallEngine();
-
-	void Install();
-	void Uninstall();
-
-	WinFirewallFilterId AddFilter(const WinFirewallFilter& filter);
-	void DeleteFilter(WinFirewallFilterId id);
-	void DeleteFilter(const GUID& guid);
-
-	void DeleteAllFilters();
+static FWPM_SUBLAYER g_wfp_sublayer = {
+	// {7BD5536B-B532-4C0B-BF38-DBB9DAE739E1}
+	{ 0x7bd5536b, 0xb532, 0x4c0b,{ 0xbf, 0x38, 0xdb, 0xb9, 0xda, 0xe7, 0x39, 0xe1 } },
+	{ DEFAULT_FIREWALL_NAME, DEFAULT_FIREWALL_DESCRIPTION },
+	FWPM_SUBLAYER_FLAG_PERSISTENT,
+	&g_wfp_provider.providerKey,
+	{ 0, NULL },
+	9000
 };
 
 
-
-WinFirewallFilter::WinFirewallFilter()
+FWFilter::FWFilter()
 {
-	memset(&filterKey, 0, sizeof(filterKey));
+	memset(this, 0, sizeof(FWPM_FILTER));
+	UuidCreate(&filterKey);
 	displayData.name = DEFAULT_FIREWALL_NAME;
 	displayData.description = DEFAULT_FIREWALL_DESCRIPTION;
-	providerKey = &g_wfp_provider_key;
-	subLayerKey = g_wfp_sublayer_key;
+	flags |= FWPM_FILTER_FLAG_PERSISTENT | FWPM_FILTER_FLAG_INDEXED;
+	providerKey = &g_wfp_provider.providerKey;
+	subLayerKey = g_wfp_sublayer.subLayerKey;
+	weight.type = FWP_UINT8;
 }
 
-
-struct AllowDHCPFilter : public WinFirewallFilter
-{
-	FWPM_FILTER_CONDITION _conds[2];
-	AllowDHCPFilter()
-	{
-		memset(_conds, 0, sizeof(_conds));
-		flags |= FWPM_FILTER_FLAG_INDEXED;
-	}
-};
-
-
-WinFirewallEngine::WinFirewallEngine()
+FWEngine::FWEngine()
 {
 	WIN_CHECK_RESULT(FwpmEngineOpen, (NULL, RPC_C_AUTHN_DEFAULT, NULL, NULL, &_handle));
 }
 
-void WinFirewallEngine::Install()
+void FWEngine::InstallProvider()
 {
-	// Ensure the WFP provider exists
+	// Ensure our WFP provider exists
 	try
 	{
 		FWPM_PROVIDER* existing_provider = NULL;
-		WIN_CHECK_RESULT(FwpmProviderGetByKey, (_handle, &g_wfp_provider_key, &existing_provider));
+		WIN_CHECK_RESULT(FwpmProviderGetByKey, (_handle, &g_wfp_provider.providerKey, &existing_provider));
 		FwpmFreeMemory((void**)&existing_provider);
 	}
 	catch (const Win32Exception& e)
 	{
 		if (e.code() != FWP_E_PROVIDER_NOT_FOUND)
 			throw;
-		FWPM_PROVIDER provider = {
-			g_wfp_provider_key,
-			{ DEFAULT_FIREWALL_NAME, DEFAULT_FIREWALL_DESCRIPTION },
-			FWPM_PROVIDER_FLAG_PERSISTENT,
-			{ 0, NULL },
-			NULL
-		};
-		WIN_CHECK_RESULT(FwpmProviderAdd, (_handle, &provider, NULL));
+		WIN_CHECK_RESULT(FwpmProviderAdd, (_handle, &g_wfp_provider, NULL));
 	}
-	// Ensure the WFP sublayer exists
+	// Ensure our WFP sublayer exists
 	try
 	{
 		FWPM_SUBLAYER* existing_sublayer = NULL;
-		WIN_CHECK_RESULT(FwpmSubLayerGetByKey, (_handle, &g_wfp_sublayer_key, &existing_sublayer));
+		WIN_CHECK_RESULT(FwpmSubLayerGetByKey, (_handle, &g_wfp_sublayer.subLayerKey, &existing_sublayer));
 		FwpmFreeMemory((void**)&existing_sublayer);
 	}
 	catch (const Win32Exception& e)
 	{
 		if (e.code() != FWP_E_SUBLAYER_NOT_FOUND)
 			throw;
-		FWPM_SUBLAYER sublayer = {
-			g_wfp_sublayer_key,
-			{ DEFAULT_FIREWALL_NAME, DEFAULT_FIREWALL_DESCRIPTION },
-			FWPM_SUBLAYER_FLAG_PERSISTENT,
-			&g_wfp_provider_key,
-			{ 0, NULL },
-			9000
-		};
-		WIN_CHECK_RESULT(FwpmSubLayerAdd, (_handle, &sublayer, NULL));
+		WIN_CHECK_RESULT(FwpmSubLayerAdd, (_handle, &g_wfp_sublayer, NULL));
 	}
 }
 
-void WinFirewallEngine::Uninstall()
+void FWEngine::UninstallProvider()
 {
-	FwpmSubLayerDeleteByKey(_handle, &g_wfp_sublayer_key);
-	FwpmProviderDeleteByKey(_handle, &g_wfp_provider_key);
+	FwpmSubLayerDeleteByKey(_handle, &g_wfp_sublayer.subLayerKey);
+	FwpmProviderDeleteByKey(_handle, &g_wfp_provider.providerKey);
 }
 
-WinFirewallFilterId WinFirewallEngine::AddFilter(const WinFirewallFilter& filter)
+FWFilter& FWEngine::AddFilter(FWFilter& filter)
 {
-	return 0;
+	FWFilterId id = 0;
+	WIN_CHECK_RESULT(FwpmFilterAdd, (_handle, &filter, NULL, &id));
+	filter.filterId = id;
+	return filter;
 }
 
-void WinFirewallEngine::DeleteFilter(WinFirewallFilterId id)
+FWFilter&& FWEngine::AddFilter(FWFilter&& filter)
 {
-	FwpmFilterDeleteById(_handle, id);
+	FWFilterId id = 0;
+	WIN_CHECK_RESULT(FwpmFilterAdd, (_handle, &filter, NULL, &id));
+	filter.filterId = id;
+	return std::move(filter);
 }
 
-void WinFirewallEngine::DeleteAllFilters()
+void FWEngine::RemoveFilter(FWFilterId filterId)
 {
-
+	WIN_CHECK_RESULT(FwpmFilterDeleteById, (_handle, filterId));
 }
 
-enum WinFirewallFlags
+void FWEngine::RemoveFilter(const GUID& filterKey)
 {
-	FW_BlockIncomingConnections = 0x01,
-	FW_BlockOutgoingConnections = 0x02,
-	FW_AllowLANConnection = 0x10,
-	FW_AllowIPv6 = 0x20,
-};
+	WIN_CHECK_RESULT(FwpmFilterDeleteByKey, (_handle, &filterKey));
+}
+
+size_t FWEngine::RemoveAllFilters()
+{
+	size_t result = 0;
+	result += RemoveAllFilters(FWPM_LAYER_ALE_AUTH_CONNECT_V4);
+	result += RemoveAllFilters(FWPM_LAYER_ALE_AUTH_CONNECT_V6);
+	result += RemoveAllFilters(FWPM_LAYER_ALE_AUTH_RECV_ACCEPT_V4);
+	result += RemoveAllFilters(FWPM_LAYER_ALE_AUTH_RECV_ACCEPT_V6);
+	return result;
+}
+
+size_t FWEngine::RemoveAllFilters(const GUID& layerKey)
+{
+	size_t result = 0;
+	FWPM_FILTER_ENUM_TEMPLATE search = { 0 };
+	search.providerKey = &g_wfp_provider.providerKey;
+	search.layerKey = layerKey;
+	search.enumType = FWP_FILTER_ENUM_OVERLAPPING;
+	search.actionMask = 0xFFFFFFFF;
+	HANDLE enumHandle = NULL;
+	WIN_CHECK_RESULT(FwpmFilterCreateEnumHandle, (_handle, &search, &enumHandle));
+	FINALLY({ FwpmFilterDestroyEnumHandle(_handle, enumHandle); });
+
+	FWPM_FILTER** entries;
+	UINT32 count;
+	do
+	{
+		WIN_CHECK_RESULT(FwpmFilterEnum, (_handle, enumHandle, 100, &entries, &count));
+		for (UINT32 i = 0; i < count; i++)
+		{
+			RemoveFilter(entries[i]->filterId);
+			result++;
+		}
+		FwpmFreeMemory((void**)&entries);
+	} while (count == 100);
+
+	return result;
+}
+
 
 void win_firewall_configure(unsigned long flags, const GUID& vpn_interface)
 {
@@ -156,8 +162,36 @@ void win_firewall_configure(unsigned long flags, const GUID& vpn_interface)
 
 void win_firewall_test()
 {
-	WinFirewallEngine fw;
-	fw.Install();
-	fw.Uninstall();
-	LOG(INFO) << "Yay";
+	return;
+	try
+	{
+		FWEngine fw;
+		fw.InstallProvider();
+
+		std::vector<GUID> filters;
+		filters.push_back(fw.AddFilter(AllowLocalHostFilter<Outgoing, FWP_IP_VERSION_V4>()));
+		filters.push_back(fw.AddFilter(AllowLocalHostFilter<Outgoing, FWP_IP_VERSION_V6>()));
+		filters.push_back(fw.AddFilter(AllowDHCPFilter()));
+		filters.push_back(fw.AddFilter(AllowDNSFilter<FWP_IP_VERSION_V4>()));
+		filters.push_back(fw.AddFilter(AllowAppFilter<Outgoing, FWP_IP_VERSION_V4>("C:\\Program Files (x86)\\Opera\\39.0.2256.48\\opera.exe")));
+		filters.push_back(fw.AddFilter(AllowAppFilter<Outgoing, FWP_IP_VERSION_V4>(GetPath(ClientExecutable))));
+		filters.push_back(fw.AddFilter(AllowAppFilter<Outgoing, FWP_IP_VERSION_V4>(GetPath(DaemonExecutable))));
+		filters.push_back(fw.AddFilter(AllowAppFilter<Outgoing, FWP_IP_VERSION_V4>(GetPath(OpenVPNExecutable))));
+		filters.push_back(fw.AddFilter(BlockAllFilter<Outgoing, FWP_IP_VERSION_V4>()));
+		filters.push_back(fw.AddFilter(BlockAllFilter<Outgoing, FWP_IP_VERSION_V6>()));
+		LOG(INFO) << "Filters added";
+
+		fw.RemoveFilters(std::rbegin(filters), std::rend(filters));
+		size_t count = fw.RemoveAllFilters();
+		if (count)
+			LOG(WARNING) << count << " filters remained after removing manually!";
+		LOG(INFO) << "Filters removed";
+
+		fw.UninstallProvider();
+		LOG(INFO) << "Yay";
+	}
+	catch (const Win32Exception& e)
+	{
+		LOG(ERROR) << e;
+	}
 }

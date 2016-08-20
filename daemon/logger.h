@@ -194,3 +194,5 @@ public:
 			"";
 	}
 };
+
+const char* GetBaseName(const char* path);

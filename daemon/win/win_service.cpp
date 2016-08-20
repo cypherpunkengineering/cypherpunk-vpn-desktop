@@ -7,6 +7,7 @@
 #include "path.h"
 
 #include "win.h"
+#include "win_firewall.h"
 
 #include <cstdio>
 #include <tchar.h>
@@ -198,6 +199,46 @@ public:
 			return adapter.guid;
 		}
 		throw "no adapters found";
+	}
+
+	std::vector<GUID> _filters;
+	bool _firewall_enabled = false;
+
+	virtual bool SetFirewallSettings(bool enable) override
+	{
+		if (enable != _firewall_enabled)
+		{
+			FWEngine fw;
+			try
+			{
+				if (enable)
+				{
+					fw.InstallProvider();
+					_filters.push_back(fw.AddFilter(AllowLocalHostFilter<Outgoing, FWP_IP_VERSION_V4>()));
+					_filters.push_back(fw.AddFilter(AllowLocalHostFilter<Outgoing, FWP_IP_VERSION_V6>()));
+					_filters.push_back(fw.AddFilter(AllowDHCPFilter()));
+					//_filters.push_back(fw.AddFilter(AllowDNSFilter<FWP_IP_VERSION_V4>()));
+					_filters.push_back(fw.AddFilter(AllowAppFilter<Outgoing, FWP_IP_VERSION_V4>(GetPath(ClientExecutable))));
+					_filters.push_back(fw.AddFilter(AllowAppFilter<Outgoing, FWP_IP_VERSION_V4>(GetPath(DaemonExecutable))));
+					_filters.push_back(fw.AddFilter(AllowAppFilter<Outgoing, FWP_IP_VERSION_V4>(GetPath(OpenVPNExecutable))));
+					_filters.push_back(fw.AddFilter(BlockAllFilter<Outgoing, FWP_IP_VERSION_V4>()));
+					_filters.push_back(fw.AddFilter(BlockAllFilter<Outgoing, FWP_IP_VERSION_V6>()));
+				}
+				else
+				{
+					fw.RemoveFilters(_filters.rbegin(), _filters.rend());
+					fw.RemoveAllFilters();
+				}
+				_firewall_enabled = enable;
+				return true;
+			}
+			catch (const Win32Exception& e)
+			{
+				fw.RemoveAllFilters();
+				_firewall_enabled = false;
+				return false;
+			}
+		}
 	}
 };
 

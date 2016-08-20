@@ -20,6 +20,23 @@ typedef jsonrpc::Server JsonRPCServer;
 typedef jsonrpc::Client JsonRPCClient;
 
 
+enum FirewallMode
+{
+	Disabled = 0,
+	WhenConnected = 1,
+	AlwaysOn = 2,
+};
+
+enum FirewallFlags
+{
+	Nothing = 0,
+	BlockIPv4 = 0x1, // temporary
+	BlockIPv6 = 0x2, // temporary
+};
+static inline FirewallFlags operator|(FirewallFlags a, FirewallFlags b) { return (FirewallFlags)(+a | +b); }
+static inline FirewallFlags& operator|=(FirewallFlags& a, FirewallFlags b) { return a = (a | b); }
+
+
 class CypherDaemon
 {
 	static const int DEFAULT_RPC_PORT = 9337;
@@ -63,6 +80,7 @@ protected:
 	// this instructs the daemon to seamlessly switch over to a different server.
 	bool RPC_connect(const jsonrpc::Value::Struct& params);
 	void RPC_disconnect();
+	bool RPC_setFirewall(const jsonrpc::Value::Struct& params);
 
 	WebSocketServer _ws_server;
 	ConnectionList _connections;
@@ -71,6 +89,7 @@ protected:
 	JsonRPCClient _rpc_client;
 	OpenVPNProcess *_process, *_next_process;
 	State _state;
+	FirewallMode _firewallMode;
 
 protected:
 	// Create a platform-specific handler around an OpenVPN process.
@@ -80,5 +99,7 @@ protected:
 	virtual int GetAvailablePort(int hint);
 	// Get the identifier (for --dev) for an available TAP adapter to use.
 	virtual std::string GetAvailableAdapter(int index) = 0;
+	// Set the firewall/killswitch mode
+	virtual bool SetFirewallSettings(bool enabled) { return false; }
 };
 

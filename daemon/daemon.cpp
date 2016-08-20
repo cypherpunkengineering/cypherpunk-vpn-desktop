@@ -32,6 +32,7 @@ CypherDaemon::CypherDaemon()
 	, _process(nullptr)
 	, _next_process(nullptr)
 	, _state(STARTING)
+	, _firewallMode(Disabled)
 {
 
 }
@@ -71,6 +72,7 @@ int CypherDaemon::Run()
 		auto& d = _rpc_server.GetDispatcher();
 		d.AddMethod("connect", &CypherDaemon::RPC_connect, *this);
 		d.AddMethod("disconnect", &CypherDaemon::RPC_disconnect, *this);
+		d.AddMethod("setFirewall", &CypherDaemon::RPC_setFirewall, *this);
 		d.AddMethod("ping", [](){});
 	}
 
@@ -347,4 +349,39 @@ void CypherDaemon::RPC_disconnect()
 		//delete _process;
 		//_process = nullptr;
 	}
+}
+
+template<typename T>
+static inline const T& GetMember(const jsonrpc::Value::Struct& obj, const char* name, const T& default_value)
+{
+	try
+	{
+		return obj.at(name).AsType<T>();
+	}
+	catch (...)
+	{
+		return default_value;
+	}
+}
+
+bool CypherDaemon::RPC_setFirewall(const jsonrpc::Value::Struct& params)
+{
+	FirewallFlags flags = Nothing;
+
+	auto mode = GetMember<std::string>(params, "mode", "off");
+
+	if (mode == "on")
+		SetFirewallSettings(true);
+	else
+		SetFirewallSettings(false);
+
+	//if (mode == "on")
+	//	flags |= BlockIPv6;
+	//else if (mode == "auto")
+	//else /* mode == "off" */
+
+	//if (GetMember<bool>(params, "blockIPv6", false))
+	//	flags |= BlockIPv6;
+
+	return true;
 }

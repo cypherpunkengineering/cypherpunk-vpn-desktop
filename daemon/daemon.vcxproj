@@ -143,6 +143,7 @@
     <ClInclude Include="win\ThreadPool.h" />
     <ClInclude Include="win\util.h" />
     <ClInclude Include="win\win.h" />
+    <ClInclude Include="win\win_firewall.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="daemon.cpp" />

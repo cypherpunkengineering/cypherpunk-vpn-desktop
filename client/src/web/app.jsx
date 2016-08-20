@@ -201,6 +201,7 @@ class ConnectScreen extends React.Component {
 
     this.handleConnectClick = this.handleConnectClick.bind(this);
     this.handleRegionSelect = this.handleRegionSelect.bind(this);
+    this.handleFirewallChange = this.handleFirewallChange.bind(this);
   }
   state = {
     regions: [
@@ -257,6 +258,12 @@ class ConnectScreen extends React.Component {
           <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.receivedBytes)}</div><div class="label">Received</div></div></div>
           <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.sentBytes)}</div><div class="label">Sent</div></div></div>
         </div>
+        <div class="ui center aligned grid" style={{ marginTop: "30px" }}>
+          <div class="ui toggle checkbox">
+            <input id="firewall" type="checkbox" onChange={this.handleFirewallChange}/>
+            <label for="firewall" style={{ color: "#ddd !important" }}>Enable Firewall</label>
+          </div>
+        </div>
       </div>
     );
   }
@@ -289,6 +296,9 @@ class ConnectScreen extends React.Component {
     return $(this.refs.regionDropdown).dropdown('get value');
   }
   handleRegionSelect(remote) {
+  }
+  handleFirewallChange(e) {
+    daemon.call.setFirewall({ "mode": e.target.checked ? "on" : "off" });
   }
 }
 

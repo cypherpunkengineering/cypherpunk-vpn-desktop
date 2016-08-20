@@ -6,7 +6,7 @@
 
 const char PATH_SEPARATOR = '/';
 std::string g_argv0;
-std::string g_argv0_path;
+std::string g_daemon_path;
 
 static bool g_is_installed = false;
 
@@ -18,11 +18,11 @@ void InitPaths(std::string argv0)
 		g_is_installed = true;
 	size_t last_slash = g_argv0.find_last_of(PATH_SEPARATOR);
 	if (last_slash != std::string::npos)
-		g_argv0_path = g_argv0.substr(0, last_slash);
+		g_daemon_path = g_argv0.substr(0, last_slash);
 	else
 	{
 		char cwd[PATH_MAX];
-		g_argv0_path = getcwd(cwd, PATH_MAX);
+		g_daemon_path = getcwd(cwd, PATH_MAX);
 	}
 }
 
@@ -42,9 +42,9 @@ std::string GetPath(PredefinedDirectory dir)
 {
 	switch (dir)
 	{
-	case BaseDir: return g_is_installed ? "/Applications/CypherpunkVPN.app" : (g_argv0_path + "/../..");
-	case LogDir: return g_is_installed ? "/tmp" : g_argv0_path;
-	case ProfileDir: return g_is_installed ? "/tmp" : g_argv0_path;
+	case BaseDir: return g_is_installed ? "/Applications/CypherpunkVPN.app" : (g_daemon_path + "/../..");
+	case LogDir: return g_is_installed ? "/tmp" : g_daemon_path;
+	case ProfileDir: return g_is_installed ? "/tmp" : g_daemon_path;
 	case ScriptsDir: return g_is_installed ? GetPath(BaseDir, "Contents/Resources/scripts") : GetPath(BaseDir, "res", "osx", "openvpn-scripts");
 	default:
 		LOG(ERROR) << "Unknown path";
