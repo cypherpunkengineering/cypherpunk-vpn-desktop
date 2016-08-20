@@ -18,6 +18,13 @@ echo * Updating Node modules...
 call npm --loglevel=silent install
 if %errorlevel% neq 0 goto error
 
+echo * Building Semantic UI files...
+rem call npm run build-semantic
+cd semantic
+call ..\node_modules\.bin\gulp build --silent
+if %errorlevel% neq 0 goto error
+cd ..
+
 echo * Rebuilding Electron modules...
 del node_modules\nslog\build\Release\nslog.node
 call node_modules\.bin\electron-rebuild.cmd --arch=ia32
