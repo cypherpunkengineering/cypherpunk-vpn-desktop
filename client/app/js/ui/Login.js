@@ -3,14 +3,19 @@ import { Link } from 'react-router';
 
 export default class Login extends React.Component  {
   render(){
+
+
+
     return(
       <div className="startup">
         <img src="./img/punk.svg" />
         <h1>Cypherpunk</h1>
-        <div><input value="email" /></div>
-        <div><input value="password" /></div>
-        <div><Link to="vpn">Log in</Link></div>
-        <div>SIGN UP</div>
+        <div><input /></div>
+        <div><input /></div>
+        <div><Link className="button" to="/interface">Log in</Link></div>
+
+          <span className="button">Forgot Password?</span>
+          <span className="button">Create Free Account</span>
       </div>
     );
   }

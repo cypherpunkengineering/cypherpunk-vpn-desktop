@@ -1,5 +1,4 @@
 import React from 'react';
-
 import ConnectButton from './Interface/ConnectButton.js';
 
 export default class ConnectUI extends React.Component  {
@@ -33,7 +32,7 @@ class Regionselect extends React.Component {
     return(
       <div className="region-select">
         <span className="flag-icon flag-icon-jp" />
-                Japan
+            Region Select
       </div>
     );
   }

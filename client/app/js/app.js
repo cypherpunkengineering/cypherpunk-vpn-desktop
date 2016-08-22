@@ -15,10 +15,11 @@ const app = document.getElementById('app');
 ReactDOM.render(
   <Router history={hashHistory}>
     <Route path="/" component={Login}></Route>
-    <Route path="/vpn" component={Interface}>
+    <Route path="/interface" component={Interface}>
       <IndexRoute component={ConnectUI}></IndexRoute>
-      <Route path="/settings" component={Settings}></Route>
+      <Route path="/Settings" component={Settings}></Route>
       <Route path="/account" component={Account}></Route>
     </Route>
+    <Route path="*" component={Login}></Route>
   </Router>,
   app);

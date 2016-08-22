@@ -15,7 +15,7 @@ export default class Header extends React.Component  {
 
 class SettingsButton extends React.Component {
   render(){
-    const linkedTo =  location.hash.match(/settings/) ? "vpn" : "settings";
+    const linkedTo =  location.hash.match(/settings/) ? "/interface" : "/settings";
     return (
         <div>
           <Link className="clicky" to={linkedTo}><img src="./img/icon_settings.svg" /></Link>
@@ -26,7 +26,7 @@ class SettingsButton extends React.Component {
 
 class AccountButton extends React.Component {
   render(){
-    const linkedTo = location.hash.match(/settings/) ? "vpn" : "account";
+    const linkedTo = location.hash.match(/account/) ? "/interface" : "/account";
     return (
         <div>
           <Link className="clicky" to={linkedTo}><img src="./img/account_info_icon.svg" height="23px" /></Link>
