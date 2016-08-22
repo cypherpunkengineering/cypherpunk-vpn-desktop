@@ -29,17 +29,29 @@ module.exports = class RPC {
 
       // Helper to handle incoming websocket messages
       function onmessage(evt) {
-        var id = null;
+        let id = null;
         // Helper function to send a reply
         function reply(type, value) {
-          var msg = '{"jsonrpc":"2.0","' + type + '":' + JSON.stringify(value) + ',"id":' + JSON.stringify(id) + '}';
+          let msg = '{"jsonrpc":"2.0","' + type + '":' + JSON.stringify(value) + ',"id":' + JSON.stringify(id) + '}';
           if (self.socket && self.socket.readyState == WebSocket.OPEN) {
             self.socket.send(msg);
           } else {
             self._queue.push(() => socket.send(msg));
           }
         }
-        var obj;
+        // Helper function to send a user error
+        function replyError(obj) {
+          if (typeof obj === 'string') {
+            reply('error', { code: 0, message: obj });
+          } else if (Number.isInteger(obj)) {
+            reply('error', { code: obj, message: "Unknown error" });
+          } else if (typeof obj === 'object' && obj.hasOwnProperty('code') && obj.hasOwnProperty('message')) {
+            reply('error', { code: obj.code, message: obj.message, data: obj.data });
+          } else {
+            reply('error', { code: 0, message: "Unknown error", data: obj });
+          }
+        }
+        let obj;
         if (typeof evt.data !== 'string') {
           return reply('error', { code: -32700, message: "Message did not contain text data" });
         }
@@ -50,30 +62,40 @@ module.exports = class RPC {
         }
         if (typeof obj === 'object' && typeof obj['jsonrpc'] == 'string' && obj['jsonrpc'] == "2.0") {
           id = obj.id;
-          var validId = id === null || typeof id === 'string' || typeof id === 'number'; 
-
+          let hasId = id === null || typeof id === 'string' || typeof id === 'number';
+          if (!hasId) {
+            id = null;
+          }
           if (obj.hasOwnProperty('method')) {
             if (typeof obj['method'] === 'string' && obj['method'] != "" &&
                 !obj.hasOwnProperty('result') && !obj.hasOwnProperty('error') &&
-                (typeof obj['params'] === 'undefined' || typeof obj['params'] === 'object' || Array.isArray(obj['params']))) {
-              let res = {
-                send: function send(result) {
-                  if (validId) { reply('result', result); }
-                },
-                error: function error(code, message, data) {
-                  if (validId) { reply('error', { code: code, message: message, data: data }); }
-                },
-              };
-              if (typeof self._handlers[obj['method']] === 'function') {
-                self._handlers[obj['method']](obj['params'], res);
-              } else if (typeof self.onrequest === 'function') {
-                self.onrequest(obj['method'], obj['params'], res);
+                (/*typeof obj['params'] === 'undefined' || typeof obj['params'] === 'object' ||*/ Array.isArray(obj['params']))) {
+              try {
+                let result;
+                if (typeof self._handlers[obj['method']] === 'function') {
+                  result = self._handlers[obj['method']].apply(null, obj['params']);
+                } else if (typeof self.onrequest === 'function') {
+                  result = self.onrequest.call(null, obj['method'], obj['params']);
+                } else {
+                  return reply('error', { code: -32601, message: "Method not found" });
+                }
+                if (hasId) {
+                  if (result instanceof Promise) {
+                    // Asynchronous return
+                    result.then(r => { reply('result', r); }, e => { replyError(e); })
+                  } else {
+                    // Synchronous return
+                    reply('result', result);
+                  }
+                }
+              } catch (ex) {
+                replyError(ex);
               }
               return;
             }
-          } else if (obj.hasOwnProperty('result') || obj.hasOwnProperty('error')) {
-            if (validId && !(obj.hasOwnProperty('result') && obj.hasOwnProperty('error'))) {
-              let cb = self._callbacks[id]; 
+          } else if (obj.hasOwnProperty('result') ^ obj.hasOwnProperty('error')) {
+            if (hasId) {
+              let cb = self._callbacks[id];
               if (cb) {
                 delete self._callbacks[id];
                 cb(obj['result'], obj['error']);
@@ -114,9 +136,59 @@ module.exports = class RPC {
       }
     }
 
+    // Make a proxy object to call remote methods, either via:
+    //   rpc.call(method, [args])
+    // or:
+    //   rpc.call.method(arg1, arg2, ...)
+    // Returns a Promise which will be fulfilled with the result.
+    //
+    self.call = new Proxy(Object.freeze(function call(method, args) {
+      return new Promise((resolve, reject) => {
+        self.send(method, args, (result, error) => {
+          if (error)
+            reject(error);
+          else
+            resolve(result);
+        });
+      });
+    }), {
+      get: function(target, name) {
+        return function() {
+          let args = [].slice.call(arguments);
+          return new Promise((resolve, reject) => {
+            self.send(name, args, (result, error) => {
+              if (error)
+                reject(error);
+              else
+                resolve(result);
+            });
+          });
+        };
+      }
+    });
+
+    // Make a proxy object to post remote notifications, either via:
+    //   rpc.post(method, [args])
+    // or:
+    //   rpc.post.method(arg1, arg2, ...)
+    // The result of posted messages is ignored (no ID sent).
+    //
+    self.post = new Proxy(Object.freeze(function post(method, args) {
+      self.send(method, args);
+    }), {
+      get: function(target, name) {
+        return function() {
+          self.send(name, [].slice.call(arguments));
+        }
+      }
+    });
+
     connect();
   }
 
+  // Disconnects from the RPC server, ignoring all future calls.
+  // Once disconnected, an RPC instance cannot be reconnected.
+  //
   disconnect() {
     return new Promise((resolve, reject) => {
       if (this.socket && this.socket.readyState != WebSocket.CLOSED) {
@@ -132,14 +204,26 @@ module.exports = class RPC {
     });
   }
 
+  // Register an RPC function with the name 'method'; when called by the remote side,
+  // callback(arg1, arg2, ..., argN) will be invoked.
+  //
   on(method, callback) {
     this._handlers[method] = callback;
   }
 
+  // Unregisters an RPC function.
+  //
   removeListener(method) {
     delete this._handlers[method];
   }
 
+  // Manually send a remote procedure call.
+  // - method: The name of the method to invoked
+  // - params: An array of method parameters
+  // - callback: if passed, expect a response, callback(result, error)
+  // If callback is specified, the result is the ID attached to the
+  // RPC request, otherwise the result is undefined.
+  //
   send(method, params, callback) {
     var self = this;
     if (self.socket) {
@@ -168,20 +252,5 @@ module.exports = class RPC {
         callback(undefined, { code: -32603, message: "WebSocket is not connected" });
       }
     }
-  }
-
-  call(method, params) {
-    return new Promise((resolve, reject) => {
-      this.send(method, params, (result, error) => {
-        if (error)
-          reject(error);
-        else
-          resolve(result);
-      });
-    });
-  }
-
-  post(method, params) {
-    this.send(method, params);
   }
 };

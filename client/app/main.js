@@ -8,6 +8,22 @@ let daemon = null;
 let main = null;
 let tray = null;
 
+let args = {
+  debug: false,
+  showWindowOnStart: true,
+  useSemanticUi: false,
+};
+var noMain = false;
+process.argv.forEach(arg => {
+  if (arg === "--debug") {
+    args.debug = true;
+  } else if (arg === '--background') {
+    args.showWindowOnStart = false;
+  } else if (arg === '--semantic') {
+    args.useSemanticUi = true;
+  }
+});
+
 function eventPromise(emitter, name) {
   return new Promise((resolve, reject) => {
     emitter.once(name, resolve);
@@ -39,6 +55,10 @@ app.on('will-quit', event => {
       daemon = null;
       app.quit();
     });
+    return;
+  }
+  if (tray) {
+    tray.destroy();
   }
 });
 
@@ -115,10 +135,15 @@ function createTray() {
   ]);
   tray.setToolTip('Cypherpunk VPN');
   tray.setContextMenu(menu);
+  tray.on('click', (evt, bounds) => {
+    if (main) {
+      main.show();
+    }
+  });
 }
 
 function createMainWindow() {
-  if (useSemanticUi) {
+  if (args.useSemanticUi) {
     main = new BrowserWindow({
       title: 'Cypherpunk VPN (Semantic UI)',
       //icon: icon,
@@ -157,16 +182,20 @@ function createMainWindow() {
 
   main.setMenu(null);
   main.on('ready-to-show', function() {
-    main.show();
+    if (args.showWindowOnStart) {
+      main.show();
+    }
   });
   main.maximizedPrev = null;
 
-  if (useSemanticUi) {
+  if (args.useSemanticUi) {
     main.loadURL(`file://${__dirname}/index-semantic.html`);
   } else {
     main.loadURL(`file://${__dirname}/index.html`);
   }
-  main.webContents.openDevTools({ mode: 'undocked' });
+  if (args.debug) {
+    main.webContents.openDevTools({ mode: 'undocked' });
+  }
 };
 
 app.on('window-all-closed', function() {

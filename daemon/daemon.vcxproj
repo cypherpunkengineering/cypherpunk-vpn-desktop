@@ -30,9 +30,9 @@
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-    <OutDir>..\out\$(Configuration)\$(PlatformArchitecture)\</OutDir>
+    <OutDir>..\out\daemon\$(Configuration)\$(PlatformArchitecture)\</OutDir>
     <IntDir>int\$(Configuration)\$(PlatformArchitecture)\</IntDir>
-    <TargetName>service</TargetName>
+    <TargetName>cyphervpn-service</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <UseDebugLibraries>true</UseDebugLibraries>
@@ -163,6 +163,7 @@
   <ItemGroup>
     <OpenVPNBinaries Include="third_party\openvpn_win\$(PlatformArchitecture)\*.*" />
     <TapDrivers Include="third_party\tuntap_win\$(PlatformArchitecture)\*.*" />
+    <OpenVPNProfiles Include="*.ovpn" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
@@ -171,5 +172,6 @@
   <Target Name="AfterBuild">
     <Copy SourceFiles="@(OpenVPNBinaries)" DestinationFolder="$(OutDir)\openvpn" />
     <Copy SourceFiles="@(TapDrivers)" DestinationFolder="$(OutDir)\tap" />
+    <Copy SourceFiles="@(OpenVPNProfiles)" DestinationFolder="$(OutDir)\openvpn" />
   </Target>
 </Project>

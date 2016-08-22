@@ -6,9 +6,10 @@
   "main": "app/main.js",
   "scripts": {
     "start": "electron app/main.js",
-    "build-semantic": "cd semantic && gulp build",
-    "watch": "./node_modules/.bin/webpack-dev-server",
-    "electron-rebuild": "./node_modules/.bin/electron-rebuild"
+    "build-semantic": "cd semantic && gulp build --silent",
+    "watch": "webpack-dev-server",
+    "electron-rebuild": "electron-rebuild",
+    "package": "electron-packager"
   },
   "repository": {
     "type": "git",

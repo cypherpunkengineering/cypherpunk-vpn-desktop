@@ -5,4 +5,4 @@
 *.user
 *.VC.opendb
 *.VC.db
-
+/out/
