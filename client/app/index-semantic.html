@@ -7,6 +7,8 @@
     <script>$=jQuery=require('jquery');</script>
     <script src="semantic/semantic.min.js"></script>
     <style>
+      @import 'https://fonts.googleapis.com/css?family=Dosis';
+
       html, body { -webkit-user-select: none; user-select: none; cursor: default; min-width: 300px; }
       body { background-color: #222; transition: 1s background-color; }
       /*:not(input):not(textarea), :not(input):not(textarea)::after, :not(input):not(textarea)::before { -webkit-user-select: none; user-select: none; cursor: default; }*/
@@ -66,8 +68,12 @@
       @keyframes bge { from { transform: scale(0.5) rotate(0deg); } to { transform: scale(1.5) rotate(360deg); } }
       @keyframes bgo { 0% { opacity: 0 } 10% { opacity: 0.7; } 100% { opacity: 0 } }
 
-      #connect-container { position: absolute; left: 0; top: 100px; width: 100%; height: 200px; display: flex; align-items: center; justify-content: center; }
+      div.screen { position: absolute; left: 0; top: 3.5rem; right: 0; bottom: 0; visibility: hidden; display: flex; flex-direction: column; align-items: center; /*justify-content: center;*/ }
+      div.full.screen { top: 0; }
+
+      #connect-container { margin-top: 130px; height: 140px; display: flex; align-items: center; justify-content: center; }
       #connect { transition: 0.5s color; text-shadow: 0 0 15px rgba(0,0,0,0.25); }
+      #connect-status { margin-top: 5px; font-size: 150%; color: #aaa; text-shadow: 0 0 15px rgba(0,0,0,0.25); }
 
       /*
       html, body { margin: 0; padding: 0; font-family: 'Segoe UI', Arial, Helvetica; font-size: 10pt; background: linear-gradient(#999, #ddd) top / auto 200px repeat-x #ddd; }
@@ -84,6 +90,19 @@
     </style>
   </head>
   <body>
+
+    <div id="bgr">
+      <div>
+        <img class="r1" src="img/bgring3.png"/>
+        <img class="r2" src="img/bgring3.png"/>
+        <img class="r3" src="img/bgring3.png"/>
+        <img class="r4" src="img/bgring3.png"/>
+        <img class="r5" src="img/bgring3.png"/>
+        <img class="r6" src="img/bgring3.png"/>
+        <img class="r7" src="img/bgring3.png"/>
+      </div>
+    </div>
+
     <div id="titlebar" class="ui fixed inverted borderless icon menu" style="height: 3.5em">
       <div class="header item" style="font-size: 90%"><!--Cypherpunk VPN--></div>
       <div class="right menu" style="font-size: 125%">
@@ -100,21 +119,17 @@
       </div>
     </div>
 
-    <div id="bgr">
-      <div>
-        <img class="r1" src="img/bgring3.png"/>
-        <img class="r2" src="img/bgring3.png"/>
-        <img class="r3" src="img/bgring3.png"/>
-        <img class="r4" src="img/bgring3.png"/>
-        <img class="r5" src="img/bgring3.png"/>
-        <img class="r6" src="img/bgring3.png"/>
-        <img class="r7" src="img/bgring3.png"/>
+    <div id="connect-screen" class="full screen" style="visibility: visible; font-family: 'Dosis', sans-serif;">
+      <div id="connect-container">
+        <i id="connect" class="ui red fitted massive power link icon"></i>
       </div>
+      <div id="connect-status">DISCONNECTED</div>
     </div>
 
-    <div id="connect-container">
-      <i id="connect" class="ui red fitted massive power link icon"></i>
+    <div id="load-screen" class="full screen ui active dimmer" style="visibility: visible; z-index: 20">
+      <div class="ui big text loader">Loading</div>
     </div>
+
   </body>
 
   <script>
@@ -124,6 +139,7 @@
       url: 'ws://127.0.0.1:9337/',
       // Note: Disabling the error handler will make the RPC attempt to reconnect infinitely in the background
       //onerror: () => { window.alert("Unable to connect to background service.", "Cypherpunk VPN"); require('electron').remote.app.quit(); },
+      onopen: onInitialized
     });
     // Listen for OpenVPN state changes (FIXME: API will change later)
     daemon.on('state', (timestamp, state, desc, local, remote) => {
@@ -141,16 +157,31 @@
     // Disconnect before unload
     window.onbeforeonload = evt => {
       daemon.post.disconnect();
+      daemon.disconnect();
     };
 
+    function onInitialized() {
+      $('#load-screen').transition('fade');//remove();
+    }
+    function onConnecting() {
+      $('#connect').addClass('disabled').removeClass('red');
+      $(document.body).addClass('connecting');
+      $('#bgr').addClass('animating');
+      $('#connect-status').text("CONNECTING...");
+    }
     function onConnected() {
       $(document.body).addClass('connected').removeClass('connecting');
       $('#connect').addClass('green').removeClass('disabled');
+      $('#connect-status').text("CONNECTED");
+    }
+    function onDisconnecting() {
+      $('#connect-status').text("DISCONNECTING...");
     }
     function onDisconnected() {
       $(document.body).removeClass('connected');
       $('#bgr').removeClass('animating');
       $('#connect').addClass('red').removeClass('green disabled');
+      $('#connect-status').text("DISCONNECTED");
     }
 
     $('#settings').dropdown({ action: 'hide' });
@@ -158,12 +189,11 @@
       var self = $('#connect');
       var bgr = $('#bgr');
       if (!self.hasClass('disabled') && !$(document.body).hasClass('connected')) {
-        self.addClass('disabled').removeClass('red');
-        $(document.body).addClass('connecting');
-        bgr.addClass('animating');
+        onConnecting();
         // Ask daemon to connect (FIXME: API will change)
-        daemon.post.connect({ profile: [] });
+        daemon.call.connect({ profile: [] });
       } else {
+        onDisconnecting();
         // Ask daemon to disconnect (FIXME: API will change)
         daemon.post.disconnect();
       }
