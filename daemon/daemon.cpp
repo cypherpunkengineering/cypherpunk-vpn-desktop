@@ -20,7 +20,10 @@ using namespace std::placeholders;
 CypherDaemon::CypherDaemon()
 	: _rpc_client(_json_handler)
 	, _process(nullptr)
+	, _next_process(nullptr)
+	, _state(STARTING)
 {
+
 }
 
 int CypherDaemon::Run()
@@ -53,16 +56,15 @@ int CypherDaemon::Run()
 	_ws_server.listen(asio::ip::tcp::endpoint(asio::ip::address::from_string("127.0.0.1"), 9337));
 	_ws_server.start_accept();
 
+	_rpc_server.RegisterFormatHandler(_json_handler);
 	{
-		_rpc_server.RegisterFormatHandler(_json_handler);
-		{
-			auto& d = _rpc_server.GetDispatcher();
-			d.AddMethod("connect", &CypherDaemon::RPC_connect, *this);
-			d.AddMethod("disconnect", &CypherDaemon::RPC_disconnect, *this);
-		}
-
-		_ws_server.run();
+		auto& d = _rpc_server.GetDispatcher();
+		d.AddMethod("connect", &CypherDaemon::RPC_connect, *this);
+		d.AddMethod("disconnect", &CypherDaemon::RPC_disconnect, *this);
 	}
+
+	_state = INITIALIZED;
+	_ws_server.run();
 
 	return 0;
 }

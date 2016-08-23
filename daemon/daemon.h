@@ -28,6 +28,19 @@ class CypherDaemon
 public:
 	CypherDaemon();
 
+	enum State
+	{
+		STARTING,
+		INITIALIZED,
+		DISCONNECTED = INITIALIZED,
+		CONNECTING,
+		CONNECTED,
+		SWITCHING,
+		DISCONNECTING,
+		EXITING,
+		EXITED,
+	};
+
 public:
 	// The main entrypoint of the daemon; should block for the duration of the daemon.
 	virtual int Run();
@@ -54,7 +67,8 @@ protected:
 	jsonrpc::JsonFormatHandler _json_handler;
 	JsonRPCServer _rpc_server;
 	JsonRPCClient _rpc_client;
-	OpenVPNProcess* _process;
+	OpenVPNProcess *_process, *_next_process;
+	State _state;
 
 protected:
 	// Create a platform-specific handler around an OpenVPN process.
