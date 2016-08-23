@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<installer-gui-script minSpecVersion="1">
+    <title>Cypherpunk VPN</title>
+    <organization>com.cypherpunk</organization>
+    <domains enable_localSystem="true"/>
+    <options customize="never" require-scripts="true" rootVolumeOnly="true"/>
+    <!--<background file="diagram.tiff" alignment="bottomleft" scaling="none"/>-->
+    <welcome file="welcome.html" mime-type="text/html"/>
+    <license file="license.txt"/>
+    <pkg-ref id="com.cypherpunk.pkg.CypherVPN" version="0.1.0"
+        auth="root">Build.pkg</pkg-ref>
+    <choices-outline>
+        <line choice="com.cypherpunk.pkg.CypherVPN"/>
+    </choices-outline>
+    <choice
+        id="com.cypherpunk.pkg.CypherVPN"
+        visible="true"
+        title="Cypherpunk VPN"
+        description="Cypherpunk VPN Client"
+        start_selected="true">
+      <pkg-ref id="com.cypherpunk.pkg.CypherVPN"/>
+    </choice>
+</installer-gui-script>

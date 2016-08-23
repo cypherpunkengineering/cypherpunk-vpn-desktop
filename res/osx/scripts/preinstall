@@ -1,0 +1,6 @@
+#!/bin/sh
+kextunload -b net.sf.tuntaposx.tap || true
+kextunload -b net.sf.tuntaposx.tun || true
+kill -2 $(ps aux | grep CypherVPN.app | awk '{print $2}') || true
+launchctl unload /Library/LaunchAgents/com.cypherpunk.vpn.client.plist || true
+launchctl unload /Library/LaunchDaemons/com.cypherpunk.vpn.service.plist || true
