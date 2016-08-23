@@ -2,13 +2,15 @@
 cd "$( dirname "${BASH_SOURCE[0]}" )"
 cd ../
 
-CODESIGNATURE="FIXME"
+CODESIGNIDENTITY="Mac Developer: jmaurice+usa@cypherpunk.com (KP4M96U39D)"
+APPSIGNIDENTITY="my-test-installer"
+PKGNAME="CypherpunkVPN"
 
 export APP_VER="$(cat client/package.json | grep version | cut -d '"' -f 4)"
 
 rm -rf out/osx
-rm -f out/CypherVPN.pkg
-rm -f out/CypherVPN.pkg.zip
+rm -f out/"${PKGNAME}".pkg
+rm -f out/"${PKGNAME}".pkg.zip
 
 # Client
 mkdir -p out/osx/Applications
@@ -20,23 +22,23 @@ cd ../
 mv out/osx/Applications/CypherVPN-darwin-x64/CypherVPN.app out/osx/Applications/
 rm -rf out/osx/Applications/CypherVPN-darwin-x64
 sleep 3
-codesign --force --deep --sign "${CODESIGNATURE}" out/osx/Applications/CypherVPN.app
+codesign --force --deep --sign "${CODESIGNIDENTITY}" out/osx/Applications/CypherVPN.app
 
 # Service
 cd daemon/posix
 make
 cd ../..
 mkdir -p out/osx/usr/local/bin
-cp daemon/posix/cyphervpn-service out/osx/usr/local/bin/cyphervpn-service
-codesign --sign "${CODESIGNATURE}" out/osx/usr/local/bin/cyphervpn-service
+install -c -m 755 daemon/posix/cyphervpn-service out/osx/usr/local/bin/cyphervpn-service
+codesign --sign "${CODESIGNIDENTITY}" out/osx/usr/local/bin/cyphervpn-service
 
 # LaunchDaemon for the service
 mkdir -p out/osx/Library/LaunchDaemons
-cp service_osx/com.cypherpunk.vpn.service.plist out/osx/Library/LaunchDaemons
+cp ./res/osx/plist/com.cypherpunk.vpn.service.plist out/osx/Library/LaunchDaemons
 
 # LaunchAgent for the client
 mkdir -p out/osx/Library/LaunchAgents
-cp service_osx/com.cypherpunk.vpn.client.plist out/osx/Library/LaunchAgents
+cp ./res/osx/plist/com.cypherpunk.vpn.client.plist out/osx/Library/LaunchAgents
 
 # TUN/TAP adapter extensions
 mkdir -p out/osx/Library/Extensions
@@ -48,16 +50,17 @@ cp daemon/third_party/tuntap_osx/net.sf.tuntaposx.tun.plist out/osx/Library/Laun
 
 # OpenVPN binary
 mkdir -p out/osx/usr/local/bin
-cp openvpn_osx/openvpn out/osx/usr/local/bin/cyphervpn-openvpn
-codesign -s "${CODESIGNATURE}" out/osx/usr/local/bin/cyphervpn-openvpn
+install -c -m 755 ./daemon/third_party/openvpn_osx/openvpn out/osx/usr/local/bin/cyphervpn-openvpn
+codesign -s "${CODESIGNIDENTITY}" out/osx/usr/local/bin/cyphervpn-openvpn
 
 # Ensure install scripts are executable
-chmod +x res/osx_resources/scripts/postinstall
-chmod +x res/osx_resources/scripts/preinstall
+chmod +x res/osx/scripts/postinstall
+chmod +x res/osx/scripts/preinstall
 
 # Package
 cd out
-pkgbuild --root osx --scripts ../res/osx_scripts --sign "${CODESIGNATURE}" --identifier com.cypherpunk.pkg.CypherVPN --version $APP_VER --ownership recommended --install-location / Build.pkg
-productbuild --resources ../res/osx_resources --distribution ../osx_resources/distribution.xml --sign "${CODESIGNATURE}" --version $APP_VER CypherVPN.pkg
-zip Pritunl.pkg.zip Pritunl.pkg
-rm -f Build.pkg
+pkgbuild --root osx --scripts ../res/osx/scripts --sign "${APPSIGNIDENTITY}" --identifier com.cypherpunk.pkg.CypherVPN --version "${APP_VER}" --ownership recommended --install-location / Build.pkg
+productbuild --resources ../res/osx/resources --distribution ../res/osx/resources/distribution.xml --sign "${APPSIGNIDENTITY}" --version "${APP_VER}" "${PKGNAME}".pkg
+#zip "${PKGNAME}".pkg.zip "${PKGNAME}".pkg
+rm -rf osx
+ls -la "${PKGNAME}.pkg"
