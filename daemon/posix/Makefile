@@ -14,4 +14,4 @@ all:
 	-std=c++14 \
 	$(INCS) \
 	$(SRCS) \
-	-o cyphervpn-service
+	-o cypherpunkvpn-service

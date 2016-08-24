@@ -1,9 +1,9 @@
-#define MyAppID "CypherVPN"
+#define MyAppID "CypherpunkVPN"
 #define MyAppName "Cypherpunk VPN"
 #define MyAppVersion "0.1.2"
 #define MyAppPublisher "Cypherpunk Partners KK"
 #define MyAppURL "https://cypherpunk.com/"
-#define MyAppExeName "cyphervpn.exe"
+#define MyAppExeName "CypherpunkVPN.exe"
 #define MyAppCopyright "Copyright © 2016 " + MyAppPublisher
 
 [Setup]
@@ -44,9 +44,9 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 ;Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce
 
 [Files]
-Source: "..\out\client\cyphervpn-win32-ia32\*"; DestDir: "{app}"; Flags: 32bit createallsubdirs overwritereadonly recursesubdirs
-Source: "..\out\daemon\Release\32\cyphervpn-service.exe"; DestDir: "{app}"; DestName: "cyphervpn-service.exe"; Flags: ignoreversion overwritereadonly; Check: not Is64BitInstallMode; BeforeInstall: StopService
-Source: "..\out\daemon\Release\64\cyphervpn-service.exe"; DestDir: "{app}"; DestName: "cyphervpn-service.exe"; Flags: ignoreversion overwritereadonly; Check: Is64BitInstallMode; BeforeInstall: StopService
+Source: "..\out\client\CypherpunkVPN-win32-ia32\*"; DestDir: "{app}"; Flags: 32bit createallsubdirs overwritereadonly recursesubdirs
+Source: "..\out\daemon\Release\32\cypherpunkvpn-service.exe"; DestDir: "{app}"; DestName: "cypherpunkvpn-service.exe"; Flags: ignoreversion overwritereadonly; Check: not Is64BitInstallMode; BeforeInstall: StopService
+Source: "..\out\daemon\Release\64\cypherpunkvpn-service.exe"; DestDir: "{app}"; DestName: "cypherpunkvpn-service.exe"; Flags: ignoreversion overwritereadonly; Check: Is64BitInstallMode; BeforeInstall: StopService
 Source: "..\out\daemon\Release\32\openvpn\*"; DestDir: "{app}\openvpn"; Flags: ignoreversion recursesubdirs createallsubdirs overwritereadonly; Check: not Is64BitInstallMode
 Source: "..\out\daemon\Release\64\openvpn\*"; DestDir: "{app}\openvpn"; Flags: ignoreversion recursesubdirs createallsubdirs overwritereadonly; Check: Is64BitInstallMode
 Source: "..\out\daemon\Release\32\tap\*"; DestDir: "{app}\tap"; Flags: ignoreversion recursesubdirs createallsubdirs overwritereadonly; Check: not Is64BitInstallMode
@@ -59,7 +59,7 @@ Source: "..\out\daemon\Release\64\tap\*"; DestDir: "{app}\tap"; Flags: ignorever
 var ResultCode: Integer;
 procedure StopService();
 begin
-    Exec('net.exe', 'stop CypherVPNService', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+    Exec('net.exe', 'stop CypherpunkVPNService', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
 end;
 
 [Icons]
@@ -77,14 +77,14 @@ Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 Type: filesandordirs; Name: "{app}"
 
 [Run]
-Filename: "{app}\cyphervpn-service.exe"; Parameters: "addtap 2"; WorkingDir: "{app}"; Flags: runhidden; StatusMsg: "Installing network adapter..."
-Filename: "{app}\cyphervpn-service.exe"; Parameters: "install"; WorkingDir: "{app}"; Flags: runhidden; StatusMsg: "Installing background service..."
-Filename: "{app}\cyphervpn-service.exe"; Parameters: "start"; WorkingDir: "{app}"; Flags: runhidden; StatusMsg: "Starting background service..."
+Filename: "{app}\cypherpunkvpn-service.exe"; Parameters: "addtap 2"; WorkingDir: "{app}"; Flags: runhidden; StatusMsg: "Installing network adapter..."
+Filename: "{app}\cypherpunkvpn-service.exe"; Parameters: "install"; WorkingDir: "{app}"; Flags: runhidden; StatusMsg: "Installing background service..."
+Filename: "{app}\cypherpunkvpn-service.exe"; Parameters: "start"; WorkingDir: "{app}"; Flags: runhidden; StatusMsg: "Starting background service..."
 
 [UninstallRun]
-Filename: "{app}\cyphervpn-service.exe"; Parameters: "stop"; WorkingDir: "{app}"; Flags: runhidden
-Filename: "{app}\cyphervpn-service.exe"; Parameters: "uninstall"; WorkingDir: "{app}"; Flags: runhidden
-Filename: "{app}\cyphervpn-service.exe"; Parameters: "removetap"; WorkingDir: "{app}"; Flags: runhidden
+Filename: "{app}\cypherpunkvpn-service.exe"; Parameters: "stop"; WorkingDir: "{app}"; Flags: runhidden
+Filename: "{app}\cypherpunkvpn-service.exe"; Parameters: "uninstall"; WorkingDir: "{app}"; Flags: runhidden
+Filename: "{app}\cypherpunkvpn-service.exe"; Parameters: "removetap"; WorkingDir: "{app}"; Flags: runhidden
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}"

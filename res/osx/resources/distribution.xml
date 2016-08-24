@@ -7,17 +7,17 @@
     <!--<background file="diagram.tiff" alignment="bottomleft" scaling="none"/>-->
     <welcome file="welcome.html" mime-type="text/html"/>
     <license file="license.txt"/>
-    <pkg-ref id="com.cypherpunk.pkg.CypherVPN" version="0.1.0"
+    <pkg-ref id="com.cypherpunk.pkg.CypherpunkVPN" version="0.1.0"
         auth="root">Build.pkg</pkg-ref>
     <choices-outline>
-        <line choice="com.cypherpunk.pkg.CypherVPN"/>
+        <line choice="com.cypherpunk.pkg.CypherpunkVPN"/>
     </choices-outline>
     <choice
-        id="com.cypherpunk.pkg.CypherVPN"
+        id="com.cypherpunk.pkg.CypherpunkVPN"
         visible="true"
         title="Cypherpunk VPN"
         description="Cypherpunk VPN Client"
         start_selected="true">
-      <pkg-ref id="com.cypherpunk.pkg.CypherVPN"/>
+      <pkg-ref id="com.cypherpunk.pkg.CypherpunkVPN"/>
     </choice>
 </installer-gui-script>

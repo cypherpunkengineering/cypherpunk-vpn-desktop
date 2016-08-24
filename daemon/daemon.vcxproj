@@ -32,7 +32,7 @@
     <CharacterSet>Unicode</CharacterSet>
     <OutDir>..\out\daemon\$(Configuration)\$(PlatformArchitecture)\</OutDir>
     <IntDir>int\$(Configuration)\$(PlatformArchitecture)\</IntDir>
-    <TargetName>cyphervpn-service</TargetName>
+    <TargetName>cypherpunkvpn-service</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <UseDebugLibraries>true</UseDebugLibraries>
@@ -171,7 +171,7 @@
   </ImportGroup>
   <Target Name="AfterBuild">
     <Copy SourceFiles="@(OpenVPNBinaries)" DestinationFolder="$(OutDir)\openvpn" />
-    <Copy SourceFiles="@(OpenVPNExecutable)" DestinationFiles="$(OutDir)\openvpn\cyphervpn-openvpn.exe" />
+    <Copy SourceFiles="@(OpenVPNExecutable)" DestinationFiles="$(OutDir)\openvpn\cypherpunkvpn-openvpn.exe" />
     <Copy SourceFiles="@(TapDrivers)" DestinationFolder="$(OutDir)\tap" />
     <Copy SourceFiles="@(OpenVPNProfiles)" DestinationFolder="$(OutDir)\openvpn" />
   </Target>

@@ -6,7 +6,7 @@
 	<string>com.cypherpunk.vpn.service</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/usr/local/bin/cyphervpn-service</string>
+		<string>/usr/local/bin/cypherpunkvpn-service</string>
 	</array>
 	<key>KeepAlive</key>
 	<true/>
