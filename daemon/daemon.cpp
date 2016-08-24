@@ -237,7 +237,7 @@ bool CypherDaemon::RPC_connect(const jsonrpc::Value::Struct& params)
 		SendToAllClients(_rpc_client.BuildNotificationData("bytecount", params));
 	});
 
-	vpn->SendManagementCommand("\nstate on\nbytecount 5\n");
+	vpn->SendManagementCommand("\nstate on\nbytecount 5\nhold release\n");
 
 	//vpn->SendManagementCommand("signal SIGTERM\n");
 	//vpn->SendManagementCommand("exit\n");
