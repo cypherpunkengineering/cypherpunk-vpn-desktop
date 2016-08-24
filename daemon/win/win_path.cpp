@@ -24,7 +24,7 @@ std::string GetPath(PredefinedFile file)
 	switch (file)
 	{
 	case DaemonExecutable: return g_argv0;
-	case OpenVPNExecutable: return GetPath(OpenVPNDir, "openvpn.exe");
+	case OpenVPNExecutable: return GetPath(OpenVPNDir, "cypherpunk-openvpn.exe");
 	case TapInstallExecutable: return GetPath(TapDriverDir, "tapinstall.exe");
 	default:
 		LOG(ERROR) << "Unknown file";

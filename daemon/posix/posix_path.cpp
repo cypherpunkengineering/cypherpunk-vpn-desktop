@@ -25,7 +25,7 @@ std::string GetPath(PredefinedFile file)
 	switch (file)
 	{
 	case DaemonExecutable: return g_argv0;
-	case OpenVPNExecutable: return GetPath(OpenVPNDir, "openvpn");
+	case OpenVPNExecutable: return "cypherpunk-openvpn"; // Exists in /usr/local/bin, callable anywhere
 	default:
 		//LOG(ERROR) << "Unknown file";
 		return std::string();
