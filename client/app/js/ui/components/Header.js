@@ -6,7 +6,7 @@ export default class Header extends React.Component  {
     return(
       <header>
         <AccountButton />
-        <div><img src="./img/logo_gray.svg" /><span>Cypherpunk</span></div>
+        <div><span>Cypherpunk</span></div>
         <SettingsButton />
       </header>
     );

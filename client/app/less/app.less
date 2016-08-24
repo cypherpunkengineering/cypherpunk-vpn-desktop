@@ -1,4 +1,4 @@
-
+@import 'https://fonts.googleapis.com/css?family=Dosis';
 
 html, body, tfoot, tr, tr, td, article, aside, canvas, details, figure, hgroup, menu,
 nav, footer, header, section, summary, mark, audio, video {
@@ -19,17 +19,6 @@ footer, header, nav, section, audio, video {
 	display: block;
 }
 
-a, .link {
-  font-weight: 400;
-  letter-spacing: 0.1em;
-  color: #fff;
-  text-decoration: none;
-}
-
-a:hover {
-  color: #ccf2fd;
-}
-
 a img {
   border: 0;
 }
@@ -43,11 +32,108 @@ a img {
 @black01: #034698;
 @header-bg: rgba(0, 0, 0, 0.1);
 
-.appgrad-dark(@deg) {
-  background: linear-gradient(@deg, @black01, @black02);
+
+// colours from desktop app mockup
+@cp_blue01: #034698;
+@cp_blue02: #76a8e7;
+@cp_blue03: #1560bd;
+@cp_default_font: #fefefe;
+@cp_black20p: rgba(0, 0, 0, 0.2);
+@cp_white20p: rgba(255, 255, 255, 0.2);
+@cp_white25p: rgba(255, 255, 255, 0.25);
+@cp_white40p: rgba(255, 255, 255, 0.4);
+@cp_yellow: #f8e71c;
+
+.cp_bg01 {
+  background: linear-gradient(328deg, @cp_blue01, @cp_blue02);
 }
 
-input {
+a, .link {
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  color: #fff;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #ccf2fd;
+}
+
+.bottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+}
+
+.cp_button01 {
+  display: inline-block;
+  border: 1px solid #fff;
+  height: 16px;
+  width: 268px;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 18px;
+  color: #fff;
+  border-radius: 4px;
+  padding: 15px;
+}
+
+.cp_button02 {
+  display: inline-block;
+  height: 16px;
+  width: 345px;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 18px;
+  background: @cp_white25p;
+  color: #fff;
+  padding: 15px;
+}
+
+.cp_input01 {
+  display: inline-block;
+  height: 18px;
+  width: 270px;
+  text-align: left;
+  background: @cp_white20p;
+  color: @cp_white40p;
+  border: none;
+  font-size: 16px;
+  padding:15px;
+}
+
+
+.startup {
+  padding-top: 40px;
+}
+
+.startup div:nth-of-type(1) .cp_input01{
+  border-radius: 4px 4px 0 0;
+  margin-bottom: 2px;
+}
+
+.startup div:nth-of-type(2) .cp_input01{
+  border-radius: 0 0 4px 4px;
+  margin-bottom: 20px;
+}
+
+.startup .forgot_password {
+  text-decoration: underline;
+  font-size: 14px;
+  margin-top: 20px;
+}
+
+.startup .sign_up {
+  .cp_button02;
+  color: @cp_yellow;
+  height: 18px;
+  .bottom;
+}
+
+
+
+
+input, textarea {
   -webkit-app-region: no-drag;
 }
 
@@ -61,12 +147,13 @@ html, body {
 }
 
 body {
-  font-family: 'Dosis-Regular', Roboto, Arial, Helvetica; font-size: 100%;
-  letter-spacing: 0.2em;
+  font-family: Dosis;
+  font-size: 100%;
+  letter-spacing: 1px;
   text-align: center;
-  font-weight: 300;
-	color: @font-light;
-  .appgrad-dark(-23deg);
+  font-weight: 100;
+	color: @cp_default_font;
+  .cp_bg01;
   -webkit-app-region: drag;
 }
 
@@ -103,21 +190,8 @@ header span {
   display: none;
 }
 
-.startup {
-  padding-top: 40px;
-}
 
-.startup input {
-  opacity: 0.7;
-  width: 70%;
-  line-height: 2em;
-  margin: 5px;
-  padding: 0 2px 0 2px;
-  color: #444;
-  font-size: 1em;
-  font-weight: bold;
-  text-align: center;
-}
+
 
 nav span {
   flex: 1;
@@ -193,7 +267,7 @@ nav {
 
 
 
-.scrollbar (@color: rgba(0, 0, 0, 0.3), @width: 8px, @height: 10px) {
+.scrollbar (@color: rgba(0, 0, 0, 0.2), @width: 6px, @height: 10px) {
   overflow: auto;
 
   &::-webkit-scrollbar {

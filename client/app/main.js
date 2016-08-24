@@ -171,7 +171,7 @@ function createMainWindow() {
       frame: false,
       fullscreen: false,
       width: 375,
-      height: 606,
+      height: 590,
       resizable: false,
       //'min-width': 300,
       //'min-height': 400,

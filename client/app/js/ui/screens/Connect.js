@@ -1,7 +1,7 @@
 import React from 'react';
-import ConnectButton from './Interface/ConnectButton.js';
+import ConnectButton from './Components/ConnectButton.js';
 
-export default class ConnectUI extends React.Component  {
+export default class Connect extends React.Component  {
   constructor() {
     super();
     this.state = { connect_text: "CONNECT"};

@@ -1,17 +1,17 @@
 import React from 'react';
 
-export default class Settings extends React.Component  {
+export default class GeneralAdvanced extends React.Component  {
   constructor(props) {
     super(props);
     this.changeTab = this.changeTab.bind(this);
-    const tabs = ['Settings', 'Advanced'];
+    const tabs = ['General', 'Advanced'];
     this.state = {
       class1: 'show settn', class2: 'hide settn'
     }
   }
 
   changeTab(e) {
-    if (e.target.innerText == "Settings"){
+    if (e.target.innerText == "General"){
       this.setState({class1: 'show settn', class2: 'hide settn'})
     } else {
       this.setState({class1: 'hide settn', class2: 'show settn'})
@@ -21,7 +21,7 @@ export default class Settings extends React.Component  {
   render() {
     return(
       <div>
-        <Tabs changeTab={this.changeTab} tabs={['Settings', 'Advanced']} />
+        <Tabs changeTab={this.changeTab} tabs={['General', 'Advanced']} />
         <div className={this.state.class1}>
 
         <ul>

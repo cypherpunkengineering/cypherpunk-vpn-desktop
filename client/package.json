@@ -6,6 +6,7 @@
   "main": "app/main.js",
   "scripts": {
     "start": "electron app/main.js",
+    "build": "webpack",
     "build-semantic": "cd semantic && gulp build --silent",
     "watch": "webpack-dev-server",
     "electron-rebuild": "electron-rebuild",
@@ -49,14 +50,16 @@
     "electron-rebuild": "^1.1.5",
     "electron-packager": "^7.1.0",
     "electron-prebuilt": "^1.2.5",
+    "file-loader": "^0.9.0",
     "less": "^2.7.1",
     "less-loader": "^2.2.3",
     "rimraf": "^2.5.2",
     "rcedit": "^0.4.0",
-    "gulp": "^3.9.1",
-    "semantic-ui": "^2.2.2",
     "style-loader": "^0.13.1",
+    "utf-8-validate": "^1.2 .1",
     "webpack": "^1.13.1",
-    "webpack-dev-server": "^1.13.1"
+    "webpack-dev-server": "^1.13.1",
+    "gulp": "^3.9.1",
+    "semantic-ui": "^2.2.2"
   }
 }
