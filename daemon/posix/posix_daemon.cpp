@@ -11,8 +11,14 @@
 
 class PosixOpenVPNProcess : public OpenVPNProcess
 {
+	FILE* _file;
+
 public:
-	PosixOpenVPNProcess(asio::io_service& io) : OpenVPNProcess(io) {}
+	PosixOpenVPNProcess(asio::io_service& io) : OpenVPNProcess(io), _file(nullptr) {}
+	~PosixOpenVPNProcess()
+	{
+		Kill();
+	}
 
 	virtual void Run(const std::vector<std::string>& params) override
 	{
@@ -23,11 +29,16 @@ public:
 			cmdline += param; // FIXME: quote/escape
 		}
 		// execute cmdline asynchronously - popen?
+		_file = popen(cmdline.c_str(), "w"); // TODO: later, if parsing output, use "r" instead
 	}
 
 	virtual void Kill() override
 	{
-
+		if (_file)
+		{
+			pclose(_file);
+			_file = nullptr;
+		}
 	}
 };
 
