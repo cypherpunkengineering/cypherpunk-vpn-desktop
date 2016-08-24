@@ -59,9 +59,9 @@ chmod +x res/osx/scripts/preinstall
 
 # Package
 cd out
-pkgbuild --root osx --scripts ../res/osx/scripts --sign "${INSTALLERSIGNIDENTITY}" --identifier "com.cypherpunk.pkg.${APPNAME}" --version "${APP_VER}" --ownership recommended --install-location / tmp.pkg
+pkgbuild --root osx --scripts ../res/osx/scripts --sign "${INSTALLERSIGNIDENTITY}" --identifier "com.cypherpunk.pkg.${APPNAME}" --version "${APP_VER}" --ownership recommended --install-location / Build.pkg
 productbuild --resources ../res/osx/resources --distribution ../res/osx/resources/distribution.xml --sign "${INSTALLERSIGNIDENTITY}" --version "${APP_VER}" "${APPNAME}.pkg"
 #zip "${APPNAME}.pkg.zip" "${APPNAME}.pkg"
-rm -f tmp.pkg
+rm -f Build.pkg
 rm -rf osx
 ls -la "${PKGNAME}.pkg"
