@@ -4,9 +4,10 @@
 
 enum PredefinedDirectory
 {
-	BaseDir,
-	LogDir,
-	OpenVPNDir,
+	BaseDir,		// Base directory of config files etc. (e.g. C:\Program Files\Cypherpunk VPN\ on Windows)
+	LogDir,			// Directory where to write log file(s)
+	OpenVPNDir,		// Directory where OpenVPN binary sits
+	ProfileDir,		// Directory where temporary OpenVPN profile files are written
 #ifdef WIN32
 	TapDriverDir,
 #endif

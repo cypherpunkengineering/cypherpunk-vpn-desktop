@@ -2,12 +2,14 @@
 #include "daemon.h"
 #include "openvpn.h"
 #include "logger.h"
+#include "path.h"
 
 #include <thread>
 #include <asio.hpp>
 #include <jsonrpc-lean/server.h>
 #include <cstdio>
 #include <iostream>
+#include <fstream>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -119,69 +121,81 @@ void WriteOpenVPNProfile(std::ostream& out, const Settings::Connection& connecti
 {
 	using namespace std;
 
-	auto protocol = connection.get<std::string>("protocol", "udp");
-	auto remoteIP = connection.get<std::string>("remoteIP");
-	auto remotePort = connection.get<int>("remotePort");
-	auto mtu = connection.get<int>("mtu", 0);
-	auto cipher = connection.get<std::string>("cipher", "AES-128-CBC");
-	auto certificateAuthority = connection.get<jsonrpc::Value::Array>("certificateAuthority");
-	auto certificate = connection.get<jsonrpc::Value::Array>("certificate");
-	auto privateKey = connection.get<jsonrpc::Value::Array>("privateKey");
+	std::map<std::string, std::string> config = {
+		{ "client", "" },
+		{ "nobind", "" },
+		{ "dev", "tun" },
+		{ "proto", "udp" },
+		{ "tun-mtu", "1400" },
+		//{ "fragment", "1300" },
+		{ "mssfix", "1200" },
+		{ "ping", "10" },
+		{ "ping-exit", "60" },
+		{ "resolv-retry", "infinite" },
+		{ "cipher", "AES-128-CBC" },
+		//{ "redirect-gateway", "def1" },
+		{ "route-delay", "0" },
+	};
 
-	// Generic parameters for all server endpoints
-	out << "client" << endl;
-	out << "nobind" << endl;
-	out << "dev tun" << endl;
-	out << "resolv-retry infinite" << endl;
-
-	// Server endpoint specific parameters
-	out << "proto ";
-	if (protocol.empty())
-		out << "udp" << endl;
-	else
-		out << protocol << endl;
-	out << "remote " << remoteIP << ' ' << remotePort << endl;
-	if (mtu != 0)
-		out << "tun-mtu " + mtu << endl;
-	out << "cipher " << cipher << endl;
-
-	// Depending on routing settings
-	out << "redirect-gateway def1" << endl;
-	//out << "route IP MASK GW METRIC" << endl;
-	//out << "route-delay 0" << endl;
-
-	if (!certificateAuthority.empty())
+	for (const auto& e : connection)
 	{
-		out << "<ca>" << endl;
-		if (certificateAuthority.front().AsString() != "-----BEGIN CERTIFICATE-----")
-			out << "-----BEGIN CERTIFICATE-----" << endl;
-		for (const auto& line : certificateAuthority)
-			out << line.AsString() << endl;
-		if (certificateAuthority.back().AsString() != "-----END CERTIFICATE-----")
-			out << "-----END CERTIFICATE-----" << endl;
-		out << "</ca>" << endl;
+		switch (e.second.GetType())
+		{
+		case jsonrpc::Value::Type::BOOLEAN:
+			config[e.first] = e.second.AsBoolean() ? "true" : "false";
+			break;
+		case jsonrpc::Value::Type::DOUBLE:
+			config[e.first] = std::to_string(e.second.AsDouble());
+			break;
+		case jsonrpc::Value::Type::INTEGER_32:
+			config[e.first] = std::to_string(e.second.AsInteger32());
+			break;
+		case jsonrpc::Value::Type::INTEGER_64:
+			config[e.first] = std::to_string(e.second.AsInteger64());
+			break;
+		case jsonrpc::Value::Type::NIL:
+			config[e.first] = "";
+			break;
+		case jsonrpc::Value::Type::STRING:
+			config[e.first] = e.second.AsString();
+			break;
+		}
 	}
-	if (!certificate.empty())
+
+	for (const auto& e : config)
 	{
-		out << "<cert>" << endl;
-		if (certificate.front().AsString() != "-----BEGIN CERTIFICATE-----")
-			out << "-----BEGIN CERTIFICATE-----" << endl;
-		for (const auto& line : certificate)
-			out << line.AsString() << endl;
-		if (certificate.back().AsString() != "-----END CERTIFICATE-----")
-			out << "-----END CERTIFICATE-----" << endl;
-		out << "</cert>" << endl;
+		out << e.first;
+		if (!e.second.empty())
+			out << ' ' << e.second;
+		out << endl;
 	}
-	if (!privateKey.empty())
+
+	static const std::map<std::string, std::string> arrayTypes = {
+		{ "ca", "CERTIFICATE" },
+		{ "cert", "CERTIFICATE" },
+		{ "key", "PRIVATE KEY" },
+	};
+	static const std::string dash = "-----";
+
+	for (const auto& t : arrayTypes)
 	{
-		out << "<key>" << endl;
-		if (privateKey.front().AsString() != "-----BEGIN PRIVATE KEY-----")
-			out << "-----BEGIN PRIVATE KEY-----" << endl;
-		for (const auto& line : privateKey)
-			out << line.AsString() << endl;
-		if (privateKey.back().AsString() != "-----END PRIVATE KEY-----")
-			out << "-----END PRIVATE KEY-----" << endl;
-		out << "</key>" << endl;
+		auto it = connection.find(t.first);
+		if (it != connection.end() && it->second.IsArray())
+		{
+			const auto& lines = it->second.AsArray();
+			auto ensure = [&](const jsonrpc::Value& value, const std::string& str) {
+				if (value.AsString() != str) out << str << endl;
+			};
+			if (!lines.empty())
+			{
+				out << '<' << t.first << '>' << endl;
+				ensure(lines.front(), dash + "BEGIN " + t.second + dash);
+				for (const auto& line : lines)
+					out << line.AsString() << endl;
+				ensure(lines.front(), dash + "END " + t.second + dash);
+				out << '<' << '/' << t.first << '>' << endl;
+			}
+		}
 	}
 }
 
@@ -217,7 +231,16 @@ bool CypherDaemon::RPC_connect(const jsonrpc::Value::Struct& params)
 	args.push_back(GetAvailableAdapter(index));
 
 	args.push_back("--config");
-	args.push_back("cypher.ovpn"); // FIXME: Write profile instead
+
+	char profile_basename[32];
+	snprintf(profile_basename, sizeof(profile_basename), "profile%d.ovpn", index);
+	std::string profile_filename = GetPath(ProfileDir, profile_basename);
+	{
+		std::ofstream f(profile_filename.c_str());
+		WriteOpenVPNProfile(f, c);
+		f.close();
+	}
+	args.push_back(profile_filename);
 
 	vpn->Run(args);
 	vpn->StartManagementInterface(asio::ip::tcp::endpoint(asio::ip::address::from_string("127.0.0.1"), port));
