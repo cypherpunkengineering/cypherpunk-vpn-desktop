@@ -66,6 +66,9 @@
     <ClInclude Include="path.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="settings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="websocketpp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -90,6 +93,12 @@
       <Filter>Source Files\win</Filter>
     </ClCompile>
     <ClCompile Include="posix\posix_daemon.cpp">
+      <Filter>Source Files\posix</Filter>
+    </ClCompile>
+    <ClCompile Include="settings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="posix\posix_path.cpp">
       <Filter>Source Files\posix</Filter>
     </ClCompile>
   </ItemGroup>

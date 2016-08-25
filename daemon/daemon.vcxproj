@@ -135,6 +135,7 @@
     <ClInclude Include="openvpn.h" />
     <ClInclude Include="path.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="settings.h" />
     <ClInclude Include="websocketpp.h" />
     <ClInclude Include="win\SampleService.h" />
     <ClInclude Include="win\ServiceBase.h" />
@@ -150,6 +151,10 @@
     <ClCompile Include="posix\posix_daemon.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="posix\posix_path.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="settings.cpp" />
     <ClCompile Include="win\win_path.cpp" />
     <ClCompile Include="win\win_service.cpp" />
     <ClCompile Include="win\win_util.cpp" />
