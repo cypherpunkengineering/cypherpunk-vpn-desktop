@@ -98,3 +98,8 @@ void OpenVPNProcess::OnManagementInterfaceResponse(const std::string& line)
 		//else (line.)
 	}
 }
+
+bool OpenVPNProcess::IsSameServer(const Settings::Connection& connection)
+{
+	return connection == _connection;
+}

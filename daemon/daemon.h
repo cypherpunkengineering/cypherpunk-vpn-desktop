@@ -59,6 +59,8 @@ protected:
 	void OnLastClientDisconnected();
 	void OnReceiveMessage(Connection con, WebSocketServer::message_ptr msg);
 
+	// Instruct the daemon to connect to the specified server. If already connected,
+	// this instructs the daemon to seamlessly switch over to a different server.
 	bool RPC_connect(const jsonrpc::Value::Struct& params);
 	void RPC_disconnect();
 

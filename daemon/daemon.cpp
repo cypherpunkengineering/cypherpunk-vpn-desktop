@@ -71,6 +71,7 @@ int CypherDaemon::Run()
 
 void CypherDaemon::RequestShutdown()
 {
+	// FIXME: Cleanly shut down all OpenVPN connections, then exit
 	if (!_ws_server.stopped())
 		_ws_server.stop();
 }
@@ -118,6 +119,15 @@ void WriteOpenVPNProfile(std::ostream& out, const Settings::Connection& connecti
 {
 	using namespace std;
 
+	auto protocol = connection.get<std::string>("protocol", "udp");
+	auto remoteIP = connection.get<std::string>("remoteIP");
+	auto remotePort = connection.get<int>("remotePort");
+	auto mtu = connection.get<int>("mtu", 0);
+	auto cipher = connection.get<std::string>("cipher", "AES-128-CBC");
+	auto certificateAuthority = connection.get<jsonrpc::Value::Array>("certificateAuthority");
+	auto certificate = connection.get<jsonrpc::Value::Array>("certificate");
+	auto privateKey = connection.get<jsonrpc::Value::Array>("privateKey");
+
 	// Generic parameters for all server endpoints
 	out << "client" << endl;
 	out << "nobind" << endl;
@@ -126,50 +136,50 @@ void WriteOpenVPNProfile(std::ostream& out, const Settings::Connection& connecti
 
 	// Server endpoint specific parameters
 	out << "proto ";
-	if (connection.protocol.empty())
+	if (protocol.empty())
 		out << "udp" << endl;
 	else
-		out << connection.protocol << endl;
-	out << "remote " << connection.remoteIP << ' ' << connection.remotePort << endl;
-	if (connection.mtu != 0)
-		out << "tun-mtu " + connection.mtu << endl;
-	out << "cipher " << connection.cipher << endl;
+		out << protocol << endl;
+	out << "remote " << remoteIP << ' ' << remotePort << endl;
+	if (mtu != 0)
+		out << "tun-mtu " + mtu << endl;
+	out << "cipher " << cipher << endl;
 
 	// Depending on routing settings
 	out << "redirect-gateway def1" << endl;
 	//out << "route IP MASK GW METRIC" << endl;
 	//out << "route-delay 0" << endl;
 
-	if (!connection.certificateAuthority.empty())
+	if (!certificateAuthority.empty())
 	{
 		out << "<ca>" << endl;
-		if (connection.certificateAuthority.front() != "-----BEGIN CERTIFICATE-----")
+		if (certificateAuthority.front().AsString() != "-----BEGIN CERTIFICATE-----")
 			out << "-----BEGIN CERTIFICATE-----" << endl;
-		for (const auto& line : connection.certificateAuthority)
-			out << line << endl;
-		if (connection.certificateAuthority.back() != "-----END CERTIFICATE-----")
+		for (const auto& line : certificateAuthority)
+			out << line.AsString() << endl;
+		if (certificateAuthority.back().AsString() != "-----END CERTIFICATE-----")
 			out << "-----END CERTIFICATE-----" << endl;
 		out << "</ca>" << endl;
 	}
-	if (!connection.certificate.empty())
+	if (!certificate.empty())
 	{
 		out << "<cert>" << endl;
-		if (connection.certificate.front() != "-----BEGIN CERTIFICATE-----")
+		if (certificate.front().AsString() != "-----BEGIN CERTIFICATE-----")
 			out << "-----BEGIN CERTIFICATE-----" << endl;
-		for (const auto& line : connection.certificate)
-			out << line << endl;
-		if (connection.certificate.back() != "-----END CERTIFICATE-----")
+		for (const auto& line : certificate)
+			out << line.AsString() << endl;
+		if (certificate.back().AsString() != "-----END CERTIFICATE-----")
 			out << "-----END CERTIFICATE-----" << endl;
 		out << "</cert>" << endl;
 	}
-	if (!connection.privateKey.empty())
+	if (!privateKey.empty())
 	{
 		out << "<key>" << endl;
-		if (connection.privateKey.front() != "-----BEGIN PRIVATE KEY-----")
+		if (privateKey.front().AsString() != "-----BEGIN PRIVATE KEY-----")
 			out << "-----BEGIN PRIVATE KEY-----" << endl;
-		for (const auto& line : connection.privateKey)
-			out << line << endl;
-		if (connection.privateKey.back() != "-----END PRIVATE KEY-----")
+		for (const auto& line : privateKey)
+			out << line.AsString() << endl;
+		if (privateKey.back().AsString() != "-----END PRIVATE KEY-----")
 			out << "-----END PRIVATE KEY-----" << endl;
 		out << "</key>" << endl;
 	}
@@ -177,11 +187,22 @@ void WriteOpenVPNProfile(std::ostream& out, const Settings::Connection& connecti
 
 bool CypherDaemon::RPC_connect(const jsonrpc::Value::Struct& params)
 {
-	if (_process)
-		return false;
+	Settings::Connection c(params);
 
-	const auto& lines = params.at("profile").AsArray();
-	int index = 0;
+	if (_state == CONNECTED)
+	{
+		// Check if we're being asked to connect to the same place
+		if (_process->IsSameServer(c))
+			return true;
+	}
+	else if (_state != State::DISCONNECTED)
+	{
+		// Already busy with something else; reject request
+		return false;
+	}
+
+	static int index = 0;
+	index++; // FIXME: Just make GetAvailablePort etc. work properly instead
 
 	auto vpn = CreateOpenVPNProcess(_ws_server.get_io_service());
 	std::vector<std::string> args;
@@ -196,7 +217,7 @@ bool CypherDaemon::RPC_connect(const jsonrpc::Value::Struct& params)
 	args.push_back(GetAvailableAdapter(index));
 
 	args.push_back("--config");
-	args.push_back("cypher.ovpn");
+	args.push_back("cypher.ovpn"); // FIXME: Write profile instead
 
 	vpn->Run(args);
 	vpn->StartManagementInterface(asio::ip::tcp::endpoint(asio::ip::address::from_string("127.0.0.1"), port));
