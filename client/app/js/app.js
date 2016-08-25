@@ -7,19 +7,27 @@ import { Router, Route, IndexRoute, hashHistory } from 'react-router';
 
 import Account from './ui/screens/Configs/Account.js';
 import Configs from './ui/screens/Configs.js';
+import Connect from './ui/screens/Connect.js';
 import GeneralAdvanced from './ui/screens/Configs/GeneralAdvanced.js';
 import Login from './ui/screens/Login.js';
 
 const app = document.getElementById('app');
 
-ReactDOM.render(
-  <Router history={hashHistory}>
-    <Route path="/" component={Login}></Route>
-    <Route path="/configs" component={Configs}>
-      <IndexRoute component={GeneralAdvanced}></IndexRoute>
-      <Route path="/account" component={Account}></Route>
+class CypherPunkApp extends React.Component {
 
-    </Route>
-    <Route path="*" component={Login}></Route>
-  </Router>,
-  app);
+  render() {
+    return(
+      <Router history={hashHistory}>
+        <Route path="/" component={Login}></Route>
+        <Route path="/connect" component={Connect}></Route>
+        <Route path="/configs" component={Configs}>
+          <IndexRoute component={GeneralAdvanced}></IndexRoute>
+          <Route path="/account" component={Account}></Route>
+        </Route>
+        <Route path="*" component={Login}></Route>
+      </Router>
+    );
+  }
+}
+
+ReactDOM.render( <CypherPunkApp />, app);

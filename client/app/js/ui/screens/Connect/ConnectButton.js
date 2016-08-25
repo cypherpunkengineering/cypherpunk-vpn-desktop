@@ -1,6 +1,13 @@
 import React from 'react';
+import ConnectionsStore from '../../stores/ConnectionsStore';
 
-export default class ConnectButton extends React.Component  {
+export default class Connectbutton extends React.Component  {
+  constructor() {
+    super();
+    this.state = {
+      name: ConnectionsStore.getState()
+    }
+  }
 
   handleChange(e) {
     this.props.changeConnect();
@@ -8,16 +15,16 @@ export default class ConnectButton extends React.Component  {
 
 
   render(){
-    const vsizex = 132;
-    const vsizey = 132;
+    const vsizex = 140;
+    const vsizey = 140;
     const butrad = 66;
     var radred = 7;
 
     var buttonColour;
-    if (this.props.connect_text == 'CONNECTED') {
+    if (this.props.connect_text == 'You are protected') {
       buttonColour = "#89c812";
       radred = 7;
-    } else if (this.props.connect_text == 'CONNECTING'){
+    } else if (this.props.connect_text == 'Connecting...'){
       buttonColour = "#da8400";
       radred = 7;
     } else {

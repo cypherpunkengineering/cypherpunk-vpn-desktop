@@ -1,38 +1,29 @@
 import React from 'react';
-import ConnectButton from './Components/ConnectButton.js';
+import Connectbutton from './Connect/Connectbutton.js';
+import Regionselect from './Connect/Regionselect.js';
 
 export default class Connect extends React.Component  {
-  constructor() {
-    super();
-    this.state = { connect_text: "CONNECT"};
+  constructor(props) {
+    super(props);
+    this.state = { connect_text: "Tap to Connect"};
   }
 
   changeConnect() {
-    this.setState( {connect_text: "CONNECTING"} );
+    this.setState( {connect_text: "Connecting..."} );
     setTimeout(() => {
-        this.setState( {connect_text: "CONNECTED"} );
+        this.setState( {connect_text: "You are protected"} );
     }, 2000);
     setTimeout(() => {
-        this.setState( {connect_text: "CONNECT"} );
+        this.setState( {connect_text: "Tap to protect"} );
     }, 6000);
   }
 
   render(){
     return(
       <div>
-        <ConnectButton changeConnect={this.changeConnect.bind(this)} connect_text={this.state.connect_text} />
+        {this.props.maintitle}
+        <Connectbutton changeConnect={this.changeConnect.bind(this)} connect_text={this.state.connect_text} />
         <Regionselect />
-      </div>
-    );
-  }
-}
-
-class Regionselect extends React.Component {
-  render(){
-    return(
-      <div className="region-select">
-        <span className="flag-icon flag-icon-jp" />
-            Region Select
       </div>
     );
   }
