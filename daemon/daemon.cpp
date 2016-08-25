@@ -13,6 +13,7 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <direct.h> // FIXME: temporary
 
 CypherDaemon* g_daemon = nullptr;
 
@@ -234,6 +235,7 @@ bool CypherDaemon::RPC_connect(const jsonrpc::Value::Struct& params)
 
 	char profile_basename[32];
 	snprintf(profile_basename, sizeof(profile_basename), "profile%d.ovpn", index);
+	mkdir(GetPath(ProfileDir).c_str());
 	std::string profile_filename = GetPath(ProfileDir, profile_basename);
 	{
 		std::ofstream f(profile_filename.c_str());
