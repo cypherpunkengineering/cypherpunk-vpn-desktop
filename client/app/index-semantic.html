@@ -74,6 +74,7 @@
       #connect-container { margin-top: 130px; height: 140px; display: flex; align-items: center; justify-content: center; }
       #connect { transition: 0.5s color; text-shadow: 0 0 15px rgba(0,0,0,0.25); }
       #connect-status { margin-top: 5px; font-size: 150%; color: #aaa; text-shadow: 0 0 15px rgba(0,0,0,0.25); }
+      #region-select { margin-top: 50px; width: 80%; box-shadow: 0 0 5px 0 rgba(0,0,0,0.5); }
 
       /*
       html, body { margin: 0; padding: 0; font-family: 'Segoe UI', Arial, Helvetica; font-size: 10pt; background: linear-gradient(#999, #ddd) top / auto 200px repeat-x #ddd; }
@@ -124,6 +125,16 @@
         <i id="connect" class="ui red fitted massive power link icon"></i>
       </div>
       <div id="connect-status">DISCONNECTED</div>
+      <div id="region-select" class="ui selection dropdown">
+        <input type="hidden" name="region" value="208.111.52.1 7133">
+        <i class="dropdown icon"></i>
+        <div class="default text">Select Region</div>
+        <div class="menu">
+          <div class="item" data-value="208.111.52.1 7133"><i class="jp flag"></i>Tokyo 1, Japan</div>
+          <div class="item" data-value="208.111.52.2 7133"><i class="jp flag"></i>Tokyo 2, Japan</div>
+          <div class="item" data-value="199.68.252.203 7133"><i class="us flag"></i>Honolulu, HI, USA</div>
+        </div>
+      </div>
     </div>
 
     <div id="load-screen" class="full screen ui active dimmer" style="visibility: visible; z-index: 20">
@@ -168,6 +179,7 @@
       $(document.body).addClass('connecting');
       $('#bgr').addClass('animating');
       $('#connect-status').text("CONNECTING...");
+      $('#region-select').addClass('disabled');
     }
     function onConnected() {
       $(document.body).addClass('connected').removeClass('connecting');
@@ -182,9 +194,11 @@
       $('#bgr').removeClass('animating');
       $('#connect').addClass('red').removeClass('green disabled');
       $('#connect-status').text("DISCONNECTED");
+      $('#region-select').removeClass('disabled');
     }
 
     $('#settings').dropdown({ action: 'hide' });
+    $('#region-select').dropdown({});
     $('#connect').click(evt => {
       var self = $('#connect');
       var bgr = $('#bgr');
@@ -194,8 +208,9 @@
         daemon.call.connect({
           proto: "udp",
           //remote: "208.111.52.1 7133",
-          remote: "208.111.52.2 7133",
+          //remote: "208.111.52.2 7133",
           //remote: "199.68.252.203 7133",
+          remote: $('#region-select').dropdown('get value'),
           ca: getCertificateAuthority(),
           cert: getCertificate(),
           key: getPrivateKey(),
