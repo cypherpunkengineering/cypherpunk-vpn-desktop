@@ -64,4 +64,5 @@ productbuild --resources ../res/osx/resources --distribution ../res/osx/resource
 #zip "${APPNAME}.pkg.zip" "${APPNAME}.pkg"
 rm -f Build.pkg
 rm -rf osx
-ls -la "${PKGNAME}.pkg"
+ls -la "${APPNAME}.pkg"
+exit 0
