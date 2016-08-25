@@ -10,9 +10,9 @@ export default class Login extends React.Component  {
     return(
       <div className="startup">
         <img src="./img/punk.svg" />
-        <h1>Cypherpunk</h1>
-        <div><input className="cp_input01" value={logintext1} /></div>
-        <div><input className="cp_input01" value={logintext2} /></div>
+        <h1>Cypherpunk!</h1>
+        <div><input className="cp_input01" defaultValue={logintext1} /></div>
+        <div><input className="cp_input01" defaultValue={logintext2} /></div>
         <div><Link className="cp_button01" to="/interface">Log in</Link></div>
 
           <div className="forgot_password">Forgot password?</div>

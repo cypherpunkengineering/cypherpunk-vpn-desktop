@@ -27,7 +27,7 @@
 /******/ 	}
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "a097956a590f7d01e581"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "677b30765447b6de30fd"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 /******/ 	
@@ -27894,17 +27894,17 @@
 	        _react2.default.createElement(
 	          'h1',
 	          null,
-	          'Cypherpunk'
+	          'Cypherpunk!'
 	        ),
 	        _react2.default.createElement(
 	          'div',
 	          null,
-	          _react2.default.createElement('input', { className: 'cp_input01', value: logintext1 })
+	          _react2.default.createElement('input', { className: 'cp_input01', defaultValue: logintext1 })
 	        ),
 	        _react2.default.createElement(
 	          'div',
 	          null,
-	          _react2.default.createElement('input', { className: 'cp_input01', value: logintext2 })
+	          _react2.default.createElement('input', { className: 'cp_input01', defaultValue: logintext2 })
 	        ),
 	        _react2.default.createElement(
 	          'div',

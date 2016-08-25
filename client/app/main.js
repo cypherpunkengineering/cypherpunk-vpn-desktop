@@ -190,6 +190,8 @@ function createMainWindow() {
 
   if (args.useSemanticUi) {
     main.loadURL(`file://${__dirname}/index-semantic.html`);
+  } else if (process.argv[process.argv.length -1] == 'webpack'){
+    main.loadURL(`file://${__dirname}/index-webpack.html`);
   } else {
     main.loadURL(`file://${__dirname}/index.html`);
   }

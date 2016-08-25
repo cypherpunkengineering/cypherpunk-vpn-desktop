@@ -6,7 +6,8 @@
   "main": "app/main.js",
   "scripts": {
     "start": "electron app/main.js",
-    "build": "webpack",
+    "start-webpack": "electron app/main.js webpack",
+    "build-webpack": "webpack",
     "build-semantic": "cd semantic && gulp build --silent",
     "watch": "webpack-dev-server",
     "electron-rebuild": "electron-rebuild",
