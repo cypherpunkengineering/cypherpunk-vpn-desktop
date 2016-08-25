@@ -1,6 +1,7 @@
-#include "openvpn.h"
+#include "config.h"
 
-#include <iostream>
+#include "openvpn.h"
+#include "logger.h"
 
 using namespace std::placeholders;
 
@@ -18,6 +19,8 @@ void OpenVPNProcess::StartManagementInterface(const asio::ip::tcp::endpoint& end
 			asio::async_read_until(_management_socket, _management_readbuf, '\n', std::bind(&OpenVPNProcess::HandleManagementReadLine, this, _1, _2));
 			asio::async_write(_management_socket, asio::buffer(_management_write_queue.front()), std::bind(&OpenVPNProcess::HandleManagementWrite, this, _1, _2));
 		}
+		else
+			LOG(WARNING) << error;
 	});
 
 	asio::error_code error;
@@ -60,6 +63,8 @@ void OpenVPNProcess::HandleManagementWrite(const asio::error_code& error, std::s
 			asio::async_write(_management_socket, asio::buffer(_management_write_queue.front()), std::bind(&OpenVPNProcess::HandleManagementWrite, this, _1, _2));
 		}
 	}
+	else
+		LOG(WARNING) << error;
 }
 
 void OpenVPNProcess::HandleManagementReadLine(const asio::error_code& error, std::size_t bytes_transferred)
@@ -75,11 +80,13 @@ void OpenVPNProcess::HandleManagementReadLine(const asio::error_code& error, std
 
 		asio::async_read_until(_management_socket, _management_readbuf, '\n', std::bind(&OpenVPNProcess::HandleManagementReadLine, this, _1, _2));
 	}
+	else
+		LOG(WARNING) << error;
 }
 
 void OpenVPNProcess::OnManagementInterfaceResponse(const std::string& line)
 {
-	std::cout << "[MGMT] " << line << std::endl;
+	LOG(INFO) << "[MGMT] " << line;
 	if (line.size() > 0)
 	{
 		if (line[0] == '>')
