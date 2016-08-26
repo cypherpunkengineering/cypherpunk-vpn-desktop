@@ -235,6 +235,9 @@ bool CypherDaemon::RPC_connect(const jsonrpc::Value::Struct& params)
 	args.push_back(std::to_string(port));
 	args.push_back("--management-hold");
 
+	args.push_back("--verb");
+	args.push_back("4");
+
 #if OS_WIN
 	args.push_back("--dev-node");
 	args.push_back(GetAvailableAdapter(index));
