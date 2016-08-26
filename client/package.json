@@ -57,6 +57,7 @@
     "gulp-minify-css": "^1.2.4",
     "less": "^2.7.1",
     "less-loader": "^2.2.3",
+    "npm": "^3.10.7",
     "rimraf": "^2.5.2",
     "rcedit": "^0.4.0",
     "style-loader": "^0.13.1",
