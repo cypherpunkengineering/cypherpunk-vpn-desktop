@@ -13,7 +13,14 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
+#ifdef WIN32
 #include <direct.h> // FIXME: temporary
+#else
+#include <unistd.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+#endif
+
 
 CypherDaemon* g_daemon = nullptr;
 
@@ -228,15 +235,43 @@ bool CypherDaemon::RPC_connect(const jsonrpc::Value::Struct& params)
 	args.push_back(std::to_string(port));
 	args.push_back("--management-hold");
 
+#if OS_WIN
 	args.push_back("--dev-node");
 	args.push_back(GetAvailableAdapter(index));
+#endif
+
+#if OS_OSX
+	args.push_back("--script-security");
+	args.push_back("2");
+
+	args.push_back("--up");
+	args.push_back(GetPath(ScriptsDir, "up.sh"));
+	args.push_back("--down");
+	args.push_back(GetPath(ScriptsDir, "down.sh"));
+	args.push_back("--route-pre-down");
+	args.push_back(GetPath(ScriptsDir, "route-pre-down.sh"));
+	args.push_back("--tls-verify");
+	args.push_back(GetPath(ScriptsDir, "tls-verify.sh"));
+	args.push_back("--ipchange");
+	args.push_back(GetPath(ScriptsDir, "ipchange.sh"));
+	args.push_back("--route-up");
+	args.push_back(GetPath(ScriptsDir, "route-up.sh"));
+#else
+	args.push_back("--script-security");
+	args.push_back("1");
+#endif
 
 	args.push_back("--config");
 
+#if OS_WIN
 	char profile_basename[32];
 	snprintf(profile_basename, sizeof(profile_basename), "profile%d.ovpn", index);
 	mkdir(GetPath(ProfileDir).c_str());
 	std::string profile_filename = GetPath(ProfileDir, profile_basename);
+#else
+	std::string profile_filename = "/tmp/profile.XXXXXX";
+	mktemp(&profile_filename[0]);
+#endif
 	{
 		std::ofstream f(profile_filename.c_str());
 		WriteOpenVPNProfile(f, c);

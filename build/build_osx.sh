@@ -21,6 +21,11 @@ npm install
 cd ../
 mv "out/osx/Applications/${APPNAME}-darwin-x64/${APPNAME}.app" out/osx/Applications/
 rm -rf "out/osx/Applications/${APPNAME}-darwin-x64"
+
+# Copy OpenVPN scripts
+mkdir -p "out/osx/Applications/${APPNAME}.app/scripts"
+cp -pR res/osx/openvpn-scripts/ "out/osx/Applications/${APPNAME}.app/scripts"
+
 sleep 3
 codesign --force --deep --sign "${APPSIGNIDENTITY}" "out/osx/Applications/${APPNAME}.app"
 
@@ -54,12 +59,12 @@ install -c -m 755 ./daemon/third_party/openvpn_osx/openvpn out/osx/usr/local/bin
 codesign -s "${APPSIGNIDENTITY}" out/osx/usr/local/bin/cypherpunkvpn-openvpn
 
 # Ensure install scripts are executable
-chmod +x res/osx/scripts/postinstall
-chmod +x res/osx/scripts/preinstall
+chmod +x res/osx/install-scripts/postinstall
+chmod +x res/osx/install-scripts/preinstall
 
 # Package
 cd out
-pkgbuild --root osx --scripts ../res/osx/scripts --sign "${INSTALLERSIGNIDENTITY}" --identifier "com.cypherpunk.pkg.${APPNAME}" --version "${APP_VER}" --ownership recommended --install-location / Build.pkg
+pkgbuild --root osx --scripts ../res/osx/install-scripts --sign "${INSTALLERSIGNIDENTITY}" --identifier "com.cypherpunk.pkg.${APPNAME}" --version "${APP_VER}" --ownership recommended --install-location / Build.pkg
 productbuild --resources ../res/osx/resources --distribution ../res/osx/resources/distribution.xml --sign "${INSTALLERSIGNIDENTITY}" --version "${APP_VER}" "${APPNAME}.pkg"
 #zip "${APPNAME}.pkg.zip" "${APPNAME}.pkg"
 rm -f Build.pkg

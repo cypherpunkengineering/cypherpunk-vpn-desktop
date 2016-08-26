@@ -26,8 +26,13 @@ public:
 		for (const auto& param : params)
 		{
 			cmdline += ' ';
-			cmdline += param; // FIXME: quote/escape
+			// FIXME: proper quoting/escaping
+			if (param.find(' ') != param.npos)
+				cmdline += "\"" + param + "\"";
+			else
+				cmdline += param;
 		}
+		LOG(INFO) << cmdline;
 		// execute cmdline asynchronously - popen?
 		_file = popen(cmdline.c_str(), "w"); // TODO: later, if parsing output, use "r" instead
 	}
@@ -51,6 +56,7 @@ public:
 	}
 	virtual int GetAvailablePort(int hint) override
 	{
+		return hint;
 		//popen("netstat -a -n");
 		for (int i = hint; ; i++)
 		{
@@ -71,8 +77,18 @@ void sigterm_handler(int signal)
 		g_daemon->RequestShutdown();
 }
 
+static FileLogger g_stdout_logger(stdout);
+static FileLogger g_stderr_logger(stderr);
+static FileLogger g_file_logger;
+
 int main(int argc, char **argv)
 {
+	InitPaths(argc > 0 ? argv[0] : "cypherpunkvpn-service");
+
+	g_file_logger.Open(GetPath(LogDir, "daemon.log"));
+	Logger::Push(&g_file_logger);
+	Logger::Push(&g_stderr_logger);
+
 	// Instantiate the posix version of the daemon
 	g_daemon = new PosixCypherDaemon();
 

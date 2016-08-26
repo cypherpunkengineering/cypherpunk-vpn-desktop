@@ -8,6 +8,7 @@ enum PredefinedDirectory
 	LogDir,			// Directory where to write log file(s)
 	OpenVPNDir,		// Directory where OpenVPN binary sits
 	ProfileDir,		// Directory where temporary OpenVPN profile files are written
+	ScriptsDir,		// Directory where OpenVPN hook scripts are
 #ifdef WIN32
 	TapDriverDir,
 #endif

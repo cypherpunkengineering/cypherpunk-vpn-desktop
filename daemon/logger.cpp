@@ -51,6 +51,7 @@ LogWriter::~LogWriter()
 #ifndef _WIN32
 std::string GetLastErrorString(Error::Code code)
 {
+	return std::string();
 }
 #endif
 
