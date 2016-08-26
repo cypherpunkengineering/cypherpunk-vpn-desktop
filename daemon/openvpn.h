@@ -20,7 +20,6 @@ protected:
 
 	asio::io_service& _io;
 	asio::ip::tcp::socket _management_socket;
-	std::thread _management_thread;
 	std::deque<std::string> _management_write_queue;
 	asio::streambuf _management_readbuf;
 	std::map<std::string, std::function<void(const std::string&)>> _on_management_response;
