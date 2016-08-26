@@ -75,6 +75,9 @@
       #connect { transition: 0.5s color; text-shadow: 0 0 15px rgba(0,0,0,0.25); }
       #connect-status { margin-top: 5px; font-size: 150%; color: #aaa; text-shadow: 0 0 15px rgba(0,0,0,0.25); }
       #region-select { margin-top: 50px; width: 80%; box-shadow: 0 0 5px 0 rgba(0,0,0,0.5); }
+      #connection-stats { margin-top: 30px; display: none; }
+      #connection-stats .value { color: #aaa; }
+      #connection-stats .label { color: #777; }
 
       /*
       html, body { margin: 0; padding: 0; font-family: 'Segoe UI', Arial, Helvetica; font-size: 10pt; background: linear-gradient(#999, #ddd) top / auto 200px repeat-x #ddd; }
@@ -135,6 +138,10 @@
           <div class="item" data-value="199.68.252.203 7133"><i class="us flag"></i>Honolulu, HI, USA</div>
         </div>
       </div>
+      <div id="connection-stats" class="ui hidden two column centered grid">
+        <div class="column"><div class="ui mini statistic"><div class="value"></div><div class="label">Received</div></div></div>
+        <div class="column"><div class="ui mini statistic"><div class="value"></div><div class="label">Sent</div></div></div>
+      </div>
     </div>
 
     <div id="load-screen" class="full screen ui active dimmer" style="visibility: visible; z-index: 20">
@@ -164,12 +171,28 @@
     // Subscribe to the traffic counter
     daemon.on('bytecount', (inCount, outCount) => {
       console.log("bytecount", inCount, outCount);
+      $('#connection-stats div:nth-child(1) .value').text(humanReadableSize(inCount));
+      $('#connection-stats div:nth-child(2) .value').text(humanReadableSize(outCount));
     });
     // Disconnect before unload
     window.onbeforeonload = evt => {
       daemon.post.disconnect();
       daemon.disconnect();
     };
+
+    function humanReadableSize(count) {
+      if (count >= 1024 * 1024 * 1024 * 1024) {
+        return parseFloat(Math.round(count * 10 / 1024 / 1024 / 1024 / 1024) / 10).toFixed(1) + "T";
+      } else if (count >= 1024 * 1024 * 1024) {
+        return parseFloat(Math.round(count * 10 / 1024 / 1024 / 1024) / 10).toFixed(1) + "G";
+      } else if (count >= 1024 * 1024) {
+        return parseFloat(Math.round(count * 10 / 1024 / 1024) / 10).toFixed(1) + "M";
+      } else if (count >= 1024) {
+        return parseFloat(Math.round(count * 10 / 1024) / 10).toFixed(1) + "K";
+      } else {
+        return parseFloat(count).toFixed(0);
+      }
+    }
 
     function onInitialized() {
       $('#load-screen').transition('fade');//remove();
@@ -185,6 +208,7 @@
       $(document.body).addClass('connected').removeClass('connecting');
       $('#connect').addClass('green').removeClass('disabled');
       $('#connect-status').text("CONNECTED");
+      $('#connection-stats').transition('fade');
     }
     function onDisconnecting() {
       $('#connect-status').text("DISCONNECTING...");
@@ -195,6 +219,7 @@
       $('#connect').addClass('red').removeClass('green disabled');
       $('#connect-status').text("DISCONNECTED");
       $('#region-select').removeClass('disabled');
+      $('#connection-stats').transition('fade');
     }
 
     $('#settings').dropdown({ action: 'hide' });
