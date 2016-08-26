@@ -89,12 +89,17 @@ int main(int argc, char **argv)
 	Logger::Push(&g_file_logger);
 	Logger::Push(&g_stderr_logger);
 
-	// Instantiate the posix version of the daemon
-	g_daemon = new PosixCypherDaemon();
-
 	// Register a signal handler for SIGTERM for clean shutdowns
 	signal(SIGTERM, sigterm_handler);
 
+	// Instantiate the posix version of the daemon
+	g_daemon = new PosixCypherDaemon();
+
 	// Run the daemon synchronously
-	return g_daemon->Run();
+	int result = g_daemon->Run();
+
+	if (result)
+		LOG(ERROR) << "Exited daemon with error code " << result;
+	else
+		LOG(INFO) << "Exited daemon successfully";
 }
