@@ -60,11 +60,11 @@
     "npm": "^3.10.7",
     "rimraf": "^2.5.2",
     "rcedit": "^0.4.0",
+    "semantic-ui": "^2.2.4",
     "style-loader": "^0.13.1",
     "utf-8-validate": "^1.2 .1",
     "webpack": "^1.13.1",
     "webpack-dev-server": "^1.13.1",
     "gulp": "^3.9.1",
-    "semantic-ui": "^2.2.2"
   }
 }
