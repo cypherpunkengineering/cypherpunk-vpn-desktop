@@ -16,6 +16,8 @@ rm -f out/"${APPNAME}".pkg.zip
 mkdir -p out/osx/Applications
 cd client
 npm install
+npm run build-semantic
+npm run build-webpack
 ./node_modules/.bin/electron-rebuild
 ./node_modules/.bin/electron-packager ./ "${APPNAME}" --platform=darwin --arch=x64 --icon=../res/logo.icns --out=../out/osx/Applications
 cd ../
