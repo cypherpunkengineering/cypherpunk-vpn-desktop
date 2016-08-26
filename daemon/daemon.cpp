@@ -283,6 +283,9 @@ bool CypherDaemon::RPC_connect(const jsonrpc::Value::Struct& params)
 	args.push_back(profile_filename);
 
 	vpn->Run(args);
+#if OS_OSX
+	sleep(1);
+#endif
 	vpn->StartManagementInterface(asio::ip::tcp::endpoint(asio::ip::address::from_string("127.0.0.1"), port));
 
 	vpn->OnManagementResponse("HOLD", [=](const std::string& line) {
