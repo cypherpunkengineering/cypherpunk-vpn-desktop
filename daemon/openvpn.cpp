@@ -20,7 +20,7 @@ void OpenVPNProcess::StartManagementInterface(const asio::ip::tcp::endpoint& end
 			asio::async_write(_management_socket, asio::buffer(_management_write_queue.front()), std::bind(&OpenVPNProcess::HandleManagementWrite, this, _1, _2));
 		}
 		else
-			LOG(WARNING) << error;
+			LOG(WARNING) << error << " : " << error.message();
 	});
 
 	asio::error_code error;
@@ -64,7 +64,7 @@ void OpenVPNProcess::HandleManagementWrite(const asio::error_code& error, std::s
 		}
 	}
 	else
-		LOG(WARNING) << error;
+		LOG(WARNING) << error << " : " << error.message();
 }
 
 void OpenVPNProcess::HandleManagementReadLine(const asio::error_code& error, std::size_t bytes_transferred)
@@ -81,7 +81,7 @@ void OpenVPNProcess::HandleManagementReadLine(const asio::error_code& error, std
 		asio::async_read_until(_management_socket, _management_readbuf, '\n', std::bind(&OpenVPNProcess::HandleManagementReadLine, this, _1, _2));
 	}
 	else
-		LOG(WARNING) << error;
+		LOG(WARNING) << error << " : " << error.message();
 }
 
 void OpenVPNProcess::OnManagementInterfaceResponse(const std::string& line)
