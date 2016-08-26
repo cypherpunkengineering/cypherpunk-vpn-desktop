@@ -2,7 +2,7 @@
 // connected until the 'disconnect' method is explicitly called.
 
 // Workaround to make this work both in a Node.js and web context
-const WebSocket = (() => { return this.WebSocket || require('ws'); })();
+const WebSocket = (typeof global.WebSocket !== 'undefined') ? global.WebSocket : require('ws');
 
 module.exports = class RPC {
   constructor({ url, onerror, onopen }) {
