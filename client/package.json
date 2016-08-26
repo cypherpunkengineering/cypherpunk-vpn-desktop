@@ -31,6 +31,7 @@
 
   "dependencies": {
     "flag-icon-css": "^2.4.0",
+    "flux": "^2.1.1",
     "jquery": "^2.2.2",
     "mustache": "^2.2.1",
     "react": "^15.3.0",

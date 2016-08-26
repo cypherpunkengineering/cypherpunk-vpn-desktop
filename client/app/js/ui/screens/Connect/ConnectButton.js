@@ -1,34 +1,62 @@
 import React from 'react';
-import ConnectionsStore from '../../stores/ConnectionsStore';
+import ConnectStore from '../../stores/ConnectStore';
+import * as ConnectAction from '../../actions/ConnectAction';
 
 export default class Connectbutton extends React.Component  {
-  constructor() {
+  constructor(props) {
     super();
     this.state = {
-      name: ConnectionsStore.getState()
+      connectState: ConnectStore.getState()
+    };
+  }
+
+  handleChange() {
+    switch(ConnectStore.getState()) {
+      case 'disconnected': {
+        ConnectAction.updateConnect('connecting');
+      break;
+      }
+      case 'connected':{
+        ConnectAction.updateConnect('disconnected');
+      break;
+      }
+      case 'connecting':{
+        ConnectAction.updateConnect('connected');
+      break;
+      }
     }
+
   }
 
-  handleChange(e) {
-    this.props.changeConnect();
+  componentWillMount() {
+    ConnectStore.on("change", () => {
+      this.setState({
+        connectState: ConnectStore.getState(),
+      })
+    })
   }
-
 
   render(){
+
     const vsizex = 140;
     const vsizey = 140;
     const butrad = 66;
     var radred = 7;
 
     var buttonColour;
-    if (this.props.connect_text == 'You are protected') {
+    var buttonText;
+
+    if (this.state.connectState == 'connected') {
       buttonColour = "#89c812";
+      buttonText = "You are protected";
       radred = 7;
-    } else if (this.props.connect_text == 'Connecting...'){
+    } else if (this.state.connectState == 'connecting'){
       buttonColour = "#da8400";
+      buttonText = "Connecting...";
       radred = 7;
     } else {
       buttonColour = "#c8121f";
+      buttonText = "Tap to protect";
       radred = 7;
     }
 
@@ -39,7 +67,7 @@ export default class Connectbutton extends React.Component  {
         <circle cx={vsizex/2} cy={vsizey/2} r={butrad-radred} fill="#fefefe" />
       </svg><br />
       <span>
-        {this.props.connect_text}
+        {buttonText}
       </span>
       </div>
     );

@@ -27,7 +27,7 @@
 /******/ 	}
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "677b30765447b6de30fd"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "9e87732d4f950953fc87"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
 /******/ 	
@@ -655,6 +655,8 @@
 
 	'use strict';
 
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 	var _react = __webpack_require__(4);
 
 	var _react2 = _interopRequireDefault(_react);
@@ -673,33 +675,63 @@
 
 	var _Configs2 = _interopRequireDefault(_Configs);
 
-	var _GeneralAdvanced = __webpack_require__(242);
+	var _Connect = __webpack_require__(242);
+
+	var _Connect2 = _interopRequireDefault(_Connect);
+
+	var _GeneralAdvanced = __webpack_require__(252);
 
 	var _GeneralAdvanced2 = _interopRequireDefault(_GeneralAdvanced);
 
-	var _Login = __webpack_require__(243);
+	var _Login = __webpack_require__(253);
 
 	var _Login2 = _interopRequireDefault(_Login);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	__webpack_require__(244);
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	__webpack_require__(254);
 	//const RPC = require('./rpc.js');
 
 	var app = document.getElementById('app');
 
-	_reactDom2.default.render(_react2.default.createElement(
-	  _reactRouter.Router,
-	  { history: _reactRouter.hashHistory },
-	  _react2.default.createElement(_reactRouter.Route, { path: '/', component: _Login2.default }),
-	  _react2.default.createElement(
-	    _reactRouter.Route,
-	    { path: '/configs', component: _Configs2.default },
-	    _react2.default.createElement(_reactRouter.IndexRoute, { component: _GeneralAdvanced2.default }),
-	    _react2.default.createElement(_reactRouter.Route, { path: '/account', component: _Account2.default })
-	  ),
-	  _react2.default.createElement(_reactRouter.Route, { path: '*', component: _Login2.default })
-	), app);
+	var CypherPunkApp = function (_React$Component) {
+	  _inherits(CypherPunkApp, _React$Component);
+
+	  function CypherPunkApp() {
+	    _classCallCheck(this, CypherPunkApp);
+
+	    return _possibleConstructorReturn(this, Object.getPrototypeOf(CypherPunkApp).apply(this, arguments));
+	  }
+
+	  _createClass(CypherPunkApp, [{
+	    key: 'render',
+	    value: function render() {
+	      return _react2.default.createElement(
+	        _reactRouter.Router,
+	        { history: _reactRouter.hashHistory },
+	        _react2.default.createElement(_reactRouter.Route, { path: '/', component: _Login2.default }),
+	        _react2.default.createElement(_reactRouter.Route, { path: '/connect', component: _Connect2.default }),
+	        _react2.default.createElement(
+	          _reactRouter.Route,
+	          { path: '/configs', component: _Configs2.default },
+	          _react2.default.createElement(_reactRouter.IndexRoute, { component: _GeneralAdvanced2.default }),
+	          _react2.default.createElement(_reactRouter.Route, { path: '/account', component: _Account2.default })
+	        ),
+	        _react2.default.createElement(_reactRouter.Route, { path: '*', component: _Login2.default })
+	      );
+	    }
+	  }]);
+
+	  return CypherPunkApp;
+	}(_react2.default.Component);
+
+	_reactDom2.default.render(_react2.default.createElement(CypherPunkApp, null), app);
 
 /***/ },
 /* 4 */
@@ -27604,6 +27636,679 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
+	var _Connectbutton = __webpack_require__(243);
+
+	var _Connectbutton2 = _interopRequireDefault(_Connectbutton);
+
+	var _Regionselect = __webpack_require__(251);
+
+	var _Regionselect2 = _interopRequireDefault(_Regionselect);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Connect = function (_React$Component) {
+	  _inherits(Connect, _React$Component);
+
+	  function Connect(props) {
+	    _classCallCheck(this, Connect);
+
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Connect).call(this, props));
+
+	    _this.state = { connect_text: "Tap to Connect" };
+	    return _this;
+	  }
+
+	  _createClass(Connect, [{
+	    key: 'changeConnect',
+	    value: function changeConnect() {
+	      var _this2 = this;
+
+	      this.setState({ connect_text: "Connecting..." });
+	      setTimeout(function () {
+	        _this2.setState({ connect_text: "You are protected" });
+	      }, 2000);
+	      setTimeout(function () {
+	        _this2.setState({ connect_text: "Tap to protect" });
+	      }, 6000);
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      return _react2.default.createElement(
+	        'div',
+	        null,
+	        this.props.maintitle,
+	        _react2.default.createElement(_Connectbutton2.default, { changeConnect: this.changeConnect.bind(this), connect_text: this.state.connect_text }),
+	        _react2.default.createElement(_Regionselect2.default, null)
+	      );
+	    }
+	  }]);
+
+	  return Connect;
+	}(_react2.default.Component);
+
+	exports.default = Connect;
+
+/***/ },
+/* 243 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(4);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _ConnectStore = __webpack_require__(244);
+
+	var _ConnectStore2 = _interopRequireDefault(_ConnectStore);
+
+	var _ConnectAction = __webpack_require__(250);
+
+	var ConnectAction = _interopRequireWildcard(_ConnectAction);
+
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Connectbutton = function (_React$Component) {
+	  _inherits(Connectbutton, _React$Component);
+
+	  function Connectbutton(props) {
+	    _classCallCheck(this, Connectbutton);
+
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Connectbutton).call(this));
+
+	    _this.state = {
+	      connectState: _ConnectStore2.default.getState()
+	    };
+	    return _this;
+	  }
+
+	  _createClass(Connectbutton, [{
+	    key: 'handleChange',
+	    value: function handleChange() {
+	      switch (_ConnectStore2.default.getState()) {
+	        case 'disconnected':
+	          {
+	            ConnectAction.updateConnect('connecting');
+	            break;
+	          }
+	        case 'connected':
+	          {
+	            ConnectAction.updateConnect('disconnected');
+	            break;
+	          }
+	        case 'connecting':
+	          {
+	            ConnectAction.updateConnect('connected');
+	            break;
+	          }
+	      }
+	    }
+	  }, {
+	    key: 'componentWillMount',
+	    value: function componentWillMount() {
+	      var _this2 = this;
+
+	      _ConnectStore2.default.on("change", function () {
+	        _this2.setState({
+	          connectState: _ConnectStore2.default.getState()
+	        });
+	      });
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+
+	      var vsizex = 140;
+	      var vsizey = 140;
+	      var butrad = 66;
+	      var radred = 7;
+
+	      var buttonColour;
+	      var buttonText;
+
+	      if (this.state.connectState == 'connected') {
+	        buttonColour = "#89c812";
+	        buttonText = "You are protected";
+	        radred = 7;
+	      } else if (this.state.connectState == 'connecting') {
+	        buttonColour = "#da8400";
+	        buttonText = "Connecting...";
+	        radred = 7;
+	      } else {
+	        buttonColour = "#c8121f";
+	        buttonText = "Tap to protect";
+	        radred = 7;
+	      }
+
+	      return _react2.default.createElement(
+	        'div',
+	        { className: 'connect' },
+	        _react2.default.createElement(
+	          'svg',
+	          { height: vsizex, width: vsizex, onClick: this.handleChange.bind(this) },
+	          _react2.default.createElement('circle', { cx: vsizex / 2, cy: vsizey / 2, r: butrad, fill: buttonColour }),
+	          _react2.default.createElement('circle', { cx: vsizex / 2, cy: vsizey / 2, r: butrad - radred, fill: '#fefefe' })
+	        ),
+	        _react2.default.createElement('br', null),
+	        _react2.default.createElement(
+	          'span',
+	          null,
+	          buttonText
+	        )
+	      );
+	    }
+	  }]);
+
+	  return Connectbutton;
+	}(_react2.default.Component);
+
+	exports.default = Connectbutton;
+
+/***/ },
+/* 244 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _events = __webpack_require__(245);
+
+	var _dispatcher = __webpack_require__(246);
+
+	var _dispatcher2 = _interopRequireDefault(_dispatcher);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var ConnectStore = function (_EventEmitter) {
+	  _inherits(ConnectStore, _EventEmitter);
+
+	  function ConnectStore() {
+	    _classCallCheck(this, ConnectStore);
+
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(ConnectStore).call(this));
+
+	    _this.vpn = { connectState: 'disconnected' };
+	    return _this;
+	  }
+
+	  _createClass(ConnectStore, [{
+	    key: "getState",
+	    value: function getState() {
+	      return this.vpn["connectState"];
+	    }
+	  }, {
+	    key: "updateConnect",
+	    value: function updateConnect(connectState) {
+	      this.vpn["connectState"] = connectState;
+	      this.emit("change");
+	    }
+	  }, {
+	    key: "handleActions",
+	    value: function handleActions(action) {
+	      switch (action.type) {
+	        case "UPDATE":
+	          {
+	            this.updateConnect(action.connectState);
+	          }
+	      }
+	    }
+	  }]);
+
+	  return ConnectStore;
+	}(_events.EventEmitter);
+
+	var connectStore = new ConnectStore();
+	_dispatcher2.default.register(connectStore.handleActions.bind(connectStore));
+	exports.default = connectStore;
+
+/***/ },
+/* 245 */
+/***/ function(module, exports) {
+
+	module.exports = require("events");
+
+/***/ },
+/* 246 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _flux = __webpack_require__(247);
+
+	exports.default = new _flux.Dispatcher();
+
+/***/ },
+/* 247 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2014-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 */
+
+	module.exports.Dispatcher = __webpack_require__(248);
+
+
+/***/ },
+/* 248 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2014-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule Dispatcher
+	 * 
+	 * @preventMunge
+	 */
+
+	'use strict';
+
+	exports.__esModule = true;
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+	var invariant = __webpack_require__(249);
+
+	var _prefix = 'ID_';
+
+	/**
+	 * Dispatcher is used to broadcast payloads to registered callbacks. This is
+	 * different from generic pub-sub systems in two ways:
+	 *
+	 *   1) Callbacks are not subscribed to particular events. Every payload is
+	 *      dispatched to every registered callback.
+	 *   2) Callbacks can be deferred in whole or part until other callbacks have
+	 *      been executed.
+	 *
+	 * For example, consider this hypothetical flight destination form, which
+	 * selects a default city when a country is selected:
+	 *
+	 *   var flightDispatcher = new Dispatcher();
+	 *
+	 *   // Keeps track of which country is selected
+	 *   var CountryStore = {country: null};
+	 *
+	 *   // Keeps track of which city is selected
+	 *   var CityStore = {city: null};
+	 *
+	 *   // Keeps track of the base flight price of the selected city
+	 *   var FlightPriceStore = {price: null}
+	 *
+	 * When a user changes the selected city, we dispatch the payload:
+	 *
+	 *   flightDispatcher.dispatch({
+	 *     actionType: 'city-update',
+	 *     selectedCity: 'paris'
+	 *   });
+	 *
+	 * This payload is digested by `CityStore`:
+	 *
+	 *   flightDispatcher.register(function(payload) {
+	 *     if (payload.actionType === 'city-update') {
+	 *       CityStore.city = payload.selectedCity;
+	 *     }
+	 *   });
+	 *
+	 * When the user selects a country, we dispatch the payload:
+	 *
+	 *   flightDispatcher.dispatch({
+	 *     actionType: 'country-update',
+	 *     selectedCountry: 'australia'
+	 *   });
+	 *
+	 * This payload is digested by both stores:
+	 *
+	 *   CountryStore.dispatchToken = flightDispatcher.register(function(payload) {
+	 *     if (payload.actionType === 'country-update') {
+	 *       CountryStore.country = payload.selectedCountry;
+	 *     }
+	 *   });
+	 *
+	 * When the callback to update `CountryStore` is registered, we save a reference
+	 * to the returned token. Using this token with `waitFor()`, we can guarantee
+	 * that `CountryStore` is updated before the callback that updates `CityStore`
+	 * needs to query its data.
+	 *
+	 *   CityStore.dispatchToken = flightDispatcher.register(function(payload) {
+	 *     if (payload.actionType === 'country-update') {
+	 *       // `CountryStore.country` may not be updated.
+	 *       flightDispatcher.waitFor([CountryStore.dispatchToken]);
+	 *       // `CountryStore.country` is now guaranteed to be updated.
+	 *
+	 *       // Select the default city for the new country
+	 *       CityStore.city = getDefaultCityForCountry(CountryStore.country);
+	 *     }
+	 *   });
+	 *
+	 * The usage of `waitFor()` can be chained, for example:
+	 *
+	 *   FlightPriceStore.dispatchToken =
+	 *     flightDispatcher.register(function(payload) {
+	 *       switch (payload.actionType) {
+	 *         case 'country-update':
+	 *         case 'city-update':
+	 *           flightDispatcher.waitFor([CityStore.dispatchToken]);
+	 *           FlightPriceStore.price =
+	 *             getFlightPriceStore(CountryStore.country, CityStore.city);
+	 *           break;
+	 *     }
+	 *   });
+	 *
+	 * The `country-update` payload will be guaranteed to invoke the stores'
+	 * registered callbacks in order: `CountryStore`, `CityStore`, then
+	 * `FlightPriceStore`.
+	 */
+
+	var Dispatcher = (function () {
+	  function Dispatcher() {
+	    _classCallCheck(this, Dispatcher);
+
+	    this._callbacks = {};
+	    this._isDispatching = false;
+	    this._isHandled = {};
+	    this._isPending = {};
+	    this._lastID = 1;
+	  }
+
+	  /**
+	   * Registers a callback to be invoked with every dispatched payload. Returns
+	   * a token that can be used with `waitFor()`.
+	   */
+
+	  Dispatcher.prototype.register = function register(callback) {
+	    var id = _prefix + this._lastID++;
+	    this._callbacks[id] = callback;
+	    return id;
+	  };
+
+	  /**
+	   * Removes a callback based on its token.
+	   */
+
+	  Dispatcher.prototype.unregister = function unregister(id) {
+	    !this._callbacks[id] ? process.env.NODE_ENV !== 'production' ? invariant(false, 'Dispatcher.unregister(...): `%s` does not map to a registered callback.', id) : invariant(false) : undefined;
+	    delete this._callbacks[id];
+	  };
+
+	  /**
+	   * Waits for the callbacks specified to be invoked before continuing execution
+	   * of the current callback. This method should only be used by a callback in
+	   * response to a dispatched payload.
+	   */
+
+	  Dispatcher.prototype.waitFor = function waitFor(ids) {
+	    !this._isDispatching ? process.env.NODE_ENV !== 'production' ? invariant(false, 'Dispatcher.waitFor(...): Must be invoked while dispatching.') : invariant(false) : undefined;
+	    for (var ii = 0; ii < ids.length; ii++) {
+	      var id = ids[ii];
+	      if (this._isPending[id]) {
+	        !this._isHandled[id] ? process.env.NODE_ENV !== 'production' ? invariant(false, 'Dispatcher.waitFor(...): Circular dependency detected while ' + 'waiting for `%s`.', id) : invariant(false) : undefined;
+	        continue;
+	      }
+	      !this._callbacks[id] ? process.env.NODE_ENV !== 'production' ? invariant(false, 'Dispatcher.waitFor(...): `%s` does not map to a registered callback.', id) : invariant(false) : undefined;
+	      this._invokeCallback(id);
+	    }
+	  };
+
+	  /**
+	   * Dispatches a payload to all registered callbacks.
+	   */
+
+	  Dispatcher.prototype.dispatch = function dispatch(payload) {
+	    !!this._isDispatching ? process.env.NODE_ENV !== 'production' ? invariant(false, 'Dispatch.dispatch(...): Cannot dispatch in the middle of a dispatch.') : invariant(false) : undefined;
+	    this._startDispatching(payload);
+	    try {
+	      for (var id in this._callbacks) {
+	        if (this._isPending[id]) {
+	          continue;
+	        }
+	        this._invokeCallback(id);
+	      }
+	    } finally {
+	      this._stopDispatching();
+	    }
+	  };
+
+	  /**
+	   * Is this Dispatcher currently dispatching.
+	   */
+
+	  Dispatcher.prototype.isDispatching = function isDispatching() {
+	    return this._isDispatching;
+	  };
+
+	  /**
+	   * Call the callback stored with the given id. Also do some internal
+	   * bookkeeping.
+	   *
+	   * @internal
+	   */
+
+	  Dispatcher.prototype._invokeCallback = function _invokeCallback(id) {
+	    this._isPending[id] = true;
+	    this._callbacks[id](this._pendingPayload);
+	    this._isHandled[id] = true;
+	  };
+
+	  /**
+	   * Set up bookkeeping needed when dispatching.
+	   *
+	   * @internal
+	   */
+
+	  Dispatcher.prototype._startDispatching = function _startDispatching(payload) {
+	    for (var id in this._callbacks) {
+	      this._isPending[id] = false;
+	      this._isHandled[id] = false;
+	    }
+	    this._pendingPayload = payload;
+	    this._isDispatching = true;
+	  };
+
+	  /**
+	   * Clear bookkeeping used for dispatching.
+	   *
+	   * @internal
+	   */
+
+	  Dispatcher.prototype._stopDispatching = function _stopDispatching() {
+	    delete this._pendingPayload;
+	    this._isDispatching = false;
+	  };
+
+	  return Dispatcher;
+	})();
+
+	module.exports = Dispatcher;
+
+/***/ },
+/* 249 */
+/***/ function(module, exports) {
+
+	/**
+	 * Copyright 2013-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule invariant
+	 */
+
+	"use strict";
+
+	/**
+	 * Use invariant() to assert state which your program assumes to be true.
+	 *
+	 * Provide sprintf-style format (only %s is supported) and arguments
+	 * to provide information about what broke and what you were
+	 * expecting.
+	 *
+	 * The invariant message will be stripped in production, but the invariant
+	 * will remain to ensure logic does not differ in production.
+	 */
+
+	var invariant = function (condition, format, a, b, c, d, e, f) {
+	  if (process.env.NODE_ENV !== 'production') {
+	    if (format === undefined) {
+	      throw new Error('invariant requires an error message argument');
+	    }
+	  }
+
+	  if (!condition) {
+	    var error;
+	    if (format === undefined) {
+	      error = new Error('Minified exception occurred; use the non-minified dev environment ' + 'for the full error message and additional helpful warnings.');
+	    } else {
+	      var args = [a, b, c, d, e, f];
+	      var argIndex = 0;
+	      error = new Error('Invariant Violation: ' + format.replace(/%s/g, function () {
+	        return args[argIndex++];
+	      }));
+	    }
+
+	    error.framesToPop = 1; // we don't care about invariant's own frame
+	    throw error;
+	  }
+	};
+
+	module.exports = invariant;
+
+/***/ },
+/* 250 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.updateConnect = updateConnect;
+
+	var _dispatcher = __webpack_require__(246);
+
+	var _dispatcher2 = _interopRequireDefault(_dispatcher);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function updateConnect(connectState) {
+	  _dispatcher2.default.dispatch({
+	    type: "UPDATE",
+	    connectState: connectState
+	  });
+	}
+
+/***/ },
+/* 251 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(4);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var Regionselect = function (_React$Component) {
+	  _inherits(Regionselect, _React$Component);
+
+	  function Regionselect() {
+	    _classCallCheck(this, Regionselect);
+
+	    return _possibleConstructorReturn(this, Object.getPrototypeOf(Regionselect).apply(this, arguments));
+	  }
+
+	  _createClass(Regionselect, [{
+	    key: "render",
+	    value: function render() {
+
+	      return _react2.default.createElement(
+	        "div",
+	        { className: "region-select" },
+	        "Japan"
+	      );
+	    }
+	  }]);
+
+	  return Regionselect;
+	}(_react2.default.Component);
+
+	exports.default = Regionselect;
+
+/***/ },
+/* 252 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(4);
+
+	var _react2 = _interopRequireDefault(_react);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -27846,7 +28551,7 @@
 	}(_react2.default.Component);
 
 /***/ },
-/* 243 */
+/* 253 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -27911,7 +28616,7 @@
 	          null,
 	          _react2.default.createElement(
 	            _reactRouter.Link,
-	            { className: 'cp_button01', to: '/interface' },
+	            { className: 'cp_button01', to: '/connect' },
 	            'Log in'
 	          )
 	        ),
@@ -27935,23 +28640,23 @@
 	exports.default = Login;
 
 /***/ },
-/* 244 */
+/* 254 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(245);
+	var content = __webpack_require__(255);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(247)(content, {});
+	var update = __webpack_require__(257)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(true) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept(245, function() {
-				var newContent = __webpack_require__(245);
+			module.hot.accept(255, function() {
+				var newContent = __webpack_require__(255);
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -27961,21 +28666,21 @@
 	}
 
 /***/ },
-/* 245 */
+/* 255 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(246)();
+	exports = module.exports = __webpack_require__(256)();
 	// imports
 	exports.push([module.id, "@import url(https://fonts.googleapis.com/css?family=Dosis);", ""]);
 
 	// module
-	exports.push([module.id, "html,\nbody,\ntfoot,\ntr,\ntr,\ntd,\narticle,\naside,\ncanvas,\ndetails,\nfigure,\nhgroup,\nmenu,\nnav,\nfooter,\nheader,\nsection,\nsummary,\nmark,\naudio,\nvideo {\n  border: 0;\n  margin: 0;\n  padding: 0;\n  user-select: none;\n}\nh1,\nh2,\nh3,\nh4,\nh5,\nh6,\np,\nblockquote,\npre,\na,\nabbr,\naddress,\ncit,\ncode,\ndel,\ndfn,\nem,\nins,\nq,\nsamp,\nsmall,\nstrong,\nsub,\nsup,\nb,\ni,\nhr,\ndl,\ndt,\ndd,\nol,\nul,\nli,\nfieldset,\nlegend,\nlabel {\n  border: 0;\n  margin: 0;\n  padding: 0;\n  font-size: 100%;\n  vertical-align: baseline;\n}\narticle,\naside,\ncanvas,\nfigure,\nfigure img,\nfigcaption,\nhgroup,\nfooter,\nheader,\nnav,\nsection,\naudio,\nvideo {\n  display: block;\n}\na img {\n  border: 0;\n}\n:focus {\n  outline: 0;\n}\n.cp_bg01 {\n  background: linear-gradient(328deg, #034698, #76a8e7);\n}\na,\n.link {\n  font-weight: 400;\n  letter-spacing: 0.1em;\n  color: #fff;\n  text-decoration: none;\n}\na:hover {\n  color: #ccf2fd;\n}\n.bottom {\n  position: fixed;\n  bottom: 0;\n  left: 0;\n}\n.cp_button01 {\n  display: inline-block;\n  border: 1px solid #fff;\n  height: 16px;\n  width: 268px;\n  font-size: 18px;\n  font-weight: 500;\n  line-height: 18px;\n  color: #fff;\n  border-radius: 4px;\n  padding: 15px;\n}\n.cp_button02 {\n  display: inline-block;\n  height: 16px;\n  width: 345px;\n  font-size: 18px;\n  font-weight: 500;\n  line-height: 18px;\n  background: rgba(255, 255, 255, 0.25);\n  color: #fff;\n  padding: 15px;\n}\n.cp_input01 {\n  display: inline-block;\n  height: 18px;\n  width: 270px;\n  text-align: left;\n  background: rgba(255, 255, 255, 0.2);\n  color: rgba(255, 255, 255, 0.4);\n  border: none;\n  font-size: 16px;\n  padding: 15px;\n}\n.startup {\n  padding-top: 40px;\n}\n.startup div:nth-of-type(1) .cp_input01 {\n  border-radius: 4px 4px 0 0;\n  margin-bottom: 2px;\n}\n.startup div:nth-of-type(2) .cp_input01 {\n  border-radius: 0 0 4px 4px;\n  margin-bottom: 20px;\n}\n.startup .forgot_password {\n  text-decoration: underline;\n  font-size: 14px;\n  margin-top: 20px;\n}\n.startup .sign_up {\n  display: inline-block;\n  height: 16px;\n  width: 345px;\n  font-size: 18px;\n  font-weight: 500;\n  line-height: 18px;\n  background: rgba(255, 255, 255, 0.25);\n  color: #fff;\n  padding: 15px;\n  color: #f8e71c;\n  height: 18px;\n  position: fixed;\n  bottom: 0;\n  left: 0;\n}\ninput,\ntextarea {\n  -webkit-app-region: no-drag;\n}\n.clicky {\n  -webkit-app-region: no-drag;\n}\nhtml,\nbody {\n  height: 100%;\n  line-height: 1.5;\n}\nbody {\n  font-family: Dosis;\n  font-size: 100%;\n  letter-spacing: 1px;\n  text-align: center;\n  font-weight: 100;\n  color: #fefefe;\n  background: linear-gradient(328deg, #034698, #76a8e7);\n  -webkit-app-region: drag;\n}\nheader {\n  background: rgba(0, 0, 0, 0.1);\n  height: 55px;\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  margin-bottom: 16px;\n}\nheader div {\n  padding: 0 15px 0 15px;\n  height: 55px;\n  line-height: 55px;\n  flex: none;\n}\nheader img {\n  position: relative;\n  top: -2px;\n  vertical-align: middle;\n}\nheader span {\n  display: inline-block;\n  letter-spacing: 0.1em;\n  margin-left: 10px;\n}\n.hide {\n  display: none;\n}\nnav span {\n  flex: 1;\n  padding: 10px 0;\n  margin: 2px 2px 0 2px;\n  color: rgba(255, 255, 255, 0.6);\n  background: rgba(0, 0, 0, 0.2);\n  border: 1px solid rgba(0, 0, 0, 0.1);\n}\nnav span:hover {\n  background: rgba(0, 0, 0, 0.4);\n  color: rgba(255, 255, 255, 0.7);\n}\nnav {\n  padding: 0 4px 0 4px;\n  display: flex;\n  justify-content: space-around;\n  align-items: stretch;\n  margin-bottom: 8px;\n}\n.settn {\n  padding: 4px 0 4px 4px;\n  height: 450px;\n  width: 340px;\n  margin: auto;\n  overflow: auto;\n  background-color: rgba(255, 255, 255, 0.1);\n}\n.settn::-webkit-scrollbar {\n  width: 6px;\n  height: 10px;\n}\n.settn::-webkit-scrollbar-button:start:decrement,\n.settn::-webkit-scrollbar-button:end:increment {\n  display: block;\n  height: 0;\n  background-color: transparent;\n}\n.settn::-webkit-scrollbar-track-piece {\n  border-radius: 0;\n}\n.settn::-webkit-scrollbar-thumb:vertical {\n  height: 50px;\n  background-color: rgba(0, 0, 0, 0.2);\n  border-radius: 0;\n}\n.settn::-webkit-scrollbar-thumb:horizontal {\n  width: 50px;\n  background-color: rgba(0, 0, 0, 0.2);\n  border-radius: 0;\n}\n.button {\n  display: inline-block;\n  width: 80%;\n  padding: 10px 0;\n  margin: 2px 2px 0 2px;\n  color: rgba(255, 255, 255, 0.6);\n  background: rgba(255, 255, 255, 0.2);\n  border: 1px solid rgba(0, 0, 0, 0.1);\n}\n.button:hover {\n  color: rgba(255, 255, 255, 0.8);\n  background: rgba(255, 255, 255, 0.5);\n}\n.startup img {\n  opacity: 0.5;\n}\n.connect {\n  vertical-align: middle;\n  position: relative;\n  top: 100px;\n  font-size: 24px;\n}\n.region-select {\n  vertical-align: middle;\n  background: rgba(0, 0, 0, 0.1);\n  width: 100%;\n  margin: 0 auto;\n  position: fixed;\n  bottom: 0;\n  height: 58px;\n}\n", ""]);
+	exports.push([module.id, "html,\nbody,\ntfoot,\ntr,\ntr,\ntd,\narticle,\naside,\ncanvas,\ndetails,\nfigure,\nhgroup,\nmenu,\nnav,\nfooter,\nheader,\nsection,\nsummary,\nmark,\naudio,\nvideo {\n  border: 0;\n  margin: 0;\n  padding: 0;\n  user-select: none;\n}\nh1,\nh2,\nh3,\nh4,\nh5,\nh6,\np,\nblockquote,\npre,\na,\nabbr,\naddress,\ncit,\ncode,\ndel,\ndfn,\nem,\nins,\nq,\nsamp,\nsmall,\nstrong,\nsub,\nsup,\nb,\ni,\nhr,\ndl,\ndt,\ndd,\nol,\nul,\nli,\nfieldset,\nlegend,\nlabel {\n  border: 0;\n  margin: 0;\n  padding: 0;\n  font-size: 100%;\n  vertical-align: baseline;\n}\narticle,\naside,\ncanvas,\nfigure,\nfigure img,\nfigcaption,\nhgroup,\nfooter,\nheader,\nnav,\nsection,\naudio,\nvideo {\n  display: block;\n}\na img {\n  border: 0;\n}\n:focus {\n  outline: 0;\n}\n.cp_bg01 {\n  background: linear-gradient(328deg, #034698, #76a8e7);\n}\na,\n.link {\n  font-weight: 400;\n  letter-spacing: 0.1em;\n  color: #fff;\n  text-decoration: none;\n}\na:hover {\n  color: #ccf2fd;\n}\n.bottom {\n  position: fixed;\n  bottom: 0;\n  left: 0;\n}\n.cp_button01 {\n  display: inline-block;\n  border: 1px solid #fff;\n  height: 16px;\n  width: 268px;\n  font-size: 18px;\n  font-weight: 500;\n  line-height: 18px;\n  color: #fff;\n  border-radius: 4px;\n  padding: 15px;\n}\n.cp_button02 {\n  display: inline-block;\n  height: 16px;\n  width: 345px;\n  font-size: 18px;\n  font-weight: 500;\n  line-height: 18px;\n  background: rgba(255, 255, 255, 0.25);\n  color: #fff;\n  padding: 15px;\n}\n.cp_input01 {\n  display: inline-block;\n  height: 18px;\n  width: 270px;\n  text-align: left;\n  background: rgba(255, 255, 255, 0.2);\n  color: rgba(255, 255, 255, 0.4);\n  border: none;\n  font-size: 16px;\n  padding: 15px;\n}\n.startup {\n  padding-top: 40px;\n}\n.startup div:nth-of-type(1) .cp_input01 {\n  border-radius: 4px 4px 0 0;\n  margin-bottom: 2px;\n}\n.startup div:nth-of-type(2) .cp_input01 {\n  border-radius: 0 0 4px 4px;\n  margin-bottom: 20px;\n}\n.startup .forgot_password {\n  text-decoration: underline;\n  font-size: 14px;\n  margin-top: 20px;\n}\n.startup .sign_up {\n  display: inline-block;\n  height: 16px;\n  width: 345px;\n  font-size: 18px;\n  font-weight: 500;\n  line-height: 18px;\n  background: rgba(255, 255, 255, 0.25);\n  color: #fff;\n  padding: 15px;\n  color: #f8e71c;\n  height: 18px;\n  position: fixed;\n  bottom: 0;\n  left: 0;\n}\ninput,\ntextarea {\n  -webkit-app-region: no-drag;\n}\n.clicky {\n  -webkit-app-region: no-drag;\n}\nhtml,\nbody {\n  height: 100%;\n  line-height: 1.5;\n}\nbody {\n  font-family: Dosis;\n  font-size: 100%;\n  letter-spacing: 1px;\n  text-align: center;\n  font-weight: 100;\n  color: #fefefe;\n  background: linear-gradient(328deg, #034698, #76a8e7);\n  -webkit-app-region: drag;\n}\nheader {\n  background: rgba(0, 0, 0, 0.1);\n  height: 55px;\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  margin-bottom: 16px;\n}\nheader div {\n  padding: 0 15px 0 15px;\n  height: 55px;\n  line-height: 55px;\n  flex: none;\n}\nheader img {\n  position: relative;\n  top: -2px;\n  vertical-align: middle;\n}\nheader span {\n  display: inline-block;\n  letter-spacing: 0.1em;\n  margin-left: 10px;\n}\n.hide {\n  display: none;\n}\nnav span {\n  flex: 1;\n  padding: 10px 0;\n  margin: 2px 2px 0 2px;\n  color: rgba(255, 255, 255, 0.6);\n  background: rgba(0, 0, 0, 0.2);\n  border: 1px solid rgba(0, 0, 0, 0.1);\n}\nnav span:hover {\n  background: rgba(0, 0, 0, 0.4);\n  color: rgba(255, 255, 255, 0.7);\n}\nnav {\n  padding: 0 4px 0 4px;\n  display: flex;\n  justify-content: space-around;\n  align-items: stretch;\n  margin-bottom: 8px;\n}\n.settn {\n  padding: 4px 0 4px 4px;\n  height: 450px;\n  width: 340px;\n  margin: auto;\n  overflow: auto;\n  background-color: rgba(255, 255, 255, 0.1);\n}\n.settn::-webkit-scrollbar {\n  width: 6px;\n  height: 10px;\n}\n.settn::-webkit-scrollbar-button:start:decrement,\n.settn::-webkit-scrollbar-button:end:increment {\n  display: block;\n  height: 0;\n  background-color: transparent;\n}\n.settn::-webkit-scrollbar-track-piece {\n  border-radius: 0;\n}\n.settn::-webkit-scrollbar-thumb:vertical {\n  height: 50px;\n  background-color: rgba(0, 0, 0, 0.2);\n  border-radius: 0;\n}\n.settn::-webkit-scrollbar-thumb:horizontal {\n  width: 50px;\n  background-color: rgba(0, 0, 0, 0.2);\n  border-radius: 0;\n}\n.button {\n  display: inline-block;\n  width: 80%;\n  padding: 10px 0;\n  margin: 2px 2px 0 2px;\n  color: rgba(255, 255, 255, 0.6);\n  background: rgba(255, 255, 255, 0.2);\n  border: 1px solid rgba(0, 0, 0, 0.1);\n}\n.button:hover {\n  color: rgba(255, 255, 255, 0.8);\n  background: rgba(255, 255, 255, 0.5);\n}\n.startup img {\n  opacity: 0.5;\n}\n.connect {\n  vertical-align: middle;\n  position: relative;\n  top: 100px;\n  font-size: 24px;\n}\n.region-select {\n  display: inline-block;\n  width: 199px;\n  border: 1px solid #ccc;\n  border-radius: 5px;\n  margin: auto;\n  position: fixed;\n  bottom: 28px;\n  left: 88px;\n  font-size: 20px;\n  line-height: 47px;\n  vertical-align: middle;\n  height: 50px;\n  -webkit-app-region: no-drag;\n}\n", ""]);
 
 	// exports
 
 
 /***/ },
-/* 246 */
+/* 256 */
 /***/ function(module, exports) {
 
 	/*
@@ -28031,7 +28736,7 @@
 
 
 /***/ },
-/* 247 */
+/* 257 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
