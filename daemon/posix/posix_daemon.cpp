@@ -77,12 +77,19 @@ void sigterm_handler(int signal)
 		g_daemon->RequestShutdown();
 }
 
+void terminate_handler()
+{
+	LOG(CRITICAL) << "Exiting due to unhandled exception";
+}
+
 static FileLogger g_stdout_logger(stdout);
 static FileLogger g_stderr_logger(stderr);
 static FileLogger g_file_logger;
 
 int main(int argc, char **argv)
 {
+	std::set_terminate(terminate_handler);
+
 	InitPaths(argc > 0 ? argv[0] : "cypherpunkvpn-service");
 
 	g_file_logger.Open(GetPath(LogDir, "daemon.log"));
