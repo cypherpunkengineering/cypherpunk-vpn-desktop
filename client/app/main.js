@@ -1,8 +1,6 @@
 const { app, dialog, BrowserWindow, Tray, Menu, ipcMain: ipc } = require('electron');
 const RPC = require('./js/rpc.js');
 
-const useSemanticUi = (process.argv[process.argv.length - 1] == 'semantic');
-
 let exiting = false;
 let daemon = null;
 let main = null;
@@ -11,7 +9,7 @@ let tray = null;
 let args = {
   debug: false,
   showWindowOnStart: true,
-  useSemanticUi: false,
+  uiVariant: '',
 };
 var noMain = false;
 process.argv.forEach(arg => {
@@ -19,8 +17,12 @@ process.argv.forEach(arg => {
     args.debug = true;
   } else if (arg === '--background') {
     args.showWindowOnStart = false;
+  } else if (arg === '--normal') {
+    args.uiVariant = '';
   } else if (arg === '--semantic') {
-    args.useSemanticUi = true;
+    args.uiVariant = 'semantic';
+  } else if (arg === '--webpack') {
+    args.uiVariant = 'webpack';
   }
 });
 
@@ -143,7 +145,7 @@ function createTray() {
 }
 
 function createMainWindow() {
-  if (args.useSemanticUi) {
+  if (args.uiVariant === 'semantic') {
     main = new BrowserWindow({
       title: 'Cypherpunk VPN (Semantic UI)',
       //icon: icon,
@@ -188,12 +190,10 @@ function createMainWindow() {
   });
   main.maximizedPrev = null;
 
-  if (args.useSemanticUi) {
-    main.loadURL(`file://${__dirname}/index-semantic.html`);
-  } else if (process.argv[process.argv.length -1] == 'webpack'){
-    main.loadURL(`file://${__dirname}/index-webpack.html`);
+  if (args.uiVariant !== '') {
+    main.loadURL(`file://${__dirname}/index-${args.uiVariant}.html`);
   } else {
-    main.loadURL(`file://${__dirname}/index.html`);
+    main.loadURL(`file://${__dirname}/index.html`);    
   }
   if (args.debug) {
     main.webContents.openDevTools({ mode: 'undocked' });
