@@ -3,6 +3,7 @@
   "productName": "Cypherpunk VPN desktop client",
   "version": "0.1.0-prototype",
   "description": "Desktop client for the Cypherpunk VPN service",
+  "private": true,
   "main": "app/main.js",
   "scripts": {
     "start": "electron app/main.js",
@@ -16,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cypherpunkpartners/cypherpunk-desktop.git"
+    "url": "git+https://github.com/cypherpunkpartners/cypherpunk-vpn-desktop.git"
   },
   "keywords": [
     "cypherpunk",
