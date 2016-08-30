@@ -11,6 +11,7 @@
     "build-webpack": "webpack",
     "build-semantic": "cd semantic && gulp build --silent",
     "watch": "webpack-dev-server --hot --inline",
+    "watch-old": "webpack-dev-server",
     "electron-rebuild": "electron-rebuild",
     "package": "electron-packager"
   },

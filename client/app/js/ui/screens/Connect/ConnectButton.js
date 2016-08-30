@@ -5,6 +5,7 @@ import * as ConnectAction from '../../actions/ConnectAction';
 export default class Connectbutton extends React.Component  {
   constructor(props) {
     super();
+    this.getConnectState = this.getConnectState.bind(this);
     this.state = {
       connectState: ConnectStore.getState()
     };
@@ -29,12 +30,21 @@ export default class Connectbutton extends React.Component  {
   }
 
   componentWillMount() {
-    ConnectStore.on("change", () => {
-      this.setState({
-        connectState: ConnectStore.getState(),
-      })
+    ConnectStore.on("change", this.getConnectState);
+  }
+
+  componentWillUnmount() {
+    ConnectStore.removeListener("change", this.getConnectState);
+  }
+
+
+  getConnectState() {
+    this.setState({
+      connectState: ConnectStore.getState(),
     })
   }
+
+
 
   render(){
 
