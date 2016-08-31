@@ -66,8 +66,8 @@ app.on('will-quit', event => {
 
 //var app = require('electron');
 var path = require('path');
-var fs = require('fs');
-var request = require('request');
+//var fs = require('fs');
+//var request = require('request');
 //var dialog = require('dialog');
 //var BrowserWindow = require('browser-window');
 //var Tray = require('tray');
