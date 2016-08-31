@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router';
+import { Motion, spring } from 'react-motion';
 
 export default class Login extends React.Component  {
   render(){
@@ -8,7 +9,11 @@ export default class Login extends React.Component  {
     const logintext2 = "Password";
 
     return(
-      <div className="startup">
+<div>
+      <Motion defaultStyle={{opacity: 0}} style={{opacity: spring(1)}}>
+      {interpolatingStyle =>
+      <div style={interpolatingStyle} className="startup">
+
         <img src="./img/punk.svg" />
         <h1>Cypherpunk!</h1>
         <div><input className="cp_input01" defaultValue={logintext1} /></div>
@@ -17,7 +22,14 @@ export default class Login extends React.Component  {
 
           <div className="forgot_password">Forgot password?</div>
           <div className="sign_up">Sign Up</div>
+
       </div>
+      }
+      </Motion>
+
+<span> hello </span> 
+    </div>
+
     );
   }
 }
