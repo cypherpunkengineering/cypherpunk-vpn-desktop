@@ -1,0 +1,91 @@
+@import '../../semantic/semantic.css';
+
+html, body { -webkit-user-select: none; user-select: none; cursor: default; min-width: 300px; }
+body { background-color: #222; transition: 1s background-color; }
+/*:not(input):not(textarea), :not(input):not(textarea)::after, :not(input):not(textarea)::before { -webkit-user-select: none; user-select: none; cursor: default; }*/
+/*input, button, textarea, :focus { outline: none; }*/
+/*a:not([draggable=true]), img:not([draggable=true]) { -webkit-user-drag: none; user-drag: none; }
+a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: auto; user-drag: auto; }*/
+
+#root-container { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+
+#load-screen { visibility: visible; z-index: 20; }
+
+#titlebar {
+  -webkit-app-region: drag;
+  background: linear-gradient(#333, #222) top;
+  box-shadow: 0 0 5px 0 rgba(0,0,0,0.5);
+  height: 3.5rem;
+  z-index: 10;
+
+  > .header { color: #999; }
+  > .right {
+    font-size: 125%;
+    > .item {
+      -webkit-app-region: no-drag;
+      padding: 0.5rem;
+      color: grey;
+      &:hover {
+        color: #eee;
+      }
+    }
+  }
+  .dropdown .menu { font-size: 1rem !important; }
+}
+
+#main-background {
+  position: absolute;
+  left: 0; top: 0; right: 0; bottom: 0;
+  overflow: hidden;
+  background-color: #666;
+  transition: 1s background-color;
+  &:before {
+    content: '';
+    position: absolute;
+    width: 100%; height: 100%;
+    background: radial-gradient(circle 300px at 50% 200px, rgba(0,0,0,0), #444, #222);
+  }
+  div { position: absolute; left: 50%; top: 200px; margin-left: -150px; margin-top: -150px; width: 300px; height: 300px; opacity: 0; transition: 2s opacity; }
+  img { position: absolute; -webkit-filter: saturate(0.0); transition: 3s -webkit-filter; visibility: hidden; }
+  .animating {
+    div { opacity: 1.0; }
+    img { animation: bge 7s ease-in infinite, bgo 7s linear infinite; opacity: 0; visibility: visible; }
+    .r1 { animation-delay: 0s; }
+    .r2 { animation-delay: 1s; }
+    .r3 { animation-delay: 2s; }
+    .r4 { animation-delay: 3s; }
+    .r5 { animation-delay: 4s; }
+    .r6 { animation-delay: 5s; }
+    .r7 { animation-delay: 6s; }
+    .stop img { animation-iteration-count: 1; }
+  }
+}
+.disconnected #main-background { background-color: #766; }
+.connected #main-background {
+  background-color: #686;
+  img {
+    -webkit-filter: saturate(0.5);
+  }
+}
+
+@keyframes bge { from { transform: scale(0.5) rotate(0deg); } to { transform: scale(1.5) rotate(360deg); } }
+@keyframes bgo { 0% { opacity: 0 } 10% { opacity: 0.7; } 100% { opacity: 0 } }
+
+div.screen {
+  position: absolute;
+  left: 0; top: 3.5rem; right: 0; bottom: 0;
+  visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /*justify-content: center;*/
+  &.full { top: 0; }
+}
+
+#connect-container { margin-top: 130px; height: 140px; display: flex; align-items: center; justify-content: center; }
+#connect { transition: 0.5s color; text-shadow: 0 0 15px rgba(0,0,0,0.25); }
+#connect-status { margin-top: 5px; font-size: 150%; color: #aaa; text-shadow: 0 0 15px rgba(0,0,0,0.25); }
+#region-select { margin-top: 50px; width: 80%; box-shadow: 0 0 5px 0 rgba(0,0,0,0.5); }
+#connection-stats { margin-top: 30px; display: none; }
+#connection-stats .value { color: #aaa; }
+#connection-stats .label { color: #777; }

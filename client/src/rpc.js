@@ -1,10 +1,9 @@
+'use strict';
+
 // An implementation of JSON-RPC 2.0 over websockets. It attempts to stay
 // connected until the 'disconnect' method is explicitly called.
 
-// Workaround to make this work both in a Node.js and web context
-const WebSocket = (typeof global.WebSocket !== 'undefined') ? global.WebSocket : require('ws');
-
-module.exports = class RPC {
+class RPC {
   constructor({ url, onerror, onopen }) {
     var self = this;
     self._queue = [];
@@ -33,7 +32,7 @@ module.exports = class RPC {
         // Helper function to send a reply
         function reply(type, value) {
           let msg = '{"jsonrpc":"2.0","' + type + '":' + JSON.stringify(value) + ',"id":' + JSON.stringify(id) + '}';
-          if (self.socket && self.socket.readyState == WebSocket.OPEN) {
+          if (self.socket && self.socket.readyState == RPC.WebSocket.OPEN) {
             self.socket.send(msg);
           } else {
             self._queue.push(() => socket.send(msg));
@@ -116,7 +115,7 @@ module.exports = class RPC {
       }
 
 	    console.log("Connecting to " + url + "...");
-      self.socket = new WebSocket(url);
+      self.socket = new RPC.WebSocket(url);
       self.socket.onerror = onerror;
       self.socket.onclose = onerror;
       self.socket.onopen = _onopen;
@@ -126,10 +125,10 @@ module.exports = class RPC {
     // Helper to reconnect on any errors (instance-specific)
     var reconnectTimeout = null;
     function reconnect() {
-      if (self.socket && self.socket.readyState >= WebSocket.CLOSING && reconnectTimeout === null) {
+      if (self.socket && self.socket.readyState >= RPC.WebSocket.CLOSING && reconnectTimeout === null) {
         reconnectTimeout = setTimeout(function() {
           reconnectTimeout = null;
-          if (self.socket && self.socket.readyState >= WebSocket.CLOSING) {
+          if (self.socket && self.socket.readyState >= RPC.WebSocket.CLOSING) {
             connect();
           }
         }, 500);
@@ -254,3 +253,7 @@ module.exports = class RPC {
     }
   }
 };
+
+RPC.WebSocket = global.WebSocket;
+
+module.exports = RPC;

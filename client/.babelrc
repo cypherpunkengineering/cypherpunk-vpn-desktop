@@ -1,0 +1,17 @@
+{
+  "sourceMaps": true,
+  "presets": [ "electron", "react" ],
+  "plugins": [
+    "add-module-exports",
+    ["transform-decorators-legacy"],
+    ["transform-react-jsx"],
+    ["react-html-attrs"]
+  ],
+  "env": {
+    "production": {
+      //"presets": [ "babili" ],
+      "minified": true,
+      "comments": false
+    }
+  }
+}

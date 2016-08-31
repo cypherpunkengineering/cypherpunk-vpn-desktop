@@ -9,7 +9,7 @@ export default class Login extends React.Component  {
 
     return(
       <div className="startup">
-        <img src="./img/punk.svg" />
+        <img src={require('../../assets/img/punk.svg')} />
         <h1>Cypherpunk!</h1>
         <div><input className="cp_input01" defaultValue={logintext1} /></div>
         <div><input className="cp_input01" defaultValue={logintext2} /></div>

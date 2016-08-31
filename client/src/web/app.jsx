@@ -1,4 +1,4 @@
-require('../less/app.less');
+require('./assets/less/app.less');
 //const RPC = require('./rpc.js');
 
 import React from 'react';
@@ -10,8 +10,7 @@ import Configs from './ui/screens/Configs.js';
 import Connect from './ui/screens/Connect.js';
 import GeneralAdvanced from './ui/screens/Configs/GeneralAdvanced.js';
 import Login from './ui/screens/Login.js';
-
-const app = document.getElementById('app');
+import RPC from '../rpc.js';
 
 class CypherPunkApp extends React.Component {
 
@@ -30,4 +29,10 @@ class CypherPunkApp extends React.Component {
   }
 }
 
-ReactDOM.render( <CypherPunkApp />, app);
+$(document).ready(() => {
+  console.log("DOMContentLoaded");
+  var root = document.createElement('div');
+  root.id = 'root-container';
+  document.body.appendChild(root)
+  ReactDOM.render(<CypherPunkApp />, root);
+});
