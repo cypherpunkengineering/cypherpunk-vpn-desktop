@@ -30,7 +30,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-    <OutDir>..\out\daemon\$(Configuration)\$(PlatformArchitecture)\</OutDir>
+    <OutDir>..\out\win\daemon\$(Configuration)\$(PlatformArchitecture)\</OutDir>
     <IntDir>int\$(Configuration)\$(PlatformArchitecture)\</IntDir>
     <TargetName>cypherpunkvpn-service</TargetName>
   </PropertyGroup>

@@ -18,7 +18,7 @@ DefaultDirName={pf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 PrivilegesRequired=admin
 DisableProgramGroupPage=yes
-OutputDir=..\out\setup\
+OutputDir=..\..\out\win\setup\
 OutputBaseFilename={#MyAppID}
 LicenseFile=..\LICENSE.txt
 SetupIconFile=..\client\app\img\logo.ico
@@ -44,13 +44,13 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 ;Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce
 
 [Files]
-Source: "..\out\client\CypherpunkVPN-win32-ia32\*"; DestDir: "{app}"; Flags: 32bit createallsubdirs overwritereadonly recursesubdirs
-Source: "..\out\daemon\Release\32\cypherpunkvpn-service.exe"; DestDir: "{app}"; DestName: "cypherpunkvpn-service.exe"; Flags: ignoreversion overwritereadonly; Check: not Is64BitInstallMode; BeforeInstall: StopService
-Source: "..\out\daemon\Release\64\cypherpunkvpn-service.exe"; DestDir: "{app}"; DestName: "cypherpunkvpn-service.exe"; Flags: ignoreversion overwritereadonly; Check: Is64BitInstallMode; BeforeInstall: StopService
-Source: "..\out\daemon\Release\32\openvpn\*"; DestDir: "{app}\openvpn"; Flags: ignoreversion recursesubdirs createallsubdirs overwritereadonly; Check: not Is64BitInstallMode
-Source: "..\out\daemon\Release\64\openvpn\*"; DestDir: "{app}\openvpn"; Flags: ignoreversion recursesubdirs createallsubdirs overwritereadonly; Check: Is64BitInstallMode
-Source: "..\out\daemon\Release\32\tap\*"; DestDir: "{app}\tap"; Flags: ignoreversion recursesubdirs createallsubdirs overwritereadonly; Check: not Is64BitInstallMode
-Source: "..\out\daemon\Release\64\tap\*"; DestDir: "{app}\tap"; Flags: ignoreversion recursesubdirs createallsubdirs overwritereadonly; Check: Is64BitInstallMode
+Source: "..\out\win\client\CypherpunkVPN-win32-ia32\*"; DestDir: "{app}"; Flags: 32bit createallsubdirs overwritereadonly recursesubdirs
+Source: "..\out\win\daemon\Release\32\cypherpunkvpn-service.exe"; DestDir: "{app}"; DestName: "cypherpunkvpn-service.exe"; Flags: ignoreversion overwritereadonly; Check: not Is64BitInstallMode; BeforeInstall: StopService
+Source: "..\out\win\daemon\Release\64\cypherpunkvpn-service.exe"; DestDir: "{app}"; DestName: "cypherpunkvpn-service.exe"; Flags: ignoreversion overwritereadonly; Check: Is64BitInstallMode; BeforeInstall: StopService
+Source: "..\out\win\daemon\Release\32\openvpn\*"; DestDir: "{app}\openvpn"; Flags: ignoreversion recursesubdirs createallsubdirs overwritereadonly; Check: not Is64BitInstallMode
+Source: "..\out\win\daemon\Release\64\openvpn\*"; DestDir: "{app}\openvpn"; Flags: ignoreversion recursesubdirs createallsubdirs overwritereadonly; Check: Is64BitInstallMode
+Source: "..\out\win\daemon\Release\32\tap\*"; DestDir: "{app}\tap"; Flags: ignoreversion recursesubdirs createallsubdirs overwritereadonly; Check: not Is64BitInstallMode
+Source: "..\out\win\daemon\Release\64\tap\*"; DestDir: "{app}\tap"; Flags: ignoreversion recursesubdirs createallsubdirs overwritereadonly; Check: Is64BitInstallMode
 
 [PreCompile]
 ;Name: "build.bat"; Flags: abortonerror cmdprompt
