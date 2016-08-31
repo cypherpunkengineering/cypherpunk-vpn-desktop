@@ -1,5 +1,5 @@
-require('../less/app.less');
-//require('../sass/app.scss');
+//require('../less/app.less');
+require('../sass/app.scss');
 //const RPC = require('./rpc.js');
 
 import React from 'react';
