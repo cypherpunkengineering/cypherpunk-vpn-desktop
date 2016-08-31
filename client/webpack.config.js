@@ -5,19 +5,20 @@ const autoprefixer = require('autoprefixer');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const path = require('path');
 
+const pkg = require('./package.json');
+
 var options = {
   target: 'node',
   entry: {
     app: [ './app/js/app.js' ],
   },
-  externals: [nodeExternals()],
+  externals: [Object.keys(pkg.dependencies)],
   output: {
     path: __dirname + '/app/build/',
     filename: 'bundle.js'
   },
   // doesnt seem to help
   resolve: {
-    extensions: ['', '.scss', '.css', '.js', '.json'],
     modulesDirectories: [
       'node_modules',
       path.resolve(__dirname, './node_modules')
