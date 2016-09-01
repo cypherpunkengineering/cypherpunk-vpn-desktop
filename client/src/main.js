@@ -153,6 +153,7 @@ function createMainWindow() {
       minHeight: 400,
       maxWidth: 300,
       //maxHeight: 700,
+      acceptFirstMouse: true,
     });
   } else {
     main = new BrowserWindow({
