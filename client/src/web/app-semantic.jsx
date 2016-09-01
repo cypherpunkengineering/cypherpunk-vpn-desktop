@@ -10,11 +10,17 @@ import SpinningImage from './assets/img/bgring3.png';
 
 import RPC from '../rpc.js';
 
+import addUnloadHandler from './unload.js';
+
 let daemon = new RPC({
   url: 'ws://127.0.0.1:9337/',
   // Note: Disabling the error handler will make the RPC attempt to reconnect infinitely in the background
   //onerror: () => { window.alert("Unable to connect to background service.", "Cypherpunk VPN"); require('electron').remote.app.quit(); },
   onopen: () => { console.log("Established connection"); History.push("/connect"); console.log(window.location.href); }
+});
+
+addUnloadHandler(function() {
+  return daemon.disconnect();
 });
 
 
