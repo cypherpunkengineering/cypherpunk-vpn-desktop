@@ -47,7 +47,7 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   }
   div { position: absolute; left: 50%; top: 200px; margin-left: -150px; margin-top: -150px; width: 300px; height: 300px; opacity: 0; transition: 2s opacity; }
   img { position: absolute; -webkit-filter: saturate(0.0); transition: 3s -webkit-filter; visibility: hidden; }
-  .animating {
+  &.animating {
     div { opacity: 1.0; }
     img { animation: bge 7s ease-in infinite, bgo 7s linear infinite; opacity: 0; visibility: visible; }
     .r1 { animation-delay: 0s; }
@@ -86,6 +86,6 @@ div.screen {
 #connect { transition: 0.5s color; text-shadow: 0 0 15px rgba(0,0,0,0.25); }
 #connect-status { margin-top: 5px; font-size: 150%; color: #aaa; text-shadow: 0 0 15px rgba(0,0,0,0.25); }
 #region-select { margin-top: 50px; width: 80%; box-shadow: 0 0 5px 0 rgba(0,0,0,0.5); }
-#connection-stats { margin-top: 30px; display: none; }
+#connection-stats { margin-top: 30px; }
 #connection-stats .value { color: #aaa; }
 #connection-stats .label { color: #777; }
