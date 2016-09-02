@@ -212,8 +212,8 @@ class ConnectScreen extends React.Component {
   }
   state = {
     regions: [
-      { remote: "208.111.51.1 7133", country: "jp", name: "Tokyo 1, Japan" },
-      { remote: "208.111.51.2 7133", country: "jp", name: "Tokyo 2, Japan" },
+      { remote: "208.111.52.1 7133", country: "jp", name: "Tokyo 1, Japan" },
+      { remote: "208.111.52.2 7133", country: "jp", name: "Tokyo 2, Japan" },
       { remote: "199.68.252.203 7133", country: "us", name: "Honolulu, HI, USA" },
     ],
     selectedRegion: "208.111.51.1 7133",
