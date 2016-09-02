@@ -216,7 +216,7 @@ class ConnectScreen extends React.Component {
       { remote: "208.111.52.2 7133", country: "jp", name: "Tokyo 2, Japan" },
       { remote: "199.68.252.203 7133", country: "us", name: "Honolulu, HI, USA" },
     ],
-    selectedRegion: "208.111.51.1 7133",
+    selectedRegion: "208.111.52.1 7133",
     receivedBytes: 0,
     sentBytes: 0,
     connectionState: "disconnected",
