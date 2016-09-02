@@ -6,3 +6,4 @@
 *.VC.opendb
 *.VC.db
 /out/
+.DS_Store
