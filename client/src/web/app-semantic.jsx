@@ -260,7 +260,7 @@ class ConnectScreen extends React.Component {
             { this.state.regions.map(r => <div class="item" data-value={r.remote} key={r.remote}><i class={r.country + " flag"}></i>{r.name}</div>) }
           </div>
         </div>
-        <div id="connection-stats" class="ui two column centered grid">
+        <div id="connection-stats" class="ui two column center aligned grid">
           <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.receivedBytes)}</div><div class="label">Received</div></div></div>
           <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.sentBytes)}</div><div class="label">Sent</div></div></div>
         </div>
