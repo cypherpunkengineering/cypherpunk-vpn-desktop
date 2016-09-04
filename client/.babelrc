@@ -1,5 +1,6 @@
 {
   "sourceMaps": true,
+  "compact": false,
   "presets": [ "electron", "react" ],
   "plugins": [
     "add-module-exports",
@@ -9,9 +10,10 @@
   ],
   "env": {
     "production": {
-      //"presets": [ "babili" ],
+      //"presets": [ "babili" ], // minification, but too early for use it seems
       "minified": true,
-      "comments": false
+      "comments": false,
+      "compact": true
     }
   }
 }
