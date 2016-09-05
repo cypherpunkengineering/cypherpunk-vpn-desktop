@@ -10,6 +10,7 @@ const ENV = process.env.NODE_ENV || 'development';
 const development = ENV === 'development';
 const production = !development;
 const extractCss = true;
+const useWebLibraries = production;
 
 const devMap = production ? '' : '?sourceMap';
 function cssLoader(a, b) { return extractCss ? ExtractTextPlugin.extract(a, b) : (a + '!' + b); }
@@ -28,7 +29,6 @@ var options = {
   },
   resolve: {
 		modulesDirectories: [
-      path.resolve(__dirname, 'src/web/lib'),
       path.resolve(__dirname, 'node_modules'),
 			'node_modules'
 		],
@@ -77,6 +77,9 @@ var options = {
     historyApiFallback: true
   }
 }
+
+if (useWebLibraries)
+  options.resolve.modulesDirectories.unshift(path.resolve(__dirname, 'src/web/lib'));
 
 options.target = webpackTargetElectronRenderer(options);
 

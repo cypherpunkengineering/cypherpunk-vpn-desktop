@@ -1,6 +1,6 @@
 import './assets/fonts/dosis.css';
 import 'semantic/semantic.min.css';
-import './index.css';
+import './assets/css/index.css';
 
 let app = null;
 

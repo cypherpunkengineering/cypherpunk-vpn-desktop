@@ -1,18 +1,18 @@
 window.$ = window.jQuery = require('jquery');
 
-import './assets/less/app.less';
+import './assets/css/app.less';
 import 'semantic';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Router, Route, IndexRoute, hashHistory as History } from 'react-router';
+import { Router, Route, IndexRoute, IndexRedirect, Redirect, hashHistory as History } from 'react-router';
 
 import SpinningImage from './assets/img/bgring3.png';
 
 import daemon from './daemon.js';
 
 daemon.call.ping().then(() => {
-  History.push('/connect');
+  History.push('/main');
 });
 
 
@@ -240,6 +240,7 @@ class ConnectScreen extends React.Component {
 
     return(
       <div id="connect-screen" class="full screen" style={{visibility: 'visible'}}>
+        <Titlebar/>
         <div id="connect-container">
           <i id="connect" class={"ui fitted massive power link icon" + (this.state.connectionState === 'connected' ? " green" : this.state.connectionState == 'disconnected' ? " red" : " disabled")} ref="connectButton" onClick={this.handleConnectClick}></i>
         </div>
@@ -291,8 +292,10 @@ class ConnectScreen extends React.Component {
   }
 }
 
-class MainScreen extends React.Component {
-
+class LoginScreen extends React.Component {
+  render() {
+    return <div/>;
+  }
 }
 
 class SettingsScreen extends React.Component {
@@ -301,12 +304,16 @@ class SettingsScreen extends React.Component {
 
 class RootContainer extends React.Component {
   render() {
+    function WithTitleBar(inner) {
+      return [ <Titlebar/>, ]
+    }
     return(
       <div class="full screen" style={{visibility: 'visible'}}>
         <MainBackground/>
-        <Titlebar/>
         <Router history={History}>
-          <Route path="/connect" component={ConnectScreen}/>
+          <Route path="/login" component={LoginScreen}/>
+          <Route path="/main" component={ConnectScreen}/>
+          <Redirect from="/" to="/login"/>
         </Router>
       </div>
     );

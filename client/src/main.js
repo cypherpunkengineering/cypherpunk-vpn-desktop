@@ -10,7 +10,6 @@ let tray = null;
 let args = {
   debug: false,
   showWindowOnStart: true,
-  uiVariant: '',
 };
 var noMain = false;
 process.argv.forEach(arg => {
@@ -18,12 +17,6 @@ process.argv.forEach(arg => {
     args.debug = true;
   } else if (arg === '--background') {
     args.showWindowOnStart = false;
-  } else if (arg === '--normal') {
-    args.uiVariant = '';
-  } else if (arg === '--semantic') {
-    args.uiVariant = 'semantic';
-  } else if (arg === '--webpack') {
-    args.uiVariant = 'webpack';
   }
 });
 
@@ -135,43 +128,25 @@ function createTray() {
 }
 
 function createMainWindow() {
-  if (args.uiVariant === 'semantic') {
-    main = new BrowserWindow({
-      title: 'Cypherpunk VPN (Semantic UI)',
-      //icon: icon,
-      backgroundColor: '#222',
-      show: false,
-      //frame: false,
-      fullscreen: false,
-      useContentSize: true,
-      width: 300,
-      height: 500,
-      //resizable: false,
-      minimizable: false,
-      maximizable: false,
-      minWidth: 300,
-      minHeight: 400,
-      maxWidth: 300,
-      //maxHeight: 700,
-      acceptFirstMouse: true,
-    });
-  } else {
-    main = new BrowserWindow({
-      title: 'Cypherpunk VPN',
-      //icon: icon,
-      backgroundColor: '#222',
-      show: false,
-      frame: false,
-      fullscreen: false,
-      width: 375,
-      height: 590,
-      resizable: false,
-      //'min-width': 300,
-      //'min-height': 400,
-      //'max-width': 600,
-      //'max-height': 700
-    });
-  }
+  main = new BrowserWindow({
+    title: 'Cypherpunk VPN (Semantic UI)',
+    //icon: icon,
+    backgroundColor: '#222',
+    show: false,
+    //frame: false,
+    fullscreen: false,
+    useContentSize: true,
+    width: 300,
+    height: 500,
+    //resizable: false,
+    minimizable: false,
+    maximizable: false,
+    minWidth: 300,
+    minHeight: 400,
+    maxWidth: 300,
+    //maxHeight: 700,
+    acceptFirstMouse: true,
+  });
 
   main.setMenu(null);
   main.on('close', () => {
@@ -187,11 +162,7 @@ function createMainWindow() {
   });
   main.maximizedPrev = null;
 
-  if (args.uiVariant !== '') {
-    main.loadURL(`file://${__dirname}/web/index.html?${args.uiVariant}`);
-  } else {
-    main.loadURL(`file://${__dirname}/web/index.html`);    
-  }
+  main.loadURL(`file://${__dirname}/web/index.html`);    
   if (args.debug) {
     main.webContents.openDevTools({ mode: 'detach' });
   }
