@@ -4,9 +4,8 @@
   "presets": [ "electron", "react" ],
   "plugins": [
     "add-module-exports",
-    ["transform-decorators-legacy"],
-    ["transform-react-jsx"],
-    ["react-html-attrs"]
+    "transform-decorators-legacy",
+    "react-html-attrs"
   ],
   "env": {
     "production": {
