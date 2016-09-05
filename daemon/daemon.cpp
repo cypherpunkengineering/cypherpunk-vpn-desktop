@@ -71,6 +71,7 @@ int CypherDaemon::Run()
 		auto& d = _rpc_server.GetDispatcher();
 		d.AddMethod("connect", &CypherDaemon::RPC_connect, *this);
 		d.AddMethod("disconnect", &CypherDaemon::RPC_disconnect, *this);
+		d.AddMethod("ping", [](){});
 	}
 
 	_state = INITIALIZED;
