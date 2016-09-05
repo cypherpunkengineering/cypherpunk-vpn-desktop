@@ -10,20 +10,17 @@ class RPC {
     self._nextId = 1;
     self._callbacks = {};
     self._handlers = {};
-    self.url = url;
-    self.onerror = onerror;
 
     // Helper function to connect to the websocket
     function connect() {
 
       // Helper to process any queued up commands
       function _onopen(evt) {
-        self._queue.forEach(fn => fn());
-        self._queue = [];
         if (onopen) {
           onopen(evt);
-          onopen = null;
         }
+        self._queue.forEach(fn => fn());
+        self._queue = [];
       }
 
       // Helper to handle incoming websocket messages
@@ -107,17 +104,18 @@ class RPC {
       }
 
       // If there is an onerror handler, report the errors to the client, otherwise just try to reconnect
-      function onerror(evt) {
-        if (typeof self.onerror !== 'function' || self.onerror(evt))
+      function _onerror(evt) {
+        if (!onerror || onerror(evt)) {
           reconnect();
-        else
+        } else {
           self.disconnect();
+        }
       }
 
 	    console.log("Connecting to " + url + "...");
       self.socket = new RPC.WebSocket(url);
-      self.socket.onerror = onerror;
-      self.socket.onclose = onerror;
+      self.socket.onerror = _onerror;
+      self.socket.onclose = _onerror;
       self.socket.onopen = _onopen;
       self.socket.onmessage = onmessage;
     }
@@ -190,6 +188,10 @@ class RPC {
   //
   disconnect() {
     return new Promise((resolve, reject) => {
+      if (this.socket) {
+        this.socket.onerror = null;
+        this.socket.onclose = null;
+      }
       if (this.socket && this.socket.readyState != WebSocket.CLOSED) {
         this.socket.onclose = resolve;
         this.socket.close();
