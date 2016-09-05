@@ -45,7 +45,7 @@ std::string GetPath(PredefinedDirectory dir)
 	case BaseDir: return g_is_installed ? "/Applications/CypherpunkVPN.app" : (g_argv0_path + "/../..");
 	case LogDir: return g_is_installed ? "/tmp" : g_argv0_path;
 	case ProfileDir: return g_is_installed ? "/tmp" : g_argv0_path;
-	case ScriptsDir: return g_is_installed ? GetPath(BaseDir, "scripts") : GetPath(BaseDir, "res", "osx", "openvpn-scripts");
+	case ScriptsDir: return g_is_installed ? GetPath(BaseDir, "Contents/Resources/scripts") : GetPath(BaseDir, "res", "osx", "openvpn-scripts");
 	default:
 		LOG(ERROR) << "Unknown path";
 		return std::string();

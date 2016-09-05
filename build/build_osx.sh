@@ -24,8 +24,8 @@ mv "out/osx/Applications/${APPNAME}-darwin-x64/${APPNAME}.app" out/osx/Applicati
 rm -rf "out/osx/Applications/${APPNAME}-darwin-x64"
 
 # Copy OpenVPN scripts
-mkdir -p "out/osx/Applications/${APPNAME}.app/scripts"
-cp -pR res/osx/openvpn-scripts/ "out/osx/Applications/${APPNAME}.app/scripts"
+mkdir -p "out/osx/Applications/${APPNAME}.app/Contents/Resources/scripts"
+cp -pR res/osx/openvpn-scripts/ "out/osx/Applications/${APPNAME}.app/Contents/Resources/scripts"
 
 sleep 3
 codesign --force --deep --sign "${APPSIGNIDENTITY}" "out/osx/Applications/${APPNAME}.app"
@@ -65,7 +65,7 @@ chmod +x res/osx/install-scripts/preinstall
 
 # Package
 cd out
-pkgbuild --root osx --scripts ../res/osx/install-scripts --sign "${INSTALLERSIGNIDENTITY}" --identifier "com.cypherpunk.pkg.${APPNAME}" --version "${APP_VER}" --ownership recommended --install-location / Build.pkg
+pkgbuild --root osx --scripts ../res/osx/install-scripts --sign "${INSTALLERSIGNIDENTITY}" --identifier "com.cypherpunk.pkg.${APPNAME}" --version "${APP_VER}" --ownership recommended --install-location / Build.pkg || true # XXX: ignore 'is already signed' error from causing build script to fail
 productbuild --resources ../res/osx/resources --distribution ../res/osx/resources/distribution.xml --sign "${INSTALLERSIGNIDENTITY}" --version "${APP_VER}" "${APPNAME}.pkg"
 #zip "${APPNAME}.pkg.zip" "${APPNAME}.pkg"
 rm -f Build.pkg
