@@ -29,6 +29,14 @@
   },
   "homepage": "https://cypherpunk.com/",
   "electronVersion": "1.3.4",
+  "webLibraries": {
+    "flux": "https://cdnjs.cloudflare.com/ajax/libs/flux/2.1.1/Flux.min.js",
+    "jquery": "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js",
+    "react": "https://cdnjs.cloudflare.com/ajax/libs/react/15.3.1/react.min.js",
+    "react-dom": "https://cdnjs.cloudflare.com/ajax/libs/react/15.3.1/react-dom.min.js",
+    "react-motion": "https://cdnjs.cloudflare.com/ajax/libs/react-motion/0.0.3/Spring.min.js",
+    "react-router": "https://cdnjs.cloudflare.com/ajax/libs/react-router/2.7.0/ReactRouter.min.js"
+  },
   "dependencies": {
     "flag-icon-css": "^2.4.0",
     "mustache": "^2.2.1",
@@ -85,6 +93,7 @@
     "run-sequence": "^1.2.2",
     "semantic-ui": "^2.2.4",
     "style-loader": "^0.13.1",
+    "through": "^2.3.8",
     "utf-8-validate": "^1.2 .1",
     "webpack": "^1.13.2",
     "webpack-dev-server": "^1.15.0",
