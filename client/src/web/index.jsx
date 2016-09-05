@@ -1,1 +1,0 @@
-export default (window.location.search === '?semantic' ? require('./app-semantic.jsx') : require('./app.jsx'));

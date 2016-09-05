@@ -29,10 +29,4 @@ class CypherPunkApp extends React.Component {
   }
 }
 
-$(document).ready(() => {
-  console.log("DOMContentLoaded");
-  var root = document.createElement('div');
-  root.id = 'root-container';
-  document.body.appendChild(root)
-  ReactDOM.render(<CypherPunkApp />, root);
-});
+ReactDOM.render(<CypherPunkApp />, document.getElementById('root-container'));

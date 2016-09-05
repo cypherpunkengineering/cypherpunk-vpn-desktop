@@ -322,9 +322,4 @@ class RootContainer extends React.Component {
   }
 }
 
-$(document).ready(() => {
-  var root = document.createElement('div');
-  root.id = 'root-container';
-  document.body.appendChild(root)
-  ReactDOM.render(<RootContainer />, root);
-});
+ReactDOM.render(<RootContainer />, document.getElementById('root-container'));
