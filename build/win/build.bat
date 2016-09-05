@@ -7,7 +7,7 @@ if exist "%ProgramFiles%\Inno Setup 5\ISCC.exe" set ISCC="%ProgramFiles%\Inno Se
 
 pushd %~dp0
 
-cd ..\daemon
+cd ..\..\daemon
 echo * Building 32-bit service...
 %MSBUILD% daemon.vcxproj /nologo /v:q /p:Configuration=Release /p:Platform=Win32
 if %errorlevel% neq 0 goto error
@@ -33,10 +33,10 @@ call node_modules\.bin\electron-rebuild.cmd --arch=ia32
 if %errorlevel% neq 0 goto error
 
 echo * Packaging Electron app...
-call node_modules\.bin\electron-packager.cmd .\ CypherpunkVPN --overwrite --platform=win32 --arch=ia32 --icon=app\img\logo.ico --out=..\out\client\ --prune --asar
+call node_modules\.bin\electron-packager.cmd .\ CypherpunkVPN --overwrite --platform=win32 --arch=ia32 --icon=app\img\logo.ico --out=..\out\win\client\ --prune --asar
 if %errorlevel% neq 0 goto error
 
-cd ..\build
+cd ..\build\win
 echo * Creating installer...
 %ISCC% /Q setup.iss
 if %errorlevel% neq 0 goto error

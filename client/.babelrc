@@ -1,0 +1,19 @@
+{
+  "sourceMaps": true,
+  "compact": false,
+  "presets": [ "electron", "react" ],
+  "plugins": [
+    "add-module-exports",
+    ["transform-decorators-legacy"],
+    ["transform-react-jsx"],
+    ["react-html-attrs"]
+  ],
+  "env": {
+    "production": {
+      //"presets": [ "babili" ], // minification, but too early for use it seems
+      "minified": true,
+      "comments": false,
+      "compact": true
+    }
+  }
+}

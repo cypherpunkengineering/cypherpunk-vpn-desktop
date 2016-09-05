@@ -7,6 +7,9 @@
 #include "path.h"
 
 #include <signal.h>
+#include <exception>
+#include <stdexcept>
+#include <cxxabi.h>
 
 
 class PosixOpenVPNProcess : public OpenVPNProcess
@@ -77,9 +80,29 @@ void sigterm_handler(int signal)
 		g_daemon->RequestShutdown();
 }
 
+static void (*g_old_terminate_handler)() = nullptr;
+
 void terminate_handler()
 {
+	std::set_terminate(g_old_terminate_handler);
 	LOG(CRITICAL) << "Exiting due to unhandled exception";
+	if (std::exception_ptr ep = std::current_exception())
+	{
+		try
+		{
+			std::rethrow_exception(ep);
+		}
+		catch (const std::exception& e)
+		{
+			LOG(CRITICAL) << "what() = \"" << e.what() << "\"";
+		}
+		catch (...)
+		{
+			if (std::type_info* et = abi::__cxa_current_exception_type())
+				LOG(CRITICAL) << "Exception type: " << et->name();
+		}		
+	}
+	std::abort();
 }
 
 static FileLogger g_stdout_logger(stdout);
@@ -88,7 +111,7 @@ static FileLogger g_file_logger;
 
 int main(int argc, char **argv)
 {
-	std::set_terminate(terminate_handler);
+	g_old_terminate_handler = std::set_terminate(terminate_handler);
 
 	InitPaths(argc > 0 ? argv[0] : "cypherpunkvpn-service");
 

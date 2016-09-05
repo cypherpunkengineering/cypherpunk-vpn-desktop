@@ -9,12 +9,12 @@
       "themes": "src/themes/"
     },
     "output": {
-      "packaged": "../app/semantic/",
-      "uncompressed": "../app/semantic/components/",
-      "compressed": "../app/semantic/components/",
-      "themes": "../app/semantic/themes/"
+      "packaged": "../src/web/semantic/",
+      "uncompressed": "../src/web/semantic/components/",
+      "compressed": "../src/web/semantic/components/",
+      "themes": "../src/web/semantic/themes/"
     },
-    "clean": "../app/semantic/"
+    "clean": "../src/web/semantic/"
   },
   "permission": 744,
   "autoInstall": true,
