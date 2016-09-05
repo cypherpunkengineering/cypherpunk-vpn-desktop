@@ -18,6 +18,7 @@ var download = require('gulp-download-stream');
 var through = require('through');
 var File = require('vinyl');
 var { fork, spawn, exec } = require('child_process');
+var fs = require('fs');
 var stream = require('stream');
 var webpack = require('webpack');
 
@@ -148,7 +149,9 @@ gulp.task('watch-semantic', function(callback) {
 gulp.task('build-web-libraries', function() {
   var requests = [];
   for (var file in (packageJson.webLibraries || {})) {
-    requests.push({ file: file + '.min.js', url: packageJson.webLibraries[file] });
+    if (!fs.existsSync('src/web/lib/' + file + '.min.js')) {
+      requests.push({ file: file + '.min.js', url: packageJson.webLibraries[file] });
+    }
   }
   return download(requests)
     .pipe(gulp.dest('src/web/lib'));
