@@ -16,7 +16,6 @@ var babel = require('gulp-babel');
 var install = require('gulp-install');
 var download = require('gulp-download-stream');
 var through = require('through');
-var File = require('vinyl');
 var { fork, spawn, exec } = require('child_process');
 var fs = require('fs');
 var stream = require('stream');
@@ -205,7 +204,7 @@ function makeSemanticWebpackShims(callback) {
         function onEnd() {
           for (var e in files) {
             var n = e.endsWith('semantic') ? 'index.js' : e + '.webpack.js';
-            this.emit('data', new File({
+            this.emit('data', new gutil.File({
               cwd: '.', base: 'src/web/semantic', path: 'src/web/semantic/' + n, contents: new Buffer(files[e].sort().map(f => "require('" + f + "');\n").join(''))
             }));
           }
