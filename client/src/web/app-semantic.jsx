@@ -1,6 +1,7 @@
-require('./assets/fonts/dosis.css');
-require('./semantic/semantic.js');
-require('./assets/less/app-semantic.less');
+window.$ = window.jQuery = require('jquery');
+
+import './assets/less/app-semantic.less';
+import 'semantic';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -8,19 +9,10 @@ import { Router, Route, IndexRoute, hashHistory as History } from 'react-router'
 
 import SpinningImage from './assets/img/bgring3.png';
 
-import RPC from '../rpc.js';
+import daemon from './daemon.js';
 
-import addUnloadHandler from './unload.js';
-
-let daemon = new RPC({
-  url: 'ws://127.0.0.1:9337/',
-  // Note: Disabling the error handler will make the RPC attempt to reconnect infinitely in the background
-  //onerror: () => { window.alert("Unable to connect to background service.", "Cypherpunk VPN"); require('electron').remote.app.quit(); },
-  onopen: () => { console.log("Established connection"); History.push("/connect"); }
-});
-
-addUnloadHandler(function() {
-  return daemon.disconnect();
+daemon.call.ping().then(() => {
+  History.push('/connect');
 });
 
 
@@ -315,7 +307,6 @@ class RootContainer extends React.Component {
         <Titlebar/>
         <Router history={History}>
           <Route path="/connect" component={ConnectScreen}/>
-          <Route path="/" component={LoadDimmer}/>
         </Router>
       </div>
     );
