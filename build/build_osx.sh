@@ -57,7 +57,7 @@ cp daemon/third_party/tuntap_osx/net.sf.tuntaposx.tun.plist out/osx/Library/Laun
 # OpenVPN binary
 mkdir -p out/osx/usr/local/bin
 install -c -m 755 ./daemon/third_party/openvpn_osx/openvpn out/osx/usr/local/bin/cypherpunkvpn-openvpn
-codesign -s "${APPSIGNIDENTITY}" out/osx/usr/local/bin/cypherpunkvpn-openvpn
+codesign -s "${APPSIGNIDENTITY}" out/osx/usr/local/bin/cypherpunkvpn-openvpn || true # XXX: ignore 'is already signed' error from causing build script to fail
 
 # Ensure install scripts are executable
 chmod +x res/osx/install-scripts/postinstall
@@ -65,7 +65,7 @@ chmod +x res/osx/install-scripts/preinstall
 
 # Package
 cd out
-pkgbuild --root osx --scripts ../res/osx/install-scripts --sign "${INSTALLERSIGNIDENTITY}" --identifier "com.cypherpunk.pkg.${APPNAME}" --version "${APP_VER}" --ownership recommended --install-location / Build.pkg || true # XXX: ignore 'is already signed' error from causing build script to fail
+pkgbuild --root osx --scripts ../res/osx/install-scripts --sign "${INSTALLERSIGNIDENTITY}" --identifier "com.cypherpunk.pkg.${APPNAME}" --version "${APP_VER}" --ownership recommended --install-location / Build.pkg
 productbuild --resources ../res/osx/resources --distribution ../res/osx/resources/distribution.xml --sign "${INSTALLERSIGNIDENTITY}" --version "${APP_VER}" "${APPNAME}.pkg"
 #zip "${APPNAME}.pkg.zip" "${APPNAME}.pkg"
 rm -f Build.pkg
