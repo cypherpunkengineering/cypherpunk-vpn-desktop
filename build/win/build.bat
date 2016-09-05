@@ -20,12 +20,9 @@ echo * Updating Node modules...
 call npm --loglevel=silent install
 if %errorlevel% neq 0 goto error
 
-echo * Building Semantic UI files...
-rem call npm run build-semantic
-cd semantic
-call ..\node_modules\.bin\gulp build --silent
+echo * Building client...
+call npm run build
 if %errorlevel% neq 0 goto error
-cd ..
 
 echo * Rebuilding Electron modules...
 del node_modules\nslog\build\Release\nslog.node
@@ -33,7 +30,7 @@ call node_modules\.bin\electron-rebuild.cmd --arch=ia32
 if %errorlevel% neq 0 goto error
 
 echo * Packaging Electron app...
-call node_modules\.bin\electron-packager.cmd .\ CypherpunkVPN --overwrite --platform=win32 --arch=ia32 --icon=app\img\logo.ico --out=..\out\win\client\ --prune --asar
+call node_modules\.bin\electron-packager.cmd .\app\ CypherpunkVPN --overwrite --platform=win32 --arch=ia32 --icon=app\img\logo.ico --out=..\out\win\client\ --prune --asar
 if %errorlevel% neq 0 goto error
 
 cd ..\build\win
