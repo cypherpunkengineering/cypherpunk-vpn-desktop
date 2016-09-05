@@ -15,11 +15,10 @@ rm -f out/"${APPNAME}".pkg.zip
 # Client
 mkdir -p out/osx/Applications
 cd client
-npm install
-npm run build-semantic
-npm run build-webpack
+npm --production install
+npm run build
 ./node_modules/.bin/electron-rebuild
-./node_modules/.bin/electron-packager ./ "${APPNAME}" --platform=darwin --arch=x64 --icon=../res/logo.icns --out=../out/osx/Applications
+./node_modules/.bin/electron-packager ./app/ "${APPNAME}" --platform=darwin --arch=x64 --icon=../res/logo.icns --out=../out/osx/Applications
 cd ../
 mv "out/osx/Applications/${APPNAME}-darwin-x64/${APPNAME}.app" out/osx/Applications/
 rm -rf "out/osx/Applications/${APPNAME}-darwin-x64"
