@@ -20,10 +20,4 @@ const [ root, loader ] = (function() {
   return [r, l];
 })();
 
-if (window.location.search === '?semantic') {
-  console.log("semantic");
-  require.ensure(['./app-semantic.jsx'], function(require) { app = require('./app-semantic.jsx'); });
-} else {
-  require.ensure(['./app.jsx'], function(require) { app = require('./app.jsx'); });
-}
-
+require.ensure(['./app.jsx'], function(require) { app = require('./app.jsx'); });

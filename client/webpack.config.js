@@ -9,7 +9,7 @@ const pkg = require('./package.json');
 const ENV = process.env.NODE_ENV || 'development';
 const development = ENV === 'development';
 const production = !development;
-const extractCss = false; // too buggy to set to true ATM
+const extractCss = production;
 
 const devMap = production ? '' : '?sourceMap';
 function cssLoader(a, b) { return extractCss ? ExtractTextPlugin.extract(a, b) : (a + '!' + b); }
