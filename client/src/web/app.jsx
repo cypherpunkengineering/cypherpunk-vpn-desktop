@@ -155,7 +155,6 @@ class Titlebar extends React.Component {
       <div id="titlebar" class="ui fixed inverted borderless icon menu">
         <div class="header item">Cypherpunk VPN</div>
         <div class="right menu">
-          <a id="wifi" class="item"><i class="wifi icon"></i></a>
           <div class="ui compact dropdown link item" ref="dropdown">
             <i class="setting icon"></i><i class="small caret down icon"></i>
             <div class="ui menu">
@@ -232,17 +231,17 @@ class ConnectScreen extends React.Component {
   }
   render() {
     var buttonLabel = {
-      'disconnected': "CLICK TO CONNECT",
-      'connecting': "CONNECTING...",
-      'connected': "CONNECTED",
-      'disconnecting': "DISCONNECTING...",
+      'disconnected': "Tap to protect",
+      'connecting': "Connecting...",
+      'connected': "You are protected",
+      'disconnecting': "Disconnecting...",
     }[this.state.connectionState];
 
     return(
       <div id="connect-screen" class="full screen" style={{visibility: 'visible'}}>
         <Titlebar/>
         <div id="connect-container">
-          <i id="connect" class={"ui fitted massive power link icon" + (this.state.connectionState === 'connected' ? " green" : this.state.connectionState == 'disconnected' ? " red" : " disabled")} ref="connectButton" onClick={this.handleConnectClick}></i>
+          <i id="connect" class={"ui fitted massive power link icon" + (this.state.connectionState === 'connected' ? " green" : this.state.connectionState == 'disconnected' ? " red" : " orange disabled")} ref="connectButton" onClick={this.handleConnectClick}></i>
         </div>
         <div id="connect-status" ref="connectStatus">{buttonLabel}</div>
         <div id="region-select" class={"ui selection dropdown" + (this.state.connectionState === 'disconnected' ? "" : " disabled")} ref="regionDropdown">
@@ -273,7 +272,7 @@ class ConnectScreen extends React.Component {
           "redirect-gateway": "def1",
           ca: getCertificateAuthority(),
           cert: getCertificate(),
-          key: getPrivateKey(),          
+          key: getPrivateKey(),
         });
         break;
       case 'connecting':
@@ -299,7 +298,7 @@ class LoginScreen extends React.Component {
 }
 
 class SettingsScreen extends React.Component {
-  
+
 }
 
 class RootContainer extends React.Component {
