@@ -192,22 +192,24 @@ function webpackLogger(callback) {
 // Helper function: make webpack shims for each js/css file in Semantic UI (so we can just require the component name)
 function makeSemanticWebpackShims(callback) {
   return function() {
-    gulp.src(['src/web/semantic/**/*.min.js', 'src/web/semantic/**/*.min.css'], { read: false })
+    gulp.src(['src/web/semantic/components/*.min.js', 'src/web/semantic/components/*.min.css'], { read: false })
       .pipe((function(){
         var files = {};
         function onFile(file) {
           var f = file.relative.replace('\\', '/');
           var m = f.replace(/\.min\.(js|css)$/, '');
           var r = f.replace(/^([^/]*\/)*/, '');
-          (files[m] || (files[m] = [])).push('./' + r);
+          (files[m] || (files[m] = [])).push(r);
         }
         function onEnd() {
           for (var e in files) {
-            var n = e.endsWith('semantic') ? 'index.js' : e + '.webpack.js';
             this.emit('data', new gutil.File({
-              cwd: '.', base: 'src/web/semantic', path: 'src/web/semantic/' + n, contents: new Buffer(files[e].sort().map(f => "require('" + f + "');\n").join(''))
+              cwd: '.', base: 'src/web/semantic', path: 'src/web/semantic/components/' + e + '.webpack', contents: new Buffer(files[e].sort().map(f => "require('./" + f + "');\n").join(''))
             }));
           }
+          this.emit('data', new gutil.File({
+            cwd: '.', base: 'src/web/semantic', path: 'src/web/semantic/index.js', contents: new Buffer(Object.keys(files).map(f => "require('./components/" + f + ".webpack');\n").join(''))
+          }));
           this.emit('end');
         }
         return through(onFile, onEnd);

@@ -35,7 +35,7 @@ var options = {
     alias: {
       'semantic': path.resolve(__dirname, 'src/web/semantic'),
     },
-    extensions: [ '', '.webpack.js', '.min.js', '.js', '.jsx' ],
+    extensions: [ '', '.webpack', '.webpack.js', '.min.js', '.js', '.jsx' ],
 	},
   externals: [
     Object.keys(pkg.dependencies || {}), // exclude packaged node modules 
