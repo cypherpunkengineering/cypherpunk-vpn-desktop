@@ -5,7 +5,7 @@ import 'semantic';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Router, Route, IndexRoute, IndexRedirect, Redirect, hashHistory as History } from 'react-router';
+import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, hashHistory as History } from 'react-router';
 
 import SpinningImage from './assets/img/bgring3.png';
 
@@ -293,7 +293,22 @@ class ConnectScreen extends React.Component {
 
 class LoginScreen extends React.Component {
   render() {
-    return <div/>;
+    return (
+      <div class="ui container">
+        <h1 class="ui center aligned header">Cypherpunk</h1>
+        <form class="ui form">
+        <div class="field">
+        <input defaultValue="Username/Email" />
+        </div>
+        <div class="field">
+        <input defaultValue="Password" />
+        </div>
+        </form>
+        <Link class="ui inverted button" to="/connect">Log in</Link>
+        <div class="column">Forgot password?</div>
+        <div class="column">Sign Up</div>
+      </div>
+    );
   }
 }
 
@@ -309,14 +324,23 @@ class RootContainer extends React.Component {
     return(
       <div class="full screen" style={{visibility: 'visible'}}>
         <MainBackground/>
-        <Router history={History}>
-          <Route path="/login" component={LoginScreen}/>
-          <Route path="/main" component={ConnectScreen}/>
-          <Redirect from="/" to="/login"/>
-        </Router>
+        <ConnectScreen/>
       </div>
     );
   }
 }
 
-ReactDOM.render(<RootContainer />, document.getElementById('root-container'));
+class CypherPunkApp extends React.Component {
+  render() {
+    return(
+      <Router history={History}>
+        <Route path="/connect" component={RootContainer}></Route>
+        <Route path="/" component={LoginScreen}></Route>
+        <Route path="*" component={LoginScreen}></Route>
+      </Router>
+    );
+  }
+}
+
+
+ReactDOM.render(<CypherPunkApp />, document.getElementById('root-container'));

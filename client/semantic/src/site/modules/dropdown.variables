@@ -1,3 +1,30 @@
 /*******************************
     User Variable Overrides
 *******************************/
+@borderRadius: 5px;
+
+
+
+@menuBoxShadow: none;
+@menuBackground: #2361ae;
+
+@selectionBackground: rgba(255,255,255,0);
+@selectionBoxShadow: none;
+@selectionMenuBoxShadow: none;
+
+
+@selectionFocusBorderColor: #ffffff;
+@selectionFocusBoxShadow: none;
+@selectionFocusMenuBoxShadow: none;
+
+@selectionVisibleBorderColor: #ffffff;
+@selectionVisibleBoxShadow: none;
+@selectionVisibleMenuBoxShadow: none;
+
+@selectionActiveHoverBorderColor: #ffffff;
+@selectionActiveHoverBoxShadow: none;
+@selectionActiveHoverMenuBoxShadow: none;
+
+@selectionHoverBorderColor: #ffffff;
+@selectionHoverBoxShadow: none;
+@selectionHoverMenuBoxShadow: none;
