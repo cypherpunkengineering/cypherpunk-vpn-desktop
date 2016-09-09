@@ -8,6 +8,7 @@ import ReactDOM from 'react-dom';
 import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, hashHistory as History } from 'react-router';
 
 import SpinningImage from './assets/img/bgring3.png';
+import CypherPunkLogo from './assets/img/cp_logo1.png';
 
 import daemon from './daemon.js';
 
@@ -294,19 +295,19 @@ class ConnectScreen extends React.Component {
 class LoginScreen extends React.Component {
   render() {
     return (
-      <div class="ui container">
-        <h1 class="ui center aligned header">Cypherpunk</h1>
-        <form class="ui form">
-        <div class="field">
-        <input defaultValue="Username/Email" />
+      <div className="ui container cp">
+        <h1 className="ui center aligned header"><img className="logo" src={CypherPunkLogo}/></h1>
+        <form className="login_screen">
+        <div>
+          <input defaultValue="Username/Email" />
         </div>
-        <div class="field">
-        <input defaultValue="Password" />
+        <div>
+          <input defaultValue="Password" />
         </div>
+        <Link className="login" to="/connect">Log in</Link>
+        <div className="forgot">Forgot password?</div>
+        <div className="signup">Sign Up</div>
         </form>
-        <Link class="ui inverted button" to="/connect">Log in</Link>
-        <div class="column">Forgot password?</div>
-        <div class="column">Sign Up</div>
       </div>
     );
   }

@@ -1,5 +1,10 @@
 @cpBlue:      #034698;
 @cpLightBlue: #76a8e7;
+@cpYellow:    #f8e71c;
+@cpWhite20:   rgba(255,255,255,0.2);
+@cpWhite25:   rgba(255,255,255,0.25);
+@cpWhite40:   rgba(255,255,255,0.4);
+
 
 html, body { -webkit-user-select: none; user-select: none; cursor: default; min-width: 300px; }
 body { color: #fff; background: linear-gradient(328deg,  @cpBlue, @cpLightBlue); transition: 2s background; }
@@ -95,3 +100,82 @@ div.screen {
 #connection-stats { margin-top: 30px; width: 60%; }
 #connection-stats .value { color: #aaa; }
 #connection-stats .label { color: #777; }
+
+.cp input {
+  display: inline-block;
+  height: 18px;
+  width: 270px;
+  text-align: left;
+  background: @cpWhite20;
+  color: @cpWhite40;
+  border: none;
+  font-size: 16px;
+  padding:15px;
+}
+
+.bottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+}
+
+.cp .login_screen div:nth-of-type(1) input {
+  border-radius: 4px 4px 0 0;
+  margin-bottom: 2px;
+}
+
+.cp .login_screen div:nth-of-type(2) input{
+  border-radius: 0 0 4px 4px;
+  margin-bottom: 20px;
+}
+
+.cp .logo {
+  margin-top: 40px !important;
+  margin-bottom: 20px;
+}
+
+.cp .forgot {
+  text-decoration: underline;
+  font-size: 14px;
+  margin-top: 20px;
+}
+
+.cp {
+  text-align: center;
+}
+
+.cp .signup {
+  .button2;
+  color: @cpYellow;
+  height: 18px;
+  .bottom;
+}
+
+.cp .login {
+  .button1;
+}
+
+.button1 {
+  display: inline-block;
+  border: 1px solid #fff;
+  height: 40px;
+  width: 268px;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 18px;
+  color: #fff;
+  border-radius: 4px;
+  padding: 11px;
+}
+
+.button2 {
+  display: inline-block;
+  height: 40px;
+  width: 345px;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 18px;
+  background: @cpWhite25;
+  color: #fff;
+  padding: 11px;
+}
