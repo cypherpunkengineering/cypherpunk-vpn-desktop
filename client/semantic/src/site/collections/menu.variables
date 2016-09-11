@@ -3,3 +3,10 @@
 *******************************/
 
 /*@dropdownBackground: #666;*/
+@invertedBackground: #1560bd;
+@invertedBoxShadow: none;
+@invertedBorder: 0px solid transparent;
+@invertedHeaderBackground: transparent;
+
+@invertedItemBackground: transparent;
+@invertedItemTextColor: @invertedTextColor;

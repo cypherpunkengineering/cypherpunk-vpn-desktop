@@ -153,17 +153,10 @@ class Titlebar extends React.Component {
   }
   render() {
     return(
-      <div id="titlebar" class="ui fixed inverted borderless icon menu">
-        <div class="header item">Cypherpunk VPN</div>
-        <div class="right menu">
-          <div class="ui compact dropdown link item" ref="dropdown">
-            <i class="setting icon"></i><i class="small caret down icon"></i>
-            <div class="ui menu">
-              <a class="item">Settings</a>
-              <a class="item" onClick={function(){window.close();}}>Exit</a>
-            </div>
-          </div>
-        </div>
+      <div id="titlebar" className="ui three item fixed inverted borderless icon menu">
+        <Link className="item" to="/account"><i className="info icon"></i></Link>
+        <div className="header item">Cypherpunk VPN</div>
+        <Link className="item" to="/settings"><i className="setting icon"></i></Link>
       </div>
     );
   }
@@ -313,9 +306,57 @@ class LoginScreen extends React.Component {
   }
 }
 
-class SettingsScreen extends React.Component {
-
+class AccountScreen extends React.Component  {
+  render() {
+    return(
+      <div className="full screen" style={{visibility: 'visible'}}>
+        <div className="ui fluid inverted borderless icon menu">
+          <Link className="item" to="/connect"><i className="arrow left icon"></i></Link>
+          <div className="header item center aligned">Account</div>
+        </div>
+        <div className="ui container">
+          <div>display username</div>
+          <div>display current plan</div>
+          <div>upgrade account</div>
+          <div>change password</div>
+          <div>change email</div>
+          <div>help</div>
+          <Link className="clicky" to="/">Logout</Link>
+        </div>
+      </div>
+    );
+  }
 }
+
+class SettingsScreen extends React.Component  {
+  componentDidMount() {
+    $(this.refs.tab).tab();
+  }
+
+  render() {
+    return(
+      <div className="full screen" style={{visibility: 'visible'}}>
+        <div className="ui fluid inverted borderless icon menu">
+          <Link className="item" to="/connect"><i className="arrow left icon"></i></Link>
+          <div className="header item center aligned">Configuration</div>
+        </div>
+        <div className="ui two item tabular menu">
+          <a class="item active" ref="tab" data-tab="general">General</a>
+          <a class="item" ref="tab" data-tab="advanced">Advanced</a>
+        </div>
+        <div className="main ui container">
+          <div class="ui tab active" data-tab="general">
+            Protocol
+          </div>
+          <div class="ui tab" data-tab="advanced">
+            Mr Wiz
+          </div>
+        </div>
+      </div>
+    );
+  }
+}
+
 
 class RootContainer extends React.Component {
   render() {
@@ -336,6 +377,8 @@ class CypherPunkApp extends React.Component {
     return(
       <Router history={History}>
         <Route path="/connect" component={RootContainer}></Route>
+        <Route path="/account" component={AccountScreen}></Route>
+        <Route path="/settings" component={SettingsScreen}></Route>
         <Route path="/" component={LoginScreen}></Route>
         <Route path="*" component={LoginScreen}></Route>
       </Router>
