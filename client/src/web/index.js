@@ -1,5 +1,10 @@
+// Manually include just the minimum styles for the initial page
+// (webpack will include the rest automatically in the second bundle)
 import './assets/fonts/dosis.css';
-import 'semantic/semantic.min.css';
+import 'semantic/components/reset.min.css';
+import 'semantic/components/site.min.css';
+import 'semantic/components/dimmer.min.css';
+import 'semantic/components/loader.min.css';
 import './assets/css/index.css';
 
 let app = null;
@@ -20,4 +25,5 @@ const [ root, loader ] = (function() {
   return [r, l];
 })();
 
+// Load the full app asynchronously
 require.ensure(['./app.jsx'], function(require) { app = require('./app.jsx'); });

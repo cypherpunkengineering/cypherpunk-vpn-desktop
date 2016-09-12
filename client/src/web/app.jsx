@@ -5,11 +5,14 @@ import 'semantic';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Router, Route, IndexRoute, IndexRedirect, Redirect, hashHistory as History } from 'react-router';
+import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, hashHistory as History } from 'react-router';
 
 import SpinningImage from './assets/img/bgring3.png';
+import CypherPunkLogo from './assets/img/cp_logo1.png';
 
 import daemon from './daemon.js';
+
+import SettingsScreen from './SettingsScreen.jsx';
 
 daemon.call.ping().then(() => {
   History.push('/main');
@@ -152,18 +155,10 @@ class Titlebar extends React.Component {
   }
   render() {
     return(
-      <div id="titlebar" class="ui fixed inverted borderless icon menu">
-        <div class="header item">Cypherpunk VPN</div>
-        <div class="right menu">
-          <a id="wifi" class="item"><i class="wifi icon"></i></a>
-          <div class="ui compact dropdown link item" ref="dropdown">
-            <i class="setting icon"></i><i class="small caret down icon"></i>
-            <div class="ui menu">
-              <a class="item">Settings</a>
-              <a class="item" onClick={function(){window.close();}}>Exit</a>
-            </div>
-          </div>
-        </div>
+      <div id="titlebar" className="ui three item fixed inverted borderless icon menu">
+        <Link className="item" to="/account"><i className="info icon"></i></Link>
+        <div className="header item">Cypherpunk VPN</div>
+        <Link className="item" to="/settings"><i className="setting icon"></i></Link>
       </div>
     );
   }
@@ -233,17 +228,17 @@ class ConnectScreen extends React.Component {
   }
   render() {
     var buttonLabel = {
-      'disconnected': "CLICK TO CONNECT",
-      'connecting': "CONNECTING...",
-      'connected': "CONNECTED",
-      'disconnecting': "DISCONNECTING...",
+      'disconnected': "Tap to protect",
+      'connecting': "Connecting...",
+      'connected': "You are protected",
+      'disconnecting': "Disconnecting...",
     }[this.state.connectionState];
 
     return(
       <div id="connect-screen" class="full screen" style={{visibility: 'visible'}}>
         <Titlebar/>
         <div id="connect-container">
-          <i id="connect" class={"ui fitted massive power link icon" + (this.state.connectionState === 'connected' ? " green" : this.state.connectionState == 'disconnected' ? " red" : " disabled")} ref="connectButton" onClick={this.handleConnectClick}></i>
+          <i id="connect" class={"ui fitted massive power link icon" + (this.state.connectionState === 'connected' ? " green" : this.state.connectionState == 'disconnected' ? " red" : " orange disabled")} ref="connectButton" onClick={this.handleConnectClick}></i>
         </div>
         <div id="connect-status" ref="connectStatus">{buttonLabel}</div>
         <div id="region-select" class={"ui selection dropdown" + (this.state.connectionState === 'disconnected' ? "" : " disabled")} ref="regionDropdown">
@@ -280,7 +275,7 @@ class ConnectScreen extends React.Component {
           "redirect-gateway": "def1",
           ca: getCertificateAuthority(),
           cert: getCertificate(),
-          key: getPrivateKey(),          
+          key: getPrivateKey(),
         });
         break;
       case 'connecting':
@@ -304,12 +299,45 @@ class ConnectScreen extends React.Component {
 
 class LoginScreen extends React.Component {
   render() {
-    return <div/>;
+    return (
+      <div className="ui container cp">
+        <h1 className="ui center aligned header"><img className="logo" src={CypherPunkLogo}/></h1>
+        <form className="login_screen">
+        <div>
+          <input defaultValue="Username/Email" />
+        </div>
+        <div>
+          <input defaultValue="Password" />
+        </div>
+        <Link className="login" to="/connect">Log in</Link>
+        <div className="forgot">Forgot password?</div>
+        <div className="signup">Sign Up</div>
+        </form>
+      </div>
+    );
   }
 }
 
-class SettingsScreen extends React.Component {
-  
+class AccountScreen extends React.Component  {
+  render() {
+    return(
+      <div className="full screen" style={{visibility: 'visible'}}>
+        <div className="ui fluid inverted borderless icon menu">
+          <Link className="item" to="/connect"><i className="arrow left icon"></i></Link>
+          <div className="header item center aligned">Account</div>
+        </div>
+        <div className="ui container">
+          <div>display username</div>
+          <div>display current plan</div>
+          <div>upgrade account</div>
+          <div>change password</div>
+          <div>change email</div>
+          <div>help</div>
+          <Link className="clicky" to="/">Logout</Link>
+        </div>
+      </div>
+    );
+  }
 }
 
 class RootContainer extends React.Component {
@@ -320,14 +348,24 @@ class RootContainer extends React.Component {
     return(
       <div class="full screen" style={{visibility: 'visible'}}>
         <MainBackground/>
-        <Router history={History}>
-          <Route path="/login" component={LoginScreen}/>
-          <Route path="/main" component={ConnectScreen}/>
-          <Redirect from="/" to="/login"/>
-        </Router>
+        <ConnectScreen/>
       </div>
     );
   }
 }
 
-ReactDOM.render(<RootContainer />, document.getElementById('root-container'));
+class CypherPunkApp extends React.Component {
+  render() {
+    return(
+      <Router history={History}>
+        <Route path="/connect" component={RootContainer}></Route>
+        <Route path="/account" component={AccountScreen}></Route>
+        <Route path="/settings" component={SettingsScreen}></Route>
+        <Route path="/" component={LoginScreen}></Route>
+        <Route path="*" component={LoginScreen}></Route>
+      </Router>
+    );
+  }
+}
+
+ReactDOM.render(<CypherPunkApp />, document.getElementById('root-container'));

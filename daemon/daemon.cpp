@@ -272,7 +272,7 @@ bool CypherDaemon::RPC_connect(const jsonrpc::Value::Struct& params)
 #if OS_WIN
 	char profile_basename[32];
 	snprintf(profile_basename, sizeof(profile_basename), "profile%d.ovpn", index);
-	mkdir(GetPath(ProfileDir).c_str());
+	_mkdir(GetPath(ProfileDir).c_str());
 	std::string profile_filename = GetPath(ProfileDir, profile_basename);
 #else
 	std::string profile_filename = "/tmp/profile.XXXXXX";

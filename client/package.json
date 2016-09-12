@@ -8,6 +8,7 @@
   "scripts": {
     "gulp": "gulp",
     "build": "gulp build",
+    "clean": "gulp clean",
     "watch": "gulp watch",
     "start": "electron ./app --debug"
   },

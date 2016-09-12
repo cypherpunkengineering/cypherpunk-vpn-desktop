@@ -3,3 +3,32 @@
 *******************************/
 
 /*@dropdownBackground: #666;*/
+@invertedBackground: #1560bd;
+@invertedBoxShadow: none;
+@invertedBorder: 0px solid transparent;
+@invertedHeaderBackground: transparent;
+
+@invertedItemBackground: transparent;
+@invertedItemTextColor: @invertedTextColor;
+
+@tabularBorderColor: @solidBorderColor;
+@tabularBackgroundColor: rgba(0,0,0,0.1);
+@tabularBackground: none @tabularBackgroundColor;
+@tabularBorderWidth: 0;
+@tabularOppositeBorderWidth: 0;
+@tabularVerticalPadding: @itemVerticalPadding;
+@tabularHorizontalPadding: @relativeHuge;
+@tabularBorderRadius: @defaultBorderRadius;
+@tabularTextColor: rgba(255,255,255,0.3);
+
+@tabularHoveredTextColor: rgba(255,255,255,1);
+
+@tabularVerticalBackground: none @tabularBackgroundColor;
+
+@tabularFluidOffset: 1px;
+@tabularFluidWidth: ~"calc(100% + "(@tabularFluidOffset * 2)~")";
+
+@tabularActiveBackground: rgba(0,0,0,0);
+@tabularActiveColor: rgba(255,255,255,1);
+@tabularActiveBoxShadow: none;
+@tabularActiveWeight: bold;

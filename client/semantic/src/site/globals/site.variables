@@ -15,3 +15,21 @@
 
 @googleProtocol    : 'https://';
 @googleFontRequest : '@{googleFontName}:@{googleFontSizes}&subset=@{googleSubset}';
+
+@primaryColor        : @blue;
+@secondaryColor      : @orange;
+
+@lightPrimaryColor   : @lightBlue;
+@lightSecondaryColor : @lightOrange;
+
+@orange           : #d19e12;
+@blue             : #034698;
+@lightOrange      : #ffc933;
+@lightBlue        : #76a8e7;
+
+@relativeBorderRadius: @relative5px;
+@absoluteBorderRadius: @5px;
+
+@textColor  : rgba(255, 255, 255, 0.8);
+
+@borderColor: #ffffff;
