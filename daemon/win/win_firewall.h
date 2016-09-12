@@ -1,20 +1,21 @@
 #pragma once
 
 #include "win.h"
+#include "util.h"
 
 #include <fwpvi.h>
 #include <fwpmu.h>
 
 #include <algorithm>
 
+typedef UINT64 FWFilterId;
+
 struct FWFilter : public FWPM_FILTER, private noncopyable
 {
 	FWFilter();
 	operator const GUID&() const { return filterKey; }
-	operator const UINT64&() const { return filterId; }
+	operator const FWFilterId&() const { return filterId; }
 };
-
-typedef UINT64 FWFilterId;
 
 class FWEngine : public Win32Handle<FWEngine>
 {
@@ -37,6 +38,19 @@ public:
 	size_t RemoveAllFilters();
 	size_t RemoveAllFilters(const GUID& layerKey);
 };
+
+class FWTransaction
+{
+	FWEngine& _engine;
+	bool _closed;
+public:
+	FWTransaction(FWEngine& engine);
+	~FWTransaction();
+
+	void Commit();
+	void Abort();
+};
+
 
 template<typename ITERATOR>
 inline size_t FWEngine::RemoveFilters(ITERATOR&& begin, ITERATOR&& end)
@@ -146,12 +160,26 @@ struct AllowLocalHostFilter<DIRECTION, FWP_IP_VERSION_V6> : public FWConditionFi
 	}
 };
 
-struct AllowDHCPFilter : public FWConditionFilter<2, FWP_ACTION_PERMIT, Outgoing, FWP_IP_VERSION_V4>
+template<FWP_IP_VERSION VERSION> struct AllowDHCPFilter;
+
+template<>
+struct AllowDHCPFilter<FWP_IP_VERSION_V4> : public FWConditionFilter<2, FWP_ACTION_PERMIT, Outgoing, FWP_IP_VERSION_V4>
 {
 	AllowDHCPFilter()
 	{
 		SetCondition<FWP_UINT16>(0, FWPM_CONDITION_IP_LOCAL_PORT, FWP_MATCH_EQUAL, 68);
 		SetCondition<FWP_UINT16>(1, FWPM_CONDITION_IP_REMOTE_PORT, FWP_MATCH_EQUAL, 67);
+		weight.uint8 = 10;
+	}
+};
+
+template<>
+struct AllowDHCPFilter<FWP_IP_VERSION_V6> : public FWConditionFilter<2, FWP_ACTION_PERMIT, Outgoing, FWP_IP_VERSION_V6>
+{
+	AllowDHCPFilter()
+	{
+		SetCondition<FWP_UINT16>(0, FWPM_CONDITION_IP_LOCAL_PORT, FWP_MATCH_EQUAL, 546);
+		SetCondition<FWP_UINT16>(1, FWPM_CONDITION_IP_REMOTE_PORT, FWP_MATCH_EQUAL, 547);
 		weight.uint8 = 10;
 	}
 };

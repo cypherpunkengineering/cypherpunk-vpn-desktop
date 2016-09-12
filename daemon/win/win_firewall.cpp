@@ -86,8 +86,33 @@ void FWEngine::InstallProvider()
 
 void FWEngine::UninstallProvider()
 {
-	FwpmSubLayerDeleteByKey(_handle, &g_wfp_sublayer.subLayerKey);
-	FwpmProviderDeleteByKey(_handle, &g_wfp_provider.providerKey);
+	try { FwpmSubLayerDeleteByKey(_handle, &g_wfp_sublayer.subLayerKey); }
+	catch (const Win32Exception& e) { if (e.code() != FWP_E_SUBLAYER_NOT_FOUND) throw; }
+	try { FwpmProviderDeleteByKey(_handle, &g_wfp_provider.providerKey); }
+	catch (const Win32Exception& e) { if (e.code() != FWP_E_PROVIDER_NOT_FOUND) throw; }
+}
+
+FWTransaction::FWTransaction(FWEngine& engine)
+	: _engine(engine), _closed(false)
+{
+	WIN_CHECK_RESULT(FwpmTransactionBegin, (_engine, 0));
+}
+
+FWTransaction::~FWTransaction()
+{
+	if (!_closed) Abort();
+}
+
+void FWTransaction::Commit()
+{
+	WIN_CHECK_RESULT(FwpmTransactionCommit, (_engine));
+	_closed = true;
+}
+
+void FWTransaction::Abort()
+{
+	WIN_CHECK_RESULT(FwpmTransactionAbort, (_engine));
+	_closed = true;
 }
 
 FWFilter& FWEngine::AddFilter(FWFilter& filter)
