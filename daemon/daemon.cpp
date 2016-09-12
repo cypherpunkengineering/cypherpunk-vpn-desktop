@@ -256,8 +256,20 @@ bool CypherDaemon::RPC_connect(const jsonrpc::Value::Struct& params)
 
 	args.push_back("--up");
 	args.push_back(GetPath(ScriptsDir, "up.sh"));
+	args.push_back("-9");
+	args.push_back("-d");
+	args.push_back("-f");
+	args.push_back("-m");
+	args.push_back("-w");
+	args.push_back("-ptADGNWradsgnw");
 	args.push_back("--down");
 	args.push_back(GetPath(ScriptsDir, "down.sh"));
+	args.push_back("-9");
+	args.push_back("-d");
+	args.push_back("-f");
+	args.push_back("-m");
+	args.push_back("-w");
+	args.push_back("-ptADGNWradsgnw");
 	args.push_back("--route-pre-down");
 	args.push_back(GetPath(ScriptsDir, "route-pre-down.sh"));
 	args.push_back("--tls-verify");
