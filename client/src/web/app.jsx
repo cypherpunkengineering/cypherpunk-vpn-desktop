@@ -12,6 +12,8 @@ import CypherPunkLogo from './assets/img/cp_logo1.png';
 
 import daemon from './daemon.js';
 
+import SettingsScreen from './SettingsScreen.jsx';
+
 daemon.call.ping().then(() => {
   History.push('/main');
 });
@@ -328,36 +330,6 @@ class AccountScreen extends React.Component  {
   }
 }
 
-class SettingsScreen extends React.Component  {
-  componentDidMount() {
-    $(this.refs.tab).tab();
-  }
-
-  render() {
-    return(
-      <div className="full screen" style={{visibility: 'visible'}}>
-        <div className="ui fluid inverted borderless icon menu">
-          <Link className="item" to="/connect"><i className="arrow left icon"></i></Link>
-          <div className="header item center aligned">Configuration</div>
-        </div>
-        <div className="ui two item tabular menu">
-          <a class="item active" ref="tab" data-tab="general">General</a>
-          <a class="item" ref="tab" data-tab="advanced">Advanced</a>
-        </div>
-        <div className="main ui container">
-          <div class="ui tab active" data-tab="general">
-            Protocol
-          </div>
-          <div class="ui tab" data-tab="advanced">
-            Mr Wiz
-          </div>
-        </div>
-      </div>
-    );
-  }
-}
-
-
 class RootContainer extends React.Component {
   render() {
     function WithTitleBar(inner) {
@@ -385,6 +357,5 @@ class CypherPunkApp extends React.Component {
     );
   }
 }
-
 
 ReactDOM.render(<CypherPunkApp />, document.getElementById('root-container'));
