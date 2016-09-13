@@ -12,13 +12,12 @@ import CypherPunkLogo from './assets/img/cp_logo1.png';
 
 import daemon from './daemon.js';
 
-import SettingsScreen from './SettingsScreen.jsx';
+import StatusScreen from './StatusScreen.jsx';
+import ConfigurationScreen from './ConfigurationScreen.jsx';
+import FirewallScreen from './ConfigurationScreen/FirewallScreen.jsx';
 
-daemon.ready(() => {
-  daemon.once('state', state => {
-    History.push('/login');
-  })
-  daemon.post.requestState();
+daemon.call.ping().then(() => {
+  History.push('/main');
 });
 
 
@@ -158,10 +157,10 @@ class Titlebar extends React.Component {
   }
   render() {
     return(
-      <div id="titlebar" className="ui three item fixed inverted borderless icon menu">
-        <Link className="item" to="/account"><i className="info icon"></i></Link>
-        <div className="header item">Cypherpunk VPN</div>
-        <Link className="item" to="/settings"><i className="setting icon"></i></Link>
+      <div id="titlebar" className="ui three item fixed borderless icon menu">
+        <Link className="item" to="/status"><i className="info circle inverted icon"></i></Link>
+        <div className="header item">Cypherpunk</div>
+        <Link className="item" to="/configuration"><i className="setting icon"></i></Link>
       </div>
     );
   }
@@ -181,34 +180,24 @@ class ConnectScreen extends React.Component {
   constructor(props) {
     super(props);
 
-    // TODO: Subscripe to the daemon state globally somewhere (in the main process?)
-    var translateDaemonState = (params) => {
-      console.log("state", params);
-      var newState = {};
-      var stateString = {
-        'CONNECTING': 'connecting',
+    // Listen for OpenVPN state changes (FIXME: API will change later)
+    daemon.on('state', (timestamp, state, desc, local, remote) => {
+      console.log("state", timestamp, state, desc, local, remote);
+      var newState = {
         'CONNECTED': 'connected',
-        'DISCONNECTING': 'disconnecting',
-        'DISCONNECTED': 'disconnected',
-      }[params.state];
-      if (stateString)
-        newState.connectionState = stateString;
-      if (params.bytesReceived !== undefined)
-        newState.receivedBytes = params.bytesReceived;
-      if (params.bytesSent !== undefined)
-        newState.sentBytes = params.bytesSent;
-      return newState;
-    }
-    Object.assign(this.state, translateDaemonState(daemon.state));
-    // FIXME: this will leak memory over time
-    daemon.on('state', params => {
-      console.log("statechange", params);
-      this.setState(translateDaemonState(params))
+        'EXITING': 'disconnected'
+      }[state];
+      if (newState)
+        this.setState({ connectionState: newState });
+    });
+    // Subscribe to the traffic counter
+    daemon.on('bytecount', (inCount, outCount) => {
+      console.log("bytecount", inCount, outCount);
+      this.setState({ receivedBytes: inCount, sentBytes: outCount });
     });
 
     this.handleConnectClick = this.handleConnectClick.bind(this);
     this.handleRegionSelect = this.handleRegionSelect.bind(this);
-    this.handleFirewallChange = this.handleFirewallChange.bind(this);
   }
   state = {
     regions: [
@@ -298,9 +287,6 @@ class ConnectScreen extends React.Component {
   }
   handleRegionSelect(remote) {
   }
-  handleFirewallChange(e) {
-    daemon.call.setFirewall({ "mode": e.target.checked ? "on" : "off" });
-  }
 }
 
 class LoginScreen extends React.Component {
@@ -310,10 +296,10 @@ class LoginScreen extends React.Component {
         <h1 className="ui center aligned header"><img className="logo" src={CypherPunkLogo}/></h1>
         <form className="login_screen">
         <div>
-          <input defaultValue="Username/Email" />
+          <input placeholder="Username/Email" />
         </div>
         <div>
-          <input defaultValue="Password" />
+          <input placeholder="Password" />
         </div>
         <Link className="login" to="/connect">Log in</Link>
         <div className="forgot">Forgot password?</div>
@@ -348,6 +334,9 @@ class AccountScreen extends React.Component  {
 
 class RootContainer extends React.Component {
   render() {
+    function WithTitleBar(inner) {
+      return [ <Titlebar/>, ]
+    }
     return(
       <div class="full screen" style={{visibility: 'visible'}}>
         <MainBackground/>
@@ -357,19 +346,17 @@ class RootContainer extends React.Component {
   }
 }
 
-class LoadingPlaceholder extends React.Component {
-  render() { return <div/>; }
-}
-
 class CypherPunkApp extends React.Component {
   render() {
     return(
       <Router history={History}>
         <Route path="/connect" component={RootContainer}></Route>
         <Route path="/account" component={AccountScreen}></Route>
-        <Route path="/settings" component={SettingsScreen}></Route>
-        <Route path="/login" component={LoginScreen}></Route>
-        <Route path="*" component={LoadingPlaceholder}></Route>
+        <Route path="/status" component={StatusScreen}></Route>
+        <Route path="/configuration" component={ConfigurationScreen}></Route>
+        <Route path="/firewall" component={FirewallScreen}></Route>
+        <Route path="/" component={LoginScreen}></Route>
+        <Route path="*" component={LoginScreen}></Route>
       </Router>
     );
   }

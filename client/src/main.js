@@ -133,15 +133,15 @@ function createMainWindow() {
     //frame: false,
     fullscreen: false,
     useContentSize: true,
-    width: 300,
-    height: 500,
+    width: 375,
+    height: 622,
     //resizable: false,
     minimizable: false,
     maximizable: false,
-    minWidth: 300,
-    minHeight: 400,
-    maxWidth: 300,
-    //maxHeight: 700,
+    minWidth: 375,
+    minHeight: 622,
+    maxWidth: 375,
+    maxHeight: 622,
     acceptFirstMouse: true,
   });
   if (daemon) {
@@ -165,7 +165,7 @@ function createMainWindow() {
   });
   main.maximizedPrev = null;
 
-  main.loadURL(`file://${__dirname}/web/index.html`);    
+  main.loadURL(`file://${__dirname}/web/index.html`);
   if (args.debug) {
     main.webContents.openDevTools({ mode: 'detach' });
   }
@@ -174,4 +174,3 @@ function createMainWindow() {
 app.on('window-all-closed', function() {
   app.quit();
 });
-

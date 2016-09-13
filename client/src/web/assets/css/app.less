@@ -6,44 +6,20 @@
 @cpWhite40:   rgba(255,255,255,0.4);
 
 
-html, body { -webkit-user-select: none; user-select: none; cursor: default; min-width: 300px; }
-body { color: #fff; background: linear-gradient(328deg,  @cpBlue, @cpLightBlue); transition: 2s background; }
+html, body { -webkit-user-select: none; user-select: none; cursor: default; min-width: 375px; }
+body { color: #fff; background: #1560bd; transition: 2s background; font-family: Dosis; font-weight: 500; }
 /*:not(input):not(textarea), :not(input):not(textarea)::after, :not(input):not(textarea)::before { -webkit-user-select: none; user-select: none; cursor: default; }*/
 /*input, button, textarea, :focus { outline: none; }*/
 /*a:not([draggable=true]), img:not([draggable=true]) { -webkit-user-drag: none; user-drag: none; }
 a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: auto; user-drag: auto; }*/
 
-#root-container { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+//#root-container { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
 
 #load-screen { visibility: visible; z-index: 20; }
 
 #titlebar {
-  -webkit-app-region: drag;
-  //background: linear-gradient(#333, #222) top;
-  //box-shadow: 0 0 5px 0 rgba(0,0,0,0.5);
-  background-color:rgba(0,0,0,0) !important;
-  height: 3.5rem;
-  z-index: 10;
-
-  > .header { color: #fefefe; }
-  > .right {
-    font-size: 125%;
-    > .item {
-      -webkit-app-region: no-drag;
-      padding: 0.5rem;
-      color: grey;
-      &:hover {
-        color: #eee;
-      }
-    }
-  }
-  .dropdown .menu { font-size: 1rem !important; }
-  .ui.dropdown {
-    border: 0 !important;
-  }
+  font-size: 22px !important;
 }
-
-
 
 #main-background {
   position: absolute;
@@ -98,18 +74,18 @@ div.screen {
 #connect-container { margin-top: 130px; height: 140px; display: flex; align-items: center; justify-content: center; }
 #connect { transition: 0.5s color; text-shadow: 0 0 15px rgba(0,0,0,0.25); }
 #connect-status { margin-top: 5px; font-size: 150%; color: #aaa; text-shadow: 0 0 15px rgba(0,0,0,0.25); }
-#region-select { margin-top: 50px; width: 80%; box-shadow: 0 0 5px 0 rgba(0,0,0,0.5); }
+#region-select { margin-top: 50px; width: 100px; }
 #connection-stats { margin-top: 30px; width: 60%; }
 #connection-stats .value { color: #aaa; }
 #connection-stats .label { color: #777; }
 
-.cp input {
+.cp .login_screen input {
   display: inline-block;
-  height: 18px;
-  width: 270px;
+  width: 300px;
+	height: 48px;
   text-align: left;
   background: @cpWhite20;
-  color: @cpWhite40;
+  color: @cpWhite20;
   border: none;
   font-size: 16px;
   padding:15px;
@@ -120,7 +96,6 @@ div.screen {
   bottom: 0;
   left: 0;
 }
-
 
 .cp .login_screen div:nth-of-type(1) input {
   border-radius: 4px 4px 0 0;
@@ -148,22 +123,31 @@ div.screen {
   width: 100%;
 }
 
-.cp .signup {
-  .button2;
-  color: @cpYellow;
-  height: 18px;
-  .bottom;
-}
-
 .cp .login {
   .button1;
 }
+
+.cp .signup {
+  color: #f8e71c;
+  font-size: 18px;
+  text-align: center;
+  letter-spacing: 0.4px;
+  width: 375px;
+  height: 50px;
+  line-height: 50px;
+  background: rgba(255,255,255,0.25);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  margin: 0;
+}
+
 
 .button1 {
   display: inline-block;
   border: 1px solid #fff;
   height: 40px;
-  width: 268px;
+  width: 300px;
   font-size: 18px;
   font-weight: 500;
   line-height: 18px;
@@ -175,7 +159,7 @@ div.screen {
 .button2 {
   display: inline-block;
   height: 40px;
-  width: 280px;
+  width: 300px;
   font-size: 18px;
   font-weight: 500;
   line-height: 18px;
@@ -188,8 +172,11 @@ div.screen {
 
 .cp .ro {
   background-color: rgba(255, 255, 255, 0.16);
-  width: 300px;
+  width: 100%;
   border-bottom: solid 1px rgba(255, 255, 255, 0.3);
+  font-size: 16px;
+  line-height: 48px;
+  padding: 3px;
 }
 
 .cp .ro:last-of-type {
@@ -202,37 +189,30 @@ div.screen {
   width: 50%;
 }
 
+.cp .ro .co:first-of-type {
+  text-align: left;
+}
+
+.cp .ro .co:last-of-type {
+  text-align: right;
+}
+
+#status-screen {
+  height: 576px;
+  background: rgba(255,255,255,0.16);
+}
 
 
-.scrollbar (@color: rgba(0, 0, 0, 0.2), @width: 6px, @height: 10px) {
-  overflow: auto;
+// Scrolbars
+::-webkit-scrollbar {
+	width: 12px;
+}
 
-  &::-webkit-scrollbar {
-    width: @width;
-    height: @height;
-  }
+::-webkit-scrollbar-track {
+	background: #1560bd;
+  border-left: 1px solid rgba(255,255,255,0.4);
+}
 
-  &::-webkit-scrollbar-button:start:decrement,
-  &::-webkit-scrollbar-button:end:increment {
-    display: block;
-    height: 0;
-    background-color: transparent;
-  }
-
-  &::-webkit-scrollbar-track-piece {
-    border-radius: 0;
-
-  }
-
-  &::-webkit-scrollbar-thumb:vertical {
-    height: 50px;
-    background-color: @color;
-    border-radius: 0;
-  }
-
-  &::-webkit-scrollbar-thumb:horizontal {
-    width: 50px;
-    background-color: @color;
-    border-radius: 0;
-  }
+::-webkit-scrollbar-thumb {
+	background: #f6c149;
 }

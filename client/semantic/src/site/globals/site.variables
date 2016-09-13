@@ -10,11 +10,18 @@
 
 @googleFontName    : @fontName;
 @importGoogleFonts : false;
-@googleFontSizes   : '400,700,400italic,700italic';
+@googleFontSizes   : '500,700,500italic,700italic';
 @googleSubset      : 'latin';
 
 @googleProtocol    : 'https://';
 @googleFontRequest : '@{googleFontName}:@{googleFontSizes}&subset=@{googleSubset}';
+
+
+@emSize   : 16px;
+
+/* The size of page text  */
+@fontSize : 16px;
+@h3 : 14px;
 
 @primaryColor        : @blue;
 @secondaryColor      : @orange;
@@ -24,12 +31,14 @@
 
 @orange           : #d19e12;
 @blue             : #034698;
+@yellow           : #f8cf1c;
 @lightOrange      : #ffc933;
 @lightBlue        : #76a8e7;
 
-@relativeBorderRadius: @relative5px;
-@absoluteBorderRadius: @5px;
+@headerFontWeight : normal;
+@yellowHeaderColor : @yellow;
 
+
+@defaultBorderRadius: 5px;
 @textColor  : rgba(255, 255, 255, 0.8);
-
 @borderColor: #ffffff;
