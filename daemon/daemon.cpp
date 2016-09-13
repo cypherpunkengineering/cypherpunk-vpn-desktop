@@ -164,7 +164,7 @@ static inline const char* GetStateString(CypherDaemon::State state)
 void CypherDaemon::OnStateChanged()
 {
 	jsonrpc::Value::Struct params;
-	params.insert_or_assign("state", GetStateString(_state));
+	params["state"] = GetStateString(_state);
 	if (_state == CONNECTED)
 	{
 		params["localIP"] = _localIP;
@@ -312,6 +312,8 @@ bool CypherDaemon::RPC_connect(const jsonrpc::Value::Struct& params)
 		return false;
 	}
 
+	_bytesReceived = 0;
+	_bytesSent = 0;
 	_state = CONNECTING;
 	OnStateChanged();
 
@@ -345,9 +347,9 @@ bool CypherDaemon::RPC_connect(const jsonrpc::Value::Struct& params)
 	args.push_back("2");
 
 	args.push_back("--up");
-	args.push_back(GetPath(ScriptsDir, "up.sh"));
+	args.push_back(GetPath(ScriptsDir, "up.sh") + " -9 -d -f -m -w -pradsgnwADSGNW");
 	args.push_back("--down");
-	args.push_back(GetPath(ScriptsDir, "down.sh"));
+	args.push_back(GetPath(ScriptsDir, "down.sh") + " -9 -d -f -m -w -pradsgnwADSGNW");
 	args.push_back("--route-pre-down");
 	args.push_back(GetPath(ScriptsDir, "route-pre-down.sh"));
 	args.push_back("--tls-verify");
@@ -401,10 +403,16 @@ bool CypherDaemon::RPC_connect(const jsonrpc::Value::Struct& params)
 						_localIP = params.at(3);
 						_remoteIP = params.at(4);
 					}
-					_bytesReceived = 0;
-					_bytesSent = 0;
 					_state = CONNECTED;
 					OnStateChanged();
+				}
+				else if (s == "RECONNECTING")
+				{
+					if (_state == CONNECTED)
+					{
+						_state = CONNECTING;
+						OnStateChanged();
+					}
 				}
 				else if (s == "EXITING")
 				{
