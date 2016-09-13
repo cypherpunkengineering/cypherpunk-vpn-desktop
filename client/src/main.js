@@ -76,18 +76,18 @@ const preinitPromises = [
 ];
 
 timeoutPromise(Promise.all(preinitPromises), 2000).then(() => {
-  //createTray();
+  createTray();
   createMainWindow();
 }).catch(err => {
   app.quit();
 });
 
 function createTray() {
-  tray = new Tray('app/img/tray_win.png');
+  tray = new Tray(`${__dirname}/assets/img/tray_win.png`);
   function flag(code, name, checked) {
     return {
       label: name,
-      icon: 'app/img/flags/png32/' + code + '.png',
+      icon: `${__dirname}/assets/img/flags/png32/${code}.png`,
       type: 'checkbox',
       checked: checked
     };
@@ -96,13 +96,12 @@ function createTray() {
     { label: 'Connect' },
     { type: 'separator' },
     {
-      label: 'Location: Germany',
-      icon: 'app/img/flags/png32/de.png',
+      label: 'Location: USA East',
+      icon: `${__dirname}/assets/img/flags/png32/us.png`,
       submenu: [
-        flag('de', 'Germany', true),
         flag('fr', 'France'),
         flag('hk', 'Hong Kong'),
-        flag('us', 'USA East'),
+        flag('us', 'USA East', true),
         flag('us', 'USA West'),
         flag('gb', 'United Kingdom'),
         flag('au', 'Australia'),
