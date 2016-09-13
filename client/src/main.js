@@ -89,7 +89,7 @@ function createTray() {
   function flag(code, name, checked) {
     return {
       label: name,
-      icon: 'app/img/flags/png16/' + code + '.png',
+      icon: 'app/img/flags/png32/' + code + '.png',
       type: 'checkbox',
       checked: checked
     };
@@ -99,7 +99,7 @@ function createTray() {
     { type: 'separator' },
     {
       label: 'Location: Germany',
-      icon: 'app/img/flags/png16/de.png',
+      icon: 'app/img/flags/png32/de.png',
       submenu: [
         flag('de', 'Germany', true),
         flag('fr', 'France'),
