@@ -14,12 +14,11 @@ import daemon from './daemon.js';
 
 import SettingsScreen from './SettingsScreen.jsx';
 
-var daemonState = null;
-
-daemon.call.getState().then(state => {
-  console.log(state);
-  daemonState = state;
-  History.push('/login');
+daemon.ready(() => {
+  daemon.once('state', state => {
+    History.push('/login');
+  })
+  daemon.post.requestState();
 });
 
 
@@ -200,8 +199,12 @@ class ConnectScreen extends React.Component {
         newState.sentBytes = params.bytesSent;
       return newState;
     }
-    Object.assign(this.state, translateDaemonState(daemonState));
-    daemon.on('state', params => this.setState(translateDaemonState(params)));
+    Object.assign(this.state, translateDaemonState(daemon.state));
+    // FIXME: this will leak memory over time
+    daemon.on('state', params => {
+      console.log("statechange", params);
+      this.setState(translateDaemonState(params))
+    });
 
     this.handleConnectClick = this.handleConnectClick.bind(this);
     this.handleRegionSelect = this.handleRegionSelect.bind(this);
@@ -354,6 +357,10 @@ class RootContainer extends React.Component {
   }
 }
 
+class LoadingPlaceholder extends React.Component {
+  render() { return <div/>; }
+}
+
 class CypherPunkApp extends React.Component {
   render() {
     return(
@@ -361,8 +368,8 @@ class CypherPunkApp extends React.Component {
         <Route path="/connect" component={RootContainer}></Route>
         <Route path="/account" component={AccountScreen}></Route>
         <Route path="/settings" component={SettingsScreen}></Route>
-        <Route path="/" component={LoginScreen}></Route>
-        <Route path="*" component={LoginScreen}></Route>
+        <Route path="/login" component={LoginScreen}></Route>
+        <Route path="*" component={LoadingPlaceholder}></Route>
       </Router>
     );
   }

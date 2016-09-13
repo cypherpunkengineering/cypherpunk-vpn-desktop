@@ -1,45 +1,75 @@
-import RPC from '../rpc.js';
+import { ipcRenderer } from 'electron';
+import EventEmitter from 'events';
+import { RPC, IPCImpl } from '../rpc.js';
 import Loader from './loader.js';
 import './unload.js';
 
-class Daemon extends RPC {
-  constructor() {
-    super({
-      url: 'ws://127.0.0.1:9337/',
-      onerror: onerror,
-      onopen: onopen
-    });
-  }
-}
-
-var daemon = new Daemon();
+var ipc, rpc, daemon;
 var opened = false;
 var errorCount = 0;
+var readyCallbacks = [];
 
-window.addUnloadHandler(function() {
-  return daemon.disconnect();
-});
+// Set up a Daemon class which is also an EventEmitter (for notifications).
+// In addition to actual RPC calls, the special events 'up' and 'down'
+// notify that the connection to the daemon is up or down, respectively.
 
-function onerror() {
-  errorCount++;
-  if (!opened) {
-    if (errorCount >= 3) {
-      window.alert("Unable to connect to the background service.\n\nTry reinstalling the application.");
-      // FIXME: Replace with quit command that tells main process to exit too
-      daemon.disconnect();
-      window.close();
-      return false;
-    }
-  } else {
-    Loader.show("Reconnecting");
+class Daemon extends EventEmitter {
+  constructor() {
+    super();
+    this.state = {};
   }
-  // Try to reconnect
-  return true;
+  registerMethod(method, callback) {
+    rpc.registerMethod(method, callback);
+  }
+  unregisterMethod(method) {
+    rpc.unregisterMethod(method);
+  }
+  ready(callback) {
+    if (opened) {
+      callback();
+    } else {
+      readyCallbacks.push(callback);
+    }
+  }
 }
-function onopen() {
+
+function onpost(method, params) {
+  if (daemon) {
+    if (method == 'state') {
+      Object.assign(daemon.state, params[0]);
+    }
+    daemon.emit(method, ...params);
+  }
+}
+
+ipcRenderer.on('daemon-up', function up() {
   opened = true;
   errorCount = 0;
+  var cbs = readyCallbacks;
+  readyCallbacks = [];
+  cbs.forEach(cb => cb());
   Loader.hide();
-}
+});
+
+ipcRenderer.on('daemon-down', function down() {
+  errorCount++;
+  Loader.show(opened ? "Reconnecting" : "Loading");
+});
+
+ipcRenderer.send('daemon-ping');
+
+ipc = new IPCImpl({
+  onpost: onpost,
+});
+rpc = new RPC(ipc);
+
+daemon = new Daemon();
+
+daemon.on('state', state => {
+  Object.assign(daemon.state, state);
+})
+
+daemon.post = rpc.post;
+daemon.call = rpc.call;
 
 module.exports = daemon;

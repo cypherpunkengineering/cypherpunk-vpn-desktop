@@ -1,9 +1,7 @@
 const { app, dialog, BrowserWindow, Tray, Menu, ipcMain: ipc } = require('electron');
-const RPC = require('./rpc.js');
-RPC.WebSocket = require('ws');
+let daemon = require('./daemon.js');
 
 let exiting = false;
-let daemon = null;
 let main = null;
 let tray = null;
 
@@ -51,7 +49,7 @@ app.on('will-quit', event => {
   if (!exiting && daemon) {
     exiting = true;
     event.preventDefault();
-    timeoutPromise(daemon.disconnect(), 2000, true).then(() => {
+    daemon.disconnect().then(() => {
       daemon = null;
       app.quit();
     });
@@ -147,12 +145,18 @@ function createMainWindow() {
     //maxHeight: 700,
     acceptFirstMouse: true,
   });
+  if (daemon) {
+    daemon.setMainWindow(main);
+  }
 
   main.setMenu(null);
   main.on('close', () => {
     main.webContents.closeDevTools();
   })
   main.on('closed', () => {
+    if (daemon) {
+      daemon.setMainWindow(null);
+    }
     main = null;
   })
   main.on('ready-to-show', function() {

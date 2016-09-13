@@ -71,7 +71,7 @@ int CypherDaemon::Run()
 	_rpc_server.RegisterFormatHandler(_json_handler);
 	{
 		auto& d = _rpc_server.GetDispatcher();
-		d.AddMethod("getState", &CypherDaemon::RPC_getState, *this);
+		d.AddMethod("requestState", &CypherDaemon::RPC_requestState, *this);
 		d.AddMethod("connect", &CypherDaemon::RPC_connect, *this);
 		d.AddMethod("disconnect", &CypherDaemon::RPC_disconnect, *this);
 		d.AddMethod("setFirewall", &CypherDaemon::RPC_setFirewall, *this);
@@ -175,11 +175,9 @@ void CypherDaemon::OnStateChanged()
 	SendToAllClients(_rpc_client.BuildNotificationData("state", params));
 }
 
-jsonrpc::Value::Struct CypherDaemon::RPC_getState()
+void CypherDaemon::RPC_requestState()
 {
-	jsonrpc::Value::Struct result;
-	result.insert(std::make_pair("state", jsonrpc::Value(GetStateString(_state))));
-	return std::move(result);
+	OnStateChanged();
 }
 
 void WriteOpenVPNProfile(std::ostream& out, const Settings::Connection& connection)
