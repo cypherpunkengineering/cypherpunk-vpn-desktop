@@ -23,12 +23,6 @@ daemon.ready(() => {
   daemon.post.requestState();
 });
 
-
-daemon.call.ping().then(() => {
-  History.push('/main');
-});
-
-
 function humanReadableSize(count) {
   if (count >= 1024 * 1024 * 1024 * 1024) {
     return parseFloat(Math.round(count * 10 / 1024 / 1024 / 1024 / 1024) / 10).toFixed(1) + "T";

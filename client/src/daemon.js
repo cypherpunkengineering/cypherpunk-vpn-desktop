@@ -10,12 +10,6 @@ var handlers = {};
 var ws, rpc, daemon;
 var isopen = false;
 
-function sendCurrentState() {
-  if (mainWindow) {
-    mainWindow.webContents.send(isopen ? 'daemon-up' : 'daemon-down');
-  }
-}
-
 // Set up a Daemon class which is also an EventEmitter (for notifications).
 // In addition to actual RPC calls, the special events 'up' and 'down'
 // notify that the connection to the daemon is up or down, respectively.
@@ -34,7 +28,9 @@ class Daemon extends EventEmitter {
   setMainWindow(w) {
     if (w !== mainWindow) {
       mainWindow = w;
-      sendCurrentState();
+      if (mainWindow) {
+        mainWindow.webContents.send(isopen ? 'daemon-up' : 'daemon-down');
+      }
     }
   }
   disconnect() {
@@ -65,7 +61,9 @@ ipcMain.on('daemon-result', (event, id, result, error) => {
   }
 });
 
-ipcMain.on('daemon-ping', sendCurrentState);
+ipcMain.on('daemon-ping', (event) => {
+  event.returnValue = isopen ? 'up' : 'down';
+});
 
 // Listen for events from the WebSocket RPC instance
 

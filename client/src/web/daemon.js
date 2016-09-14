@@ -42,21 +42,19 @@ function onpost(method, params) {
   }
 }
 
-ipcRenderer.on('daemon-up', function up() {
+function up() {
   opened = true;
   errorCount = 0;
   var cbs = readyCallbacks;
   readyCallbacks = [];
   cbs.forEach(cb => cb());
   Loader.hide();
-});
+}
 
-ipcRenderer.on('daemon-down', function down() {
+function down() {
   errorCount++;
   Loader.show(opened ? "Reconnecting" : "Loading");
-});
-
-ipcRenderer.send('daemon-ping');
+}
 
 ipc = new IPCImpl({
   onpost: onpost,
@@ -71,5 +69,11 @@ daemon.on('state', state => {
 
 daemon.post = rpc.post;
 daemon.call = rpc.call;
+
+ipcRenderer.on('daemon-up', up);
+ipcRenderer.on('daemon-down', down);
+if (ipcRenderer.sendSync('daemon-ping') == 'up') {
+  up();
+}
 
 module.exports = daemon;
