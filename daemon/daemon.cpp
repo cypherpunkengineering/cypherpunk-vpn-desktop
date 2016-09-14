@@ -116,7 +116,7 @@ void CypherDaemon::OnReceiveMessage(Connection connection, WebSocketServer::mess
 {
 	try
 	{
-		auto response = _rpc_client.ParseResponse(msg->get_payload());
+		auto response = _json_handler.CreateReader(msg->get_payload())->GetResponse();
 	}
 	catch (const jsonrpc::Fault&)
 	{

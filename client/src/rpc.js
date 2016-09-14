@@ -62,6 +62,10 @@ class WebSocketImpl extends EventEmitter {
         if (typeof evt.data !== 'string') {
           return reply('error', ERROR_INVALID_JSON);
         }
+		if (evt.data == "") {
+			// Just an empty string; ignore
+			return;
+		}
         try {
           obj = JSON.parse(evt.data);
         } catch (e) {
