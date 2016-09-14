@@ -51,24 +51,30 @@ class AdvancedSettings extends React.Component  {
             <option>1723</option>
             <option>4500</option>
           </select>
-
           </div>
         </div>
         <div className="ro">
-          <div className="co">Local Port</div>
+          <div className="co">
+          Local Port
+          <small>Customize the port used to connect to Cypherpunk</small>
+          </div>
           <div className="co"><input /></div>
         </div>
         <div className="ro">
-          <div className="co">Firewall</div>
+          <div className="co">Firewall
+            <small>Manage all internet connectivity when you are not connected to our network</small>
+          </div>
           <div className="co">
             <Link to="/firewall">Automatic <i className="chevron right icon"></i></Link>
           </div>
         </div>
         <div className="ro">
-          <div className="co">Use small packets</div>
+          <div className="co">Use small packets
+            <small>Optimized packet size for improved connectivity to various router and mobile networks</small>
+          </div>
           <div className="co">
             <div class="ui checkbox">
-              <input type="checkbox" checked="" />
+              <input type="checkbox" name="smallpackets" />
               <label />
             </div>
           </div>
@@ -77,41 +83,49 @@ class AdvancedSettings extends React.Component  {
           <div className="co">Allow local traffic when firewall is on</div>
           <div className="co">
             <div class="ui checkbox">
-              <input type="checkbox" name="local"/>
+              <input type="checkbox" name="allowlocaltraffic"/>
               <label />
             </div>
           </div>
         </div>
         <div className="ro">
-          <div className="co">Request port forwarding</div>
+          <div className="co">Request port forwarding
+            <small>Allow incoming connections to your mobile device over an external port</small>
+          </div>
           <div className="co">
             <div class="ui checkbox">
-              <input type="checkbox" checked="" />
+              <input type="checkbox" name="requestportforwarding" />
               <label />
             </div>
           </div>
         </div>
         <div className="ro">
-          <div className="co">IPv6 leak protection</div>
+          <div className="co">IPv6 leak protection
+            <small>Disable IPv6 while using Cypherpunk</small>
+          </div>
           <div className="co">
             <div class="ui checkbox">
-              <input type="checkbox" checked="" />
+              <input type="checkbox" name="ipv6leakprotection" />
               <label />
             </div>
           </div>
         </div>
         <div className="ro">
-          <div className="co">DNS leak protection</div>
+          <div className="co">DNS leak protection
+            <small>Prevent leaking DNS queries using Cypherpunk</small>
+          </div>
           <div className="co">
             <div class="ui checkbox">
-              <input type="checkbox" />
+              <input type="checkbox" name="dnsleakprotection" />
               <label />
             </div>
           </div>
         </div>
         <div className="ro">
-          <div className="co">Encryption</div>
-          <div className="co">Yo</div>
+          <div className="co">Encryption
+            <small>Cipher AES-256 Auth SHA512 Key 4096-bit</small>
+          </div>
+          <div className="co">Automatic <i class="chevron right icon"></i></div>
         </div>
       </div>
       </div>
@@ -157,19 +171,36 @@ class GeneralSettings extends React.Component  {
         <div className="cp">
           <div className="ro">
             <div className="co">Start application on startup</div>
-            <div className="co"><input type="checkbox" /></div>
+            <div className="co">
+              <div class="ui checkbox">
+                <input type="checkbox" name="startapponstartup" />
+                <label />
+              </div>
+            </div>
           </div>
           <div className="ro">
             <div className="co">Auto-connect on launch</div>
-            <div className="co"><input type="checkbox" /></div>
+            <div className="co">
+              <div class="ui checkbox">
+                <input type="checkbox" name="autoconnect" />
+                <label />
+              </div>
+            </div>
           </div>
           <div className="ro">
             <div className="co">Show dekstop notifications</div>
-            <div className="co"><input type="checkbox" /></div>
+            <div className="co">
+              <div class="ui checkbox">
+                <input type="checkbox" name="desktopnotifications" />
+                <label />
+              </div>
+            </div>
           </div>
           <div className="ro">
             <div className="co">Show cypherpunk on in</div>
-            <div className="co"></div>
+            <div className="co">
+              Dock Only
+            </div>
           </div>
         </div>
       </div>

@@ -74,7 +74,7 @@ div.screen {
 #connect-container { margin-top: 130px; height: 140px; display: flex; align-items: center; justify-content: center; }
 #connect { transition: 0.5s color; text-shadow: 0 0 15px rgba(0,0,0,0.25); }
 #connect-status { margin-top: 5px; font-size: 150%; color: #aaa; text-shadow: 0 0 15px rgba(0,0,0,0.25); }
-#region-select { margin-top: 50px; width: 100px; }
+#region-select { margin-top: 50px; width: 100px }
 #connection-stats { margin-top: 30px; width: 60%; }
 #connection-stats .value { color: #aaa; }
 #connection-stats .label { color: #777; }
@@ -186,6 +186,7 @@ div.screen {
 .cp .ro .co {
   display: inline-block;
   padding: 2px;
+  line-height: 16px;
   width: 50%;
 }
 
@@ -202,15 +203,19 @@ div.screen {
   background: rgba(255,255,255,0.16);
 }
 
+small {
+  display: block !important;
+  color: rgba(255,255,255,0.6) !important;
+}
+
 
 // Scrolbars
 ::-webkit-scrollbar {
-	width: 12px;
+	width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-	background: #1560bd;
-  border-left: 1px solid rgba(255,255,255,0.4);
+	background: rgba(0,0,0,0.2);
 }
 
 ::-webkit-scrollbar-thumb {
