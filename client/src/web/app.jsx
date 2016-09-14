@@ -16,6 +16,14 @@ import StatusScreen from './StatusScreen.jsx';
 import ConfigurationScreen from './ConfigurationScreen.jsx';
 import FirewallScreen from './ConfigurationScreen/FirewallScreen.jsx';
 
+daemon.ready(() => {
+  daemon.once('state', state => {
+    History.push('/login');
+  });
+  daemon.post.requestState();
+});
+
+
 daemon.call.ping().then(() => {
   History.push('/main');
 });
@@ -179,26 +187,13 @@ class LoadDimmer extends React.Component {
 class ConnectScreen extends React.Component {
   constructor(props) {
     super(props);
-
-    // Listen for OpenVPN state changes (FIXME: API will change later)
-    daemon.on('state', (timestamp, state, desc, local, remote) => {
-      console.log("state", timestamp, state, desc, local, remote);
-      var newState = {
-        'CONNECTED': 'connected',
-        'EXITING': 'disconnected'
-      }[state];
-      if (newState)
-        this.setState({ connectionState: newState });
-    });
-    // Subscribe to the traffic counter
-    daemon.on('bytecount', (inCount, outCount) => {
-      console.log("bytecount", inCount, outCount);
-      this.setState({ receivedBytes: inCount, sentBytes: outCount });
-    });
+    Object.assign(this.state, this.translateDaemonState(daemon.state));
 
     this.handleConnectClick = this.handleConnectClick.bind(this);
     this.handleRegionSelect = this.handleRegionSelect.bind(this);
+    this.handleDaemonStateChange = this.handleDaemonStateChange.bind(this);
   }
+
   state = {
     regions: [
       { remote: "208.111.52.1 7133", country: "jp", name: "Tokyo 1, Japan" },
@@ -210,10 +205,34 @@ class ConnectScreen extends React.Component {
     sentBytes: 0,
     connectionState: "disconnected",
   }
+
+  translateDaemonState(state) {
+    var newState = {};
+    var stateString = {
+      'CONNECTING': 'connecting',
+      'CONNECTED': 'connected',
+      'DISCONNECTING': 'disconnecting',
+      'DISCONNECTED': 'disconnected',
+    }[state.state];
+    if (stateString)
+      newState.connectionState = stateString;
+    if (state.bytesReceived !== undefined)
+      newState.receivedBytes = state.bytesReceived;
+    if (state.bytesSent !== undefined)
+      newState.sentBytes = state.bytesSent;
+    return newState;
+  }
+  handleDaemonStateChange(state) {
+    this.setState(this.translateDaemonState(state));
+  }
   componentDidMount() {
+    daemon.on('state', this.handleDaemonStateChange);
     $(this.refs.regionDropdown).dropdown({
       onChange: this.handleRegionSelect
     });
+  }
+  componentWillUnmount() {
+    daemon.removeListener('state', this.handleDaemonStateChange);
   }
   shouldComponentUpdate(nextProps, nextState) {
     return true;
@@ -334,9 +353,6 @@ class AccountScreen extends React.Component  {
 
 class RootContainer extends React.Component {
   render() {
-    function WithTitleBar(inner) {
-      return [ <Titlebar/>, ]
-    }
     return(
       <div class="full screen" style={{visibility: 'visible'}}>
         <MainBackground/>
@@ -344,6 +360,10 @@ class RootContainer extends React.Component {
       </div>
     );
   }
+}
+
+class LoadingPlaceholder extends React.Component {
+  render() { return <div/>; }
 }
 
 class CypherPunkApp extends React.Component {
@@ -355,8 +375,8 @@ class CypherPunkApp extends React.Component {
         <Route path="/status" component={StatusScreen}></Route>
         <Route path="/configuration" component={ConfigurationScreen}></Route>
         <Route path="/firewall" component={FirewallScreen}></Route>
-        <Route path="/" component={LoginScreen}></Route>
-        <Route path="*" component={LoginScreen}></Route>
+        <Route path="/login" component={LoginScreen}></Route>
+        <Route path="*" component={LoadingPlaceholder}></Route>
       </Router>
     );
   }
