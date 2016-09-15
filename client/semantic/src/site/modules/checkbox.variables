@@ -1,3 +1,45 @@
 /*******************************
     User Variable Overrides
 *******************************/
+@checkboxSize: 22px;
+@checkboxColor: #ffffff;
+
+/* Checkbox */
+@checkboxBackground: none;
+@checkboxBorder: 1px solid #ffffff;
+@checkboxBorderRadius: @2px;
+
+/* Hover */
+@checkboxHoverBackground: rgba(0,0,0,0.16);
+@checkboxHoverBorderColor: #ffffff;
+@labelHoverColor: @hoveredTextColor;
+
+/* Pressed */
+@checkboxPressedBackground: none;
+@checkboxPressedBorderColor: #1560bd;
+@checkboxPressedColor: #ffffff;
+@labelPressedColor: @selectedTextColor;
+
+/* Focus */
+@checkboxFocusBackground: none;
+@checkboxFocusBorderColor: #ffffff;
+@checkboxFocusCheckColor: #ffffff;
+@labelFocusColor: @selectedTextColor;
+
+/* Active */
+@labelActiveColor: @selectedTextColor;
+@checkboxActiveBackground: #1560bd;
+@checkboxActiveBorderColor: #1560bd;
+@checkboxActiveCheckColor: #ffffff;
+@checkboxActiveCheckOpacity: 1;
+
+/* Active Focus */
+@checkboxActiveFocusBackground: #1560bd;
+@checkboxActiveFocusBorderColor: #1560bd;
+@checkboxActiveFocusCheckColor: #ffffff;
+
+/* Indeterminate */
+@checkboxIndeterminateBackground: #1560bd;
+@checkboxIndeterminateBorderColor: #1560bd;
+@checkboxIndeterminateCheckOpacity: 1;
+@checkboxIndeterminateCheckColor: #ffffff;
