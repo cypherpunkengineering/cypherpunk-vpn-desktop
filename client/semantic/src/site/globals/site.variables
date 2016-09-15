@@ -16,6 +16,13 @@
 @googleProtocol    : 'https://';
 @googleFontRequest : '@{googleFontName}:@{googleFontSizes}&subset=@{googleSubset}';
 
+//lanks
+@linkColor           : #fff;
+@linkUnderline       : none;
+@linkHoverColor      : rgba(255,255,255,0.5);
+@linkHoverUnderline  : none;
+
+
 
 @emSize   : 16px;
 
@@ -29,6 +36,9 @@
 @lightPrimaryColor   : @lightBlue;
 @lightSecondaryColor : @lightOrange;
 
+
+@textColor: #ffffff;
+
 @orange           : #d19e12;
 @blue             : #034698;
 @yellow           : #f8cf1c;
@@ -41,3 +51,35 @@
 @defaultBorderRadius: 5px;
 @textColor  : rgba(255, 255, 255, 0.8);
 @borderColor: #ffffff;
+
+
+
+@inputBackground        : none;
+@inputVerticalPadding   : @relative7px;
+@inputHorizontalPadding : @relative9px;
+@inputPadding           : @inputVerticalPadding @inputHorizontalPadding;
+
+/* Used on inputs, textarea etc */
+@focusedFormBorderColor: #f8cf1c;
+
+/* Used on dropdowns, other larger blocks */
+@focusedFormMutedBorderColor: #f8cf1c;
+
+/* Input Text Color */
+@inputColor: @textColor;
+@inputPlaceholderColor: darken(@inputColor, 75);
+@inputPlaceholderFocusColor: darken(@inputColor, 45);
+
+/* Line Height Default For Inputs in Browser */
+@inputLineHeight: 1.2142em;
+
+
+@darkTextColor               : rgba(0, 0, 0, 0.85);
+@mutedTextColor              : rgba(0, 0, 0, 0.6);
+@lightTextColor              : rgba(0, 0, 0, 0.4);
+
+@unselectedTextColor         : rgba(0, 0, 0, 0.4);
+@hoveredTextColor            : #f8cf1c;
+@pressedTextColor            : #f8cf1c;
+@selectedTextColor           : #1560bd;
+@disabledTextColor           : rgba(0, 0, 0, 0.2);

@@ -28,3 +28,7 @@
 @selectionHoverBorderColor: #ffffff;
 @selectionHoverBoxShadow: none;
 @selectionHoverMenuBoxShadow: none;
+
+@menuMinWidth: ~"calc(100% + "(@menuBorderWidth * 2)~")";
+@menuInputMinWidth: 8rem;
+@selectionMinWidth: 8em;

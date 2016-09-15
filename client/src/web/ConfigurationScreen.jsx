@@ -29,6 +29,10 @@ export default class ConfigurationScreen extends React.Component  {
 }
 
 class AdvancedSettings extends React.Component  {
+  componentDidMount() {
+    $(this.refs.reportportDropdown).dropdown();
+    $(this.refs.protocolDropdown).dropdown();
+  }
   render() {
     return(
       <div>
@@ -36,21 +40,30 @@ class AdvancedSettings extends React.Component  {
         <div className="ro">
           <div className="co">Protocol</div>
           <div className="co">
-          <select>
-            <option>Automatic</option>
-            <option>Manual</option>
-          </select>
+          <div className="ui olive button selection dropdown" ref="protocolDropdown">
+            <input type="hidden" name="protocol" />
+            <i className="dropdown icon"></i>
+            <div className="default text">Automatic</div>
+            <div className="menu">
+              <div className="item" data-value="Aautomatic">Automatic</div>
+              <div className="item" data-value="manual">Manual</div>
+            </div>
+          </div>
           </div>
         </div>
         <div className="ro">
           <div className="co">Remote Port</div>
           <div className="co">
-          <select>
-            <option>Auto</option>
-            <option>47</option>
-            <option>1723</option>
-            <option>4500</option>
-          </select>
+          <div className="ui olive button selection dropdown" ref="reportportDropdown">
+            <input type="hidden" name="remoteport" />
+            <i className="dropdown icon"></i>
+            <div className="default text">Auto</div>
+            <div className="menu">
+              <div className="item" data-value="auto">Auto</div>
+              <div className="item" data-value="47">47</div>
+              <div className="item" data-value="1723">1723</div>
+            </div>
+          </div>
           </div>
         </div>
         <div className="ro">
@@ -58,7 +71,10 @@ class AdvancedSettings extends React.Component  {
           Local Port
           <small>Customize the port used to connect to Cypherpunk</small>
           </div>
-          <div className="co"><input /></div>
+          <div className="co">
+            <div className="ui input"><input type="text"/>
+            </div>
+          </div>
         </div>
         <div className="ro">
           <div className="co">Firewall

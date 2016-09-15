@@ -15,7 +15,7 @@ export default class StatusScreen extends React.Component  {
           <div className="ui centered padded grid">
             <div className="row"><img src={WorldMap} /></div>
             <div className="row">
-              <div className="ui inverted segment">
+              <div className="ui inverted olive segment">
                 connected/disconnecte
               </div>
             </div>

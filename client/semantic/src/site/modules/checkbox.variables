@@ -10,7 +10,7 @@
 @checkboxBorderRadius: @2px;
 
 /* Hover */
-@checkboxHoverBackground: rgba(0,0,0,0.16);
+@checkboxHoverBackground: @hoveredTextColor;
 @checkboxHoverBorderColor: #ffffff;
 @labelHoverColor: @hoveredTextColor;
 
