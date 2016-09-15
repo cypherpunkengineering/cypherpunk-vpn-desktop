@@ -81,7 +81,7 @@ class AdvancedSettings extends React.Component  {
             <small>Manage all internet connectivity when you are not connected to our network</small>
           </div>
           <div className="co">
-            <Link to="/firewall">Automatic <i className="chevron right icon"></i></Link>
+            <Link to="/firewall"><span id="firewall_text">Automatic</span> <i className="chevron right icon"></i></Link>
           </div>
         </div>
         <div className="ro">
@@ -141,7 +141,9 @@ class AdvancedSettings extends React.Component  {
           <div className="co">Encryption
             <small>Cipher AES-256 Auth SHA512 Key 4096-bit</small>
           </div>
-          <div className="co">Automatic <i class="chevron right icon"></i></div>
+          <div className="co">
+            <Link to="/encryption"><span id="encryption_text">Automatic</span> <i className="chevron right icon"></i></Link>
+          </div>
         </div>
       </div>
       </div>
