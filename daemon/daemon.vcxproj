@@ -148,6 +148,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="daemon.cpp" />
+    <ClCompile Include="json.cpp" />
     <ClCompile Include="logger.cpp" />
     <ClCompile Include="openvpn.cpp" />
     <ClCompile Include="posix\posix_daemon.cpp">
