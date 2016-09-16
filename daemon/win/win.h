@@ -5,9 +5,11 @@
 #include "logger.h"
 #include "util.h"
 
-#include <vector>
+#include <sstream>
 #include <string>
+#include <system_error>
 #include <utility>
+#include <vector>
 
 
 #ifdef _DEBUG
@@ -30,18 +32,18 @@
 # define _DEBUG_ARGS_CALL
 #endif
 
-std::string GetLastErrorString(DWORD error);
-static inline std::string GetLastErrorString() { return GetLastErrorString(GetLastError()); }
+//std::string GetLastErrorString(DWORD error);
+//static inline std::string GetLastErrorString() { return GetLastErrorString(GetLastError()); }
 
-class Win32Exception : public std::runtime_error
+class Win32Exception : public std::system_error
 {
 protected:
 	DWORD _code;
 	const char* _from;
 	IFDEBUG( const char* _file; int _line; )
 public:
-	inline Win32Exception(DWORD code _DEBUG_ARGS_DECL) : _code(code), _from(nullptr), std::runtime_error(GetLastErrorString(code)) IFDEBUG( , _file(file), _line(line) ) {}
-	inline Win32Exception(DWORD code, const char* from _DEBUG_ARGS_DECL) : _code(code), _from(from), std::runtime_error(GetLastErrorString(code)) IFDEBUG(, _file(file), _line(line)) {}
+	inline Win32Exception(DWORD code _DEBUG_ARGS_DECL) : _code(code), _from(nullptr), std::system_error(code, std::system_category(), prefix(nullptr _DEBUG_ARGS_FORWARD).c_str()) IFDEBUG( , _file(file), _line(line) ) {}
+	inline Win32Exception(DWORD code, const char* from _DEBUG_ARGS_DECL) : _code(code), _from(from), std::system_error(code, std::system_category(), prefix(from _DEBUG_ARGS_FORWARD).c_str()) IFDEBUG(, _file(file), _line(line)) {}
 	DWORD code() const { return _code; }
 	const char* from() const { return _from; }
 	const char* file() const { return IFDEBUG(_file) IFNDEBUG(nullptr); }
@@ -53,22 +55,23 @@ public:
 		else
 			return std::string("<unknown>");
 	}
-	friend inline std::ostream& operator<<(std::ostream& os, const Win32Exception& e)
+private:
+	static std::string prefix(const char* from _DEBUG_ARGS_DECL)
 	{
-		if (e._from)
-			os << e._from << " failed";
+		std::ostringstream os;
+		if (from)
+			os << from << " failed";
 		else
 			os << "Exception thrown";
 #ifdef _DEBUG
-		if (e._file)
+		if (file)
 		{
-			os << " at " << GetBaseName(e._file);
-			if (e._line)
-				os << ':' << std::to_string(e._line);
+			os << " at " << GetBaseName(file);
+			if (line)
+				os << ':' << std::to_string(line);
 		}
 #endif
-		os << ": " << e.what();
-		return os;
+		return os.str();
 	}
 };
 

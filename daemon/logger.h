@@ -1,6 +1,7 @@
 #pragma once
 
 #include "config.h"
+#include "util.h"
 
 #include <cstdarg>
 #include <sstream>
@@ -96,7 +97,6 @@ public:
 	LogWriter& operator<<(LogLevel level);
 	LogWriter& operator<<(const Location& location);
 	LogWriter& operator<<(const class LastErrorWrapper& error) { _str << Error::Get(); return *this; }
-	LogWriter& operator<<(const std::exception& e) { _str << e.what(); return *this; }
 };
 
 template<class WRITER>
