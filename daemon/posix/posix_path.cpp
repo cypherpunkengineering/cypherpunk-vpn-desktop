@@ -63,20 +63,14 @@ std::string ReadFile(const std::string& path)
 	FILE* f = fopen(path.c_str(), "r");
 	if (f == NULL)
 		THROW_POSIXEXCEPTION(errno, fopen);
-	try
 	{
+		FINALLY({ fclose(f); });
 		fseek(f, 0, SEEK_END);
 		long size = ftell(f);
 		result.resize(size);
 		if (size != fread(&result[0], 1, size, f))
 			THROW_POSIXEXCEPTION(EIO, fread);
 	}
-	catch (...)
-	{
-		fclose(f);
-		throw;
-	}
-	fclose(f);
 	return std::move(result);
 }
 
@@ -86,8 +80,8 @@ void WriteFile(const std::string& path, const char* text, size_t length)
 	FILE* f = fopen(tmp.c_str(), "w");
 	if (f == NULL)
 		THROW_POSIXEXCEPTION(errno, fopen);
-	try
 	{
+		FINALLY({ fclose(f); });
 		if (length != fwrite(text, 1, length, f))
 			THROW_POSIXEXCEPTION(EIO, fwrite);
 		if (0 != fflush(f))
@@ -100,12 +94,6 @@ void WriteFile(const std::string& path, const char* text, size_t length)
 			THROW_POSIXEXCEPTION(errno, fsync);
 #endif
 	}
-	catch (...)
-	{
-		fclose(f);
-		throw;
-	}
-	fclose(f);
 	if (0 != rename(tmp.c_str(), path.c_str()))
 		THROW_POSIXEXCEPTION(errno, rename);
 }
