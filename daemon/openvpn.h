@@ -25,7 +25,7 @@ protected:
 	asio::streambuf _management_readbuf;
 	std::map<std::string, std::function<void(const std::string&)>> _on_management_response;
 
-	Settings::Connection _connection;
+	JsonObject _connection;
 
 private:
 	void HandleManagementWrite(const asio::error_code& error, std::size_t bytes_transferred);
@@ -43,7 +43,7 @@ public:
 	void SendManagementCommand(const std::string& cmd);
 	void OnManagementResponse(const std::string& prefix, std::function<void(const std::string&)> callback);
 
-	bool IsSameServer(const Settings::Connection& connection);
+	bool IsSameServer(const JsonObject& settings);
 
 	virtual void Run(const std::vector<std::string>& params) = 0;
 	virtual void Kill() = 0;

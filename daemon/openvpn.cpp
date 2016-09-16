@@ -120,7 +120,7 @@ void OpenVPNProcess::OnManagementInterfaceResponse(const std::string& line)
 	}
 }
 
-bool OpenVPNProcess::IsSameServer(const Settings::Connection& connection)
+bool OpenVPNProcess::IsSameServer(const jsonrpc::Value::Struct& connection)
 {
 	return connection == _connection;
 }

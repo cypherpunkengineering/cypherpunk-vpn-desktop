@@ -1,49 +1,57 @@
 #pragma once
 
-#include <jsonrpc-lean/value.h>
+#include "json.h"
 
 namespace jsonrpc {
 	bool operator ==(const jsonrpc::Value& lhs, const jsonrpc::Value& rhs);
 }
 
-struct Settings
+#define namedmember(type, name, default_value) \
+	const type& name() const \
+	{ \
+		auto it = _map.find(#name); \
+		if (it == _map.end()) return default_value; \
+		return it->second.AsType<type>(); \
+	} \
+	type& name() \
+	{ \
+		auto it = _map.find(#name); \
+		if (it != _map.end()) return const_cast<type&>(it->second.AsType<type>()); \
+		return const_cast<type&>((_map[#name] = default_value).AsType<type>()); \
+	} \
+	void name(const type& copy) \
+	{ \
+		_map[#name] = copy; \
+	} \
+	void name(type&& move) \
+	{ \
+		_map[#name] = std::move(move); \
+	}
+
+class Settings
 {
-	struct Connection : public jsonrpc::Value::Struct
-	{
-		/*
-		std::string protocol{ "udp" };
-		std::string remoteIP;
-		unsigned int remotePort;
-		unsigned int mtu{ 1400 };
-		std::string cipher{ "AES-128-CBC" };
-		std::vector<std::string> certificateAuthority;
-		std::vector<std::string> certificate;
-		std::vector<std::string> privateKey;
-		*/
+	JsonObject _map;
 
-		Connection() {}
-		Connection(const jsonrpc::Value::Struct& json) : jsonrpc::Value::Struct(json) {}
+public:
+	Settings();
+	void ReadFromDisk();
+	void WriteToDisk();
+	void OnChanged() noexcept;
 
-		template<typename T>
-		const T& get(const char* name) const
-		{
-			return at(name).AsType<T>();
-		}
-		template<typename T>
-		const T& get(const char* name, const T& default_value) const
-		{
-			auto it = find(name);
-			if (it == end())
-				return default_value;
-			else
-				return it->second.AsType<T>();
-		}
-		template<typename T>
-		void set(const char* name, T&& value)
-		{
-			(*this)[name] = std::forward<T>(value);
-		}
-	} connection;
+	namedmember(std::string, protocol, "udp")
+	namedmember(std::string, remoteIP, "")
+	namedmember(int, remotePort, 0)
+	namedmember(int, mtu, 1400)
+	namedmember(std::string, cipher, "AES-128-CBC")
+	namedmember(jsonrpc::Value::Array, certificateAuthority, {})
+	namedmember(jsonrpc::Value::Array, certificate, {})
+	namedmember(jsonrpc::Value::Array, privateKey, {})
 
-	bool runOpenVPNAsRoot;
+	namedmember(std::string, killswitchMode, "off")
+	namedmember(bool, allowLAN, true)
+	namedmember(bool, blockIPv6, true)
+
+	namedmember(bool, runOpenVPNAsRoot, true)
 };
+
+extern Settings g_settings;

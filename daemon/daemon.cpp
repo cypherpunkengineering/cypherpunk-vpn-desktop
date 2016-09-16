@@ -34,7 +34,7 @@ CypherDaemon::CypherDaemon()
 	, _state(STARTING)
 	, _firewallMode(Disabled)
 {
-
+	g_settings.ReadFromDisk();
 }
 
 int CypherDaemon::Run()
@@ -180,7 +180,7 @@ void CypherDaemon::RPC_requestState()
 	OnStateChanged();
 }
 
-void WriteOpenVPNProfile(std::ostream& out, const Settings::Connection& connection)
+void WriteOpenVPNProfile(std::ostream& out, const JsonObject& settings)
 {
 	using namespace std;
 
@@ -200,7 +200,7 @@ void WriteOpenVPNProfile(std::ostream& out, const Settings::Connection& connecti
 		{ "route-delay", "0" },
 	};
 
-	for (const auto& e : connection)
+	for (const auto& e : settings)
 	{
 		switch (e.second.GetType())
 		{
@@ -242,8 +242,8 @@ void WriteOpenVPNProfile(std::ostream& out, const Settings::Connection& connecti
 
 	for (const auto& t : arrayTypes)
 	{
-		auto it = connection.find(t.first);
-		if (it != connection.end() && it->second.IsArray())
+		auto it = settings.find(t.first);
+		if (it != settings.end() && it->second.IsArray())
 		{
 			const auto& lines = it->second.AsArray();
 			auto ensure = [&](const jsonrpc::Value& value, const std::string& str) {
@@ -294,14 +294,15 @@ static inline std::vector<std::string> SplitToVector(const std::string& text, ch
 	return std::move(result);
 }
 
-bool CypherDaemon::RPC_connect(const jsonrpc::Value::Struct& params)
+bool CypherDaemon::RPC_connect(const JsonObject& params)
 {
-	Settings::Connection c(params);
+	// FIXME: Shouldn't simply read raw profile parameters from the params
+	const JsonObject& settings = params;
 
 	if (_state == CONNECTED)
 	{
 		// Check if we're being asked to connect to the same place
-		return _process->IsSameServer(c);
+		return _process->IsSameServer(settings);
 		// TODO: Support switching to different server
 	}
 	else if (_state != State::DISCONNECTED)
@@ -374,7 +375,7 @@ bool CypherDaemon::RPC_connect(const jsonrpc::Value::Struct& params)
 #endif
 	{
 		std::ofstream f(profile_filename.c_str());
-		WriteOpenVPNProfile(f, c);
+		WriteOpenVPNProfile(f, settings);
 		f.close();
 	}
 	args.push_back(profile_filename);

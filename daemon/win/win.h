@@ -104,25 +104,36 @@ template<typename T> static inline T      ThrowLastErrorIfNonNull (T&&    result
 #define PrintError(operation, error) LOG(ERROR) << #operation " failed: " << Error(error)
 #define PrintLastError(operation)   PLOG(ERROR) << #operation " failed: " << LastError
 
-template<class DERIVED = Win32Handle>
-class Win32Handle : protected noncopyable
+
+struct Win32HandleBase
+{
+	static BOOL CloseHandle(HANDLE handle) noexcept { return ::CloseHandle(handle); }
+};
+
+template<class IMPL = Win32HandleBase>
+class TypedWin32Handle : protected noncopyable
 {
 protected:
 	HANDLE _handle;
 private:
-	void Free() { if (_handle) DERIVED::Close(_handle); }
-	static void Close(HANDLE handle) { CloseHandle(handle); }
+	bool CloseImpl() noexcept { return _handle == NULL || IMPL::CloseHandle(_handle); }
+	TypedWin32Handle(HANDLE handle) : _handle(handle) {}
 public:
-	Win32Handle() : _handle(NULL) {}
-	explicit Win32Handle(HANDLE handle) : _handle(handle) {}
-	Win32Handle(Win32Handle&& other) : _handle(std::exchange(other._handle, NULL)) {}
-	~Win32Handle() { Free(); }
-	Win32Handle& operator=(Win32Handle&& other) { Free(); _handle = std::exchange(other._handle, NULL); return *this; }
+	TypedWin32Handle() : _handle(NULL) {}
+	TypedWin32Handle(TypedWin32Handle&& other) : _handle(std::exchange(other._handle, NULL)) {}
+	~TypedWin32Handle() noexcept { CloseImpl(); }
+
+	static TypedWin32Handle Wrap(HANDLE handle) { return TypedWin32Handle(handle); }
+
+	TypedWin32Handle& operator=(TypedWin32Handle&& other) { CloseImpl(); _handle = std::exchange(other._handle, NULL); return *static_cast<DERIVED>(this); }
 	operator HANDLE() const { return _handle; }
 	operator bool() const { return _handle != NULL; }
+	bool operator!() const { return _handle == NULL; }
 	HANDLE Release() { return std::exchange(_handle, NULL); }
-	void Close() { Free(); _handle = NULL; }
+	void Close() { WIN_CHECK_IF_FALSE(CloseImpl, ()); _handle = NULL; }
 };
+typedef TypedWin32Handle<> Win32Handle;
+
 
 namespace std {
 #ifdef UNICODE

@@ -17,12 +17,12 @@ struct FWFilter : public FWPM_FILTER, private noncopyable
 	operator const FWFilterId&() const { return filterId; }
 };
 
-class FWEngine : public Win32Handle<FWEngine>
+class FWEngine : public TypedWin32Handle<FWEngine>
 {
+	friend class TypedWin32Handle<FWEngine>;
+	static bool CloseHandle(HANDLE handle) { return !FwpmEngineClose(handle); }
 public:
 	FWEngine();
-
-	static void Close(HANDLE handle) { FwpmEngineClose(handle); }
 
 	void InstallProvider();
 	void UninstallProvider();

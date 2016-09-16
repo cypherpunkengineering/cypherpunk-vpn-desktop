@@ -9,6 +9,7 @@ enum PredefinedDirectory
 	OpenVPNDir,		// Directory where OpenVPN binary sits
 	ProfileDir,		// Directory where temporary OpenVPN profile files are written
 	ScriptsDir,		// Directory where OpenVPN hook scripts are
+	SettingsDir,	// Directory where daemon and connection settings are read/written
 #ifdef WIN32
 	TapDriverDir,
 #endif
@@ -20,6 +21,7 @@ enum PredefinedFile
 	OpenVPNExecutable,
 	OpenVPNOutLog,
 	OpenVPNErrLog,
+	SettingsFile,
 #ifdef WIN32
 	TapInstallExecutable,
 #endif
@@ -28,8 +30,13 @@ enum PredefinedFile
 extern void InitPaths(std::string argv0);
 extern std::string GetPath(PredefinedFile file);
 extern std::string GetPath(PredefinedDirectory dir);
+extern void EnsurePathExists(const std::string& path);
+extern std::string ReadFile(const std::string& path);
+extern void WriteFile(const std::string& path, const char* text, size_t length);
 
 extern const char PATH_SEPARATOR;
+
+static inline void WriteFile(const std::string& path, const std::string& text) { WriteFile(path, text.c_str(), text.size()); }
 
 template<typename First>
 static inline First&& CombinePath(First&& first) { return std::forward<First>(first); }

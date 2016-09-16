@@ -1,8 +1,13 @@
-#include <unistd.h>
-#include <limits.h>
 #include "config.h"
 #include "path.h"
+#include "posix.h"
 #include "logger.h"
+
+#include <unistd.h>
+#include <limits.h>
+#include <stdio.h>
+#include <errno.h>
+#include <system_error>
 
 const char PATH_SEPARATOR = '/';
 std::string g_argv0;
@@ -50,4 +55,57 @@ std::string GetPath(PredefinedDirectory dir)
 		LOG(ERROR) << "Unknown path";
 		return std::string();
 	}
+}
+
+std::string ReadFile(const std::string& path)
+{
+	std::string result;
+	FILE* f = fopen(path.c_str(), "r");
+	if (f == NULL)
+		THROW_POSIXEXCEPTION(errno, fopen);
+	try
+	{
+		fseek(f, 0, SEEK_END);
+		long size = ftell(f);
+		result.resize(size);
+		if (size != fread(&result[0], 1, size, f))
+			THROW_POSIXEXCEPTION(EIO, fread);
+	}
+	catch (...)
+	{
+		fclose(f);
+		throw;
+	}
+	fclose(f);
+	return std::move(result);
+}
+
+void WriteFile(const std::string& path, const char* text, size_t length)
+{
+	const std::string tmp = path + ".new";
+	FILE* f = fopen(tmp.c_str(), "w");
+	if (f == NULL)
+		THROW_POSIXEXCEPTION(errno, fopen);
+	try
+	{
+		if (length != fwrite(text, 1, length, f))
+			THROW_POSIXEXCEPTION(EIO, fwrite);
+		if (0 != fflush(f))
+			THROW_POSIXEXCEPTION(errno, fflush);
+		int fd = fileno(f);
+		if (-1 == (fd = fileno(f)))
+			THROW_POSIXEXCEPTION(errno, fileno);
+#ifdef HAVE_FSYNC
+		if (0 != fsync(fd))
+			THROW_POSIXEXCEPTION(errno, fsync);
+#endif
+	}
+	catch (...)
+	{
+		fclose(f);
+		throw;
+	}
+	fclose(f);
+	if (0 != rename(tmp.c_str(), path.c_str()))
+		THROW_POSIXEXCEPTION(errno, rename);
 }

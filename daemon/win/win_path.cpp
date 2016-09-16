@@ -2,6 +2,7 @@
 #include "path.h"
 #include "win.h"
 
+#include <tchar.h>
 #include <shlwapi.h>
 
 #pragma comment (lib, "shlwapi.lib")
@@ -76,6 +77,7 @@ std::string GetPath(PredefinedFile file)
 	case DaemonExecutable: return g_argv0;
 	case ClientExecutable: return g_client_executable;
 	case OpenVPNExecutable: return GetPath(OpenVPNDir, "cypherpunkvpn-openvpn.exe");
+	case SettingsFile: return GetPath(SettingsDir, "settings.json");
 	case TapInstallExecutable: return GetPath(TapDriverDir, "tapinstall.exe");
 	default:
 		LOG(ERROR) << "Unknown file";
@@ -92,8 +94,41 @@ std::string GetPath(PredefinedDirectory dir)
 	case OpenVPNDir: return GetPath(BaseDir, "openvpn" /*, IsWin64() ? "64" : "32"*/);
 	case ProfileDir: return GetPath(BaseDir, "profiles");
 	case TapDriverDir: return GetPath(BaseDir, "tap" /*, IsWin64() ? "64" : "32"*/);
+	case SettingsDir: return GetPath(BaseDir);
 	default:
 		LOG(ERROR) << "Unknown path";
 		return std::string();
 	}
+}
+
+std::string ReadFile(const std::string& path)
+{
+	auto file = Win32Handle::Wrap(WIN_CHECK_IF_INVALID(CreateFile, (convert<TCHAR>(path).c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL)));
+	LARGE_INTEGER size;
+	WIN_CHECK_IF_FALSE(GetFileSizeEx, (file, &size));
+	if (size.HighPart != 0)
+		THROW_WIN32EXCEPTION(ERROR_FILE_TOO_LARGE, ReadFile);
+	std::string result;
+	result.resize((size_t)size.LowPart);
+	DWORD read = 0;
+	WIN_CHECK_IF_FALSE(ReadFile, (file, &result[0], size.LowPart, &read, NULL));
+	if (read != size.LowPart)
+		THROW_WIN32EXCEPTION(ERROR_READ_FAULT, ReadFile);
+	return std::move(result);
+}
+
+void WriteFile(const std::string& path, const char* text, size_t length)
+{
+	if (length > (DWORD)0xFFFFFFFF)
+		THROW_WIN32EXCEPTION(ERROR_FILE_TOO_LARGE, WriteFile);
+	const std::tstring tmp = convert<TCHAR>(path) + _T(".new");
+	{
+		auto file = Win32Handle::Wrap(WIN_CHECK_IF_INVALID(CreateFile, (tmp.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH, NULL)));
+		DWORD written = 0;
+		WIN_CHECK_IF_FALSE(WriteFile, (file, text, (DWORD)length, &written, NULL));
+		if (written != length)
+			THROW_WIN32EXCEPTION(ERROR_WRITE_FAULT, WriteFile);
+		WIN_CHECK_IF_FALSE(FlushFileBuffers, (file));
+	}
+	WIN_CHECK_IF_FALSE(MoveFileEx, (tmp.c_str(), convert<TCHAR>(path).c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH));
 }

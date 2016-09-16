@@ -1,5 +1,14 @@
 #include "config.h"
 #include "settings.h"
+#include "path.h"
+#include "logger.h"
+
+#include <jsonrpc-lean/jsonreader.h>
+#include <jsonrpc-lean/jsonwriter.h>
+
+
+Settings g_settings;
+
 
 namespace jsonrpc {
 	bool operator ==(const jsonrpc::Value& lhs, const jsonrpc::Value& rhs)
@@ -32,5 +41,60 @@ namespace jsonrpc {
 			}
 		}
 		return false;
+	}
+}
+
+Settings::Settings()
+{
+
+}
+
+void Settings::ReadFromDisk()
+{
+	std::string text;
+	try
+	{
+		text = ReadFile(GetPath(SettingsFile));
+	}
+	catch (...)
+	{
+		LOG(WARNING) << "Couldn't open settings file";
+		return;
+	}
+	try
+	{
+		jsonrpc::JsonReader reader(text);
+		_map = std::move(const_cast<JsonObject&>(reader.GetValue().AsStruct()));
+	}
+	catch (...)
+	{
+		LOG(ERROR) << "Invalid settings file";
+		return;
+	}
+}
+
+void Settings::WriteToDisk()
+{
+	jsonrpc::JsonWriter writer;
+	writer.StartStruct();
+	for (auto& element : _map) {
+		writer.StartStructElement(element.first);
+		element.second.Write(writer);
+		writer.EndStructElement();
+	}
+	writer.EndStruct();
+	auto data = writer.GetData();
+	WriteFile(GetPath(SettingsFile), data->GetData(), data->GetSize());
+}
+
+void Settings::OnChanged() noexcept
+{
+	try
+	{
+		WriteToDisk();
+	}
+	catch (const std::exception& e)
+	{
+		LOG(WARNING) << "Failed to write settings: " << e;
 	}
 }
