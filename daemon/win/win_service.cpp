@@ -233,7 +233,6 @@ public:
 					fw.RemoveAllFilters();
 				}
 				_firewall_enabled = enable;
-				return true;
 			}
 			catch (const Win32Exception&)
 			{
@@ -242,6 +241,7 @@ public:
 				return false;
 			}
 		}
+		return true;
 	}
 };
 
