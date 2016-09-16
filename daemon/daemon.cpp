@@ -172,6 +172,8 @@ void CypherDaemon::OnStateChanged()
 		params["bytesReceived"] = _bytesReceived;
 		params["bytesSent"] = _bytesSent;
 	}
+	// TODO: Only call if firewall-related state has changed
+	ApplyFirewallSettings();
 	SendToAllClients(_rpc_client.BuildNotificationData("state", params));
 }
 
@@ -484,19 +486,14 @@ bool CypherDaemon::RPC_setFirewall(const jsonrpc::Value::Struct& params)
 	FirewallFlags flags = Nothing;
 
 	auto mode = GetMember<std::string>(params, "mode", "off");
-
-	if (mode == "on")
-		SetFirewallSettings(true);
-	else
-		SetFirewallSettings(false);
-
-	//if (mode == "on")
-	//	flags |= BlockIPv6;
-	//else if (mode == "auto")
-	//else /* mode == "off" */
-
-	//if (GetMember<bool>(params, "blockIPv6", false))
-	//	flags |= BlockIPv6;
+	auto allowLAN = GetMember<bool>(params, "allowLAN", true);
+	if (mode != g_settings.killswitchMode() || allowLAN != g_settings.allowLAN())
+	{
+		g_settings.killswitchMode(mode);
+		g_settings.allowLAN(allowLAN);
+		g_settings.OnChanged();
+		ApplyFirewallSettings();
+	}
 
 	return true;
 }
