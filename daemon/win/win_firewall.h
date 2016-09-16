@@ -9,6 +9,7 @@
 #include <algorithm>
 
 typedef UINT64 FWFilterId;
+static const GUID zero_guid = { 0 };
 
 struct FWFilter : public FWPM_FILTER, private noncopyable
 {
@@ -137,33 +138,48 @@ struct FWConditionFilter : public FWBasicFilter<ACTION, DIRECTION, VERSION>
 	}
 };
 
-template<FWDirection DIRECTION, FWIPVersion VERSION> struct AllowLocalHostFilter;
+
+template<FWDirection DIRECTION, FWIPVersion VERSION> struct AllowIPRangeFilter;
 
 template<FWDirection DIRECTION>
-struct AllowLocalHostFilter<DIRECTION, IPv4> : public FWConditionFilter<1, FWP_ACTION_PERMIT, DIRECTION, IPv4>
+struct AllowIPRangeFilter<DIRECTION, IPv4> : FWConditionFilter<1, FWP_ACTION_PERMIT, DIRECTION, IPv4>
 {
 	FWP_V4_ADDR_AND_MASK _addr;
-	AllowLocalHostFilter()
+	AllowIPRangeFilter(const char* addr, int prefix = 32)
 	{
-		_addr.addr = 127 << 24 | 1;
-		_addr.mask = 0xFFFFFFFF;
+		inet_pton(AF_INET, "127.0.0.1", &_addr.addr);
+		_addr.addr = ntohl(_addr.addr);
+		_addr.mask = ~0UL << (32 - prefix);
 		SetCondition<FWP_V4_ADDR_MASK>(0, FWPM_CONDITION_IP_REMOTE_ADDRESS, FWP_MATCH_EQUAL, &_addr);
 		weight.uint8 = 10;
 	}
 };
 
 template<FWDirection DIRECTION>
-struct AllowLocalHostFilter<DIRECTION, IPv6> : public FWConditionFilter<1, FWP_ACTION_PERMIT, DIRECTION, IPv6>
+struct AllowIPRangeFilter<DIRECTION, IPv6> : FWConditionFilter<1, FWP_ACTION_PERMIT, DIRECTION, IPv6>
 {
 	FWP_V6_ADDR_AND_MASK _addr;
-	AllowLocalHostFilter()
+	AllowIPRangeFilter(const char* addr, int prefix = 128)
 	{
-		memset(&_addr, 0, sizeof(_addr));
-		_addr.addr[15] = 1;
-		_addr.prefixLength = 128;
+		inet_pton(AF_INET6, "::1", &_addr.addr);
+		_addr.prefixLength = prefix;
 		SetCondition<FWP_V6_ADDR_MASK>(0, FWPM_CONDITION_IP_REMOTE_ADDRESS, FWP_MATCH_EQUAL, &_addr);
 		weight.uint8 = 10;
 	}
+};
+
+template<FWDirection DIRECTION, FWIPVersion VERSION> struct AllowLocalHostFilter;
+
+template<FWDirection DIRECTION>
+struct AllowLocalHostFilter<DIRECTION, IPv4> : public AllowIPRangeFilter<DIRECTION, IPv4>
+{
+	AllowLocalHostFilter() : AllowIPRangeFilter("127.0.0.1") {}
+};
+
+template<FWDirection DIRECTION>
+struct AllowLocalHostFilter<DIRECTION, IPv6> : public AllowIPRangeFilter<DIRECTION, IPv6>
+{
+	AllowLocalHostFilter() : AllowIPRangeFilter("::1") {}
 };
 
 template<FWIPVersion VERSION> struct AllowDHCPFilter;
