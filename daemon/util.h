@@ -33,7 +33,7 @@ static inline sentry<CB> finally(const CB& callback) { return { std::move(callba
 #define CONCAT(a,b) CONCAT_(a,b)
 
 //#define SCOPE_EXIT const auto& CONCAT(__scope_exit,__LINE__) = scope_callback_helper() * [&]()
-#define FINALLY(block) auto&& CONCAT(__scope_exit,__LINE__) = finally([&]() noexcept { block })
+#define FINALLY(block) auto&& CONCAT(__scope_exit,__LINE__) = finally([&]() noexcept { block });
 
 static inline std::ostream& operator<<(std::ostream& os, const std::exception& e)
 {
