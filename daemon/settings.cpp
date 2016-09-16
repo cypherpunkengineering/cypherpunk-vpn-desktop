@@ -51,40 +51,23 @@ Settings::Settings()
 
 void Settings::ReadFromDisk()
 {
-	std::string text;
 	try
 	{
-		text = ReadFile(GetPath(SettingsFile));
+		_map = ReadJsonFile(GetPath(SettingsFile));
 	}
-	catch (...)
+	catch (const std::system_error& e)
 	{
-		LOG(WARNING) << "Couldn't open settings file";
-		return;
-	}
-	try
-	{
-		jsonrpc::JsonReader reader(text);
-		_map = std::move(const_cast<JsonObject&>(reader.GetValue().AsStruct()));
+		LOG(WARNING) << "Couldn't open settings file: " << e;
 	}
 	catch (...)
 	{
 		LOG(ERROR) << "Invalid settings file";
-		return;
 	}
 }
 
 void Settings::WriteToDisk()
 {
-	jsonrpc::JsonWriter writer;
-	writer.StartStruct();
-	for (auto& element : _map) {
-		writer.StartStructElement(element.first);
-		element.second.Write(writer);
-		writer.EndStructElement();
-	}
-	writer.EndStruct();
-	auto data = writer.GetData();
-	WriteFile(GetPath(SettingsFile), data->GetData(), data->GetSize());
+	WriteJsonFile(GetPath(SettingsFile), _map);
 }
 
 void Settings::OnChanged() noexcept
