@@ -227,15 +227,26 @@ public:
 	};
 	GUID _filters[max_filter];
 
-	virtual void ApplyFirewallSettings() override
+	virtual bool ApplyFirewallSettings() override
 	{
 		FWEngine fw;
 		FWTransaction tx(fw);
 
+		int success = 0, error = 0;
+
 #define TURN_ON(name, ...) \
-		do { if (_filters[name] == zero_guid) { _filters[name] = fw.AddFilter(__VA_ARGS__); } } while(false)
+		do { \
+			if (_filters[name] == zero_guid) { \
+				_filters[name] = fw.AddFilter(__VA_ARGS__); success++; \
+			} \
+		} while(false)
 #define TURN_OFF(idx) \
-		do { if (_filters[idx] != zero_guid) { try { fw.RemoveFilter(_filters[idx]); _filters[idx] = zero_guid; } catch (const Win32Exception& e) { LOG(ERROR) << "Unable to remove firewall rule #" << idx << ": " << e; } } } while(false)
+		do { \
+			if (_filters[idx] != zero_guid) { \
+				try { fw.RemoveFilter(_filters[idx]); success++; _filters[idx] = zero_guid; } \
+				catch (const Win32Exception& e) { error++; LOG(ERROR) << "Unable to remove firewall rule #" << idx << ": " << e; } \
+			} \
+		} while(false)
 
 		bool is_connected;
 		switch (_state)
@@ -253,38 +264,49 @@ public:
 		auto mode = g_settings.killswitchMode();
 		if (mode == "on" || is_connected && mode == "auto")
 		{
-			if (g_settings.allowLAN())
+			try
 			{
-				TURN_ON(allow_lan_ipv4_1, AllowIPRangeFilter<Outgoing, IPv4>("192.168.0.0", 16));
-				TURN_ON(allow_lan_ipv4_2, AllowIPRangeFilter<Outgoing, IPv4>("172.16.0.0", 13));
-				TURN_ON(allow_lan_ipv4_3, AllowIPRangeFilter<Outgoing, IPv4>("10.0.0.0", 8));
-				TURN_ON(allow_lan_ipv4_multicast, AllowIPRangeFilter<Outgoing, IPv4>("224.0.0.0", 4));
-				TURN_ON(allow_lan_ipv6, AllowIPRangeFilter<Outgoing, IPv6>("fc00::", 7));
-				TURN_ON(allow_lan_ipv6_linklocal, AllowIPRangeFilter<Outgoing, IPv6>("fe80::", 10));
-				TURN_ON(allow_lan_ipv6_multicast, AllowIPRangeFilter<Outgoing, IPv6>("ff00::", 8));
+				if (g_settings.allowLAN())
+				{
+					TURN_ON(allow_lan_ipv4_1,         AllowIPRangeFilter<Outgoing, IPv4>("192.168.0.0", 16));
+					TURN_ON(allow_lan_ipv4_2,         AllowIPRangeFilter<Outgoing, IPv4>("172.16.0.0", 13));
+					TURN_ON(allow_lan_ipv4_3,         AllowIPRangeFilter<Outgoing, IPv4>("10.0.0.0", 8));
+					TURN_ON(allow_lan_ipv4_multicast, AllowIPRangeFilter<Outgoing, IPv4>("224.0.0.0", 4));
+					TURN_ON(allow_lan_ipv6,           AllowIPRangeFilter<Outgoing, IPv6>("fc00::", 7));
+					TURN_ON(allow_lan_ipv6_linklocal, AllowIPRangeFilter<Outgoing, IPv6>("fe80::", 10));
+					TURN_ON(allow_lan_ipv6_multicast, AllowIPRangeFilter<Outgoing, IPv6>("ff00::", 8));
+				}
+				else
+				{
+					for (int i = first_lan_filter; i <= last_lan_filter; i++)
+						TURN_OFF(i);
+				}
+				TURN_ON(allow_client,         AllowAppFilter<Outgoing, IPv4>(GetPath(ClientExecutable)));
+				TURN_ON(allow_daemon,         AllowAppFilter<Outgoing, IPv4>(GetPath(DaemonExecutable)));
+				TURN_ON(allow_openvpn,        AllowAppFilter<Outgoing, IPv4>(GetPath(OpenVPNExecutable)));
+				TURN_ON(allow_localhost_ipv4, AllowLocalHostFilter<Outgoing, IPv4>());
+				TURN_ON(allow_localhost_ipv6, AllowLocalHostFilter<Outgoing, IPv6>());
+				TURN_ON(allow_dhcp_ipv4,      AllowDHCPFilter<IPv4>());
+				TURN_ON(allow_dhcp_ipv6,      AllowDHCPFilter<IPv6>());
+				TURN_ON(block_ipv6,           BlockAllFilter<Outgoing, IPv4>());
+				TURN_ON(block_ipv6,           BlockAllFilter<Outgoing, IPv6>());
+
+				tx.Commit();
+				return error == 0;
 			}
-			else
+			catch (const Win32Exception& e)
 			{
-				for (int i = first_lan_filter; i <= last_lan_filter; i++)
-					TURN_OFF(i);
+				LOG(ERROR) << "Unable to apply firewall rule: " << e;
 			}
-			TURN_ON(allow_client, AllowAppFilter<Outgoing, IPv4>(GetPath(ClientExecutable)));
-			TURN_ON(allow_daemon, AllowAppFilter<Outgoing, IPv4>(GetPath(DaemonExecutable)));
-			TURN_ON(allow_openvpn, AllowAppFilter<Outgoing, IPv4>(GetPath(OpenVPNExecutable)));
-			TURN_ON(allow_localhost_ipv4, AllowLocalHostFilter<Outgoing, IPv4>());
-			TURN_ON(allow_localhost_ipv6, AllowLocalHostFilter<Outgoing, IPv6>());
-			TURN_ON(allow_dhcp_ipv4, AllowDHCPFilter<IPv4>());
-			TURN_ON(allow_dhcp_ipv6, AllowDHCPFilter<IPv6>());
-			TURN_ON(block_ipv6, BlockAllFilter<Outgoing, IPv4>());
-			TURN_ON(block_ipv6, BlockAllFilter<Outgoing, IPv6>());
 		}
-		else
-		{
-			// We use a transaction but remove in reverse just in case, so the block filters get removed first
-			for (int i = max_filter - 1; i >= 0; i--)
-				TURN_OFF(i);
-		}
-		tx.Commit();
+		// Firewall is either off, or there was an error applying rules
+
+		// We use a transaction but remove in reverse just in case, so the block filters get removed first
+		for (int i = max_filter - 1; i >= 0; i--)
+			TURN_OFF(i);
+
+		if (success) tx.Commit();
+		return error == 0;
 	}
 };
 
