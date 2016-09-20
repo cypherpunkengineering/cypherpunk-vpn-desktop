@@ -10,7 +10,7 @@ namespace jsonrpc {
 	const type& name() const \
 	{ \
 		auto it = _map.find(#name); \
-		if (it == _map.end()) return default_value; \
+		if (it == _map.end()) { static type def = default_value; return def; } \
 		return it->second.AsType<type>(); \
 	} \
 	type& name() \
