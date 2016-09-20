@@ -3,7 +3,6 @@
 #include <tuple>
 #include <type_traits>
 
-#include <picojson.h>
 #include <jsonrpc-lean/value.h>
 #include <rapidjson/document.h>
 
