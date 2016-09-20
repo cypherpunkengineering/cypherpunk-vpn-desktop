@@ -21,7 +21,7 @@ daemon.ready(() => {
   daemon.once('state', state => {
     History.push('/login');
   });
-  daemon.post.requestState();
+  daemon.post.get('state');
 });
 
 function humanReadableSize(count) {
@@ -275,22 +275,20 @@ class ConnectScreen extends React.Component {
     switch (this.state.connectionState) {
       case 'disconnected':
         this.setState({ connectionState: 'connecting' });
-        daemon.call.connect({
-          proto: "udp",
-          //remote: "208.111.52.1 7133",
-          //remote: "208.111.52.2 7133",
-          //remote: "199.68.252.203 7133",
-          remote: this.getSelectedRegion(),
-          "redirect-gateway": "def1",
-          ca: getCertificateAuthority(),
-          cert: getCertificate(),
-          key: getPrivateKey(),
+        let [ ip, port ] = this.getSelectedRegion().split(' ');
+        daemon.post.applySettings({
+          protocol: "udp",
+          remoteIP: ip,
+          remotePort: parseInt(port, 10),
         });
+        daemon.post.connect();
+        daemon.post.get('state');
         break;
       case 'connecting':
       case 'connected':
         this.setState({ connectionState: 'disconnecting' });
         daemon.post.disconnect();
+        daemon.post.get('state');
         break;
       case 'disconnecting':
         break;
