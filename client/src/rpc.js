@@ -62,10 +62,10 @@ class WebSocketImpl extends EventEmitter {
         if (typeof evt.data !== 'string') {
           return reply('error', ERROR_INVALID_JSON);
         }
-		if (evt.data == "") {
-			// Just an empty string; ignore
-			return;
-		}
+        if (evt.data == "") {
+          // Just an empty string; ignore
+          return;
+        }
         try {
           obj = JSON.parse(evt.data);
         } catch (e) {
@@ -114,13 +114,16 @@ class WebSocketImpl extends EventEmitter {
             }
             // fallthrough to error below
           } else if (obj.hasOwnProperty('result') ^ obj.hasOwnProperty('error')) {
-            if (hasId) {
-              let cb = self._callbacks[id];
-              if (cb) {
+            let cb = self._callbacks[id];
+            if (cb) {
+              if (id !== null) {
                 delete self._callbacks[id];
-                cb(obj['result'], obj['error']);
-                return;
               }
+              cb(obj['result'], obj['error']);
+              return;
+            } else if (id === null) {
+              console.log("RPC error:", obj.error);
+              return;
             }
             // fallthrough to error below
           }
