@@ -6,6 +6,7 @@
 #include <sstream>
 #include <string>
 #include <system_error>
+#include <vector>
 
 class noncopyable
 {
@@ -88,4 +89,41 @@ static inline std::ostream& operator<<(std::ostream& os, const std::exception& e
 	while (end > what && (isspace(end[-1]) || end[-1] == '.')) end--;
 	os.write(what, end - what);
 	return os;
+}
+
+
+template<typename IT, typename SEP, typename CB>
+static inline size_t SplitToIterators(const IT& begin, const IT& end, const SEP& sep, const CB& cb)
+{
+	IT pos = begin, last = pos;
+	size_t count = 0;
+	while ((pos = std::find(last, end, sep)) != end)
+	{
+		cb(last, pos);
+		last = pos;
+		++last;
+		++count;
+	}
+	cb(last, end);
+	++count;
+	return count;
+}
+
+template<typename CB>
+static inline size_t SplitToIterators(const std::string& text, char sep, const CB& cb)
+{
+	return SplitToIterators(text.begin(), text.end(), sep, cb);
+}
+
+template<typename CB>
+static inline size_t SplitToStrings(const std::string& text, char sep, const CB& cb)
+{
+	return SplitToIterators(text, sep, [&](const std::string::const_iterator& b, const std::string::const_iterator& e) { return std::string(b, e); });
+}
+
+static inline std::vector<std::string> SplitToVector(const std::string& text, char sep)
+{
+	std::vector<std::string> result;
+	SplitToIterators(text, sep, [&](const std::string::const_iterator& b, const std::string::const_iterator& e) { result.emplace_back(b, e); });
+	return std::move(result);
 }
