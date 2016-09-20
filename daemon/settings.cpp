@@ -65,9 +65,9 @@ void Settings::ReadFromDisk()
 	{
 		LOG(WARNING) << "Couldn't open settings file: " << e;
 	}
-	catch (...)
+	catch (const std::exception& e)
 	{
-		LOG(ERROR) << "Invalid settings file";
+		LOG(ERROR) << "Invalid settings file: " << e;
 	}
 }
 
