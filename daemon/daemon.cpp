@@ -125,7 +125,6 @@ void CypherDaemon::OnLastClientDisconnected()
 
 void CypherDaemon::OnReceiveMessage(Connection connection, WebSocketServer::message_ptr msg)
 {
-	CHECK_THREAD();
 	LOG(VERBOSE) << "Received RPC message: " << msg->get_payload();
 	try
 	{
