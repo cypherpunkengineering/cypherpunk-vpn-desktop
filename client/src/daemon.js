@@ -44,7 +44,6 @@ ipcMain.on('daemon-call', (event, method, params, id) => {
   rpc.call(method, params).then(result => {
     event.sender.send('daemon-result', id, result, null);
   }, error => {
-    console.log("uncaught6: ", error);
     event.sender.send('daemon-result', id, null, error);
   });
 });
