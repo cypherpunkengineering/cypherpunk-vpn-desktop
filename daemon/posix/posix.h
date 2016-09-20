@@ -1,5 +1,12 @@
 #pragma once
 
-#include <system_error>
+#include "debug.h"
+#include "util.h"
 
-#define THROW_POSIXEXCEPTION(code, api) throw std::system_error(code, std::system_category(), #api " failed")
+class PosixException : public SystemException
+{
+public:
+	using SystemException::SystemException;
+};
+
+#define THROW_POSIXEXCEPTION(code, api) throw PosixException(code, #api _D(, CURRENT_LOCATION))

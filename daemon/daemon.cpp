@@ -121,7 +121,8 @@ void CypherDaemon::OnReceiveMessage(Connection connection, WebSocketServer::mess
 	catch (const jsonrpc::Fault&)
 	{
 		auto result = _rpc_server.HandleRequest(msg->get_payload());
-		SendToClient(connection, result);
+		if (result->GetSize() > 0)
+			SendToClient(connection, result);
 	}
 }
 
@@ -262,38 +263,6 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& settings)
 			}
 		}
 	}
-}
-
-template<typename CB>
-static inline size_t SplitToIterators(const std::string& text, char sep, const CB& cb)
-{
-	size_t pos, last = 0, count = 0;
-	auto begin = text.cbegin();
-	while ((pos = text.find(sep, last)) != text.npos)
-	{
-		cb(begin + last, begin + pos);
-		last = pos + 1;
-		count++;
-	}
-	if (last != text.size())
-	{
-		cb(begin + last, text.cend());
-		count++;
-	}
-	return count;
-}
-
-template<typename CB>
-static inline size_t SplitToStrings(const std::string& text, char sep, const CB& cb)
-{
-	return SplitToIterators(text, sep, [&](const std::string::const_iterator& b, const std::string::const_iterator& e) { return std::string(b, e); });
-}
-
-static inline std::vector<std::string> SplitToVector(const std::string& text, char sep)
-{
-	std::vector<std::string> result;
-	SplitToIterators(text, sep, [&](const std::string::const_iterator& b, const std::string::const_iterator& e) { result.emplace_back(b, e); });
-	return std::move(result);
 }
 
 bool CypherDaemon::RPC_connect(const JsonObject& params)

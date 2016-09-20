@@ -12,6 +12,7 @@ INCS=\
 all:
 	g++ \
 	-std=c++14 \
+	-D_DEBUG \
 	$(INCS) \
 	$(SRCS) \
 	-o cypherpunkvpn-service

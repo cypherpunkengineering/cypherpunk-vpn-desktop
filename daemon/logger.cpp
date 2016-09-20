@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "logger.h"
 
 #ifdef _WIN32
@@ -34,20 +36,13 @@ LogWriter& LogWriter::operator<<(LogLevel level)
 
 LogWriter& LogWriter::operator<<(const Location& location)
 {
-	if (location.func)
+	if (location.func())
 	{
-		_str << '[' << location.func << ']';
+		_str << '[' << location.func() << ']';
 	}
-	if (location.file)
+	if (location.path())
 	{
-		const char* name = location.file;
-		for (const char* p = name; *p; p++)
-			if (*p == '/' || *p == '\\')
-				name = p + 1;
-		if (*name)
-		{
-			_str << '[' << name << ':' << location.line << ']';
-		}
+		_str << '[' << location.file() << ':' << location.line() << ']';
 	}
 	return *this;
 }
