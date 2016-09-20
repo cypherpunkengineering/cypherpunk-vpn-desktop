@@ -54,8 +54,8 @@ class SystemException : public std::system_error, public DebugLocation
 {
 	const char* _from;
 public:
-	inline SystemException(int code, const char* from _D(, const Location& location)) : std::system_error(code, std::system_category(), prefix(from, location)), DebugLocation(_D(location)), _from(from) {}
-	inline SystemException(int code _D(, const Location& location)) : std::system_error(code, std::system_category(), prefix(nullptr, location)), DebugLocation(_D(location)), _from(nullptr) {}
+	inline SystemException(int code, const char* from _D(, const Location& location)) : std::system_error(code, std::system_category(), prefix(from _D(, location))), DebugLocation(_D(location)), _from(from) {}
+	inline SystemException(int code _D(, const Location& location)) : std::system_error(code, std::system_category(), prefix(nullptr _D(, location))), DebugLocation(_D(location)), _from(nullptr) {}
 
 	int value() const { return code().value(); }
 	const DebugLocation& location() const { return *this; }
