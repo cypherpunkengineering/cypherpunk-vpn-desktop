@@ -70,9 +70,8 @@ int CypherDaemon::Run()
 	_ws_server.listen(asio::ip::tcp::endpoint(asio::ip::address::from_string("127.0.0.1"), 9337));
 	_ws_server.start_accept();
 
-	_rpc_server.RegisterFormatHandler(_json_handler);
 	{
-		auto& d = _rpc_server.GetDispatcher();
+		auto& d = _dispatcher;
 		d.AddMethod("get", &CypherDaemon::RPC_get, *this);
 		d.AddMethod("connect", &CypherDaemon::RPC_connect, *this);
 		d.AddMethod("disconnect", &CypherDaemon::RPC_disconnect, *this);
@@ -126,16 +125,46 @@ void CypherDaemon::OnLastClientDisconnected()
 
 void CypherDaemon::OnReceiveMessage(Connection connection, WebSocketServer::message_ptr msg)
 {
+	CHECK_THREAD();
+	LOG(VERBOSE) << "Received RPC message: " << msg->get_payload();
 	try
 	{
 		auto response = _json_handler.CreateReader(msg->get_payload())->GetResponse();
+		return; // this was a response to a previous server->client call; our work is done
 	}
-	catch (const jsonrpc::Fault&)
+	catch (const jsonrpc::Fault&) {}
+
+	auto writer = _json_handler.CreateWriter();
+	try
 	{
-		auto result = _rpc_server.HandleRequest(msg->get_payload());
-		if (result->GetSize() > 0)
-			SendToClient(connection, result);
+		auto request = _json_handler.CreateReader(msg->get_payload())->GetRequest();
+		auto response = _dispatcher.Invoke(request.GetMethodName(), request.GetParameters(), request.GetId());
+		try
+		{
+			response.ThrowIfFault();
+			// Special case: the 'get' method responds with a separate notification
+			if (request.GetMethodName() == "get")
+			{
+				SendToClient(connection, _rpc_client.BuildNotificationData(request.GetParameters().front().AsString(), response.GetResult()));
+				return;
+			}
+			if (response.GetId().IsBoolean() && response.GetId().AsBoolean() == false)
+				return; // this was a notification; no response is needed
+		}
+		catch (const jsonrpc::Fault& e)
+		{
+			LOG(ERROR) << "RPC error: " << e;
+		}
+		response.Write(*writer);
 	}
+	catch (const jsonrpc::Fault& e)
+	{
+		LOG(ERROR) << "RPC error: " << e;
+		jsonrpc::Response(e.GetCode(), e.GetString(), jsonrpc::Value()).Write(*writer);
+	}
+	auto data = writer->GetData();
+	if (data->GetSize() > 0)
+		SendToClient(connection, data);
 }
 
 void CypherDaemon::OnOpenVPNProcessExited(OpenVPNProcess* process)

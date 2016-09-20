@@ -18,6 +18,7 @@ extern class CypherDaemon* g_daemon;
 class OpenVPNProcess;
 typedef jsonrpc::Server JsonRPCServer;
 typedef jsonrpc::Client JsonRPCClient;
+typedef jsonrpc::Dispatcher JsonRPCDispatcher;
 
 
 enum FirewallMode
@@ -98,7 +99,7 @@ protected:
 	WebSocketServer _ws_server;
 	ConnectionList _connections;
 	jsonrpc::JsonFormatHandler _json_handler;
-	JsonRPCServer _rpc_server;
+	JsonRPCDispatcher _dispatcher;
 	JsonRPCClient _rpc_client;
 	OpenVPNProcess *_process, *_next_process;
 	State _state;
