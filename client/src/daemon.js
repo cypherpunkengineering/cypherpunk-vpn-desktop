@@ -17,6 +17,9 @@ var isopen = false;
 class Daemon extends EventEmitter {
   constructor() {
     super();
+    this.account = {};
+    this.config = {};
+    this.settings = {};
     this.state = {};
   }
   registerMethod(method, callback) {
@@ -103,8 +106,13 @@ function oncall(method, params, id) {
 }
 
 function onpost(method, params) {
-  if (method == 'state') {
-    Object.assign(daemon.state, params[0]);
+  switch (method) {
+    case 'account':
+    case 'config':
+    case 'settings':
+    case 'state':
+      Object.assign(daemon[method], params[0]);
+      break;
   }
   daemon.emit(method, ...params);
   if (mainWindow) {

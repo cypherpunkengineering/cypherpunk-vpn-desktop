@@ -411,24 +411,26 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& settings)
 {
 	using namespace std;
 
+	const int mtu = g_settings.mtu();
+
 	std::map<std::string, std::string> config = {
 		{ "client", "" },
 		{ "nobind", "" },
 		{ "dev", "tun" },
-		{ "proto", "udp" },
-		{ "tun-mtu", "1400" },
-		{ "fragment", "1300" },
-		{ "mssfix", "1200" },
+		{ "proto", g_settings.protocol() },
+		{ "remote", g_settings.remoteIP() + " " + std::to_string(g_settings.remotePort()) },
+		{ "tun-mtu", std::to_string(mtu) },
+		{ "fragment", std::to_string(mtu - 100) },
+		{ "mssfix", std::to_string(mtu - 200) },
 		{ "ping", "10" },
 		{ "ping-exit", "60" },
 		{ "resolv-retry", "infinite" },
-		{ "cipher", "AES-128-CBC" },
+		{ "cipher", g_settings.cipher() },
 		{ "redirect-gateway", "def1" },
 		{ "route-delay", "0" },
 	};
 
-
-	// FIXME: Manually translate settings to OpenVPN parameters
+	// FIXME: Manually translate other settings to OpenVPN parameters
 	/*
 	for (const auto& e : settings)
 	{
