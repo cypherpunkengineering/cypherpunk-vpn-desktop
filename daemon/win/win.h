@@ -4,6 +4,7 @@
 #include "daemon.h"
 #include "debug.h"
 #include "logger.h"
+#include "serialization.h"
 #include "util.h"
 
 #include <sstream>
@@ -133,6 +134,11 @@ constexpr static inline bool IsWin64() { return true; }
 #else
 bool IsWin64();
 #endif
+
+
+template<> struct serialization::json_converter<GUID, JsonValue> { static void convert(GUID& dst, const JsonValue& src); };
+template<> struct serialization::json_converter<JsonValue, GUID> { static void convert(JsonValue& dst, const GUID& src); };
+
 
 struct win_tap_adapter
 {

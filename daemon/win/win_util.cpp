@@ -1,5 +1,7 @@
+#include "config.h"
 #include "win.h"
 #include "path.h"
+#include "serialization.h"
 
 #include <vector>
 #include <memory>
@@ -9,6 +11,23 @@
 #include <windows.h>
 #include <ws2ipdef.h>
 #include <iphlpapi.h>
+#include <rpc.h>
+
+#pragma comment (lib, "rpcrt4.lib")
+
+
+void serialization::json_converter<GUID, JsonValue>::convert(GUID& dst, const JsonValue& src)
+{
+	WIN_CHECK_RESULT(UuidFromStringA, (reinterpret_cast<RPC_CSTR>(const_cast<char*>(src.AsString().c_str())), &dst));
+}
+void serialization::json_converter<JsonValue, GUID>::convert(JsonValue& dst, const GUID& src)
+{
+	RPC_CSTR str;
+	WIN_CHECK_RESULT(UuidToStringA, (&src, &str));
+	dst = std::string(reinterpret_cast<const char*>(str));
+	WIN_CHECK_RESULT(RpcStringFreeA, (&str));
+}
+
 
 template<typename T> struct IP_LIST : public T
 {
