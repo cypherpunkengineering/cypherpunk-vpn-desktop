@@ -1,6 +1,7 @@
 #pragma once
 
 #include "config.h"
+#include "debug.h"
 #include "util.h"
 
 #include <cstdarg>
@@ -36,12 +37,12 @@ extern class Logger* g_logger;
 #define LogVerbose( fmt, ...) g_logger->Write(LEVEL_VERBOSE,  fmt,##__VA_ARGS__)
 
 #ifdef _DEBUG
-#define WITH_LOCATION (Location(__func__, __FILE__, __LINE__))
+#define LOG_WITH_LOCATION (Location(__func__, __FILE__, __LINE__))
 #else
-#define WITH_LOCATION
+#define LOG_WITH_LOCATION
 #endif
 
-#define LOG_EX(classname, level, condition, ...) (!(LOG_ENABLED(level) && (condition))) ? (void)0 : Voidify() | classname(__VA_ARGS__)(level) WITH_LOCATION
+#define LOG_EX(classname, level, condition, ...) (!(LOG_ENABLED(level) && (condition))) ? (void)0 : Voidify() | classname(__VA_ARGS__)(level) LOG_WITH_LOCATION
 
 #define LOG_IF(severity, condition)  LOG_EX(PrefixLogWriter<LogWriter>, LEVEL_##severity, condition)
 #define LOG(severity)                LOG_EX(PrefixLogWriter<LogWriter>, LEVEL_##severity, true)
@@ -52,17 +53,6 @@ extern class Logger* g_logger;
 struct Voidify
 {
 	template<typename T> inline void operator|(T&&) const {}
-};
-
-struct Location
-{
-	const char* func;
-	const char* file;
-	int line;
-
-	inline Location(const char* fn, const char* f, int l) : func(fn), file(f), line(l) {}
-	inline Location(const char* fn) : func(fn), file(nullptr), line(0) {}
-	inline Location(const char* f, int l) : func(nullptr), file(f), line(l) {}
 };
 
 class Error

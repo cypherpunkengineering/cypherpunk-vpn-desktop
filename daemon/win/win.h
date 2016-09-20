@@ -2,6 +2,7 @@
 
 #include "config.h"
 #include "daemon.h"
+#include "debug.h"
 #include "logger.h"
 #include "util.h"
 
@@ -12,97 +13,47 @@
 #include <vector>
 
 
-#ifdef _DEBUG
-# define IFDEBUG(...)        __VA_ARGS__
-# define IFNDEBUG(...)
-# define DEBUG_ARGS_DECL     const char* file = nullptr, int line = 0
-# define DEBUG_ARGS_FORWARD  file, line
-# define DEBUG_ARGS_CALL     __FILE__, __LINE__
-# define _DEBUG_ARGS_DECL    , DEBUG_ARGS_DECL
-# define _DEBUG_ARGS_FORWARD , DEBUG_ARGS_FORWARD
-# define _DEBUG_ARGS_CALL    , DEBUG_ARGS_CALL
-#else
-# define IFDEBUG(...)
-# define IFNDEBUG(...)       __VA_ARGS__
-# define DEBUG_ARGS_DECL
-# define DEBUG_ARGS_FORWARD
-# define DEBUG_ARGS_CALL
-# define _DEBUG_ARGS_DECL
-# define _DEBUG_ARGS_FORWARD
-# define _DEBUG_ARGS_CALL
-#endif
 
 //std::string GetLastErrorString(DWORD error);
 //static inline std::string GetLastErrorString() { return GetLastErrorString(GetLastError()); }
 
-class Win32Exception : public std::system_error
+class Win32Exception : public SystemException
 {
-protected:
-	DWORD _code;
-	const char* _from;
-	IFDEBUG( const char* _file; int _line; )
 public:
-	inline Win32Exception(DWORD code _DEBUG_ARGS_DECL) : _code(code), _from(nullptr), std::system_error(code, std::system_category(), prefix(nullptr _DEBUG_ARGS_FORWARD).c_str()) IFDEBUG( , _file(file), _line(line) ) {}
-	inline Win32Exception(DWORD code, const char* from _DEBUG_ARGS_DECL) : _code(code), _from(from), std::system_error(code, std::system_category(), prefix(from _DEBUG_ARGS_FORWARD).c_str()) IFDEBUG(, _file(file), _line(line)) {}
-	DWORD code() const { return _code; }
-	const char* from() const { return _from; }
-	const char* file() const { return IFDEBUG(_file) IFNDEBUG(nullptr); }
-	int line() const { return IFDEBUG(_line) IFNDEBUG(0); }
-	std::string where() const
-	{
-		if (file())
-			return std::string(file()) + ":" + std::to_string(line());
-		else
-			return std::string("<unknown>");
-	}
-private:
-	static std::string prefix(const char* from _DEBUG_ARGS_DECL)
-	{
-		std::ostringstream os;
-		if (from)
-			os << from << " failed";
-		else
-			os << "Exception thrown";
-#ifdef _DEBUG
-		if (file)
-		{
-			os << " at " << GetBaseName(file);
-			if (line)
-				os << ':' << std::to_string(line);
-		}
-#endif
-		return os.str();
-	}
+	inline Win32Exception(DWORD code, const char* from _D(, const Location& location)) : SystemException(code, from _D(, location)) {}
+	inline Win32Exception(DWORD code _D(, const Location& location)) : SystemException(code, nullptr _D(, location)) {}
+
+	DWORD value() const { return code().value(); }
 };
 
-#define THROW_WIN32EXCEPTION(code, api) throw Win32Exception(code, #api _DEBUG_ARGS_CALL)
+#define THROW_WIN32EXCEPTION(code, api) throw Win32Exception(code, #api _D(, CURRENT_LOCATION))
 
-                     static inline void   ThrowLastError          (               const char* operation = nullptr _DEBUG_ARGS_DECL) { DWORD last_error = GetLastError(); throw Win32Exception(last_error, operation _DEBUG_ARGS_FORWARD); }
-                     static inline void   CheckLastError          (               const char* operation = nullptr _DEBUG_ARGS_DECL) { DWORD last_error = GetLastError(); if (last_error) throw Win32Exception(last_error, operation _DEBUG_ARGS_FORWARD); }
-template<typename T> static inline T      CheckLastError          (T&&    result, const char* operation = nullptr _DEBUG_ARGS_DECL) {                                     CheckLastError(           DEBUG_ARGS_FORWARD); return std::move(result); }
-template<typename T> static inline T      ThrowLastErrorIfZero    (T&&    result, const char* operation = nullptr _DEBUG_ARGS_DECL) { if (result == 0)                    ThrowLastError(operation _DEBUG_ARGS_FORWARD); return std::move(result); }
-template<typename T> static inline T      ThrowLastErrorIfNonZero (T&&    result, const char* operation = nullptr _DEBUG_ARGS_DECL) { if (result != 0)                    ThrowLastError(operation _DEBUG_ARGS_FORWARD); return std::move(result); }
-template<typename T> static inline T      ThrowLastErrorIfNegative(T&&    result, const char* operation = nullptr _DEBUG_ARGS_DECL) { if (result < 0)                     ThrowLastError(operation _DEBUG_ARGS_FORWARD); return std::move(result); }
-template<typename T> static inline T      ThrowLastErrorIfPositive(T&&    result, const char* operation = nullptr _DEBUG_ARGS_DECL) { if (result > 0)                     ThrowLastError(operation _DEBUG_ARGS_FORWARD); return std::move(result); }
-template<typename T> static inline T      ThrowLastErrorIfNull    (T&&    result, const char* operation = nullptr _DEBUG_ARGS_DECL) { if (result == nullptr)              ThrowLastError(operation _DEBUG_ARGS_FORWARD); return std::move(result); }
-template<typename T> static inline T      ThrowLastErrorIfNonNull (T&&    result, const char* operation = nullptr _DEBUG_ARGS_DECL) { if (result != nullptr)              ThrowLastError(operation _DEBUG_ARGS_FORWARD); return std::move(result); }
-                     static inline BOOL   ThrowLastErrorIfFalse   (BOOL   result, const char* operation = nullptr _DEBUG_ARGS_DECL) { if (!result)                        ThrowLastError(operation _DEBUG_ARGS_FORWARD); return result; }
-                     static inline BOOL   ThrowLastErrorIfTrue    (BOOL   result, const char* operation = nullptr _DEBUG_ARGS_DECL) { if (result)                         ThrowLastError(operation _DEBUG_ARGS_FORWARD); return result; }
-                     static inline HANDLE ThrowLastErrorIfInvalid (HANDLE result, const char* operation = nullptr _DEBUG_ARGS_DECL) { if (result == INVALID_HANDLE_VALUE) ThrowLastError(operation _DEBUG_ARGS_FORWARD); return result; }
-                     static inline DWORD  CheckError              (DWORD  result, const char* operation = nullptr _DEBUG_ARGS_DECL) { if (result != ERROR_SUCCESS) throw Win32Exception(result, operation _DEBUG_ARGS_FORWARD); return result; }
+                     static inline void   ThrowLastError          (               const char* operation _D(, LOCATION_DECL)) { DWORD e = GetLastError();           throw Win32Exception(e,      operation _D(, LOCATION_VAR)); }
+                     static inline void   CheckLastError          (               const char* operation _D(, LOCATION_DECL)) { DWORD e = GetLastError(); if (e)    throw Win32Exception(e,      operation _D(, LOCATION_VAR)); }
+template<typename T> static inline T      CheckLastError          (T&&    result, const char* operation _D(, LOCATION_DECL)) {                                     CheckLastError(                        _D(  LOCATION_VAR)); return std::move(result); }
+template<typename T> static inline T      ThrowLastErrorIfZero    (T&&    result, const char* operation _D(, LOCATION_DECL)) { if (result == 0)                    ThrowLastError(              operation _D(, LOCATION_VAR)); return std::move(result); }
+template<typename T> static inline T      ThrowLastErrorIfNonZero (T&&    result, const char* operation _D(, LOCATION_DECL)) { if (result != 0)                    ThrowLastError(              operation _D(, LOCATION_VAR)); return std::move(result); }
+template<typename T> static inline T      ThrowLastErrorIfNegative(T&&    result, const char* operation _D(, LOCATION_DECL)) { if (result < 0)                     ThrowLastError(              operation _D(, LOCATION_VAR)); return std::move(result); }
+template<typename T> static inline T      ThrowLastErrorIfPositive(T&&    result, const char* operation _D(, LOCATION_DECL)) { if (result > 0)                     ThrowLastError(              operation _D(, LOCATION_VAR)); return std::move(result); }
+template<typename T> static inline T      ThrowLastErrorIfNull    (T&&    result, const char* operation _D(, LOCATION_DECL)) { if (result == nullptr)              ThrowLastError(              operation _D(, LOCATION_VAR)); return std::move(result); }
+template<typename T> static inline T      ThrowLastErrorIfNonNull (T&&    result, const char* operation _D(, LOCATION_DECL)) { if (result != nullptr)              ThrowLastError(              operation _D(, LOCATION_VAR)); return std::move(result); }
+                     static inline BOOL   ThrowLastErrorIfFalse   (BOOL   result, const char* operation _D(, LOCATION_DECL)) { if (!result)                        ThrowLastError(              operation _D(, LOCATION_VAR)); return result; }
+                     static inline BOOL   ThrowLastErrorIfTrue    (BOOL   result, const char* operation _D(, LOCATION_DECL)) { if (result)                         ThrowLastError(              operation _D(, LOCATION_VAR)); return result; }
+                     static inline HANDLE ThrowLastErrorIfInvalid (HANDLE result, const char* operation _D(, LOCATION_DECL)) { if (result == INVALID_HANDLE_VALUE) ThrowLastError(              operation _D(, LOCATION_VAR)); return result; }
+                     static inline DWORD  CheckError              (DWORD  result, const char* operation _D(, LOCATION_DECL)) { if (result != ERROR_SUCCESS)        throw Win32Exception(result, operation _D(, LOCATION_VAR)); return result; }
 
-#define WIN_CHECK_IF(predicate, api, args) ThrowLastErrorIf##predicate(api args, #api _DEBUG_ARGS_CALL)
-#define WIN_CHECK_IF_ZERO(api, args)       ThrowLastErrorIfZero       (api args, #api _DEBUG_ARGS_CALL)
-#define WIN_CHECK_IF_NONZERO(api, args)    ThrowLastErrorIfNonZero    (api args, #api _DEBUG_ARGS_CALL)
-#define WIN_CHECK_IF_NEGATIVE(api, args)   ThrowLastErrorIfNegative   (api args, #api _DEBUG_ARGS_CALL)
-#define WIN_CHECK_IF_POSITIVE(api, args)   ThrowLastErrorIfPositive   (api args, #api _DEBUG_ARGS_CALL)
-#define WIN_CHECK_IF_NULL(api, args)       ThrowLastErrorIfNull       (api args, #api _DEBUG_ARGS_CALL)
-#define WIN_CHECK_IF_NONNULL(api, args)    ThrowLastErrorIfNonNull    (api args, #api _DEBUG_ARGS_CALL)
-#define WIN_CHECK_IF_FALSE(api, args)      ThrowLastErrorIfFalse      (api args, #api _DEBUG_ARGS_CALL)
-#define WIN_CHECK_IF_TRUE(api, args)       ThrowLastErrorIfTrue       (api args, #api _DEBUG_ARGS_CALL)
-#define WIN_CHECK_IF_INVALID(api, args)    ThrowLastErrorIfInvalid    (api args, #api _DEBUG_ARGS_CALL)
-#define WIN_CHECK_ALWAYS(api, args)        CheckLastError             (api args, #api _DEBUG_ARGS_CALL)
-#define WIN_CHECK_RESULT(api, args)        CheckError                 (api args, #api _DEBUG_ARGS_CALL)
+#define WIN_CHECK_IF(predicate, api, args) ThrowLastErrorIf##predicate(api args, #api _D(, CURRENT_LOCATION))
+#define WIN_CHECK_IF_ZERO(api, args)       ThrowLastErrorIfZero       (api args, #api _D(, CURRENT_LOCATION))
+#define WIN_CHECK_IF_NONZERO(api, args)    ThrowLastErrorIfNonZero    (api args, #api _D(, CURRENT_LOCATION))
+#define WIN_CHECK_IF_NEGATIVE(api, args)   ThrowLastErrorIfNegative   (api args, #api _D(, CURRENT_LOCATION))
+#define WIN_CHECK_IF_POSITIVE(api, args)   ThrowLastErrorIfPositive   (api args, #api _D(, CURRENT_LOCATION))
+#define WIN_CHECK_IF_NULL(api, args)       ThrowLastErrorIfNull       (api args, #api _D(, CURRENT_LOCATION))
+#define WIN_CHECK_IF_NONNULL(api, args)    ThrowLastErrorIfNonNull    (api args, #api _D(, CURRENT_LOCATION))
+#define WIN_CHECK_IF_FALSE(api, args)      ThrowLastErrorIfFalse      (api args, #api _D(, CURRENT_LOCATION))
+#define WIN_CHECK_IF_TRUE(api, args)       ThrowLastErrorIfTrue       (api args, #api _D(, CURRENT_LOCATION))
+#define WIN_CHECK_IF_INVALID(api, args)    ThrowLastErrorIfInvalid    (api args, #api _D(, CURRENT_LOCATION))
+#define WIN_CHECK_ALWAYS(api, args)        CheckLastError             (api args, #api _D(, CURRENT_LOCATION))
+#define WIN_CHECK_RESULT(api, args)        CheckError                 (api args, #api _D(, CURRENT_LOCATION))
 
 #define PrintError(operation, error) LOG(ERROR) << #operation " failed: " << Error(error)
 #define PrintLastError(operation)   PLOG(ERROR) << #operation " failed: " << LastError

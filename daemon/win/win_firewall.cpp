@@ -65,7 +65,7 @@ void FWEngine::InstallProvider()
 	}
 	catch (const Win32Exception& e)
 	{
-		if (e.code() != FWP_E_PROVIDER_NOT_FOUND)
+		if (e.value() != FWP_E_PROVIDER_NOT_FOUND)
 			throw;
 		WIN_CHECK_RESULT(FwpmProviderAdd, (_handle, &g_wfp_provider, NULL));
 	}
@@ -78,7 +78,7 @@ void FWEngine::InstallProvider()
 	}
 	catch (const Win32Exception& e)
 	{
-		if (e.code() != FWP_E_SUBLAYER_NOT_FOUND)
+		if (e.value() != FWP_E_SUBLAYER_NOT_FOUND)
 			throw;
 		WIN_CHECK_RESULT(FwpmSubLayerAdd, (_handle, &g_wfp_sublayer, NULL));
 	}
@@ -87,9 +87,9 @@ void FWEngine::InstallProvider()
 void FWEngine::UninstallProvider()
 {
 	try { FwpmSubLayerDeleteByKey(_handle, &g_wfp_sublayer.subLayerKey); }
-	catch (const Win32Exception& e) { if (e.code() != FWP_E_SUBLAYER_NOT_FOUND) throw; }
+	catch (const Win32Exception& e) { if (e.value() != FWP_E_SUBLAYER_NOT_FOUND) throw; }
 	try { FwpmProviderDeleteByKey(_handle, &g_wfp_provider.providerKey); }
-	catch (const Win32Exception& e) { if (e.code() != FWP_E_PROVIDER_NOT_FOUND) throw; }
+	catch (const Win32Exception& e) { if (e.value() != FWP_E_PROVIDER_NOT_FOUND) throw; }
 }
 
 FWTransaction::FWTransaction(FWEngine& engine)
