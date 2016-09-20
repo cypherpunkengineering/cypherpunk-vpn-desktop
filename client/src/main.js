@@ -1,4 +1,5 @@
-const { app, dialog, BrowserWindow, Tray, Menu, ipcMain: ipc } = require('electron');
+const electron = require('electron');
+const { app, dialog, BrowserWindow, Tray, Menu, ipcMain: ipc } = electron;
 let daemon = require('./daemon.js');
 
 let exiting = false;
@@ -83,11 +84,12 @@ timeoutPromise(Promise.all(preinitPromises), 2000).then(() => {
 });
 
 function createTray() {
+  var dpi = electron.screen.getPrimaryDisplay().scaleFactor >= 2 ? '@2x' : '';
   tray = new Tray(`${__dirname}/assets/img/tray_win.png`);
   function flag(code, name, checked) {
     return {
       label: name,
-      icon: `${__dirname}/assets/img/flags/png32/${code}.png`,
+      icon: `${__dirname}/assets/img/flags/${code}${dpi}.png`,
       type: 'checkbox',
       checked: checked
     };
@@ -97,7 +99,7 @@ function createTray() {
     { type: 'separator' },
     {
       label: 'Location: USA East',
-      icon: `${__dirname}/assets/img/flags/png32/us.png`,
+      icon: `${__dirname}/assets/img/flags/us${dpi}.png`,
       submenu: [
         flag('fr', 'France'),
         flag('hk', 'Hong Kong'),
