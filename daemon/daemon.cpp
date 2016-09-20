@@ -297,6 +297,8 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& settings)
 		case jsonrpc::Value::Type::STRING:
 			config[e.first] = e.second.AsString();
 			break;
+		default:
+			break;
 		}
 	}
 
