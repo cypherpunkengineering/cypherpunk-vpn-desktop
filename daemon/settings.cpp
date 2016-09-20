@@ -1,5 +1,6 @@
 #include "config.h"
 #include "settings.h"
+#include "daemon.h"
 #include "path.h"
 #include "logger.h"
 
@@ -49,11 +50,16 @@ Settings::Settings()
 
 }
 
+JsonValue& Settings::operator[](const std::string& name)
+{
+	return JsonObject::at(name);
+}
+
 void Settings::ReadFromDisk()
 {
 	try
 	{
-		_map = ReadJsonFile(GetPath(SettingsFile));
+		map() = ReadJsonFile(GetPath(SettingsFile));
 	}
 	catch (const std::system_error& e)
 	{
@@ -67,10 +73,10 @@ void Settings::ReadFromDisk()
 
 void Settings::WriteToDisk()
 {
-	WriteJsonFile(GetPath(SettingsFile), _map);
+	WriteJsonFile(GetPath(SettingsFile), map());
 }
 
-void Settings::OnChanged() noexcept
+void Settings::OnChanged(const std::vector<std::string>& params) noexcept
 {
 	try
 	{
@@ -80,4 +86,5 @@ void Settings::OnChanged() noexcept
 	{
 		LOG(WARNING) << "Failed to write settings: " << e;
 	}
+	if (g_daemon) g_daemon->OnSettingsChanged(params);
 }

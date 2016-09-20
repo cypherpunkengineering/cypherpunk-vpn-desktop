@@ -46,9 +46,11 @@ int CypherDaemon::Run()
 		bool first = _connections.empty();
 		_connections.insert(c);
 		if (first) OnFirstClientConnected();
+		OnClientConnected(c);
 	});
 	_ws_server.set_close_handler([this](Connection c) {
 		_connections.erase(c);
+		OnClientDisconnected(c);
 		if (_connections.empty()) OnLastClientDisconnected();
 	});
 
@@ -71,10 +73,10 @@ int CypherDaemon::Run()
 	_rpc_server.RegisterFormatHandler(_json_handler);
 	{
 		auto& d = _rpc_server.GetDispatcher();
-		d.AddMethod("requestState", &CypherDaemon::RPC_requestState, *this);
+		d.AddMethod("get", &CypherDaemon::RPC_get, *this);
 		d.AddMethod("connect", &CypherDaemon::RPC_connect, *this);
 		d.AddMethod("disconnect", &CypherDaemon::RPC_disconnect, *this);
-		d.AddMethod("setFirewall", &CypherDaemon::RPC_setFirewall, *this);
+		d.AddMethod("applySettings", &CypherDaemon::RPC_applySettings, *this);
 		d.AddMethod("ping", [](){});
 	}
 
@@ -103,6 +105,16 @@ void CypherDaemon::SendToAllClients(const std::shared_ptr<jsonrpc::FormattedData
 }
 
 void CypherDaemon::OnFirstClientConnected()
+{
+
+}
+
+void CypherDaemon::OnClientConnected(Connection c)
+{
+
+}
+
+void CypherDaemon::OnClientDisconnected(Connection c)
 {
 
 }
@@ -162,25 +174,85 @@ static inline const char* GetStateString(CypherDaemon::State state)
 	return "";
 }
 
-void CypherDaemon::OnStateChanged()
+static inline JsonObject FilterJsonObject(const JsonObject& obj, const std::vector<std::string>& keys)
 {
-	jsonrpc::Value::Struct params;
-	params["state"] = GetStateString(_state);
-	if (_state == CONNECTED)
+	JsonObject result;
+	for (auto& s : keys)
 	{
-		params["localIP"] = _localIP;
-		params["remoteIP"] = _remoteIP;
-		params["bytesReceived"] = _bytesReceived;
-		params["bytesSent"] = _bytesSent;
+		auto it = obj.find(s);
+		if (it != obj.end())
+			result.insert(std::make_pair(s, it->second));
 	}
-	// TODO: Only call if firewall-related state has changed
-	ApplyFirewallSettings();
-	SendToAllClients(_rpc_client.BuildNotificationData("state", params));
+	return std::move(result);
 }
 
-void CypherDaemon::RPC_requestState()
+static inline JsonObject FilterJsonObject(JsonObject&& obj, const std::vector<std::string>& keys)
 {
-	OnStateChanged();
+	JsonObject result;
+	for (auto& s : keys)
+	{
+		auto it = obj.find(s);
+		if (it != obj.end())
+			result.insert(std::make_pair(s, std::move(it->second)));
+	}
+	return std::move(result);
+}
+
+JsonObject CypherDaemon::MakeStateObject()
+{
+	JsonObject state;
+	state["state"] = GetStateString(_state);
+	if (_state == CONNECTED)
+	{
+		state["localIP"] = _localIP;
+		state["remoteIP"] = _remoteIP;
+		state["bytesReceived"] = _bytesReceived;
+		state["bytesSent"] = _bytesSent;
+	}
+	return std::move(state);
+}
+
+JsonObject CypherDaemon::MakeConfigObject()
+{
+	JsonObject config;
+	config["servers"] = std::vector<JsonObject> {
+		{ { "remote", "208.111.52.1 7133" }, { "country", "jp" }, { "name", "Tokyo 1, Japan" } },
+		{ { "remote", "208.111.52.2 7133" }, { "country", "jp" }, { "name", "Tokyo 2, Japan" } },
+		{ { "remote", "199.68.252.203 7133" }, { "country", "us" }, { "name", "Honolulu, HI, USA" } },
+	};
+	return std::move(config);
+}
+
+void CypherDaemon::OnStateChanged()
+{
+	// TODO: Only call if firewall-related state has changed
+	ApplyFirewallSettings();
+	SendToAllClients(_rpc_client.BuildNotificationData("state", MakeStateObject()));
+}
+
+void CypherDaemon::OnSettingsChanged(const std::vector<std::string>& names)
+{
+
+}
+
+JsonObject CypherDaemon::RPC_get(const std::string& type)
+{
+	if (type == "state")
+		return MakeStateObject();
+	if (type == "settings")
+		return g_settings.map();
+	if (type == "config")
+		return MakeConfigObject();
+	throw jsonrpc::InvalidParametersFault();
+}
+
+void CypherDaemon::RPC_applySettings(const JsonObject& settings)
+{
+	std::vector<std::string> changed;
+	for (auto& p : settings)
+	{
+		g_settings[p.first] = JsonValue(p.second);
+	}
 }
 
 void WriteOpenVPNProfile(std::ostream& out, const JsonObject& settings)
@@ -193,13 +265,13 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& settings)
 		{ "dev", "tun" },
 		{ "proto", "udp" },
 		{ "tun-mtu", "1400" },
-		//{ "fragment", "1300" },
+		{ "fragment", "1300" },
 		{ "mssfix", "1200" },
 		{ "ping", "10" },
 		{ "ping-exit", "60" },
 		{ "resolv-retry", "infinite" },
 		{ "cipher", "AES-128-CBC" },
-		//{ "redirect-gateway", "def1" },
+		{ "redirect-gateway", "def1" },
 		{ "route-delay", "0" },
 	};
 
@@ -265,10 +337,10 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& settings)
 	}
 }
 
-bool CypherDaemon::RPC_connect(const JsonObject& params)
+bool CypherDaemon::RPC_connect()
 {
 	// FIXME: Shouldn't simply read raw profile parameters from the params
-	const JsonObject& settings = params;
+	const JsonObject& settings = g_settings.map();
 
 	if (_state == CONNECTED)
 	{
@@ -450,6 +522,7 @@ static inline const T& GetMember(const jsonrpc::Value::Struct& obj, const char* 
 	}
 }
 
+/*
 bool CypherDaemon::RPC_setFirewall(const jsonrpc::Value::Struct& params)
 {
 	FirewallFlags flags = Nothing;
@@ -466,3 +539,4 @@ bool CypherDaemon::RPC_setFirewall(const jsonrpc::Value::Struct& params)
 
 	return true;
 }
+*/

@@ -67,6 +67,7 @@ public:
 	virtual void RequestShutdown();
 
 	void OnOpenVPNProcessExited(OpenVPNProcess* process);
+	void OnSettingsChanged(const std::vector<std::string>& names);
 
 protected:
 	typedef websocketpp::connection_hdl Connection;
@@ -75,16 +76,24 @@ protected:
 	void SendToClient(Connection con, const std::shared_ptr<jsonrpc::FormattedData>& data);
 	void SendToAllClients(const std::shared_ptr<jsonrpc::FormattedData>& data);
 	void OnFirstClientConnected();
+	void OnClientConnected(Connection c);
+	void OnClientDisconnected(Connection c);
 	void OnLastClientDisconnected();
 	void OnReceiveMessage(Connection con, WebSocketServer::message_ptr msg);
 	void OnStateChanged();
 
-	void RPC_requestState();
-	// Instruct the daemon to connect to the specified server. If already connected,
-	// this instructs the daemon to seamlessly switch over to a different server.
-	bool RPC_connect(const jsonrpc::Value::Struct& params);
+	JsonObject MakeStateObject();
+	JsonObject MakeConfigObject();
+
+	// Get one of the datasets (state, settings or config).
+	JsonObject RPC_get(const std::string& type);
+	// Apply one or more settings.
+	void RPC_applySettings(const JsonObject& settings);
+	// Connect to the currently configured server. Returns false if already
+	// connected and no changes are required.
+	bool RPC_connect();
+	// Disconnect from the current server (or cancel a connection attempt).
 	void RPC_disconnect();
-	bool RPC_setFirewall(const jsonrpc::Value::Struct& params);
 
 	WebSocketServer _ws_server;
 	ConnectionList _connections;
