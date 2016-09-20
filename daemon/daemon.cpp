@@ -121,7 +121,8 @@ void CypherDaemon::OnReceiveMessage(Connection connection, WebSocketServer::mess
 	catch (const jsonrpc::Fault&)
 	{
 		auto result = _rpc_server.HandleRequest(msg->get_payload());
-		SendToClient(connection, result);
+		if (result->GetSize() > 0)
+			SendToClient(connection, result);
 	}
 }
 
