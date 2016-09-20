@@ -21,12 +21,12 @@ public:
 		switch (level)
 		{
 		case websocketpp::log::alevel::fail:
-			return LEVEL_WARNING;
+			return LogLevel::WARNING;
 		case websocketpp::log::alevel::connect:
 		case websocketpp::log::alevel::disconnect:
-			return LEVEL_INFO;
+			return LogLevel::INFO;
 		default:
-			return LEVEL_VERBOSE;
+			return LogLevel::VERBOSE;
 		}
 	}
 	static LogLevel GetLogLevel(level level, websocketpp::log::elevel* dummy)
@@ -34,15 +34,15 @@ public:
 		switch (level)
 		{
 		case websocketpp::log::elevel::fatal:
-			return LEVEL_ERROR;
+			return LogLevel::ERROR;
 		case websocketpp::log::elevel::rerror:
 		case websocketpp::log::elevel::warn:
-			return LEVEL_WARNING;
+			return LogLevel::WARNING;
 		case websocketpp::log::elevel::info:
 		case websocketpp::log::elevel::library:
-			return LEVEL_INFO;
+			return LogLevel::INFO;
 		default:
-			return LEVEL_VERBOSE;
+			return LogLevel::VERBOSE;
 		}
 	}
 

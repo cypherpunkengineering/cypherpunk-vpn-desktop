@@ -10,13 +10,15 @@
 #include <mutex>
 #endif
 
-enum LogLevel
+
+
+enum class LogLevel
 {
-	LEVEL_CRITICAL,
-	LEVEL_ERROR,
-	LEVEL_WARNING,
-	LEVEL_INFO,
-	LEVEL_VERBOSE,
+	CRITICAL,
+	ERROR,
+	WARNING,
+	INFO,
+	VERBOSE,
 };
 typedef unsigned int LogLevelMask;
 
@@ -25,16 +27,9 @@ extern class Logger* g_logger;
 #define LEVEL_ALL ((LogLevelMask)0xFFFFFFFU)
 
 #define STATIC_LOG_LEVELS LEVEL_ALL
-#define STATIC_LOG_ENABLED(level) (STATIC_LOG_LEVELS & (1 << (level)))
+#define STATIC_LOG_ENABLED(level) (STATIC_LOG_LEVELS & (1 << (int)(level)))
 
-#define LOG_ENABLED(level) (STATIC_LOG_ENABLED(level) && (Logger::levels & (1 << (level))))
-
-#define Log( level, fmt, ...) g_logger->Write(level, fmt,##__VA_ARGS__)
-#define LogCritical(fmt, ...) g_logger->Write(LEVEL_CRITICAL, fmt,##__VA_ARGS__)
-#define LogError(   fmt, ...) g_logger->Write(LEVEL_ERROR,    fmt,##__VA_ARGS__)
-#define LogWarning( fmt, ...) g_logger->Write(LEVEL_WARNING,  fmt,##__VA_ARGS__)
-#define LogInfo(    fmt, ...) g_logger->Write(LEVEL_INFO,     fmt,##__VA_ARGS__)
-#define LogVerbose( fmt, ...) g_logger->Write(LEVEL_VERBOSE,  fmt,##__VA_ARGS__)
+#define LOG_ENABLED(level) (STATIC_LOG_ENABLED(level) && (Logger::levels & (1 << (int)(level))))
 
 #ifdef _DEBUG
 #define LOG_WITH_LOCATION (Location(__func__, __FILE__, __LINE__))
@@ -42,12 +37,19 @@ extern class Logger* g_logger;
 #define LOG_WITH_LOCATION
 #endif
 
+#define Log( level, fmt, ...) g_logger->Write(level, fmt,##__VA_ARGS__)
+#define LogCritical(fmt, ...) g_logger->Write(LogLevel::CRITICAL, fmt,##__VA_ARGS__)
+#define LogError(   fmt, ...) g_logger->Write(LogLevel::ERROR,    fmt,##__VA_ARGS__)
+#define LogWarning( fmt, ...) g_logger->Write(LogLevel::WARNING,  fmt,##__VA_ARGS__)
+#define LogInfo(    fmt, ...) g_logger->Write(LogLevel::INFO,     fmt,##__VA_ARGS__)
+#define LogVerbose( fmt, ...) g_logger->Write(LogLevel::VERBOSE,  fmt,##__VA_ARGS__)
+
 #define LOG_EX(classname, level, condition, ...) (!(LOG_ENABLED(level) && (condition))) ? (void)0 : Voidify() | classname(__VA_ARGS__)(level) LOG_WITH_LOCATION
 
-#define LOG_IF(severity, condition)  LOG_EX(PrefixLogWriter<LogWriter>, LEVEL_##severity, condition)
-#define LOG(severity)                LOG_EX(PrefixLogWriter<LogWriter>, LEVEL_##severity, true)
-#define PLOG_IF(severity, condition) LOG_EX(PrefixLogWriter<ErrorLogWriter>, LEVEL_##severity, condition, Error::Get())
-#define PLOG(severity)               LOG_EX(PrefixLogWriter<ErrorLogWriter>, LEVEL_##severity, true, Error::Get())
+#define LOG_IF(severity, condition)  LOG_EX(PrefixLogWriter<LogWriter>, LogLevel::severity, condition)
+#define LOG(severity)                LOG_EX(PrefixLogWriter<LogWriter>, LogLevel::severity, true)
+#define PLOG_IF(severity, condition) LOG_EX(PrefixLogWriter<ErrorLogWriter>, LogLevel::severity, condition, Error::Get())
+#define PLOG(severity)               LOG_EX(PrefixLogWriter<ErrorLogWriter>, LogLevel::severity, true, Error::Get())
 
 
 struct Voidify
@@ -167,21 +169,21 @@ public:
 	static Logger* Pop();
 	static inline void Enable(LogLevel level)
 	{
-		levels |= (1 << level);
+		levels |= (1 << (int)level);
 	}
 	static inline void Disable(LogLevel level)
 	{
-		levels &= ~(1 << level);
+		levels &= ~(1 << (int)level);
 	}
 public:
 	static constexpr const char* GetLevelString(LogLevel level)
 	{
 		return
-			(level == LEVEL_CRITICAL) ? "CRITICAL" :
-			(level == LEVEL_ERROR) ? "ERROR" :
-			(level == LEVEL_WARNING) ? "WARNING" :
-			(level == LEVEL_INFO) ? "INFO" :
-			(level == LEVEL_VERBOSE) ? "VERBOSE" :
+			(level == LogLevel::CRITICAL) ? "CRITICAL" :
+			(level == LogLevel::ERROR) ? "ERROR" :
+			(level == LogLevel::WARNING) ? "WARNING" :
+			(level == LogLevel::INFO) ? "INFO" :
+			(level == LogLevel::VERBOSE) ? "VERBOSE" :
 			"";
 	}
 };
