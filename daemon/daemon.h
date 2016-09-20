@@ -85,6 +85,7 @@ protected:
 
 	JsonObject MakeStateObject();
 	JsonObject MakeConfigObject();
+	JsonObject MakeAccountObject();
 
 	// Get one of the datasets (state, settings or config).
 	JsonObject RPC_get(const std::string& type);
