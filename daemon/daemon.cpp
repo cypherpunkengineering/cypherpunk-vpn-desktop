@@ -419,7 +419,7 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& settings)
 		{ "proto", g_settings.protocol() },
 		{ "remote", g_settings.remoteIP() + " " + std::to_string(g_settings.remotePort()) },
 		{ "tun-mtu", std::to_string(mtu) },
-		{ "fragment", std::to_string(mtu - 100) },
+		//{ "fragment", std::to_string(mtu - 100) },
 		{ "mssfix", std::to_string(mtu - 200) },
 		{ "ping", "10" },
 		{ "ping-exit", "60" },
