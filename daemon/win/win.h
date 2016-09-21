@@ -143,6 +143,7 @@ template<> struct serialization::json_converter<JsonValue, GUID> { static void c
 struct win_tap_adapter
 {
 	std::string guid;
+	uint64_t luid;
 };
 
 std::vector<win_tap_adapter> win_get_tap_adapters();

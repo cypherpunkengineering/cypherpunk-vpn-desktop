@@ -233,6 +233,18 @@ struct AllowAppFilter : public FWConditionFilter<1, FWP_ACTION_PERMIT, DIRECTION
 };
 
 template<FWDirection DIRECTION, FWIPVersion VERSION>
+struct AllowInterfaceFilter : public FWConditionFilter<1, FWP_ACTION_PERMIT, DIRECTION, VERSION>
+{
+	UINT64 _luid;
+	AllowInterfaceFilter(uint64_t interface_luid)
+	{
+		_luid = interface_luid;
+		SetCondition<FWP_UINT64>(0, FWPM_CONDITION_IP_LOCAL_INTERFACE, FWP_MATCH_EQUAL, &_luid);
+		weight.uint8 = 9;
+	}
+};
+
+template<FWDirection DIRECTION, FWIPVersion VERSION>
 struct BlockAllFilter : public FWBasicFilter<FWP_ACTION_BLOCK, DIRECTION, VERSION>
 {
 	BlockAllFilter()

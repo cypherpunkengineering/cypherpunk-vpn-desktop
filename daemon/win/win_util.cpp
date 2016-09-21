@@ -73,6 +73,7 @@ std::vector<win_tap_adapter> win_get_tap_adapters()
 					{
 						win_tap_adapter adapter;
 						adapter.guid = address->AdapterName;
+						adapter.luid = address->Luid.Value;
 						result.push_back(std::move(adapter));
 					}
 				}

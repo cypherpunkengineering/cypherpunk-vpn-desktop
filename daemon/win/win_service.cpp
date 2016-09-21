@@ -180,6 +180,19 @@ public:
 			LOG(CRITICAL) << "There are no installed TAP adapters on this machine!";
 			return -1;
 		}
+		// TEMPORARY WORKAROUND: we don't remember what rules we might have applied
+		// in an earlier session, so delete all rules.
+		try
+		{
+			FWEngine fw;
+			FWTransaction tx(fw);
+			fw.RemoveAllFilters();
+			tx.Commit();
+		}
+		catch (const Win32Exception& e)
+		{
+			LOG(ERROR) << "Failed to wipe firewall rules on startup: " << e;
+		}
 		return CypherDaemon::Run();
 	}
 	virtual OpenVPNProcess* CreateOpenVPNProcess(asio::io_service& io) override
@@ -226,8 +239,9 @@ public:
 		last_lan_filter = allow_lan_ipv6_multicast,
 	};
 	GUID _filters[max_filter];
+	std::map<uint64_t, GUID> _tap_filters;
 
-	virtual bool ApplyFirewallSettings() override
+	virtual void ApplyFirewallSettings() override
 	{
 		FWEngine fw;
 		FWTransaction tx(fw);
@@ -261,7 +275,9 @@ public:
 			break;
 		}
 
-		auto mode = g_settings.killswitchMode();
+		auto adapters = win_get_tap_adapters();
+
+		auto mode = g_settings.firewall();
 		if (mode == "on" || is_connected && mode == "auto")
 		{
 			try
@@ -281,6 +297,27 @@ public:
 					for (int i = first_lan_filter; i <= last_lan_filter; i++)
 						TURN_OFF(i);
 				}
+
+				std::set<uint64_t> tap_filters_to_remove;
+				for (auto& p : _tap_filters)
+					tap_filters_to_remove.insert(p.first);
+				for (auto& adapter : adapters)
+				{
+					auto it = _tap_filters.find(adapter.luid);
+					if (it != _tap_filters.end())
+						tap_filters_to_remove.erase(it->first);
+					else
+					{
+						_tap_filters.insert(std::pair<uint64_t, GUID>(adapter.luid, fw.AddFilter(AllowInterfaceFilter<Outgoing, IPv4>(adapter.luid))));
+						success++;
+					}
+				}
+				for (auto& luid : tap_filters_to_remove)
+				{
+					fw.RemoveFilter(_tap_filters.at(luid));
+					success++;
+				}
+
 				TURN_ON(allow_client,         AllowAppFilter<Outgoing, IPv4>(GetPath(ClientExecutable)));
 				TURN_ON(allow_daemon,         AllowAppFilter<Outgoing, IPv4>(GetPath(DaemonExecutable)));
 				TURN_ON(allow_openvpn,        AllowAppFilter<Outgoing, IPv4>(GetPath(OpenVPNExecutable)));
@@ -291,22 +328,36 @@ public:
 				TURN_ON(block_ipv6,           BlockAllFilter<Outgoing, IPv4>());
 				TURN_ON(block_ipv6,           BlockAllFilter<Outgoing, IPv6>());
 
-				tx.Commit();
-				return error == 0;
+				if (success) tx.Commit();
+				return;
 			}
 			catch (const Win32Exception& e)
 			{
 				LOG(ERROR) << "Unable to apply firewall rule: " << e;
+				error++;
 			}
 		}
 		// Firewall is either off, or there was an error applying rules
 
 		// We use a transaction but remove in reverse just in case, so the block filters get removed first
+		for (auto& p : _tap_filters)
+		{
+			try { fw.RemoveFilter(p.second); }
+			catch (const Win32Exception& e) { error++; LOG(ERROR) << "Unable to remove firewall rule for adapter" << p.first << ": " << e; }
+		}
+		_tap_filters.clear();
 		for (int i = max_filter - 1; i >= 0; i--)
 			TURN_OFF(i);
 
 		if (success) tx.Commit();
-		return error == 0;
+		if (error)
+		{
+			_io.post([this]() {
+				SendErrorToAllClients("firewall", "Unable to apply firewall rules; the firewall feature has been disabled.");
+				g_settings.firewall("off");
+				g_settings.OnChanged({ "firewall" });
+			});
+		}
 	}
 };
 

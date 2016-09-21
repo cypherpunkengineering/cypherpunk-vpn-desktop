@@ -118,7 +118,7 @@ protected:
 	virtual int GetAvailablePort(int hint);
 	// Get the identifier (for --dev) for an available TAP adapter to use.
 	virtual std::string GetAvailableAdapter(int index) = 0;
-	// Apply the firewall/killswitch mode to the system, returns false if there were any problems
-	virtual bool ApplyFirewallSettings() { return false; }
+	// Apply the firewall/killswitch mode to the system.
+	virtual void ApplyFirewallSettings() {}
 };
 
