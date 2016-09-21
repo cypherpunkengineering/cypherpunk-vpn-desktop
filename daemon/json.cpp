@@ -30,11 +30,9 @@ void WriteJsonFile(const std::string& path, const JsonObject& obj)
 namespace jsonrpc {
 	bool operator ==(const JsonValue& lhs, const JsonValue& rhs)
 	{
-		LOG(INFO) << "i";
 		auto type = lhs.GetType();
 		if (type == rhs.GetType())
 		{
-			LOG(INFO) << "j";
 			switch (type)
 			{
 			case jsonrpc::Value::Type::ARRAY:
@@ -54,7 +52,6 @@ namespace jsonrpc {
 			case jsonrpc::Value::Type::NIL:
 				return true;
 			case jsonrpc::Value::Type::STRING:
-				LOG(INFO) << "k";
 				return lhs.AsString() == rhs.AsString();
 			case jsonrpc::Value::Type::STRUCT:
 				return lhs.AsStruct() == rhs.AsStruct();
