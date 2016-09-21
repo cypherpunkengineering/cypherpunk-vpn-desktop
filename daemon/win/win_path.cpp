@@ -26,6 +26,7 @@ static void SimplifyPathInPlace(std::string& path)
 				if (slash != path.npos)
 				{
 					path.erase(slash, pos + 3 - slash);
+					pos = slash;
 					continue;
 				}
 			}
