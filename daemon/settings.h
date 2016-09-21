@@ -59,7 +59,7 @@ public:
 	namedmember(jsonrpc::Value::Array, certificate, {})
 	namedmember(jsonrpc::Value::Array, privateKey, {})
 
-	namedmember(std::string, killswitchMode, "off")
+	namedmember(std::string, firewall, "off")
 	namedmember(bool, allowLAN, true)
 	namedmember(bool, blockIPv6, true)
 
