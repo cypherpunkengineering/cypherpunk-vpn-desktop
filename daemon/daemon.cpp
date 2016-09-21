@@ -106,6 +106,11 @@ void CypherDaemon::SendToAllClients(const std::shared_ptr<jsonrpc::FormattedData
 		SendToClient(it, data);
 }
 
+void CypherDaemon::SendErrorToAllClients(const std::string& name, const std::string& description)
+{
+	SendToAllClients(_rpc_client.BuildNotificationData("error", name, description));
+}
+
 void CypherDaemon::OnFirstClientConnected()
 {
 

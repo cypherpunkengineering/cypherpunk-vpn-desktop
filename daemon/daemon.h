@@ -76,6 +76,7 @@ protected:
 
 	void SendToClient(Connection con, const std::shared_ptr<jsonrpc::FormattedData>& data);
 	void SendToAllClients(const std::shared_ptr<jsonrpc::FormattedData>& data);
+	void SendErrorToAllClients(const std::string& name, const std::string& description);
 	void OnFirstClientConnected();
 	void OnClientConnected(Connection c);
 	void OnClientDisconnected(Connection c);
