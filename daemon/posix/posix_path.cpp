@@ -69,6 +69,7 @@ std::string ReadFile(const std::string& path)
 		FINALLY({ fclose(f); });
 		fseek(f, 0, SEEK_END);
 		long size = ftell(f);
+		fseek(f, 0, SEEK_SET);
 		result.resize(size);
 		if (size != fread(&result[0], 1, size, f))
 			THROW_POSIXEXCEPTION(EIO, fread);
