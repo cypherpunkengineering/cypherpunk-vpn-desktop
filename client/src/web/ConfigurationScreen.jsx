@@ -36,115 +36,130 @@ class AdvancedSettings extends React.Component  {
   render() {
     return(
       <div>
-      <div className="cp">
-        <div className="ro">
-          <div className="co">Protocol</div>
-          <div className="co">
-          <div className="ui olive button selection dropdown" ref="protocolDropdown">
-            <input type="hidden" name="protocol" />
-            <i className="dropdown icon"></i>
-            <div className="default text">Automatic</div>
-            <div className="menu">
-              <div className="item" data-value="Aautomatic">Automatic</div>
-              <div className="item" data-value="manual">Manual</div>
-            </div>
+      <div class="ui padded grid">
+        <div class="row">
+          <div class="nine wide olive column">
+            Protocol
           </div>
-          </div>
-        </div>
-        <div className="ro">
-          <div className="co">Remote Port</div>
-          <div className="co">
-          <div className="ui olive button selection dropdown" ref="reportportDropdown">
-            <input type="hidden" name="remoteport" />
-            <i className="dropdown icon"></i>
-            <div className="default text">Auto</div>
-            <div className="menu">
-              <div className="item" data-value="auto">Auto</div>
-              <div className="item" data-value="47">47</div>
-              <div className="item" data-value="1723">1723</div>
-            </div>
-          </div>
-          </div>
-        </div>
-        <div className="ro">
-          <div className="co">
-          Local Port
-          <small>Customize the port used to connect to Cypherpunk</small>
-          </div>
-          <div className="co">
-            <div className="ui input"><input type="text"/>
+          <div class="seven wide olive right aligned column">
+            <div className="ui olive button selection dropdown" ref="protocolDropdown">
+              <input type="hidden" name="protocol" />
+              <i className="dropdown icon"></i>
+              <div className="default text">Automatic</div>
+              <div className="menu">
+                <div className="item" data-value="Aautomatic">Automatic</div>
+                <div className="item" data-value="manual">Manual</div>
+              </div>
             </div>
           </div>
         </div>
-        <div className="ro">
-          <div className="co">Firewall
+        <div class="row">
+          <div class="nine wide olive column">
+            Remote Port
+          </div>
+          <div class="seven wide olive right aligned column">
+            <div className="ui olive button selection dropdown" ref="reportportDropdown">
+              <input type="hidden" name="remoteport" />
+              <i className="dropdown icon"></i>
+              <div className="default text">Auto</div>
+              <div className="menu">
+                <div className="item" data-value="auto">Auto</div>
+                <div className="item" data-value="47">47</div>
+                <div className="item" data-value="1723">1723</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="seven wide olive column">
+            Local Port
+            <small>Customize the port used to connect to Cypherpunk</small>
+          </div>
+          <div class="nine wide olive right aligned column">
+            <div className="ui input">
+              <input type="text"/>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="nine wide olive column">
+            Firewall
             <small>Manage all internet connectivity when you are not connected to our network</small>
           </div>
-          <div className="co">
+          <div class="seven wide olive right aligned column">
             <Link to="/firewall"><span id="firewall_text">Automatic</span> <i className="chevron right icon"></i></Link>
           </div>
         </div>
-        <div className="ro">
-          <div className="co">Use small packets
+        <div class="row">
+          <div class="nine wide olive column">
+            Use small packets
             <small>Optimized packet size for improved connectivity to various router and mobile networks</small>
           </div>
-          <div className="co">
+          <div class="seven wide olive right aligned column">
             <div class="ui checkbox">
               <input type="checkbox" name="smallpackets" />
               <label />
             </div>
           </div>
         </div>
-        <div className="ro">
-          <div className="co">Allow local traffic when firewall is on</div>
-          <div className="co">
+        <div class="row">
+          <div class="nine wide olive column">
+            Allow local traffic when firewall is on
+          </div>
+          <div class="seven wide olive right aligned column">
             <div class="ui checkbox">
               <input type="checkbox" name="allowlocaltraffic"/>
               <label />
             </div>
           </div>
         </div>
-        <div className="ro">
-          <div className="co">Request port forwarding
+        <div class="row">
+          <div class="nine wide olive column">
+            Request port forwarding
             <small>Allow incoming connections to your mobile device over an external port</small>
           </div>
-          <div className="co">
+          <div class="seven wide olive right aligned column">
             <div class="ui checkbox">
               <input type="checkbox" name="requestportforwarding" />
               <label />
             </div>
           </div>
         </div>
-        <div className="ro">
-          <div className="co">IPv6 leak protection
+        <div class="row">
+          <div class="nine wide olive column">
+            IPv6 leak protection
             <small>Disable IPv6 while using Cypherpunk</small>
           </div>
-          <div className="co">
+          <div class="seven wide olive right aligned column">
             <div class="ui checkbox">
               <input type="checkbox" name="ipv6leakprotection" />
               <label />
             </div>
           </div>
         </div>
-        <div className="ro">
-          <div className="co">DNS leak protection
+
+        <div class="row">
+          <div class="nine wide olive column">
+            DNS leak protection
             <small>Prevent leaking DNS queries using Cypherpunk</small>
           </div>
-          <div className="co">
+          <div class="seven wide olive right aligned column">
             <div class="ui checkbox">
               <input type="checkbox" name="dnsleakprotection" />
               <label />
             </div>
           </div>
         </div>
-        <div className="ro">
-          <div className="co">Encryption
+        <div class="row">
+          <div class="nine wide olive column">
+            Encryption
             <small>Cipher AES-256 Auth SHA512 Key 4096-bit</small>
           </div>
-          <div className="co">
+          <div class="seven wide olive right aligned column">
             <Link to="/encryption"><span id="encryption_text">Automatic</span> <i className="chevron right icon"></i></Link>
           </div>
         </div>
+
       </div>
       </div>
     );

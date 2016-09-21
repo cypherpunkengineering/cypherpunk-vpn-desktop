@@ -1,7 +1,3 @@
 /*******************************
          Site Overrides
 *******************************/
-
-.ui.tabular {
-  border-bottom: 3px solid #3465a2 !important;
-}
