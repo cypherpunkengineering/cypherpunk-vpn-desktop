@@ -371,7 +371,12 @@ void CypherDaemon::OnSettingsChanged(const std::vector<std::string>& names)
 {
 	std::map<std::string, JsonValue> changed;
 	for (auto& name : names)
+	{
+		if (name == "firewall")
+			ApplyFirewallSettings();
 		changed[name] = JsonValue(g_settings[name]);
+	}
+
 	SendToAllClients(_rpc_client.BuildNotificationData("settings", changed));
 }
 
