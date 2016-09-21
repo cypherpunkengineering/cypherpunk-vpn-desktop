@@ -39,7 +39,7 @@ std::string GetPath(PredefinedFile file)
 	case OpenVPNExecutable: return g_is_installed ? "/usr/local/bin/cypherpunkvpn-openvpn" : GetPath(BaseDir, "daemon", "third_party", "openvpn_osx", "openvpn"); // Exists in /usr/local/bin, callable anywhere
 	case SettingsFile: return GetPath(SettingsDir, "settings.json");
 	default:
-		//LOG(ERROR) << "Unknown file";
+		LOG(ERROR) << "Unknown file";
 		return std::string();
 	}
 }
