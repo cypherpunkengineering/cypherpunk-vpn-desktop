@@ -155,72 +155,120 @@ class GeneralSettings extends React.Component  {
   render() {
     return(
       <div>
-        <div className="cp">
-          <div className="ro">
-            <div className="co">Monthly Premium</div>
-            <div className="co">Renews On 02/02/2016</div>
+
+
+        <div class="ui equal width center aligned padded grid">
+          <div class="row">
+            <div class="olive column">
+              <i class="spy icon"></i> Wiz
+            </div>
+          </div>
+          <div class="row">
+            <div class="olive column">
+              Monthly Premium
+            </div>
+            <div class="olive column">
+              <small>Renews On 02/02/2016</small>
+            </div>
           </div>
         </div>
-        <div className="ui centered padded grid">
-          <div className="row">
-          <button class="ui inverted button">Upgrade</button>
+
+        <div class="ui equal width center aligned padded grid">
+          <div class="row">
+            <div class="column">
+              <button class="ui inverted button">Upgrade</button>
+            </div>
           </div>
         </div>
-        <h3 className="ui yellow header">ACCOUNT DETAILS</h3>
-        <div className="cp">
-          <div className="ro">
-            <div className="co">Email</div>
-            <div className="co">wiz@cypherpunk.com <i class="chevron right icon"></i></div>
+
+        <div class="ui padded grid">
+          <div class="row">
+            <div class="sixteen wide column">
+              <h3 className="ui yellow header">ACCOUNT DETAILS</h3>
+            </div>
           </div>
-          <div className="ro">
-            <div className="co">Password</div>
-            <div className="co"><i class="chevron right icon"></i></div>
+          <div class="row">
+            <div class="seven wide olive column">
+              Email
+            </div>
+            <div class="nine wide olive right aligned column">
+              wiz@cypherpunk.com <i class="chevron right icon"></i>
+            </div>
           </div>
-          <div className="ro">
-            <div className="co">Help</div>
-            <div className="co"><i class="chevron right icon"></i></div>
+          <div class="row">
+            <div class="seven wide olive column">
+              Password
+            </div>
+            <div class="nine wide olive right aligned column">
+              <i class="chevron right icon"></i>
+            </div>
           </div>
-          <div className="ro">
-            <div className="co">Logout</div>
-            <div className="co"></div>
+          <div class="row">
+            <div class="seven wide olive column">
+              Help
+            </div>
+            <div class="nine wide olive right aligned column">
+              <i class="chevron right icon"></i>
+            </div>
+          </div>
+          <div class="row">
+            <div class="seven wide olive column">
+              Logout
+            </div>
+            <div class="nine wide olive right aligned column">
+            </div>
           </div>
         </div>
-        <h3 className="ui yellow header">BASIC SETTINGS</h3>
-        <div className="cp">
-          <div className="ro">
-            <div className="co">Start application on startup</div>
-            <div className="co">
+        <div class="ui padded grid">
+          <div class="row">
+            <div class="sixteen wide column">
+              <h3 className="ui yellow header">BASIC SETTINGS</h3>
+            </div>
+          </div>
+          <div class="row">
+            <div class="eleven wide olive column">
+              Start application on startup
+            </div>
+            <div class="five wide olive right aligned column">
               <div class="ui checkbox">
                 <input type="checkbox" name="startapponstartup" />
                 <label />
               </div>
             </div>
           </div>
-          <div className="ro">
-            <div className="co">Auto-connect on launch</div>
-            <div className="co">
+          <div class="row">
+            <div class="eleven wide olive column">
+              Auto-connect on launch
+            </div>
+            <div class="five wide olive right aligned column">
               <div class="ui checkbox">
                 <input type="checkbox" name="autoconnect" />
                 <label />
               </div>
             </div>
           </div>
-          <div className="ro">
-            <div className="co">Show dekstop notifications</div>
-            <div className="co">
+          <div class="row">
+            <div class="eleven wide olive column">
+              Show dekstop notifications
+            </div>
+            <div class="five wide olive right aligned column">
               <div class="ui checkbox">
                 <input type="checkbox" name="desktopnotifications" />
                 <label />
               </div>
             </div>
           </div>
-          <div className="ro">
-            <div className="co">Show cypherpunk on in</div>
-            <div className="co">
+          <div class="row">
+            <div class="eleven wide olive column">
+              Show cypherpunk on in
+            </div>
+            <div class="five wide olive right aligned column">
               Dock Only
             </div>
           </div>
         </div>
+
+
       </div>
     );
   }
