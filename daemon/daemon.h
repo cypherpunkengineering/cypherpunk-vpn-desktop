@@ -97,6 +97,7 @@ protected:
 	// Disconnect from the current server (or cancel a connection attempt).
 	void RPC_disconnect();
 
+	asio::io_service _io;
 	WebSocketServer _ws_server;
 	ConnectionList _connections;
 	jsonrpc::JsonFormatHandler _json_handler;

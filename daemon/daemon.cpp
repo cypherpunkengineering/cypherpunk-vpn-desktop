@@ -67,7 +67,7 @@ int CypherDaemon::Run()
 #endif
 	}
 
-	_ws_server.init_asio();
+	_ws_server.init_asio(&_io);
 	_ws_server.set_reuse_addr(true);
 	_ws_server.listen(asio::ip::tcp::endpoint(asio::ip::address::from_string("127.0.0.1"), 9337));
 	_ws_server.start_accept();
@@ -82,7 +82,7 @@ int CypherDaemon::Run()
 	}
 
 	_state = INITIALIZED;
-	_ws_server.run();
+	_ws_server.run(); // internally calls _io.run()
 
 	return 0;
 }
