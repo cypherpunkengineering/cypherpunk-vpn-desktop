@@ -41,8 +41,6 @@ int CypherDaemon::Run()
 {
 	LOG(INFO) << "Running CypherDaemon built on " __TIMESTAMP__;
 
-	g_settings.ReadFromDisk();
-
 	_ws_server.set_message_handler(std::bind(&CypherDaemon::OnReceiveMessage, this, _1, _2));
 	_ws_server.set_open_handler([this](Connection c) {
 		bool first = _connections.empty();
@@ -82,6 +80,9 @@ int CypherDaemon::Run()
 	}
 
 	_state = INITIALIZED;
+
+	g_settings.ReadFromDisk();
+
 	_ws_server.run(); // internally calls _io.run()
 
 	return 0;
