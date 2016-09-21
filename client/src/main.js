@@ -144,7 +144,7 @@ function createMainWindow() {
     minHeight: 622,
     maxWidth: 375,
     maxHeight: 622,
-    acceptFirstMouse: true,
+    //acceptFirstMouse: true,
   });
   if (daemon) {
     daemon.setMainWindow(main);
