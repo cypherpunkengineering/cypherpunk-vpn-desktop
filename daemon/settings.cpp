@@ -25,6 +25,10 @@ void Settings::ReadFromDisk()
 	try
 	{
 		map() = ReadJsonFile(GetPath(SettingsFile));
+		std::vector<std::string> names;
+		for (auto& p : map())
+			names.push_back(p.first);
+		OnChanged(names);
 	}
 	catch (const std::system_error& e)
 	{
