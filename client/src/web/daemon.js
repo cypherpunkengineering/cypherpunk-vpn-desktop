@@ -37,20 +37,20 @@ class Daemon extends EventEmitter {
 }
 
 function onpost(method, params) {
-  if (daemon) {
-    switch (method) {
-      case 'account':
-      case 'config':
-      case 'settings':
-      case 'state':
-        Object.assign(daemon[method], params[0]);
-        break;
-    }
-    daemon.emit(method, ...params);
+  switch (method) {
+    case 'account':
+    case 'config':
+    case 'settings':
+    case 'state':
+      //params[0] = filterChanged(daemon[method], params[0]);
+      daemon[method] = Object.assign(daemon[method], params[0]);
+      break;
   }
+  if (opened) daemon.emit(method, ...params);
 }
 
-function up() {
+function up(event, data) {
+  [ 'config', 'account', 'settings', 'state' ].forEach(s => onpost(s, [ data[s] ]));
   opened = true;
   errorCount = 0;
   var cbs = readyCallbacks;
@@ -59,9 +59,9 @@ function up() {
   Loader.hide();
 }
 
-function down() {
+function down(event, dummy) {
   errorCount++;
-  Loader.show(opened ? "Reconnecting" : "Loading");
+  Loader.show(/*opened ? "Reconnecting" : "Loading"*/);
 }
 
 ipc = new IPCImpl({
@@ -71,17 +71,17 @@ rpc = new RPC(ipc);
 
 daemon = new Daemon();
 
-daemon.on('state', state => {
-  Object.assign(daemon.state, state);
-})
-
 daemon.post = rpc.post;
 daemon.call = rpc.call;
 
 ipcRenderer.on('daemon-up', up);
 ipcRenderer.on('daemon-down', down);
-if (ipcRenderer.sendSync('daemon-ping') == 'up') {
-  up();
-}
+
+(function(){
+  var initialState = ipcRenderer.sendSync('daemon-open');
+  if (initialState !== null) {
+    up(null, initialState);
+  } 
+})();
 
 module.exports = daemon;

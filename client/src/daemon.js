@@ -10,6 +10,15 @@ var handlers = {};
 var ws, rpc, daemon;
 var isopen = false;
 
+function buildStatusReply() {
+  return isopen ? {
+    'state': daemon.state,
+    'account': daemon.account,
+    'config': daemon.config,
+    'settings': daemon.settings,
+  } : null;
+}
+
 // Set up a Daemon class which is also an EventEmitter (for notifications).
 // In addition to actual RPC calls, the special events 'up' and 'down'
 // notify that the connection to the daemon is up or down, respectively.
@@ -32,7 +41,7 @@ class Daemon extends EventEmitter {
     if (w !== mainWindow) {
       mainWindow = w;
       if (mainWindow) {
-        mainWindow.webContents.send(isopen ? 'daemon-up' : 'daemon-down');
+        mainWindow.webContents.send(isopen ? 'daemon-up' : 'daemon-down', buildStatusReply());
       }
     }
   }
@@ -63,8 +72,8 @@ ipcMain.on('daemon-result', (event, id, result, error) => {
   }
 });
 
-ipcMain.on('daemon-ping', (event) => {
-  event.returnValue = isopen ? 'up' : 'down';
+ipcMain.on('daemon-open', (event) => {
+  event.returnValue = buildStatusReply();
 });
 
 // Listen for events from the WebSocket RPC instance
@@ -73,7 +82,7 @@ function onopen() {
   isopen = true;
   daemon.emit('up');
   if (mainWindow) {
-    mainWindow.webContents.send('daemon-up');
+    mainWindow.webContents.send('daemon-up', buildStatusReply());
   }
 }
 
@@ -81,7 +90,7 @@ function onerror() {
   isopen = false;
   daemon.emit('down');
   if (mainWindow) {
-    mainWindow.webContents.send('daemon-down');
+    mainWindow.webContents.send('daemon-down', buildStatusReply());
   }
   return true;
 }
@@ -111,6 +120,7 @@ function onpost(method, params) {
     case 'config':
     case 'settings':
     case 'state':
+      //params[0] = filterChanged(daemon[method], params[0]);
       Object.assign(daemon[method], params[0]);
       break;
   }

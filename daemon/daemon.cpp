@@ -34,12 +34,14 @@ CypherDaemon::CypherDaemon()
 	, _state(STARTING)
 	, _firewallMode(Disabled)
 {
-	g_settings.ReadFromDisk();
+
 }
 
 int CypherDaemon::Run()
 {
 	LOG(INFO) << "Running CypherDaemon built on " __TIMESTAMP__;
+
+	g_settings.ReadFromDisk();
 
 	_ws_server.set_message_handler(std::bind(&CypherDaemon::OnReceiveMessage, this, _1, _2));
 	_ws_server.set_open_handler([this](Connection c) {
@@ -110,7 +112,10 @@ void CypherDaemon::OnFirstClientConnected()
 
 void CypherDaemon::OnClientConnected(Connection c)
 {
-
+	SendToClient(c, _rpc_client.BuildNotificationData("config", MakeConfigObject()));
+	SendToClient(c, _rpc_client.BuildNotificationData("account", MakeAccountObject()));
+	SendToClient(c, _rpc_client.BuildNotificationData("settings", g_settings.map()));
+	SendToClient(c, _rpc_client.BuildNotificationData("state", MakeStateObject()));
 }
 
 void CypherDaemon::OnClientDisconnected(Connection c)
@@ -363,7 +368,10 @@ void CypherDaemon::OnStateChanged()
 
 void CypherDaemon::OnSettingsChanged(const std::vector<std::string>& names)
 {
-
+	std::map<std::string, JsonValue> changed;
+	for (auto& name : names)
+		changed[name] = JsonValue(g_settings[name]);
+	SendToAllClients(_rpc_client.BuildNotificationData("settings", changed));
 }
 
 JsonObject CypherDaemon::RPC_get(const std::string& type)
@@ -381,11 +389,22 @@ JsonObject CypherDaemon::RPC_get(const std::string& type)
 
 void CypherDaemon::RPC_applySettings(const JsonObject& settings)
 {
+	// Look up all keys first to throw if there are any invalid settings
+	// before we actually make any changes
+	for (auto& p : settings) g_settings.map().at(p.first);
+
 	std::vector<std::string> changed;
 	for (auto& p : settings)
 	{
-		g_settings[p.first] = JsonValue(p.second);
+		if (g_settings[p.first] != p.second)
+		{
+			// FIXME: Validate type
+			changed.push_back(p.first);
+			g_settings[p.first] = JsonValue(p.second);
+		}
 	}
+	if (changed.size() > 0)
+		g_settings.OnChanged(changed);
 }
 
 static void WriteArraySetting(std::ostream& out, const std::string& name, const std::string& type, const std::vector<std::string>& arr)

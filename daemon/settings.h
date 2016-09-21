@@ -4,10 +4,6 @@
 
 #include <set>
 
-namespace jsonrpc {
-	bool operator ==(const jsonrpc::Value& lhs, const jsonrpc::Value& rhs);
-}
-
 #define namedmember(type, name, default_value) \
 	private: \
 	const type _default_##name = default_initialize<type>(#name, default_value); \
