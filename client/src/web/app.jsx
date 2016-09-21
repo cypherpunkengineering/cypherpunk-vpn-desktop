@@ -62,9 +62,9 @@ class Titlebar extends React.Component {
   }
   render() {
     return(
-      <div id="titlebar" className="ui three item fixed borderless icon menu">
-        <Link className="item" to="/status"><i className="info circle inverted icon"></i></Link>
-        <div className="header item">Cypherpunk</div>
+      <div id="titlebar" className="ui fixed borderless icon menu">
+        <Link className="item" to="/status"><i className="info circle icon"></i></Link>
+        <div className="header item" style={{ flexGrow: 1, justifyContent: "center" }}>Cypherpunk</div>
         <Link className="item" to="/configuration"><i className="setting icon"></i></Link>
       </div>
     );
