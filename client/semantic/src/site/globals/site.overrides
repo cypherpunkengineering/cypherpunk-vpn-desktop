@@ -7,8 +7,11 @@
   overflow-x: hidden;
 }
 
-.row .olive {
+.row {
   border-bottom: solid 1px rgba(255, 255, 255, 0.3) !important;
+  > .olive {
+
+  }
 }
 
 .row:last-of-type .olive {

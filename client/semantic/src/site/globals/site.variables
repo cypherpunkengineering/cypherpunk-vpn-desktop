@@ -48,30 +48,19 @@
 @yellowHeaderColor : @yellow;
 
 
-@defaultBorderRadius: 5px;
+@defaultBorderRadius: 2px;
 @textColor  : rgba(255, 255, 255, 0.8);
 @borderColor: #ffffff;
-
-
 
 @inputBackground        : none;
 @inputVerticalPadding   : @relative7px;
 @inputHorizontalPadding : @relative9px;
 @inputPadding           : @inputVerticalPadding @inputHorizontalPadding;
 
-/* Used on inputs, textarea etc */
-@focusedFormBorderColor: #f8cf1c;
-
-/* Used on dropdowns, other larger blocks */
-@focusedFormMutedBorderColor: #f8cf1c;
-
 /* Input Text Color */
 @inputColor: @textColor;
-@inputPlaceholderColor: darken(@inputColor, 75);
-@inputPlaceholderFocusColor: darken(@inputColor, 45);
-
-/* Line Height Default For Inputs in Browser */
-@inputLineHeight: 1.2142em;
+@inputPlaceholderColor: rgba(255,255,255,0.16);
+@inputPlaceholderFocusColor: rgba(255,255,255,0.3);
 
 
 @darkTextColor               : rgba(0, 0, 0, 0.85);
