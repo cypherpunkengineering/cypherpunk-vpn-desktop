@@ -167,6 +167,9 @@ class AdvancedSettings extends React.Component  {
 }
 
 class GeneralSettings extends React.Component  {
+  componentDidMount() {
+    $(this.refs.showinDropdown).dropdown();
+  }
   render() {
     return(
       <div>
@@ -207,7 +210,9 @@ class GeneralSettings extends React.Component  {
               Email
             </div>
             <div class="nine wide olive right aligned column">
+              <Link to="/email">
               wiz@cypherpunk.com <i class="chevron right icon"></i>
+              </Link>
             </div>
           </div>
           <div class="row">
@@ -215,7 +220,7 @@ class GeneralSettings extends React.Component  {
               Password
             </div>
             <div class="nine wide olive right aligned column">
-              <i class="chevron right icon"></i>
+              <Link to="/password"><i class="chevron right icon"></i></Link>
             </div>
           </div>
           <div class="row">
@@ -274,11 +279,20 @@ class GeneralSettings extends React.Component  {
             </div>
           </div>
           <div class="row">
-            <div class="eleven wide olive column">
+            <div class="eight wide olive column">
               Show cypherpunk on in
             </div>
-            <div class="five wide olive right aligned column">
-              Dock Only
+            <div class="eight wide olive right aligned column">
+            <div className="ui olive button selection dropdown" ref="showinDropdown">
+              <input type="hidden" name="showin" />
+              <i className="dropdown icon"></i>
+              <div className="default text">Dock Only</div>
+              <div className="menu">
+                <div className="item" data-value="dockonly">Dock Only</div>
+                <div className="item" data-value="menuonly">Menu Only</div>
+                <div className="item" data-value="dockmenu">Dock & Menu</div>
+              </div>
+            </div>
             </div>
           </div>
         </div>
