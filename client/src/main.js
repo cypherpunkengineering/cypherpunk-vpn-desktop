@@ -90,42 +90,48 @@ timeoutPromise(Promise.all(preinitPromises), 2000).then(() => {
   app.quit();
 });
 
-function createTray() {
-  var dpi = electron.screen.getPrimaryDisplay().scaleFactor >= 2 ? '@2x' : '';
-  tray = new Tray(`${__dirname}/assets/img/tray_win.png`);
-  function flag(code, name, checked) {
-    return {
-      label: name,
-      icon: `${__dirname}/assets/img/flags/${code}${dpi}.png`,
-      type: 'checkbox',
-      checked: checked
-    };
-  }
-  const menu = Menu.buildFromTemplate([
-    { label: 'Connect' },
+function createTrayMenu() {
+  let server = daemon.config.servers.find(s => s.remote === daemon.settings.remote);
+  let connected = daemon.state.state !== 'DISCONNECTED';
+  console.log(connected && daemon.state.needsReconnect);
+  let items = [
+    { label: "Reconnect (apply changed settings)", visible: !!(connected && daemon.state.needsReconnect) },
+    { label: "Connect", visible: !connected, click: () => { daemon.post.connect(); } },
+    { label: "Disconnect", visible: connected, click: () => { daemon.post.disconnect(); } },
     { type: 'separator' },
     {
-      label: 'Location: USA East',
-      icon: `${__dirname}/assets/img/flags/us${dpi}.png`,
-      submenu: [
-        flag('fr', 'France'),
-        flag('hk', 'Hong Kong'),
-        flag('us', 'USA East', true),
-        flag('us', 'USA West'),
-        flag('gb', 'United Kingdom'),
-        flag('au', 'Australia'),
-      ]
+      label: "Server: " + (server ? server.name : "None"),
+      icon: server ? `${__dirname}/assets/img/flags/${server.country}${dpi}.png` : null,
+      submenu: !connected ? daemon.config.servers.map(s => ({
+        label: s.name,
+        icon: `${__dirname}/assets/img/flags/${s.country}${dpi}.png`,
+        type: 'checkbox',
+        checked: daemon.settings.remote === s.remote,
+        click: () => { if (!connected) daemon.post.applySettings({ remote: s.remote }); }
+      })) : null,
+      enabled: !connected,
     },
+    { type: 'separator', visible: connected },
+    { label: "Protocol: OpenVPN", enabled: false, visible: connected },
+    { label: "IP: " + daemon.state.remoteIP, enabled: false, visible: connected }, // FIXME: not the right IP, you want the public one
+    { label: "Status: " + daemon.state.state, enabled: false, visible: connected },
     { type: 'separator' },
-    { label: 'Protocol: IKEv2', enabled: false },
-    { label: 'IP: 43.233.13.210', enabled: false },
-    { label: 'Status: Disconnected', enabled: false },
-    { type: 'separator' },
-    { label: 'Sign out' },
+    //{ label: 'Sign out' },
     { label: 'Quit', click: () => { app.quit(); } },
-  ]);
+  ];
+  return Menu.buildFromTemplate(items);
+}
+
+function createTray() {
+  tray = new Tray(`${__dirname}/assets/img/tray_win.png`);
   tray.setToolTip('Cypherpunk VPN');
-  tray.setContextMenu(menu);
+  function refresh() {
+    tray.setContextMenu(createTrayMenu());
+  }
+  refresh();
+  daemon.on('config', config => { if (config.servers) refresh(); });
+  daemon.on('state', state => { if (state.state || state.remoteIP) refresh(); });
+  daemon.on('settings', settings => { if (settings.remote) refresh(); });
   tray.on('click', (evt, bounds) => {
     if (main) {
       main.show();
