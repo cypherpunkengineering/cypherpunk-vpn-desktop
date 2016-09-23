@@ -93,7 +93,6 @@ timeoutPromise(Promise.all(preinitPromises), 2000).then(() => {
 function createTrayMenu() {
   let server = daemon.config.servers.find(s => s.remote === daemon.settings.remote);
   let connected = daemon.state.state !== 'DISCONNECTED';
-  console.log(connected && daemon.state.needsReconnect);
   let items = [
     { label: "Reconnect (apply changed settings)", visible: !!(connected && daemon.state.needsReconnect) },
     { label: "Connect", visible: !connected, click: () => { daemon.post.connect(); } },
