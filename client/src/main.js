@@ -5,6 +5,7 @@ let daemon = require('./daemon.js');
 let exiting = false;
 let main = null;
 let tray = null;
+let dpi = '';
 
 let args = {
   debug: false,
@@ -82,6 +83,7 @@ const preinitPromises = [
 ];
 
 timeoutPromise(Promise.all(preinitPromises), 2000).then(() => {
+  dpi = electron.screen.getPrimaryDisplay().scaleFactor >= 2 ? '@2x' : '';
   createTray();
   createMainWindow();
 }).catch(err => {
