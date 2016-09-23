@@ -24,7 +24,8 @@ void Settings::ReadFromDisk()
 {
 	try
 	{
-		map() = ReadJsonFile(GetPath(SettingsFile));
+		for (auto& p : ReadJsonFile(GetPath(SettingsFile)))
+			JsonObject::operator[](p.first) = std::move(p.second);
 		std::vector<std::string> names;
 		for (auto& p : map())
 			names.push_back(p.first);
