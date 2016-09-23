@@ -180,6 +180,15 @@ public:
 			LOG(CRITICAL) << "There are no installed TAP adapters on this machine!";
 			return -1;
 		}
+		try
+		{
+			FWEngine fw;
+			fw.InstallProvider();
+		}
+		catch (const Win32Exception& e)
+		{
+			LOG(ERROR) << "Failed to install firewall provider: " << e;
+		}
 		// TEMPORARY WORKAROUND: we don't remember what rules we might have applied
 		// in an earlier session, so delete all rules.
 		try
