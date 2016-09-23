@@ -63,6 +63,11 @@ app.on('will-quit', event => {
 
 const preinitPromises = [
   eventPromise(app, 'ready'),
+  eventPromise(daemon, 'up'),
+  eventPromise(daemon, 'config'),
+  eventPromise(daemon, 'account'),
+  eventPromise(daemon, 'settings'),
+  eventPromise(daemon, 'state'),
   /*
   connectToDaemon(9337).catch(err => {
     dialog.showMessageBox({
