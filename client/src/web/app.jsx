@@ -90,19 +90,16 @@ class ConnectScreen extends React.Component {
 
     this.handleConnectClick = this.handleConnectClick.bind(this);
     this.handleRegionSelect = this.handleRegionSelect.bind(this);
+    this.handleDaemonSettingsChange = this.handleDaemonSettingsChange.bind(this);
     this.handleDaemonStateChange = this.handleDaemonStateChange.bind(this);
   }
 
   state = {
-    regions: [
-      { remote: "208.111.52.1 7133", country: "jp", name: "Tokyo 1, Japan" },
-      { remote: "208.111.52.2 7133", country: "jp", name: "Tokyo 2, Japan" },
-      { remote: "199.68.252.203 7133", country: "us", name: "Honolulu, HI, USA" },
-    ],
-    selectedRegion: "208.111.52.1 7133",
+    regions: daemon.config.servers,
+    selectedRegion: daemon.settings.remote,
     receivedBytes: 0,
     sentBytes: 0,
-    connectionState: "disconnected",
+    connectionState: 'disconnected',
   }
 
   translateDaemonState(state) {
@@ -121,10 +118,17 @@ class ConnectScreen extends React.Component {
       newState.sentBytes = state.bytesSent;
     return newState;
   }
+  handleDaemonSettingsChange(settings) {
+    if (settings.remote) {
+      this.setState({ selectedRegion: settings.remote });
+      $(this.refs.regionDropdown).dropdown('set selected', settings.remote);
+    }
+  }
   handleDaemonStateChange(state) {
     this.setState(this.translateDaemonState(state));
   }
   componentDidMount() {
+    daemon.on('settings', this.handleDaemonSettingsChange);
     daemon.on('state', this.handleDaemonStateChange);
     $(this.refs.regionDropdown).dropdown({
       onChange: this.handleRegionSelect
@@ -132,6 +136,7 @@ class ConnectScreen extends React.Component {
   }
   componentWillUnmount() {
     daemon.removeListener('state', this.handleDaemonStateChange);
+    daemon.removeListener('settings', this.handleDaemonSettingsChange);
   }
   shouldComponentUpdate(nextProps, nextState) {
     return true;
@@ -179,11 +184,9 @@ class ConnectScreen extends React.Component {
     switch (this.state.connectionState) {
       case 'disconnected':
         this.setState({ connectionState: 'connecting' });
-        let [ ip, port ] = this.getSelectedRegion().split(' ');
         daemon.post.applySettings({
           protocol: "udp",
-          remoteIP: ip,
-          remotePort: parseInt(port, 10),
+          remote: this.getSelectedRegion(),
         });
         daemon.post.connect();
         daemon.post.get('state');
@@ -202,6 +205,7 @@ class ConnectScreen extends React.Component {
     return $(this.refs.regionDropdown).dropdown('get value');
   }
   handleRegionSelect(remote) {
+    daemon.post.applySettings({ remote: remote });
   }
 }
 

@@ -50,8 +50,7 @@ public:
 	JsonValue& operator[](const std::string& name);
 
 	namedmember(std::string, protocol, "udp")
-	namedmember(std::string, remoteIP, "")
-	namedmember(int, remotePort, 0)
+	namedmember(std::string, remote, "")
 	namedmember(int, mtu, 1400)
 	namedmember(std::string, cipher, "AES-128-CBC")
 	namedmember(jsonrpc::Value::Array, certificateAuthority, {}) // FIXME: should be hard-coded

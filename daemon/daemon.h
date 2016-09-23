@@ -21,23 +21,6 @@ typedef jsonrpc::Client JsonRPCClient;
 typedef jsonrpc::Dispatcher JsonRPCDispatcher;
 
 
-enum FirewallMode
-{
-	Disabled = 0,
-	WhenConnected = 1,
-	AlwaysOn = 2,
-};
-
-enum FirewallFlags
-{
-	Nothing = 0,
-	BlockIPv4 = 0x1, // temporary
-	BlockIPv6 = 0x2, // temporary
-};
-static inline FirewallFlags operator|(FirewallFlags a, FirewallFlags b) { return (FirewallFlags)(+a | +b); }
-static inline FirewallFlags& operator|=(FirewallFlags& a, FirewallFlags b) { return a = (a | b); }
-
-
 class CypherDaemon
 {
 	static const int DEFAULT_RPC_PORT = 9337;
@@ -106,9 +89,9 @@ protected:
 	JsonRPCClient _rpc_client;
 	OpenVPNProcess *_process, *_next_process;
 	State _state;
-	FirewallMode _firewallMode;
 	std::string _localIP, _remoteIP;
 	int64_t _bytesReceived, _bytesSent;
+	bool _needsReconnect;
 
 protected:
 	// Create a platform-specific handler around an OpenVPN process.

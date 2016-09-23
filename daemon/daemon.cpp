@@ -32,7 +32,7 @@ CypherDaemon::CypherDaemon()
 	, _process(nullptr)
 	, _next_process(nullptr)
 	, _state(STARTING)
-	, _firewallMode(Disabled)
+	, _needsReconnect(false)
 {
 
 }
@@ -447,7 +447,7 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& settings)
 		{ "nobind", "" },
 		{ "dev", "tun" },
 		{ "proto", g_settings.protocol() },
-		{ "remote", g_settings.remoteIP() + " " + std::to_string(g_settings.remotePort()) },
+		{ "remote", g_settings.remote() },
 		{ "tun-mtu", std::to_string(mtu) },
 		//{ "fragment", std::to_string(mtu - 100) },
 		{ "mssfix", std::to_string(mtu - 200) },
