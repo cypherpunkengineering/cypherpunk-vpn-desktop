@@ -9,6 +9,20 @@ var opened = false;
 var errorCount = 0;
 var readyCallbacks = [];
 
+function filterChanges(target, delta) {
+  var count = 0;
+  Object.keys(delta).forEach(d => {
+    if (typeof target[d] === typeof delta[d]) {
+      if (JSON.stringify(target[d]) === JSON.stringify(delta[d])) {
+        delete delta[d];
+        return;
+      }
+    }
+    count++;
+  });
+  return count;
+}
+
 // Set up a Daemon class which is also an EventEmitter (for notifications).
 // In addition to actual RPC calls, the special events 'up' and 'down'
 // notify that the connection to the daemon is up or down, respectively.
@@ -42,7 +56,7 @@ function onpost(method, params) {
     case 'config':
     case 'settings':
     case 'state':
-      //params[0] = filterChanged(daemon[method], params[0]);
+      filterChanges(daemon[method], params[0]);
       daemon[method] = Object.assign(daemon[method], params[0]);
       break;
   }
