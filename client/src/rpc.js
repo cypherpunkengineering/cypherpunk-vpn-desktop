@@ -54,6 +54,8 @@ class WebSocketImpl extends EventEmitter {
             reply('error', { code: obj, message: "Unknown error" });
           } else if (typeof obj === 'object' && obj.hasOwnProperty('code') && obj.hasOwnProperty('message')) {
             reply('error', { code: obj.code, message: obj.message, data: obj.data });
+          } else if (obj instanceof Error) {
+            reply('error', { code: 0, message: obj.toString(), data: obj.toString().split('\n') });
           } else {
             reply('error', { code: 0, message: "Unknown error", data: obj });
           }
