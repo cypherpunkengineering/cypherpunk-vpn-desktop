@@ -241,6 +241,7 @@ JsonObject CypherDaemon::MakeStateObject()
 {
 	JsonObject state;
 	state["state"] = GetStateString(_state);
+	state["needsReconnect"] = _needsReconnect;
 	if (_state == CONNECTED)
 	{
 		state["localIP"] = _localIP;
