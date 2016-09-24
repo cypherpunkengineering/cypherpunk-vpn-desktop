@@ -17,10 +17,10 @@ export default class ConfigurationScreen extends React.Component  {
           <a class="item active" data-tab="general">General</a>
           <a class="item" data-tab="advanced">Advanced</a>
         </div>
-        <div class="ui tab active" data-tab="general">
+        <div class="ui tab active tabscroll" data-tab="general">
           <GeneralSettings />
         </div>
-        <div class="ui tab" data-tab="advanced">
+        <div class="ui tab tabscroll" data-tab="advanced">
           <AdvancedSettings />
         </div>
       </div>
