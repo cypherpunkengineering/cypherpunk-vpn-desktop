@@ -3,14 +3,14 @@
 *******************************/
 
 @fontName          : 'Dosis';
-@fontSmoothing     : none;
+@fontSmoothing     : antialiased;
 
-@headerFont        : @fontName, 'Helvetica Neue', Arial, Helvetica, sans-serif;
-@pageFont          : @fontName, 'Helvetica Neue', Arial, Helvetica, sans-serif;
+@headerFont        : @fontName,'Helvetica Neue', Arial, Helvetica, sans-serif;
+@pageFont          : @fontName,'Helvetica Neue', Arial, Helvetica, sans-serif;
 
 @googleFontName    : @fontName;
-@importGoogleFonts : false;
-@googleFontSizes   : '500,700,500italic,700italic';
+@importGoogleFonts : true;
+@googleFontSizes   : '200,300,400,500,700,200italic,700italic';
 @googleSubset      : 'latin';
 
 @googleProtocol    : 'https://';
