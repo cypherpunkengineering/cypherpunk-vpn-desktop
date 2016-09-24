@@ -1,5 +1,9 @@
 #pragma once
 
+#if OS_LINUX
+#include <string.h>
+#endif
+
 #include "json.h"
 
 #include <set>

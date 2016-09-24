@@ -1,1 +1,3 @@
-CypherpunkVPNd
+cypherpunkvpn-service
+daemon.log
+settings.json

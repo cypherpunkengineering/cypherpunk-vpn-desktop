@@ -8,6 +8,11 @@
 #include <system_error>
 #include <vector>
 
+#if OS_LINUX
+#include <algorithm>
+#include <string.h>
+#endif
+
 class noncopyable
 {
 protected:

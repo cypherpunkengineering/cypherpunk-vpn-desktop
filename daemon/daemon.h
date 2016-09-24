@@ -1,5 +1,9 @@
 #pragma once
 
+#if OS_LINUX
+#include <string.h>
+#endif
+
 #include "config.h"
 #include "openvpn.h"
 #include "settings.h"

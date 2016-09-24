@@ -1,5 +1,9 @@
 #include "config.h"
 
+#if OS_LINUX
+#include <string.h>
+#endif
+
 #include "openvpn.h"
 #include "logger.h"
 

@@ -1,5 +1,6 @@
 #include "config.h"
 
+#include "posix.h"
 #include "daemon.h"
 #include "logger.h"
 #include "logger_file.h"

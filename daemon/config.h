@@ -105,5 +105,8 @@
 
 #endif ///////////////////////////////////////////////////////////////////
 
+#if OS_LINUX
+#include <sys/types.h>
+#endif
 
 namespace rapidjson { typedef size_t SizeType; }

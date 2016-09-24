@@ -1,4 +1,9 @@
 #include "config.h"
+
+#if OS_LINUX
+#include <string.h>
+#endif
+
 #include "json.h"
 #include "logger.h"
 #include "path.h"
