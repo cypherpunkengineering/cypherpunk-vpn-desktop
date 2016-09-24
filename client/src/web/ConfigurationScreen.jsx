@@ -228,7 +228,7 @@ class GeneralSettings extends React.Component  {
               Help
             </div>
             <div class="nine wide olive right aligned column">
-              <i class="chevron right icon"></i>
+              <Link to="/help"><i class="chevron right icon"></i></Link>
             </div>
           </div>
           <div class="row">

@@ -18,6 +18,7 @@ import FirewallScreen from './ConfigurationScreen/FirewallScreen.jsx';
 import EncryptionScreen from './ConfigurationScreen/EncryptionScreen.jsx';
 import PasswordScreen from './ConfigurationScreen/PasswordScreen.jsx';
 import EmailScreen from './ConfigurationScreen/EmailScreen.jsx';
+import HelpScreen from './ConfigurationScreen/HelpScreen.jsx';
 
 daemon.ready(() => {
   daemon.once('state', state => {
@@ -279,6 +280,7 @@ class CypherPunkApp extends React.Component {
         <Route path="/encryption" component={EncryptionScreen}></Route>
         <Route path="/password" component={PasswordScreen}></Route>
         <Route path="/email" component={EmailScreen}></Route>
+        <Route path="/help" component={HelpScreen}></Route>
         <Route path="/login" component={LoginScreen}></Route>
         <Route path="*" component={LoadingPlaceholder}></Route>
       </Router>
