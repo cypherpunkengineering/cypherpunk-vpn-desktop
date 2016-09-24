@@ -3,7 +3,7 @@
 *******************************/
 
 @fontName          : 'Dosis';
-@fontSmoothing     : antialiased;
+@fontSmoothing     : none;
 
 @headerFont        : @fontName, 'Helvetica Neue', Arial, Helvetica, sans-serif;
 @pageFont          : @fontName, 'Helvetica Neue', Arial, Helvetica, sans-serif;
@@ -22,7 +22,7 @@
 @linkHoverColor      : rgba(255,255,255,0.5);
 @linkHoverUnderline  : none;
 
-
+@lineHeight          : 1em;
 
 @emSize   : 16px;
 
