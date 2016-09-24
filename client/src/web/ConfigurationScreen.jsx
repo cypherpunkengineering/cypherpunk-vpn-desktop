@@ -72,7 +72,7 @@ class AdvancedSettings extends React.Component  {
         </div>
         <div class="row">
           <div class="nine wide olive column">
-            Local Port
+            Local port
             <small>Customize the port used to connect to Cypherpunk</small>
           </div>
           <div class="seven wide olive right aligned column">
