@@ -72,3 +72,6 @@
 @pressedTextColor            : #f8cf1c;
 @selectedTextColor           : #1560bd;
 @disabledTextColor           : rgba(0, 0, 0, 0.2);
+
+
+@miniSize        : (8 / 14);

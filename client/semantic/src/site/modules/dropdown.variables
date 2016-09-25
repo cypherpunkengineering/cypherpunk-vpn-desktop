@@ -47,7 +47,7 @@
 @textCursorSpacing: 1px;
 
 /* Menu Item */
-@itemFontSize: @medium;
+@itemFontSize: 14px;
 @itemTextAlign: left;
 @itemBorder: none;
 @itemHeight: auto;
