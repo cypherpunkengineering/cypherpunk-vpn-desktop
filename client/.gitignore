@@ -1,3 +1,5 @@
 /node_modules/
 /app/
+/src/web/assets/fonts/
+/src/web/lib/
 /src/web/semantic/
