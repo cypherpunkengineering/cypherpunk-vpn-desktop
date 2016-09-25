@@ -15,6 +15,7 @@ var jsonTransform = require('gulp-json-transform');
 var babel = require('gulp-babel');
 var install = require('gulp-install');
 var download = require('gulp-download-stream');
+var replace = require('gulp-replace');
 var through = require('through');
 var { fork, spawn, exec } = require('child_process');
 var fs = require('fs');
@@ -29,7 +30,7 @@ gulp.task('default', ['build']);
 
 gulp.task('build', ['build-app']);
 
-gulp.task('clean', ['clean-app', 'clean-semantic', 'clean-web-libraries']);
+gulp.task('clean', ['clean-app', 'clean-semantic', 'clean-web-libraries', 'clean-web-fonts']);
 
 gulp.task('watch', ['build'], function() {
   runSequence([
@@ -111,7 +112,7 @@ gulp.task('watch-web', ['watch-webpack']);
  * WEBPACK: Bundle up all sources from src/web/ and referenced node modules
  * and put the resulting output files in app/web/.
  */
-gulp.task('build-webpack', ['build-semantic', 'build-web-libraries'], function(callback) {
+gulp.task('build-webpack', ['build-semantic', 'build-web-libraries', 'build-web-fonts'], function(callback) {
   webpack(webpackConfig).run(webpackLogger(callback));
 });
 gulp.task('watch-webpack', function() {
@@ -157,6 +158,37 @@ gulp.task('build-web-libraries', function() {
 });
 gulp.task('clean-web-libraries', function() {
   return gulp.src(Object.keys(packageJson.webLibraries || {}).map(m => 'src/web/lib/' + m + '.min.js'), { read: false })
+    .pipe(clean());
+});
+
+/***************************************************************************
+ * WEB FONTS: Download any webfonts mentioned in a special 'webFonts'
+ * section of package.json and put them in src/web/assets/fonts/.
+ */
+gulp.task('build-web-fonts', function(callback) {
+  var fonts = [];
+  for (var name in (packageJson.webFonts || {})) {
+    if (!fs.existsSync('src/web/assets/fonts/' + name + '.css')) {
+      fonts.push({ file: name + '.css', url: packageJson.webFonts[name] });
+    }
+  }
+  var urls = [];
+  download(fonts, { headers: { 'User-Agent': 'Mozilla/5.0 AppleWebKit/537.36 Chrome/53.0.2785.116 Safari/537.36' }})
+    .pipe(replace(/url\(([^)]*)\)/g, function(s, url) {
+      var file = url.split('/').pop();
+      gutil.log("Replacing " + url + " with " + file);
+      urls.push({ file: file, url: url });
+      return "url(" + file + ")";
+    }))
+    .pipe(gulp.dest('src/web/assets/fonts'))
+    .on('end', function() {
+      download(urls)
+        .pipe(gulp.dest('src/web/assets/fonts'))
+        .on('end', callback);
+    });
+});
+gulp.task('clean-web-fonts', function() {
+  return gulp.src('src/web/assets/fonts/*', { read: false })
     .pipe(clean());
 });
 

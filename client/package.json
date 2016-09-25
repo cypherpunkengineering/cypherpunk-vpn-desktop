@@ -36,6 +36,9 @@
     "react-motion": "https://cdnjs.cloudflare.com/ajax/libs/react-motion/0.0.3/Spring.min.js",
     "react-router": "https://cdnjs.cloudflare.com/ajax/libs/react-router/2.7.0/ReactRouter.min.js"
   },
+  "webFonts": {
+    "dosis": "https://fonts.googleapis.com/css?family=Dosis:200,300,400,500,600,700,800&subset=latin-ext"
+  },
   "dependencies": {
     "flag-icon-css": "^2.4.0",
     "mustache": "^2.2.1",
@@ -74,6 +77,7 @@
     "gulp-less": "^3.1.0",
     "gulp-newer": "^1.2.0",
     "gulp-rename": "^1.2.2",
+    "gulp-replace": "^0.5.4",
     "gulp-shell": "^0.5.2",
     "gulp-sourcemaps": "^1.6.0",
     "gulp-util": "^3.0.7",
