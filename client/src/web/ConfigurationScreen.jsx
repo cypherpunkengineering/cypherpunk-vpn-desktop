@@ -71,13 +71,13 @@ class AdvancedSettings extends React.Component  {
           </div>
         </div>
         <div class="row">
-          <div class="nine wide olive column">
+          <div class="eleven wide olive column">
             Local port
             <small>Customize the port used to connect to Cypherpunk</small>
           </div>
-          <div class="seven wide olive right aligned column">
+          <div class="five wide olive right aligned column">
             <div className="ui input">
-              <input type="text"/>
+              <input type="text" size="8"/>
             </div>
           </div>
         </div>
@@ -199,7 +199,7 @@ class GeneralSettings extends React.Component  {
         <div class="ui equal width center aligned padded grid">
           <div class="row">
             <div class="column">
-              <button class="ui inverted button">Upgrade</button>
+              <button id="upgrade" class="ui inverted button">Upgrade</button>
             </div>
           </div>
         </div>
