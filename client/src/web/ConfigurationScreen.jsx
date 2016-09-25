@@ -55,7 +55,7 @@ class AdvancedSettings extends React.Component  {
         </div>
         <div class="row">
           <div class="nine wide olive column">
-            Remote Port
+            Remote port
           </div>
           <div class="seven wide olive right aligned column">
             <div className="ui olive button selection dropdown" ref="reportportDropdown">
@@ -211,10 +211,10 @@ class GeneralSettings extends React.Component  {
             </div>
           </div>
           <div class="row">
-            <div class="seven wide olive column">
+            <div class="four wide olive column">
               Email
             </div>
-            <div class="nine wide olive right aligned column">
+            <div class="twelve wide olive right aligned column">
               <Link to="/email">
               wiz@cypherpunk.com <i class="chevron right icon"></i>
               </Link>
@@ -284,10 +284,10 @@ class GeneralSettings extends React.Component  {
             </div>
           </div>
           <div class="row">
-            <div class="eight wide olive column">
-              Show cypherpunk on in
+            <div class="nine wide olive column">
+              Show cypherpunk icon in
             </div>
-            <div class="eight wide olive right aligned column">
+            <div class="seven wide olive right aligned column">
             <div className="ui olive button selection dropdown" ref="showinDropdown">
               <input type="hidden" name="showin" />
               <i className="dropdown icon"></i>
