@@ -9,7 +9,7 @@
 @pageFont          : @fontName,'Helvetica Neue', Arial, Helvetica, sans-serif;
 
 @googleFontName    : @fontName;
-@importGoogleFonts : true;
+@importGoogleFonts : false;
 @googleFontSizes   : '200,300,400,500,700,300italic,500italic,700italic';
 @googleSubset      : 'latin';
 
