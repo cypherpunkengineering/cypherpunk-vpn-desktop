@@ -14,7 +14,8 @@
 
 @menuDividerColor: #3b7ac8;
 
-@selectionMinWidth: 8em;
+@selectionMinWidth: 4em;
+@selectionVisibleTextFontWeight: inherit;
 @selectionBorder: 0;
 
 @upwardMenuBoxShadow: none;
