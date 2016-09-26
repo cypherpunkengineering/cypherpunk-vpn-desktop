@@ -38,17 +38,17 @@ class AdvancedSettings extends React.Component  {
       <div>
       <div class="ui padded grid">
         <div class="row">
-          <div class="nine wide olive column">
+          <div class="eleven wide olive column">
             Protocol
           </div>
-          <div class="seven wide olive right aligned column">
+          <div class="five wide olive right aligned column">
             <div className="ui olive button selection dropdown" ref="protocolDropdown">
               <input type="hidden" name="protocol" />
               <i className="dropdown icon"></i>
-              <div className="default text">Automatic</div>
+              <div className="default text">UDP</div>
               <div className="menu">
-                <div className="item" data-value="Aautomatic">Automatic</div>
-                <div className="item" data-value="manual">Manual</div>
+                <div className="item" data-value="udp">UDP</div>
+                <div className="item" data-value="tcp">TCP</div>
               </div>
             </div>
           </div>
