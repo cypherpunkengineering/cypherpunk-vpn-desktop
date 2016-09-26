@@ -57,10 +57,6 @@ public:
 	namedmember(std::string, remote, "")
 	namedmember(int, mtu, 1400)
 	namedmember(std::string, cipher, "AES-128-CBC")
-	namedmember(jsonrpc::Value::Array, certificateAuthority, {}) // FIXME: should be hard-coded
-
-	namedmember(jsonrpc::Value::Array, certificate, {})
-	namedmember(jsonrpc::Value::Array, privateKey, {})
 
 	namedmember(std::string, firewall, "off")
 	namedmember(bool, allowLAN, true)

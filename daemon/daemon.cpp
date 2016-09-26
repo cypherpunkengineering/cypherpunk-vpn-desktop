@@ -252,17 +252,6 @@ JsonObject CypherDaemon::MakeStateObject()
 	return std::move(state);
 }
 
-JsonObject CypherDaemon::MakeConfigObject()
-{
-	JsonObject config;
-	config["servers"] = std::vector<JsonObject> {
-		{ { "remote", "208.111.52.1 7133" }, { "country", "jp" }, { "name", "Tokyo 1, Japan" } },
-		{ { "remote", "208.111.52.2 7133" }, { "country", "jp" }, { "name", "Tokyo 2, Japan" } },
-		{ { "remote", "199.68.252.203 7133" }, { "country", "us" }, { "name", "Honolulu, HI, USA" } },
-	};
-	return std::move(config);
-}
-
 static const std::vector<std::string> g_certificate_authority = {
 	"MIIFrzCCA5egAwIBAgIJAPaDxuSqIE0FMA0GCSqGSIb3DQEBCwUAMG4xCzAJBgNV",
 	"BAYTAkpQMQ4wDAYDVQQIDAVUb2t5bzEPMA0GA1UEBwwGTWluYXRvMQwwCgYDVQQK",
@@ -296,6 +285,18 @@ static const std::vector<std::string> g_certificate_authority = {
 	"70x9UAvZs/upODsT89H4xvsz6JiUP3O4qttc8qF218HDVpbcZ9RfsDpsPbTvjx2C",
 	"dsj1LEFcf8DWaj19Dz099BxQgw=="
 };
+
+JsonObject CypherDaemon::MakeConfigObject()
+{
+	JsonObject config;
+	config["servers"] = std::vector<JsonObject> {
+		{ { "remote", "208.111.52.1 7133" }, { "country", "jp" }, { "name", "Tokyo 1, Japan" } },
+		{ { "remote", "208.111.52.2 7133" }, { "country", "jp" }, { "name", "Tokyo 2, Japan" } },
+		{ { "remote", "199.68.252.203 7133" }, { "country", "us" }, { "name", "Honolulu, HI, USA" } },
+	};
+	config["certificateAuthority"] = std::vector<JsonValue>(g_certificate_authority.begin(), g_certificate_authority.end());
+	return std::move(config);
+}
 
 static const std::vector<std::string> g_user_certificate = {
 	"MIIEwzCCAqugAwIBAgICEAMwDQYJKoZIhvcNAQEFBQAwbjELMAkGA1UEBhMCSlAx",
