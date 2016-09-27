@@ -8,7 +8,7 @@ export default class ConfigurationScreen extends React.Component  {
   }
   render() {
     return(
-      <div className="settings_screen">
+      <div>
         <div className="ui fluid inverted borderless icon menu cp_config_header">
           <Link className="item" to="/connect"><i className="arrow left icon"></i></Link>
           <div className="header item center aligned">Configuration</div>
@@ -178,8 +178,6 @@ class GeneralSettings extends React.Component  {
   render() {
     return(
       <div>
-
-
         <div className="ui equal width center aligned padded grid ">
           <div className="row cp_row">
             <div className="olive column cp_account_avatar">
@@ -199,7 +197,7 @@ class GeneralSettings extends React.Component  {
         <div className="ui equal width center aligned padded grid">
           <div className="row cp_row">
             <div className="column">
-              <button id="upgrade" className="ui inverted button">Upgrade</button>
+              <button id="upgrade" className="ui inverted button cp_button">Upgrade</button>
             </div>
           </div>
         </div>

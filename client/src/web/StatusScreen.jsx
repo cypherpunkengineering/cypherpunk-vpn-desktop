@@ -3,11 +3,10 @@ import { Link } from 'react-router';
 import WorldMap from './assets/img/map_wh.svg';
 
 export default class StatusScreen extends React.Component  {
-
   render() {
     return(
       <div>
-        <div className="ui fluid inverted borderless icon menu">
+        <div className="ui fluid inverted borderless icon menu cp_config_header">
           <Link className="item" to="/connect"><i className="arrow left icon"></i></Link>
           <div className="header item center aligned">Status</div>
         </div>
@@ -16,7 +15,7 @@ export default class StatusScreen extends React.Component  {
             <div className="row"><img src={WorldMap} /></div>
             <div className="row">
               <div className="ui inverted olive segment">
-                connected/disconnecte
+                connected/disconnected
               </div>
             </div>
           </div>
