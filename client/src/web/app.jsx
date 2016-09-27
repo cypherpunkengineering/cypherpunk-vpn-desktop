@@ -258,6 +258,7 @@ class RootContainer extends React.Component {
     return(
       <div class="full screen" style={{visibility: 'visible'}}>
         <MainBackground/>
+        <OneZeros/>
         <ConnectScreen/>
       </div>
     );
@@ -266,6 +267,16 @@ class RootContainer extends React.Component {
 
 class LoadingPlaceholder extends React.Component {
   render() { return <div/>; }
+}
+
+class OneZeros extends React.Component {
+  render() {
+    return(
+      <div id="onezeros">
+      0100101010101001010011010000101100001011101111010100101101001101101011110010101001100011011110010111000001101000011001010111001001110000011101010110111001101011001000000111011001110000011011100100101010101001010011010000101100001011101111010100101101001010111101110010011100000111101111010100101101000010000001110110011000110111001001010101010010100110100001011000010111011110101001011010010101111011
+      </div>
+    );
+  }
 }
 
 class CypherPunkApp extends React.Component {
