@@ -18,6 +18,9 @@
 @selectionVisibleTextFontWeight: inherit;
 @selectionBorder: 0;
 
+@selectionItemHorizontalPadding: @relative10px;
+@selectionItemVerticalPadding: @relative8px;
+
 @upwardMenuBoxShadow: none;
 @upwardSelectionMenuBoxShadow: none;
 @upwardSelectionHoverBoxShadow: none;
