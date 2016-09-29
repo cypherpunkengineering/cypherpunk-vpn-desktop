@@ -152,6 +152,35 @@ class ConnectScreen extends React.Component {
     }
   }
   render() {
+    var connectCircleStyle = {
+      stroke: (this.state.connectionState === 'connected' ? '#6ec90a' : this.state.connectionState == 'disconnected' ? '#cc0000' : '#d29f00'),
+      opacity: (this.state.connectionState === 'connected' ? '1' : this.state.connectionState == 'disconnected' ? '1' : '0.75'),
+      strokeWidth: '20',
+      strokeDasharray: '314.16',
+      strokeDashoffset: '78.54',
+      strokeLinecap: 'round',
+      transform: 'rotate(-45deg)',
+      transformOrigin: '50% 200px',
+      fill: 'none'
+    }
+    var connectLineStyle = {
+      stroke: (this.state.connectionState === 'connected' ? '#6ec90a' : this.state.connectionState == 'disconnected' ? '#cc0000' : '#d29f00'),
+      opacity: (this.state.connectionState === 'connected' ? '1' : this.state.connectionState == 'disconnected' ? '1' : '0.75'),
+      strokeWidth: '20',
+      strokeDasharray: '83',
+      strokeDashoffset: (this.state.connectionState === 'connected' ? '0' : this.state.connectionState == 'disconnected' ? '127' : '83'),
+      strokeLinecap: 'round',
+      fill: 'none'
+    }
+    var connectSmallLineStyle = {
+      stroke: (this.state.connectionState === 'connected' ? '#6ec90a' : this.state.connectionState == 'disconnected' ? '#cc0000' : '#d29f00'),
+      opacity: '1',
+      strokeWidth: '20',
+      strokeDasharray: '20',
+      strokeDashoffset: (this.state.connectionState === 'connected' ? '0' : this.state.connectionState == 'disconnected' ? '20' : '20'),
+      strokeLinecap: 'round',
+      fill: 'none'
+    }
     var buttonLabel = {
       'disconnected': "Tap to protect",
       'connecting': "Connecting...",
@@ -163,7 +192,15 @@ class ConnectScreen extends React.Component {
       <div id="connect-screen" class="full screen" style={{visibility: 'visible'}}>
         <Titlebar/>
         <div id="connect-container">
-          <i id="connect" class={"ui fitted massive power link icon" + (this.state.connectionState === 'connected' ? " green" : this.state.connectionState == 'disconnected' ? " red" : " orange disabled")} ref="connectButton" onClick={this.handleConnectClick}></i>
+
+          <svg width="120" height="400" ref="connectButton" onClick={this.handleConnectClick}>
+            <circle cx="60" cy="200" r="50" style={connectCircleStyle} />
+            <line x1="60" y1="98" x2="60" y2="181" style={connectLineStyle} />
+            <line x1="60" y1="111" x2="80" y2="111"  style={connectSmallLineStyle} />
+            <line x1="60" y1="137" x2="80" y2="137"  style={connectSmallLineStyle} />
+          </svg>
+
+          {/*<i id="connect" class={"ui fitted massive power link icon" + (this.state.connectionState === 'connected' ? " green" : this.state.connectionState == 'disconnected' ? " red" : " orange disabled")} ref="connectButton" onClick={this.handleConnectClick}></i>*/}
         </div>
         <div id="connect-status" ref="connectStatus">{buttonLabel}</div>
         <div id="region-select" class={"ui selection dropdown" + (this.state.connectionState === 'disconnected' ? "" : " disabled")} ref="regionDropdown">
