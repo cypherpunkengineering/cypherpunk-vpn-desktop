@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router';
+import daemon from './daemon.js';
 
 
 export default class ConfigurationScreen extends React.Component  {
@@ -29,9 +30,29 @@ export default class ConfigurationScreen extends React.Component  {
 }
 
 class AdvancedSettings extends React.Component  {
+  constructor(props) {
+    super(props);
+    this.handleDaemonSettingsChange = this.handleDaemonSettingsChange.bind(this);
+  }
   componentDidMount() {
-    $(this.refs.reportportDropdown).dropdown();
-    $(this.refs.protocolDropdown).dropdown();
+    $(this.refs.protocol).dropdown({ onChange: value => { daemon.post.applySettings({ protocol: value }); }});
+    $(this.refs.remotePort).dropdown({ onChange: value => { daemon.post.applySettings({ remotePort: value }); }});
+    $(this.refs.localPort).val(daemon.settings.localPort || "");
+    daemon.addListener('settings', this.handleDaemonSettingsChange);
+  }
+  componentWillUnmount() {
+    daemon.removeListener('settings', this.handleDaemonSettingsChange);
+  }
+  handleDaemonSettingsChange(settings) {
+    if (settings.protocol !== undefined) {
+      $(this.refs.protocol).dropdown('set selected', settings.protocol);
+    }
+    if (settings.remotePort !== undefined) {
+      $(this.refs.remotePort).dropdown('set selected', settings.remotePort);
+    }
+    if (settings.localPort !== undefined) {
+      $(this.refs.localPort).val(settings.localPort || "");
+    }
   }
   render() {
     return(
@@ -42,8 +63,8 @@ class AdvancedSettings extends React.Component  {
             Protocol
           </div>
           <div className="five wide olive right aligned column">
-            <div className="ui olive button selection dropdown" ref="protocolDropdown">
-              <input type="hidden" name="protocol" />
+            <div className="ui olive button selection dropdown" ref="protocol">
+              <input type="hidden" name="protocol" value={daemon.settings.protocol}/>
               <i className="dropdown icon"></i>
               <div className="default text">UDP</div>
               <div className="menu">
@@ -58,14 +79,13 @@ class AdvancedSettings extends React.Component  {
             Remote port
           </div>
           <div className="seven wide olive right aligned column">
-            <div className="ui olive button selection dropdown" ref="reportportDropdown">
+            <div className="ui olive button selection dropdown" ref="remotePort">
               <input type="hidden" name="remoteport" />
               <i className="dropdown icon"></i>
               <div className="default text">Auto</div>
               <div className="menu">
                 <div className="item" data-value="auto">Auto</div>
-                <div className="item" data-value="47">47</div>
-                <div className="item" data-value="1723">1723</div>
+                <div className="item" data-value="7133">7133</div>
               </div>
             </div>
           </div>
@@ -77,7 +97,7 @@ class AdvancedSettings extends React.Component  {
           </div>
           <div className="five wide olive right aligned column">
             <div className="ui input">
-              <input type="text" size="8"/>
+              <input type="text" size="5" name="localport" ref="localPort" onChange={(function(event) { daemon.post.applySettings({ localPort: parseInt(event.target.value, 10) }); return true; })} />
             </div>
           </div>
         </div>

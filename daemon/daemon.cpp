@@ -290,9 +290,9 @@ JsonObject CypherDaemon::MakeConfigObject()
 {
 	JsonObject config;
 	config["servers"] = std::vector<JsonObject> {
-		{ { "remote", "208.111.52.1 7133" }, { "country", "jp" }, { "name", "Tokyo 1, Japan" } },
-		{ { "remote", "208.111.52.2 7133" }, { "country", "jp" }, { "name", "Tokyo 2, Japan" } },
-		{ { "remote", "199.68.252.203 7133" }, { "country", "us" }, { "name", "Honolulu, HI, USA" } },
+		{ { "remote", "208.111.52.1" }, { "country", "jp" }, { "name", "Tokyo 1, Japan" } },
+		{ { "remote", "208.111.52.2" }, { "country", "jp" }, { "name", "Tokyo 2, Japan" } },
+		{ { "remote", "199.68.252.203" }, { "country", "us" }, { "name", "Honolulu, HI, USA" } },
 	};
 	config["certificateAuthority"] = std::vector<JsonValue>(g_certificate_authority.begin(), g_certificate_authority.end());
 	return std::move(config);
@@ -449,7 +449,7 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& settings)
 		{ "nobind", "" },
 		{ "dev", "tun" },
 		{ "proto", g_settings.protocol() },
-		{ "remote", g_settings.remote() },
+		{ "remote", g_settings.remote() + " " + (g_settings.remotePort() == "auto" ? "7133" : g_settings.remotePort()) },
 		{ "tun-mtu", std::to_string(mtu) },
 		//{ "fragment", std::to_string(mtu - 100) },
 		{ "mssfix", std::to_string(mtu - 200) },
