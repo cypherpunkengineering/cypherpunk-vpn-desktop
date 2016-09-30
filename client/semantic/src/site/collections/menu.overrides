@@ -5,3 +5,7 @@
 .ui.menu {
   margin: 0;
 }
+
+.ui.menu .item>img:not(.ui) {
+  width: auto !important;
+}
