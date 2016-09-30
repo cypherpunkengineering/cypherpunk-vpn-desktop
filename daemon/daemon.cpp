@@ -446,7 +446,7 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& settings)
 
 	std::map<std::string, std::string> config = {
 		{ "client", "" },
-		{ "nobind", "" },
+		//{ "nobind", "" },
 		{ "dev", "tun" },
 		{ "proto", g_settings.protocol() },
 		{ "remote", g_settings.remote() + " " + (g_settings.remotePort() == "auto" ? "7133" : g_settings.remotePort()) },
@@ -460,6 +460,11 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& settings)
 		{ "redirect-gateway", "def1" },
 		{ "route-delay", "0" },
 	};
+
+	if (g_settings.localPort() == 0)
+		config["nobind"] = "";
+	else
+		config["lport"] = std::to_string(g_settings.localPort());
 
 	// FIXME: Manually translate other settings to OpenVPN parameters
 	/*
