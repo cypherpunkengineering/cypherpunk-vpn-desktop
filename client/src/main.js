@@ -91,7 +91,7 @@ timeoutPromise(Promise.all(preinitPromises), 2000).then(() => {
 });
 
 function createTrayMenu() {
-  let server = daemon.config.servers.find(s => s.remote === daemon.settings.remote);
+  let server = daemon.config.servers.find(s => s.id === daemon.settings.server);
   let connected = daemon.state.state !== 'DISCONNECTED';
   let items = [
     { label: "Reconnect (apply changed settings)", visible: !!(connected && daemon.state.needsReconnect) },
@@ -105,8 +105,8 @@ function createTrayMenu() {
         label: s.name,
         icon: `${__dirname}/assets/img/flags/${s.country}${dpi}.png`,
         type: 'checkbox',
-        checked: daemon.settings.remote === s.remote,
-        click: () => { if (!connected) daemon.post.applySettings({ remote: s.remote }); }
+        checked: daemon.settings.server === s.id,
+        click: () => { if (!connected) daemon.post.applySettings({ server: s.id }); }
       })) : null,
       enabled: !connected,
     },
@@ -130,7 +130,7 @@ function createTray() {
   refresh();
   daemon.on('config', config => { if (config.servers) refresh(); });
   daemon.on('state', state => { if (state.state || state.remoteIP) refresh(); });
-  daemon.on('settings', settings => { if (settings.remote) refresh(); });
+  daemon.on('settings', settings => { if (settings.server) refresh(); });
   tray.on('click', (evt, bounds) => {
     if (main) {
       main.show();

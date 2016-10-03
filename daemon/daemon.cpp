@@ -34,7 +34,12 @@ CypherDaemon::CypherDaemon()
 	, _state(STARTING)
 	, _needsReconnect(false)
 {
-
+	// FIXME: Don't hardcode
+	ServerInfo hardcoded_servers[] = {
+		{ "tokyo3", "Tokyo Test", "jp", 35.683333, 139.683333, { { "default", "208.111.52.34" }, { "none", "208.111.52.35" }, { "strong", "208.111.52.36" }, { "stealth", "208.111.52.37" } } },
+	};
+	for (auto& s : hardcoded_servers)
+		_servers.emplace(std::pair<std::string, ServerInfo>(s.id, std::move(s)));
 }
 
 int CypherDaemon::Run()
@@ -252,7 +257,8 @@ JsonObject CypherDaemon::MakeStateObject()
 	return std::move(state);
 }
 
-static const std::vector<std::string> g_certificate_authority = {
+static const std::vector<std::string> g_certificate_authorities[] = { {
+	"-----BEGIN CERTIFICATE-----",
 	"MIIFrzCCA5egAwIBAgIJAPaDxuSqIE0FMA0GCSqGSIb3DQEBCwUAMG4xCzAJBgNV",
 	"BAYTAkpQMQ4wDAYDVQQIDAVUb2t5bzEPMA0GA1UEBwwGTWluYXRvMQwwCgYDVQQK",
 	"DAN3aXoxGzAZBgNVBAsMEm5ldHdvcmsgb3BlcmF0aW9uczETMBEGA1UEAwwKd2l6",
@@ -283,77 +289,242 @@ static const std::vector<std::string> g_certificate_authority = {
 	"SgM1l5juaNiIvT9xHtA3q0sbkyFtCbK0lmf/eHlNz+42Qhn+ME+GUCF0Xm8wx7yg",
 	"snrvCEG9EpO3A39/MvgrR13j7tSGaad20KngTc3UISK16uk+WXid9Ty1yC/M/Zrk",
 	"70x9UAvZs/upODsT89H4xvsz6JiUP3O4qttc8qF218HDVpbcZ9RfsDpsPbTvjx2C",
-	"dsj1LEFcf8DWaj19Dz099BxQgw=="
-};
+	"dsj1LEFcf8DWaj19Dz099BxQgw==",
+	"-----END CERTIFICATE-----",
+	}, {
+	"-----BEGIN CERTIFICATE-----",
+	"MIIFiTCCA3GgAwIBAgICEAAwDQYJKoZIhvcNAQELBQAwUTELMAkGA1UEBhMCSVMx",
+	"HDAaBgNVBAoME0N5cGhlcnB1bmsgUGFydG5lcnMxJDAiBgNVBAMMG0N5cGhlcnB1",
+	"bmsgUGFydG5lcnMgUm9vdCBDQTAeFw0xNjA5MDYxNTI5MzBaFw0yNjA5MDQxNTI5",
+	"MzBaMFkxCzAJBgNVBAYTAklTMRwwGgYDVQQKDBNDeXBoZXJwdW5rIFBhcnRuZXJz",
+	"MSwwKgYDVQQDDCNDeXBoZXJwdW5rIFBhcnRuZXJzIEludGVybWVkaWF0ZSBDQTCC",
+	"AiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBALVblDGKSLfQr8zk37Pmbce1",
+	"nJ28hkIf5HvdFUIVY+396Qfjx9YNY3pTl/Bwjb0JwT7KHnHPkLtwdRgT74mPIK1j",
+	"TDX4TjDMcWSUD9Bn2BppeHHj10zhEiMGZxlDkorR00FygM+pS6A9u9ack5PHzveY",
+	"AOFwNh0SW20CQk+3/Ph+CcHbNeanfNt8U2UKBygyVkRTV3sYkIL6g7GQJ9th6YAJ",
+	"mg2p3kU5ZadxslQaQBcM0G9kWBWsYif0IvAjh4rs1B0BHUPZpzsR062DkYHYJeSq",
+	"cenfVfByXx9CW/tC/cDhIaD9dZxPschU4rVPShy6yM6B5WjKUfAGTKWdfDG2c/6S",
+	"2iELvvRj2VFuBt5XVR39c7eIIvyGcfPrMPvYTQhP5+eGL92wsMqKoxosz4ZWiIHa",
+	"Mb9cGjHupJRN1qpjnFN/fwTLm14JjaHklXLXF9ojCHbSWL3aXKX0lTuFOfY7A/zx",
+	"hknbCijEQ3pxKLpJY3VjokMhlGrq+BYla+mKpeRKNJ7CgsM6MEO3yiO3n4CF0ZyS",
+	"1DGrDAnrAPlA2bDX2LeFNPkt0A3Vv9BV6vgcahIcIRZjs5UVYN9XmErlESXgHm97",
+	"Hb5QaYSgDBA4ekEE09dtH1CWKJREdtX38z3iN4pr7XXXlF0lM+aKr9rFeHB/MiWg",
+	"PzJHBzmkhwcUYXhGLsVVAgMBAAGjYzBhMB0GA1UdDgQWBBRvC1oTePuUSlByx3pE",
+	"MQnjTx5MUDAfBgNVHSMEGDAWgBTjkvrWu+Pe+eyx9dI35+jHACfjbTAPBgNVHRME",
+	"CDAGAQH/AgEAMA4GA1UdDwEB/wQEAwIBhjANBgkqhkiG9w0BAQsFAAOCAgEANkiw",
+	"o2Lsol6a0OnK52mmVgw2Al73Iak8NP+FGiTW+BFqxeBqiz9X9nI/03Z/keVla4Nx",
+	"R0ziKh4sWjSa1ik9/XmjaRQ3c/BeDncwx7R51FmoVcdBMXwYUckVvtt0JOuT2yHP",
+	"NekIZfiT+nBz9BPyxvpWZqocFBjcyodtCVgTAEaM2lGwxzypAb/OEX86scjVsDWH",
+	"Qwhgl+PDxjDM+LW6bnhCzpL2ZkuliP+xf0DjhADnAyRnR0CDwJO5iUb7OS/RsGId",
+	"3p+NmTysyRxWwqE7cFKQdBvgztIvqViwc9a5gPi81zTGXhkuSt3I9a2l+GJtxBKZ",
+	"oe9DEFdcjGw7G6+PAfqYAlArranek5ID6VjsDFTTw0LfLHRdn3zdFAlVLSso8DTl",
+	"+7hADyo6labKQkWhVcZjMI3I00n5L4/b9kLs34QZCb5qLm7S420/3o9mQemJ3s70",
+	"rlqV0qFzAb1TU7d5+RRjcjNoJVplRsemd5278CPggMB8kAZNbYKvdILHsGPI/6Gp",
+	"VdkJxpch1U1CSD+LbliqGMvetDak5X2bjJJuYgCZO7FQJIZV6gtvOUREbKtcOM88",
+	"sFL7p4bMCtrRxtDMbv7IFCZTcLin8zSgbfZ7fX2RT4sEiPqoSdVyrUw1mW+7duKk",
+	"Yw4+ot2O2nGrXr87ECICAR9G2W/7FJR1NGLzHLg=",
+	"-----END CERTIFICATE-----",
+	}, {
+	"-----BEGIN CERTIFICATE-----",
+	"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",
+	"Y8gMhSbb7NTB",
+	"-----END CERTIFICATE-----",
+} };
+
+static std::vector<JsonValue> GetCertificateAuthorities()
+{
+	std::vector<JsonValue> result;
+	for (auto& ca : g_certificate_authorities)
+	{
+		result.push_back(std::vector<JsonValue>(ca.begin(), ca.end()));
+	}
+	return std::move(result);
+}
 
 JsonObject CypherDaemon::MakeConfigObject()
 {
 	JsonObject config;
-	config["servers"] = std::vector<JsonObject> {
-		{ { "remote", "208.111.52.1" }, { "country", "jp" }, { "name", "Tokyo 1, Japan" } },
-		{ { "remote", "208.111.52.2" }, { "country", "jp" }, { "name", "Tokyo 2, Japan" } },
-		{ { "remote", "199.68.252.203" }, { "country", "us" }, { "name", "Honolulu, HI, USA" } },
-	};
-	config["certificateAuthority"] = std::vector<JsonValue>(g_certificate_authority.begin(), g_certificate_authority.end());
+	std::vector<JsonObject> servers;
+	for (auto& s : _servers)
+	{
+		servers.push_back({ { "id", s.second.id }, { "name", s.second.name }, { "country", s.second.country }, { "location", JsonObject { { "latitude", s.second.latitude }, { "longitude", s.second.longitude } } } });
+	}
+	config["servers"] = std::move(servers);
+	config["certificateAuthorities"] = GetCertificateAuthorities();
 	return std::move(config);
 }
 
 static const std::vector<std::string> g_user_certificate = {
-	"MIIEwzCCAqugAwIBAgICEAMwDQYJKoZIhvcNAQEFBQAwbjELMAkGA1UEBhMCSlAx",
-	"DjAMBgNVBAgMBVRva3lvMQ8wDQYDVQQHDAZNaW5hdG8xDDAKBgNVBAoMA3dpejEb",
-	"MBkGA1UECwwSbmV0d29yayBvcGVyYXRpb25zMRMwEQYDVQQDDAp3aXogVlBOIENB",
-	"MB4XDTE2MDUxNDA3MjU1N1oXDTI2MDUxMjA3MjU1N1owXjELMAkGA1UEBhMCSlAx",
-	"DjAMBgNVBAgMBVRva3lvMQwwCgYDVQQKDAN3aXoxGzAZBgNVBAsMEm5ldHdvcmsg",
-	"b3BlcmF0aW9uczEUMBIGA1UEAwwLa2ltQHdpei5iaXowggEiMA0GCSqGSIb3DQEB",
-	"AQUAA4IBDwAwggEKAoIBAQDEWicZ0zyR0eZ9T87i4A/Qjff9eAXPRkVaF4cORfpE",
-	"cgZbdNqFpXQNWlB/UvMmckL5V6sT7mFB/XUgBkgHq45yEzP4W5TS2XozxhP6lqfZ",
-	"Mg2L1PA2nJqkOFdeLNapIVf8ksP4szs+drAzs0n8EjtBVH23oHbx3R9EV7nLhknJ",
-	"OdqAf7u+two3iaG9oSq3zasnYc7jCGRpa7kxAu+iWecCJ8N+IGdNgHQKzNiZyvhK",
-	"imDfqy/5JxWcS0xSyp6OzIe5XfTXIwEKNptl9hOWsg4qe9kS1KPzHz9wh9cJZ+6c",
-	"SCmGBUR0KQi8mOoHb37k04cDJa5WN6UK0kpDKUS/8gxjAgMBAAGjezB5MAkGA1Ud",
-	"EwQCMAAwLAYJYIZIAYb4QgENBB8WHU9wZW5TU0wgR2VuZXJhdGVkIENlcnRpZmlj",
-	"YXRlMB0GA1UdDgQWBBRvfK5HvBuCcx39T9FWtGYOcLB46TAfBgNVHSMEGDAWgBSv",
-	"ozGO00BQe0sdO46u9CukB0fyDTANBgkqhkiG9w0BAQUFAAOCAgEAiVAMfBL8xzj/",
-	"O07VxbpDExCGrk5F4T7ecFqrXpq+ALSY0Zh1bQU5yo8Dq7Q5CZxkbf12gCeRja6K",
-	"9De+A5xkjZGUS9f6+UEgN344I/WuttAJvGOE5WNnDiXWtG9e0rPmc67jF4DhvL+I",
-	"rq8Wvq7tFO2yTblsYI/ZYe4aTYRI6L20TRM/MN+zIm+mnQHLJZknz/j6joX0J7Qb",
-	"8ZNq+5ZaelMI1HE7XejZSY0VNKR+qgJcQ3LEi81ixi/RRdzdzGR6b16zZH571b24",
-	"Id5pgvp9as3MTruSAmiiAUIVLqAJIRG+Q/zelfwGTe4WEQRZyR3t0lQlFw5ROirb",
-	"kjSHq+Wx4TearhOki1QGEMvP9Ao6EGtaADklbGgEGpPrWeI+bx4OzJTBi4Qg8yrj",
-	"rE0ASfrhdMTIONnqZh65rAhq2/QsEzg5nLYOSYDltdoz9GxBqyy4J+HIzjywhza2",
-	"PT3PJ6gArTE7XAEcXGNdijV4DxHkOS1np9ObPFEYAA+L0ZLQiO1H0I2t6EeiPynP",
-	"1pJfPVXMbplvzFrnOEKPaUPdW4n8jbG1bBdhJRprGK5oV/AU5clrRBW3bH3UMrkC",
-	"uol9Iro4CpErNVop5ylL3P54ByCojpou/aKiQN3LL2q7EghUQfjVHppYGfRje+DI",
-	"y25N8OB8yRP9OAb8rI+k1Zxj8Y8Pcgs="
+	"-----BEGIN CERTIFICATE-----",
+	"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",
+	"-----END CERTIFICATE-----",
+//	"-----BEGIN CERTIFICATE-----",
+//	"MIIEwzCCAqugAwIBAgICEAMwDQYJKoZIhvcNAQEFBQAwbjELMAkGA1UEBhMCSlAx",
+//	"DjAMBgNVBAgMBVRva3lvMQ8wDQYDVQQHDAZNaW5hdG8xDDAKBgNVBAoMA3dpejEb",
+//	"MBkGA1UECwwSbmV0d29yayBvcGVyYXRpb25zMRMwEQYDVQQDDAp3aXogVlBOIENB",
+//	"MB4XDTE2MDUxNDA3MjU1N1oXDTI2MDUxMjA3MjU1N1owXjELMAkGA1UEBhMCSlAx",
+//	"DjAMBgNVBAgMBVRva3lvMQwwCgYDVQQKDAN3aXoxGzAZBgNVBAsMEm5ldHdvcmsg",
+//	"b3BlcmF0aW9uczEUMBIGA1UEAwwLa2ltQHdpei5iaXowggEiMA0GCSqGSIb3DQEB",
+//	"AQUAA4IBDwAwggEKAoIBAQDEWicZ0zyR0eZ9T87i4A/Qjff9eAXPRkVaF4cORfpE",
+//	"cgZbdNqFpXQNWlB/UvMmckL5V6sT7mFB/XUgBkgHq45yEzP4W5TS2XozxhP6lqfZ",
+//	"Mg2L1PA2nJqkOFdeLNapIVf8ksP4szs+drAzs0n8EjtBVH23oHbx3R9EV7nLhknJ",
+//	"OdqAf7u+two3iaG9oSq3zasnYc7jCGRpa7kxAu+iWecCJ8N+IGdNgHQKzNiZyvhK",
+//	"imDfqy/5JxWcS0xSyp6OzIe5XfTXIwEKNptl9hOWsg4qe9kS1KPzHz9wh9cJZ+6c",
+//	"SCmGBUR0KQi8mOoHb37k04cDJa5WN6UK0kpDKUS/8gxjAgMBAAGjezB5MAkGA1Ud",
+//	"EwQCMAAwLAYJYIZIAYb4QgENBB8WHU9wZW5TU0wgR2VuZXJhdGVkIENlcnRpZmlj",
+//	"YXRlMB0GA1UdDgQWBBRvfK5HvBuCcx39T9FWtGYOcLB46TAfBgNVHSMEGDAWgBSv",
+//	"ozGO00BQe0sdO46u9CukB0fyDTANBgkqhkiG9w0BAQUFAAOCAgEAiVAMfBL8xzj/",
+//	"O07VxbpDExCGrk5F4T7ecFqrXpq+ALSY0Zh1bQU5yo8Dq7Q5CZxkbf12gCeRja6K",
+//	"9De+A5xkjZGUS9f6+UEgN344I/WuttAJvGOE5WNnDiXWtG9e0rPmc67jF4DhvL+I",
+//	"rq8Wvq7tFO2yTblsYI/ZYe4aTYRI6L20TRM/MN+zIm+mnQHLJZknz/j6joX0J7Qb",
+//	"8ZNq+5ZaelMI1HE7XejZSY0VNKR+qgJcQ3LEi81ixi/RRdzdzGR6b16zZH571b24",
+//	"Id5pgvp9as3MTruSAmiiAUIVLqAJIRG+Q/zelfwGTe4WEQRZyR3t0lQlFw5ROirb",
+//	"kjSHq+Wx4TearhOki1QGEMvP9Ao6EGtaADklbGgEGpPrWeI+bx4OzJTBi4Qg8yrj",
+//	"rE0ASfrhdMTIONnqZh65rAhq2/QsEzg5nLYOSYDltdoz9GxBqyy4J+HIzjywhza2",
+//	"PT3PJ6gArTE7XAEcXGNdijV4DxHkOS1np9ObPFEYAA+L0ZLQiO1H0I2t6EeiPynP",
+//	"1pJfPVXMbplvzFrnOEKPaUPdW4n8jbG1bBdhJRprGK5oV/AU5clrRBW3bH3UMrkC",
+//	"uol9Iro4CpErNVop5ylL3P54ByCojpou/aKiQN3LL2q7EghUQfjVHppYGfRje+DI",
+//	"y25N8OB8yRP9OAb8rI+k1Zxj8Y8Pcgs=",
+//	"-----END CERTIFICATE-----",
 };
 
 static const std::vector<std::string> g_user_private_key = {
-	"MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDEWicZ0zyR0eZ9",
-	"T87i4A/Qjff9eAXPRkVaF4cORfpEcgZbdNqFpXQNWlB/UvMmckL5V6sT7mFB/XUg",
-	"BkgHq45yEzP4W5TS2XozxhP6lqfZMg2L1PA2nJqkOFdeLNapIVf8ksP4szs+drAz",
-	"s0n8EjtBVH23oHbx3R9EV7nLhknJOdqAf7u+two3iaG9oSq3zasnYc7jCGRpa7kx",
-	"Au+iWecCJ8N+IGdNgHQKzNiZyvhKimDfqy/5JxWcS0xSyp6OzIe5XfTXIwEKNptl",
-	"9hOWsg4qe9kS1KPzHz9wh9cJZ+6cSCmGBUR0KQi8mOoHb37k04cDJa5WN6UK0kpD",
-	"KUS/8gxjAgMBAAECggEBALb0LaTBj5lrlDFFEMeS8Qlpjx3NHNSybGJys7PX/kaS",
-	"XFwROJ/4t3bNpV3N46P6KW99gXmTz2mWifDqCWmkL5kZTX5njvccDuJ4+RqwD/uv",
-	"yLF3GtA4AVts5/NnIij7WamM8y8jids86hdyQkiukCniWTWlPc9FMyIR/5ulJ9Fn",
-	"BUEnByNryY9cVx1CSWWQebVu/9tYJVs5Tn71Rpj0h3j9hOYeI+NROD/j4iN0LDJp",
-	"uagg89F2PrhiOjM7mPJQmWbNME3whxgoN29AGo8NbbYZ2VqXeoWz3M/WxlsvP+mT",
-	"W3STGxmatuObojhix43tjPn0jSt3yGrxtFE4SNVuP5kCgYEA7N2K2spxlY4NfxGm",
-	"vZ0/H0z7qBk8lvFsZf1hKNZBT+lQsmxKpXH/q3dKknfitBTxpZtms81tDDM+77XG",
-	"PCfOI/ELXwJG9GFao0PillWH58V0NnrPte8/cfl8Lx4138IagDHStk4PuldiQRWe",
-	"F2s124wZZzQrw8/+rf0RLudB9icCgYEA1DbIWxOtASTUb1VBbXo7pLFOyoLYrJD+",
-	"NPQWMoMWYQ1w/5Kd3stt9CZouv14ml/fIsyXxueFzO4k6dGxkvQDwLtC4XJWjiwX",
-	"n2B/HRZ4hV4xsJ6H0M2A1mZkNUX42aDNUsR8Em6zen8cbxVBTuwY9/RsagMxDZF2",
-	"lU59F+GA+WUCgYALyElr8L4Nrm9Fbt9Yd0X4jJ/IENlOuNunhx8aJO5Cx1xYQ8LC",
-	"0BTjtp9jAcupIZGTp1NIhmNyQ+pRij0+KMy8RPVH2Jkm9uDHVk0jJUYJZW0OeLV0",
-	"W15QkRR4U4xigQlIbzIIF4H4xvgAPM8MYyzequ1okNPMfcAxb3E3YBGL6QKBgBez",
-	"EocRWHXTPiI83DS0vOp0nr8BA9+pxan2RHBZsWsfTCpOnnDeOSZWD8YqPojHAi1p",
-	"ud2Nx6SOR/MQ5wrpU233u81frojsJas35JpEAyupzFTUL4jDGotXHgPRD6yGR8fh",
-	"h5WrZUHd5jgFoKiGt3chheYE+zpvr1WXUWMUXQn9AoGBANkkLXfDDBjcteH5pUwD",
-	"zIuLaKXwJp2Iu7Z+Vj7xcb61W/nFmqNpVJNE/QP/i0Hz3+iDiJ+xFkh/a3ceEQTa",
-	"/Mt3yRZkX6JBLk8IiPL65KTwf4wkeuXQ+0LhvzyxYXhpc2BQnbFaYkWqF+C2Tt7G",
-	"6sn+c32sDV/5PgCJpWUowBLy"
+	"-----BEGIN RSA PRIVATE KEY-----",
+	"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",
+	"-----END RSA PRIVATE KEY-----",
+//	"-----BEGIN PRIVATE KEY-----",
+//	"MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDEWicZ0zyR0eZ9",
+//	"T87i4A/Qjff9eAXPRkVaF4cORfpEcgZbdNqFpXQNWlB/UvMmckL5V6sT7mFB/XUg",
+//	"BkgHq45yEzP4W5TS2XozxhP6lqfZMg2L1PA2nJqkOFdeLNapIVf8ksP4szs+drAz",
+//	"s0n8EjtBVH23oHbx3R9EV7nLhknJOdqAf7u+two3iaG9oSq3zasnYc7jCGRpa7kx",
+//	"Au+iWecCJ8N+IGdNgHQKzNiZyvhKimDfqy/5JxWcS0xSyp6OzIe5XfTXIwEKNptl",
+//	"9hOWsg4qe9kS1KPzHz9wh9cJZ+6cSCmGBUR0KQi8mOoHb37k04cDJa5WN6UK0kpD",
+//	"KUS/8gxjAgMBAAECggEBALb0LaTBj5lrlDFFEMeS8Qlpjx3NHNSybGJys7PX/kaS",
+//	"XFwROJ/4t3bNpV3N46P6KW99gXmTz2mWifDqCWmkL5kZTX5njvccDuJ4+RqwD/uv",
+//	"yLF3GtA4AVts5/NnIij7WamM8y8jids86hdyQkiukCniWTWlPc9FMyIR/5ulJ9Fn",
+//	"BUEnByNryY9cVx1CSWWQebVu/9tYJVs5Tn71Rpj0h3j9hOYeI+NROD/j4iN0LDJp",
+//	"uagg89F2PrhiOjM7mPJQmWbNME3whxgoN29AGo8NbbYZ2VqXeoWz3M/WxlsvP+mT",
+//	"W3STGxmatuObojhix43tjPn0jSt3yGrxtFE4SNVuP5kCgYEA7N2K2spxlY4NfxGm",
+//	"vZ0/H0z7qBk8lvFsZf1hKNZBT+lQsmxKpXH/q3dKknfitBTxpZtms81tDDM+77XG",
+//	"PCfOI/ELXwJG9GFao0PillWH58V0NnrPte8/cfl8Lx4138IagDHStk4PuldiQRWe",
+//	"F2s124wZZzQrw8/+rf0RLudB9icCgYEA1DbIWxOtASTUb1VBbXo7pLFOyoLYrJD+",
+//	"NPQWMoMWYQ1w/5Kd3stt9CZouv14ml/fIsyXxueFzO4k6dGxkvQDwLtC4XJWjiwX",
+//	"n2B/HRZ4hV4xsJ6H0M2A1mZkNUX42aDNUsR8Em6zen8cbxVBTuwY9/RsagMxDZF2",
+//	"lU59F+GA+WUCgYALyElr8L4Nrm9Fbt9Yd0X4jJ/IENlOuNunhx8aJO5Cx1xYQ8LC",
+//	"0BTjtp9jAcupIZGTp1NIhmNyQ+pRij0+KMy8RPVH2Jkm9uDHVk0jJUYJZW0OeLV0",
+//	"W15QkRR4U4xigQlIbzIIF4H4xvgAPM8MYyzequ1okNPMfcAxb3E3YBGL6QKBgBez",
+//	"EocRWHXTPiI83DS0vOp0nr8BA9+pxan2RHBZsWsfTCpOnnDeOSZWD8YqPojHAi1p",
+//	"ud2Nx6SOR/MQ5wrpU233u81frojsJas35JpEAyupzFTUL4jDGotXHgPRD6yGR8fh",
+//	"h5WrZUHd5jgFoKiGt3chheYE+zpvr1WXUWMUXQn9AoGBANkkLXfDDBjcteH5pUwD",
+//	"zIuLaKXwJp2Iu7Z+Vj7xcb61W/nFmqNpVJNE/QP/i0Hz3+iDiJ+xFkh/a3ceEQTa",
+//	"/Mt3yRZkX6JBLk8IiPL65KTwf4wkeuXQ+0LhvzyxYXhpc2BQnbFaYkWqF+C2Tt7G",
+//	"6sn+c32sDV/5PgCJpWUowBLy",
+//	"-----END PRIVATE KEY-----",
 };
 
 JsonObject CypherDaemon::MakeAccountObject()
@@ -420,25 +591,7 @@ void CypherDaemon::RPC_applySettings(const JsonObject& settings)
 		g_settings.OnChanged(changed);
 }
 
-static void WriteArraySetting(std::ostream& out, const std::string& name, const std::string& type, const std::vector<std::string>& arr)
-{
-	if (!arr.empty())
-	{
-		static const std::string dash = "-----";
-		auto ensure = [&](const std::string& value, const std::string& str) {
-			if (value != str) out << str << std::endl;
-		};
-		out << '<' << name << '>' << std::endl;
-		ensure(arr.front(), dash + "BEGIN " + type + dash);
-		for (const auto& line : arr)
-			out << line << std::endl;
-		ensure(arr.back(), dash + "END " + type + dash);
-		out << '<' << '/' << name << '>' << std::endl;
-	}
-}
-
-
-void WriteOpenVPNProfile(std::ostream& out, const JsonObject& settings)
+void WriteOpenVPNProfile(std::ostream& out, const ServerInfo& server)
 {
 	using namespace std;
 
@@ -449,22 +602,53 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& settings)
 		//{ "nobind", "" },
 		{ "dev", "tun" },
 		{ "proto", g_settings.protocol() },
-		{ "remote", g_settings.remote() + " " + (g_settings.remotePort() == "auto" ? "7133" : g_settings.remotePort()) },
 		{ "tun-mtu", std::to_string(mtu) },
 		//{ "fragment", std::to_string(mtu - 100) },
 		{ "mssfix", std::to_string(mtu - 200) },
 		{ "ping", "10" },
 		{ "ping-exit", "60" },
 		{ "resolv-retry", "infinite" },
-		{ "cipher", g_settings.cipher() },
+		//{ "cipher", g_settings.cipher() },
+		//{ "tls-cipher", "TLS-DHE-RSA-WITH-AES-128-GCM-SHA256:TLS-DHE-RSA-WITH-AES-128-CBC-SHA256" },
+		{ "auth", "SHA256" },
 		{ "redirect-gateway", "def1" },
 		{ "route-delay", "0" },
+		{ "tls-version-min", "1.2" },
+		{ "remote-cert-tls", "server" },
+		{ "persist-tun", "" },
 	};
 
 	if (g_settings.localPort() == 0)
 		config["nobind"] = "";
 	else
 		config["lport"] = std::to_string(g_settings.localPort());
+
+	const auto& encryption = g_settings.encryption();
+	config["remote"] = server.ips.at(encryption) + (g_settings.remotePort() == "auto" ? " 7133" : " " + g_settings.remotePort());
+	if (encryption == "stealth")
+	{
+		config["tls-cipher"] = "TLS-DHE-RSA-WITH-AES-128-GCM-SHA256:TLS-DHE-RSA-WITH-AES-128-CBC-SHA256";
+		config["cipher"] = "AES-128-CBC";
+		config["auth"] = "SHA256";
+	}
+	else if (encryption == "strong")
+	{
+		config["tls-cipher"] = "TLS-DHE-RSA-WITH-AES-256-GCM-SHA384:TLS-DHE-RSA-WITH-AES-256-CBC-SHA256";
+		config["cipher"] = "AES-256-CBC";
+		config["auth"] = "SHA512";
+	}
+	else if (encryption == "none")
+	{
+		config["tls-cipher"] = "TLS-DHE-RSA-WITH-AES-128-GCM-SHA256:TLS-DHE-RSA-WITH-AES-128-CBC-SHA256";
+		config["cipher"] = "none";
+		config["auth"] = "SHA1";
+	}
+	else // encryption == "default"
+	{
+		config["tls-cipher"] = "TLS-DHE-RSA-WITH-AES-128-GCM-SHA256:TLS-DHE-RSA-WITH-AES-128-CBC-SHA256";
+		config["cipher"] = "AES-128-CBC";
+		config["auth"] = "SHA256";
+	}
 
 	// FIXME: Manually translate other settings to OpenVPN parameters
 	/*
@@ -504,9 +688,19 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& settings)
 		out << endl;
 	}
 
-	WriteArraySetting(out, "ca", "CERTIFICATE", g_certificate_authority);
-	WriteArraySetting(out, "cert", "CERTIFICATE", g_user_certificate);
-	WriteArraySetting(out, "key", "PRIVATE KEY", g_user_private_key);
+	out << "<ca>" << endl;
+	for (auto& ca : g_certificate_authorities)
+		for (auto& line : ca)
+			out << line << endl;
+	out << "</ca>" << endl;
+	out << "<cert>" << endl;
+	for (auto& line : g_user_certificate)
+		out << line << endl;
+	out << "</cert>" << endl;
+	out << "<key>" << endl;
+	for (auto& line : g_user_private_key)
+		out << line << endl;
+	out << "</key>" << endl;
 }
 
 bool CypherDaemon::RPC_connect()
@@ -590,7 +784,7 @@ bool CypherDaemon::RPC_connect()
 #endif
 	{
 		std::ofstream f(profile_filename.c_str());
-		WriteOpenVPNProfile(f, settings);
+		WriteOpenVPNProfile(f, _servers.at(g_settings.server()));
 		f.close();
 	}
 	args.push_back(profile_filename);

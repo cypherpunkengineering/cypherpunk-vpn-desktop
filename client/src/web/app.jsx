@@ -100,7 +100,7 @@ class ConnectScreen extends React.Component {
 
   state = {
     regions: daemon.config.servers,
-    selectedRegion: daemon.settings.remote,
+    selectedRegion: daemon.settings.server,
     receivedBytes: 0,
     sentBytes: 0,
     connectionState: 'disconnected',
@@ -123,9 +123,9 @@ class ConnectScreen extends React.Component {
     return newState;
   }
   handleDaemonSettingsChange(settings) {
-    if (settings.remote) {
-      this.setState({ selectedRegion: settings.remote });
-      $(this.refs.regionDropdown).dropdown('set selected', settings.remote);
+    if (settings.server) {
+      this.setState({ selectedRegion: settings.server });
+      $(this.refs.regionDropdown).dropdown('set selected', settings.server);
     }
   }
   handleDaemonStateChange(state) {
@@ -211,7 +211,7 @@ class ConnectScreen extends React.Component {
           <i class="dropdown icon"></i>
           <div class="default text">Select Region</div>
           <div class="menu">
-            { this.state.regions.map(r => <div class="item" data-value={r.remote} key={r.remote}><i class={r.country + " flag"}></i>{r.name}</div>) }
+            { this.state.regions.map(s => <div class="item" data-value={s.id} key={s.id}><i class={s.country + " flag"}></i>{s.name}</div>) }
           </div>
         </div>
         <div id="connection-stats" class="ui two column center aligned grid">
@@ -227,7 +227,7 @@ class ConnectScreen extends React.Component {
         this.setState({ connectionState: 'connecting' });
         daemon.post.applySettings({
           protocol: "udp",
-          remote: this.getSelectedRegion(),
+          server: this.getSelectedRegion(),
         });
         daemon.post.connect();
         daemon.post.get('state');
@@ -245,8 +245,8 @@ class ConnectScreen extends React.Component {
   getSelectedRegion() {
     return $(this.refs.regionDropdown).dropdown('get value');
   }
-  handleRegionSelect(remote) {
-    daemon.post.applySettings({ remote: remote });
+  handleRegionSelect(server) {
+    daemon.post.applySettings({ server: server });
   }
 }
 
