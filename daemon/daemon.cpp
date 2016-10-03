@@ -36,7 +36,11 @@ CypherDaemon::CypherDaemon()
 {
 	// FIXME: Don't hardcode
 	ServerInfo hardcoded_servers[] = {
-		{ "tokyo3", "Tokyo Test", "jp", 35.683333, 139.683333, { { "default", "208.111.52.34" }, { "none", "208.111.52.35" }, { "strong", "208.111.52.36" }, { "stealth", "208.111.52.37" } } },
+#define SERVER(id, name, country, lat, lon, ip_default, ip_none, ip_strong, ip_stealth) { id, name, country, lat, lon, { { "default", ip_default }, { "none", ip_none }, { "strong", ip_strong }, { "stealth", ip_stealth } } }
+		SERVER("freebsd-test.tokyo.vpn.cypherpunk.network", "Tokyo Test, Japan", "jp", 35.683333, 139.683333, "208.111.52.34", "208.111.52.35", "208.111.52.36", "208.111.52.37"),
+		SERVER("freebsd2.tokyo.vpn.cypherpunk.network", "Tokyo 2, Japan", "jp", 35.683333, 139.683333, "208.111.52.2", "208.111.52.12", "208.111.52.22", "208.111.52.32"),
+		SERVER("honolulu.vpn.cypherpunk.network", "Honolulu, HI, USA", "us", 21.3, -157.816667, "199.68.252.203", "199.68.252.203", "199.68.252.203", "199.68.252.203"),
+#undef SERVER
 	};
 	for (auto& s : hardcoded_servers)
 		_servers.emplace(std::pair<std::string, ServerInfo>(s.id, std::move(s)));
@@ -614,7 +618,9 @@ void WriteOpenVPNProfile(std::ostream& out, const ServerInfo& server)
 		{ "redirect-gateway", "def1" },
 		{ "route-delay", "0" },
 		{ "tls-version-min", "1.2" },
-		{ "remote-cert-tls", "server" },
+		//{ "remote-cert-tls", "server" },
+		{ "remote-cert-eku", "\"TLS Web Server Authentication\"" },
+		{ "verify-x509-name", server.id + " name" },
 		{ "persist-tun", "" },
 	};
 
