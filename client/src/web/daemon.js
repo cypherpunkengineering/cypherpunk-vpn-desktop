@@ -98,4 +98,37 @@ ipcRenderer.on('daemon-down', down);
   } 
 })();
 
-module.exports = daemon;
+export default daemon;
+
+import React from 'react';
+
+export const DaemonAware = (Base = React.Component) => class extends Base {
+  constructor(props) {
+    super(props);
+    this._daemonThunks = {
+      account: a => this.daemonAccountChanged(a),
+      config: c => this.daemonConfigChanged(c),
+      settings: s => this.daemonSettingsChanged(s),
+      state: s => this.daemonStateChanged(s),
+    }; 
+  }
+  componentDidMount() {
+    if (super.componentDidMount) super.componentDidMount();
+    daemon.on('account', this._daemonThunks.account);
+    daemon.on('config', this._daemonThunks.config);
+    daemon.on('settings', this._daemonThunks.settings);
+    daemon.on('state', this._daemonThunks.state);
+  }
+  componentWillUnmount() {
+    if (super.componentWillUnmount) super.componentWillUnmount();
+    daemon.removeListener('state', this._daemonThunks.state);
+    daemon.removeListener('settings', this._daemonThunks.settings);
+    daemon.removeListener('config', this._daemonThunks.config);
+    daemon.removeListener('account', this._daemonThunks.account);
+  }
+  daemonAccountChanged(account) {}
+  daemonConfigChanged(config) {}
+  daemonSettingsChanged(settings) {}
+  daemonStateChanged(state) {}
+};
+
