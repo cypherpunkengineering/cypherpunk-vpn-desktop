@@ -1,10 +1,12 @@
 const electron = require('electron');
 const { app, dialog, BrowserWindow, Tray, Menu, ipcMain: ipc } = electron;
+const fs = require('fs');
 let daemon = require('./daemon.js');
 
 let exiting = false;
 let main = null;
 let tray = null;
+let os = ({ 'win32': '_win', 'darwin': '_osx', 'linux': '_lin' })[process.platform] || '';
 let dpi = '';
 
 let args = {
@@ -42,7 +44,19 @@ function connectToDaemon(port) {
   });
 }
 
+function getOSResource(name) {
+  name = `${__dirname}/${name}`;
+  var os_name = name.replace(/\.[^.]*$/, os + '$&');
+  return fs.existsSync(os_name) ? os_name : name;
+}
 
+function getResource(name) {
+  return `${__dirname}/${name}`;
+}
+
+function getFlag(country) {
+  return getResource(`assets/img/flags/${country}.png`);
+}
 
 app.on('will-quit', event => {
   if (!exiting && daemon) {
@@ -99,10 +113,10 @@ function createTrayMenu() {
     { type: 'separator' },
     {
       label: "Server: " + (server ? server.name : "None"),
-      icon: server ? `${__dirname}/assets/img/flags/${server.country}${dpi}.png` : null,
+      icon: server ? getFlag(server.country) : null,
       submenu: !connected ? daemon.config.servers.map(s => ({
         label: s.name,
-        icon: `${__dirname}/assets/img/flags/${s.country}${dpi}.png`,
+        icon: getFlag(s.country),
         type: 'checkbox',
         checked: daemon.settings.server === s.id,
         click: () => { if (!connected) daemon.post.applySettings({ server: s.id }); }
