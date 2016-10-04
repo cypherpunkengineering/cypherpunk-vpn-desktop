@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router';
-import daemon from './daemon.js';
+import daemon, { DaemonAware } from './daemon.js';
 
 
 export default class ConfigurationScreen extends React.Component  {
@@ -29,21 +29,17 @@ export default class ConfigurationScreen extends React.Component  {
   }
 }
 
-class AdvancedSettings extends React.Component  {
+class AdvancedSettings extends DaemonAware(React.Component)  {
   constructor(props) {
     super(props);
-    this.handleDaemonSettingsChange = this.handleDaemonSettingsChange.bind(this);
   }
   componentDidMount() {
+    super.componentDidMount();
     $(this.refs.protocol).dropdown({ onChange: value => { daemon.post.applySettings({ protocol: value }); }});
     $(this.refs.remotePort).dropdown({ onChange: value => { daemon.post.applySettings({ remotePort: value }); }});
     $(this.refs.localPort).val(daemon.settings.localPort || "");
-    daemon.addListener('settings', this.handleDaemonSettingsChange);
   }
-  componentWillUnmount() {
-    daemon.removeListener('settings', this.handleDaemonSettingsChange);
-  }
-  handleDaemonSettingsChange(settings) {
+  daemonSettingsChanged(settings) {
     if (settings.protocol !== undefined) {
       $(this.refs.protocol).dropdown('set selected', settings.protocol);
     }
