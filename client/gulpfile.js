@@ -112,11 +112,13 @@ gulp.task('watch-web', ['watch-webpack']);
  * WEBPACK: Bundle up all sources from src/web/ and referenced node modules
  * and put the resulting output files in app/web/.
  */
-gulp.task('build-webpack', ['build-semantic', 'build-web-libraries', 'build-web-fonts'], function(callback) {
-  webpack(webpackConfig).run(webpackLogger(callback));
+gulp.task('build-webpack', ['build-semantic', 'build-web-libraries', 'build-web-fonts'], function() {
+  return new Promise((resolve, reject) => {
+    webpack(webpackConfig).run(webpackLogger(resolve, reject));
+  });
 });
 gulp.task('watch-webpack', function() {
-  webpack(webpackConfig).watch({}, webpackLogger(function(){}));
+  webpack(webpackConfig).watch({}, webpackLogger(() => {}, () => {}));
 });
 
 /***************************************************************************
@@ -207,17 +209,30 @@ function ifEmpty(isEmpty, isNotEmpty) {
 }
 
 // Helper function: print out the results from webpack, or throw an error on failure.
-function webpackLogger(callback) {
+function webpackLogger(resolve, reject) {
   return function(err, stats) {
-    if (err) throw new gutil.PluginError('webpack', err);
-    gutil.log("Webpack completed successfully:\n" +
-      stats.toString({
+    if (err) {
+      reject(new gutil.PluginError('webpack', { message: 'Fatal error: ' + err.toString() }));
+    } else {
+      var log = stats.toString({
+        chunks: false,
+        errors: true,
+        //errorDetails: true,
+        assets: false,
+        children: false,
         hash: false,
+        timings: false,
         version: false,
         cached: false,
         colors: true
-      }));
-    callback();
+      });
+      if (stats.hasErrors()) {
+        reject(new gutil.PluginError('webpack', { message: "Webpack compile error(s):\n" + log}));
+      } else {
+        gutil.log("Webpack completed successfully:\n" + log);
+        resolve();
+      }
+    }
   };
 }
 
