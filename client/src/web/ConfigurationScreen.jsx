@@ -309,7 +309,7 @@ class GeneralSettings extends React.Component  {
               <div className="menu">
                 <div className="item" data-value="dockonly">Dock Only</div>
                 <div className="item" data-value="menuonly">Menu Only</div>
-                <div className="item" data-value="dockmenu">Dock & Menu</div>
+                <div className="item" data-value="dockmenu">Dock &amp; Menu</div>
               </div>
             </div>
             </div>
