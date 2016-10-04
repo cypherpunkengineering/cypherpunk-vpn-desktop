@@ -1,5 +1,5 @@
 const electron = require('electron');
-const { app, dialog, BrowserWindow, Tray, Menu, ipcMain: ipc } = electron;
+const { app, dialog, BrowserWindow, Tray, Menu, nativeImage: NativeImage, ipcMain: ipc } = electron;
 const fs = require('fs');
 let daemon = require('./daemon.js');
 
@@ -135,7 +135,11 @@ function createTrayMenu() {
 }
 
 function createTray() {
-  tray = new Tray(`${__dirname}/assets/img/tray_win.png`);
+  var trayIcon = NativeImage.createFromPath(getOSResource('assets/img/tray.png'));
+  if (os == '_osx') {
+    trayIcon.setTemplateImage(true);
+  }
+  tray = new Tray(trayIcon);
   tray.setToolTip('Cypherpunk VPN');
   function refresh() {
     tray.setContextMenu(createTrayMenu());
