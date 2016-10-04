@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router';
+import { ipcRenderer as ipc } from 'electron';
 import daemon, { DaemonAware } from './daemon.js';
 
 
@@ -188,8 +189,25 @@ class AdvancedSettings extends DaemonAware(React.Component)  {
 }
 
 class GeneralSettings extends React.Component  {
+  constructor(props) {
+    super(props);
+    this.listeners = {
+      autostart: (event, enabled) => this.onAutoStartSettingChanged(enabled),
+    };
+  }
+  componentWillMount() {
+    ipc.on('autostart-value', this.listeners.autostart);
+    ipc.send('autostart-get');
+  }
   componentDidMount() {
     $(this.refs.showinDropdown).dropdown();
+    $(this.refs.runonstartup).parent().checkbox({ onChange: function() { ipc.send('autostart-set', this.checked); } });
+  }
+  componentWillUnmount() {
+    ipc.removeListener('autostart-value', this.listeners.autostart);
+  }
+  onAutoStartSettingChanged(enabled) {
+    $(this.refs.runonstartup).parent().checkbox('set ' + (enabled ? 'checked' : enabled === null ? 'indeterminate' : 'unchecked'));
   }
   render() {
     return(
@@ -266,11 +284,11 @@ class GeneralSettings extends React.Component  {
           </div>
           <div className="row cp_row">
             <div className="eleven wide olive column">
-              <label for="startapponstartup">Start application on startup</label>
+              <label for="runonstartup">Launch on startup</label>
             </div>
             <div className="five wide olive right aligned column">
               <div className="ui checkbox">
-                <input type="checkbox" name="startapponstartup" id="startapponstartup"/>
+                <input type="checkbox" name="runonstartup" id="runonstartup" ref="runonstartup"/>
                 <label />
               </div>
             </div>

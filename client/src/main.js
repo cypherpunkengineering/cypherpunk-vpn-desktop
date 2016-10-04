@@ -21,6 +21,30 @@ process.argv.forEach(arg => {
   }
 });
 
+
+let AutoLaunch = new (require('auto-launch'))({
+  name: "Cypherpunk VPN"
+});
+
+ipc.on('autostart-get', (event) => {
+  AutoLaunch.isEnabled()
+    .then(enabled => event.sender.send('autostart-value', enabled))
+    .catch(error => {
+      console.warning("Unable to read autostart configuration");
+      event.sender.send('autostart-value', null);
+    });
+});
+
+ipc.on('autostart-set', (event, enable) => {
+  (enable ? AutoLaunch.enable() : AutoLaunch.disable())
+    .then(result => event.sender.send('autostart-value', enable))
+    .catch(error => {
+      console.error("Unable to write autostart configuration");
+      event.sender.send('autostart-value', null);
+    })
+});
+
+
 function eventPromise(emitter, name) {
   return new Promise((resolve, reject) => {
     emitter.once(name, resolve);
