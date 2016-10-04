@@ -11,7 +11,6 @@ let args = {
   debug: false,
   showWindowOnStart: true,
 };
-var noMain = false;
 process.argv.forEach(arg => {
   if (arg === "--debug") {
     args.debug = true;
@@ -43,9 +42,7 @@ function connectToDaemon(port) {
   });
 }
 
-ipc.on('daemon', (event, arg) => {
 
-});
 
 app.on('will-quit', event => {
   if (!exiting && daemon) {
@@ -87,6 +84,8 @@ timeoutPromise(Promise.all(preinitPromises), 2000).then(() => {
   createTray();
   createMainWindow();
 }).catch(err => {
+  // FIXME: Message box with initialization error
+  console.error(err);
   app.quit();
 });
 
