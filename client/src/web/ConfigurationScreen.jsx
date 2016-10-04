@@ -306,7 +306,7 @@ class GeneralSettings extends React.Component  {
           </div>
           <div className="row cp_row">
             <div className="eleven wide olive column">
-              <label for="desktopnotifications">Show dekstop notifications</label>
+              <label for="desktopnotifications">Show desktop notifications</label>
             </div>
             <div className="five wide olive right aligned column">
               <div className="ui checkbox">
