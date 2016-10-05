@@ -227,5 +227,10 @@ function createMainWindow() {
 };
 
 app.on('window-all-closed', function() {
-  app.quit();
+  // On OSX, an application stays alive even after all windows have been
+  // closed (in the dock and/or tray), so don't exit.
+
+  // On Windows, the taskbar button goes away if the window is closed,
+  // and as a result we currently don't support taskbar-only mode, as
+  // the application should keep running even with the Window closed.
 });
