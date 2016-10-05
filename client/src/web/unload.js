@@ -1,3 +1,4 @@
+import { ipcRenderer as ipc } from 'electron';
 
 // Workaround to get an asynchronous window shutdown so we have time to clean stuff up
 
@@ -7,6 +8,7 @@ module.exports = window.addUnloadHandler = function addUnloadHandler(fn) {
 };
 
 var doClose = window.close.bind(window);
+var overrideClose = true;
 var exiting = false;
 
 function performCloseChain() {
@@ -19,7 +21,11 @@ function performCloseChain() {
 
 // Hook the window.onbeforeunload event (in case the window itself is closed)
 window.addEventListener('beforeunload', e => {
-  if (!exiting) {
+  if (overrideClose) {
+    ipc.send('close');
+    e.returnValue = false;
+    return false;
+  } else if (!exiting) {
     exiting = true;
     if (unloadHandlers) {
       setTimeout(performCloseChain, 0);
@@ -31,7 +37,9 @@ window.addEventListener('beforeunload', e => {
 
 // Hook the window.close function too, to do programmatic shutdown more cleanly
 window.close = function close() {
-  if (!exiting) {
+  if (overrideClose) {
+    ipc.send('close');
+  } else if (!exiting) {
     exiting = true;
     if (unloadHandlers) {
       setTimeout(performCloseChain, 0);
@@ -40,3 +48,8 @@ window.close = function close() {
     }
   }
 };
+
+ipc.on('close', function() {
+  overrideClose = false;
+  window.close();
+});
