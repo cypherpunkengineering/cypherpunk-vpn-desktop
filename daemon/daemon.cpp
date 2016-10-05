@@ -636,6 +636,7 @@ void WriteOpenVPNProfile(std::ostream& out, const ServerInfo& server)
 		config["tls-cipher"] = "TLS-DHE-RSA-WITH-AES-128-GCM-SHA256:TLS-DHE-RSA-WITH-AES-128-CBC-SHA256";
 		config["cipher"] = "AES-128-CBC";
 		config["auth"] = "SHA256";
+		config["scramble"] = "obfuscate cypherpunk-xor-key";
 	}
 	else if (encryption == "strong")
 	{
