@@ -82,6 +82,23 @@ function getFlag(country) {
   return getResource(`assets/img/flags/${country}.png`);
 }
 
+
+function displayNotification(message) {
+  if (os == '_osx' && main) {
+    // Apparently only works in the renderer process via webkitNotifications?
+    main.webContents.executeJavaScript(`
+      new Notification("Cypherpunk VPN", { body: ${JSON.stringify(message)} });
+    `);
+  } else if (os == '_win' && tray) {
+    tray.displayBalloon({
+      icon: undefined,
+      title: "Cypherpunk VPN",
+      content: message,
+    });
+  }
+}
+
+
 app.on('will-quit', event => {
   if (!exiting && daemon) {
     exiting = true;
@@ -233,4 +250,12 @@ app.on('window-all-closed', function() {
   // On Windows, the taskbar button goes away if the window is closed,
   // and as a result we currently don't support taskbar-only mode, as
   // the application should keep running even with the Window closed.
+
+  // However, the first time the window is closed (and we're not exiting),
+  // we should display a desktop notification to remind the user that the
+  // application is still running, at least on Windows since that's not
+  // common to all applications.
+  if (os == '_win') {
+    displayNotification("Cypherpunk VPN is still running - control it from here.");
+  }
 });
