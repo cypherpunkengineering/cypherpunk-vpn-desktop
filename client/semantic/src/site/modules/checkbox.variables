@@ -1,33 +1,37 @@
 /*******************************
     User Variable Overrides
 *******************************/
-@checkboxSize: 22px;
+@checkboxSize: @20px;
 @checkboxColor: #ffffff;
+@labelColor: #ffffff;
+
+@labelFontSize: @relative16px;
 
 /* Checkbox */
 @checkboxBackground: none;
-@checkboxBorder: 1px solid #ffffff;
+@checkboxBorderColor: rgba(255,255,255,0.5);
+@checkboxBorder: 1px solid @checkboxBorderColor;
 @checkboxBorderRadius: @2px;
 
 /* Hover */
-@checkboxHoverBackground: @hoveredTextColor;
-@checkboxHoverBorderColor: #ffffff;
-@labelHoverColor: @hoveredTextColor;
+@checkboxHoverBackground: @checkboxBackground;
+@checkboxHoverBorderColor: @checkboxBorderColor;
+@labelHoverColor: @labelColor;
 
 /* Pressed */
 @checkboxPressedBackground: none;
 @checkboxPressedBorderColor: #1560bd;
-@checkboxPressedColor: #ffffff;
-@labelPressedColor: @selectedTextColor;
+@checkboxPressedColor: @checkboxBorderColor;
+@labelPressedColor: @labelColor;
 
 /* Focus */
 @checkboxFocusBackground: none;
-@checkboxFocusBorderColor: #ffffff;
+@checkboxFocusBorderColor: @checkboxBorderColor;
 @checkboxFocusCheckColor: #ffffff;
-@labelFocusColor: @selectedTextColor;
+@labelFocusColor: @labelColor;
 
 /* Active */
-@labelActiveColor: @selectedTextColor;
+@labelActiveColor: @labelColor;
 @checkboxActiveBackground: #1560bd;
 @checkboxActiveBorderColor: #1560bd;
 @checkboxActiveCheckColor: #ffffff;
@@ -43,3 +47,60 @@
 @checkboxIndeterminateBorderColor: #1560bd;
 @checkboxIndeterminateCheckOpacity: 1;
 @checkboxIndeterminateCheckColor: #ffffff;
+
+@checkboxTransitionDuration: 0.1s;
+@checkboxBorderTransition:
+  color @checkboxTransitionDuration @defaultEasing,
+  border-color @checkboxTransitionDuration @defaultEasing,
+  background @checkboxTransitionDuration @defaultEasing
+;
+
+
+@handleBackground: #cde @subtleGradient;
+@handleBoxShadow:
+  @subtleShadow,
+  0px 0px 0px 1px @strongTransparentWhite inset
+;
+
+
+@toggleLaneWidth: 3rem;
+//@toggleHandleSize: 1.5rem;
+@toggleHandleSize: @20px; // FIXME: should match toggleLaneHeight below
+@toggleTransitionDuration: 0.2s;
+
+@toggleWidth: @toggleLaneWidth;
+@toggleHeight: @toggleHandleSize;
+
+@toggleHandleRadius: @circularRadius;
+@toggleHandleOffset: 0rem;
+@toggleHandleTransition:
+  background @toggleTransitionDuration @defaultEasing,
+  left @toggleTransitionDuration @defaultEasing,
+  right @toggleTransitionDuration @defaultEasing
+;
+
+@toggleLaneBackground: @strongTransparentBlack;
+@toggleLaneHeight: @toggleHandleSize - 0.4rem;
+@toggleLaneVerticalOffset: 0.2rem;
+@toggleOffOffset: -0.05rem;
+@toggleOnOffset: (@toggleLaneWidth - @toggleHandleSize) + 0.15rem;
+@toggleOffOffsetRight: (@toggleLaneWidth - @toggleHandleSize) + 0.05rem;
+@toggleOnOffsetRight: -0.05rem;
+@toggleLaneTransition:
+  background @toggleTransitionDuration @defaultEasing
+;
+
+@toggleLabelDistance: @toggleLaneWidth + 1rem;
+@toggleLabelLineHeight: 1.5rem;
+@toggleLabelOffset: 0.15em;
+
+@toggleFocusColor: @veryStrongTransparentBlack;
+@toggleHoverColor: @toggleLaneBackground;
+
+@toggleOffLabelColor: @labelColor;
+@toggleOnLabelColor: @toggleOffLabelColor;
+
+@toggleOnLaneColor: @cpDarkYellow;
+
+@toggleOnFocusLaneColor: @toggleOnLaneColor;
+@toggleOnFocusLabelColor: @toggleOnLabelColor;

@@ -201,6 +201,7 @@ class GeneralSettings extends React.Component  {
   }
   componentDidMount() {
     $(this.refs.showinDropdown).dropdown();
+    $(this.refs.root).find('.ui.checkbox').checkbox();
     $(this.refs.runonstartup).parent().checkbox({ onChange: function() { ipc.send('autostart-set', this.checked); } });
   }
   componentWillUnmount() {
@@ -211,7 +212,7 @@ class GeneralSettings extends React.Component  {
   }
   render() {
     return(
-      <div>
+      <div class="cp-settings" ref="root">
         <div className="ui equal width center aligned padded grid ">
           <div className="row cp_row">
             <div className="olive column cp_account_avatar">
@@ -276,64 +277,43 @@ class GeneralSettings extends React.Component  {
             </div>
           </div>
         </div>
-        <div className="ui padded grid">
-          <div className="row cp_row">
-            <div className="sixteen wide column">
-              <h3 className="ui yellow header cp_h3">BASIC SETTINGS</h3>
+
+        <div class="ui fluid vertical cp-settings menu">
+          <div class="header">Basic settings</div>
+          <div class="cp-setting clickable item">
+            <div class="ui toggle checkbox">
+              <input type="checkbox" name="runonstartup" id="runonstartup" ref="runonstartup"/>
+              <label>
+                Launch on startup
+              </label>
             </div>
           </div>
-          <div className="row cp_row">
-            <div className="eleven wide olive column">
-              <label for="runonstartup">Launch on startup</label>
-            </div>
-            <div className="five wide olive right aligned column">
-              <div className="ui checkbox">
-                <input type="checkbox" name="runonstartup" id="runonstartup" ref="runonstartup"/>
-                <label />
-              </div>
+          <div class="cp-setting clickable item">
+            <div class="ui checkbox">
+              <input type="checkbox" name="autoconnect" id="autoconnect"/>
+              <label>Auto-connect on launch</label>
             </div>
           </div>
-          <div className="row cp_row">
-            <div className="eleven wide olive column">
-              <label for="autoconnect">Auto-connect on launch</label>
-            </div>
-            <div className="five wide olive right aligned column">
-              <div className="ui checkbox">
-                <input type="checkbox" name="autoconnect" id="autoconnect"/>
-                <label />
-              </div>
+          <div class="cp-setting clickable item">
+            <div class="ui checkbox">
+              <input type="checkbox" id="desktopnotifications" name="desktopnotifications"/>
+              <label>Show desktop notifications</label>
             </div>
           </div>
-          <div className="row cp_row">
-            <div className="eleven wide olive column">
-              <label for="desktopnotifications">Show desktop notifications</label>
-            </div>
-            <div className="five wide olive right aligned column">
-              <div className="ui checkbox">
-                <input type="checkbox" id="desktopnotifications" name="desktopnotifications" />
-                <label />
-              </div>
-            </div>
-          </div>
-          <div className="row cp_row">
-            <div className="nine wide olive column">
-              Show cypherpunk icon in
-            </div>
-            <div className="seven wide olive right aligned column">
-            <div className="ui olive button selection dropdown" ref="showinDropdown">
-              <input type="hidden" name="showin" />
-              <i className="dropdown icon"></i>
-              <div className="default text">Dock Only</div>
+          <div class="cp-setting item">
+            <div class="ui olive button selection dropdown" ref="showinDropdown">
+              <input type="hidden" id="showin" name="showin"/>
+              <i class="dropdown icon"></i>
+              <div class="default text">Dock Only</div>
               <div className="menu">
-                <div className="item" data-value="dockonly">Dock Only</div>
-                <div className="item" data-value="menuonly">Menu Only</div>
-                <div className="item" data-value="dockmenu">Dock &amp; Menu</div>
+                <div class="item" data-value="dockonly">Dock Only</div>
+                <div class="item" data-value="menuonly">Menu Only</div>
+                <div class="item" data-value="dockmenu">Dock &amp; Menu</div>
               </div>
             </div>
-            </div>
+            <label>Show Cypherpunk icon in</label>
           </div>
         </div>
-
 
       </div>
     );

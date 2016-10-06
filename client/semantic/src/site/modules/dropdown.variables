@@ -20,6 +20,7 @@
 
 @selectionItemHorizontalPadding: @relative10px;
 @selectionItemVerticalPadding: @relative8px;
+@selectionItemDivider: 1px solid rgba(255,255,255,0.5);
 
 @upwardMenuBoxShadow: none;
 @upwardSelectionMenuBoxShadow: none;

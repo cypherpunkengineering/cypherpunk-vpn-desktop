@@ -9,3 +9,41 @@
 .ui.menu .item>img:not(.ui) {
   width: auto !important;
 }
+
+.cp-settings.ui.vertical.menu {
+  background: none;
+  > .header {
+    font-size: 14px;
+    text-transform: uppercase;
+    margin: 14px 1rem;
+    color: @cpYellow;
+    + .item:before {
+      display: none !important;
+    }
+  }
+  > .item {
+    position: relative;
+    padding: 0;
+    background-color: rgba(255,255,255,0.15);
+    min-height: 48px;
+    &.clickable:hover {
+      background-color: rgba(255,255,255,0.20);
+    }
+    > .checkbox, > label, > a {
+      padding: 1rem;
+      min-height: 48px;
+    }
+    > .dropdown {
+      margin: 0 !important;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      right: 1rem;
+      left: auto;
+    }
+    label {
+      display: block;
+      font-size: 16px;
+    }
+  }
+}

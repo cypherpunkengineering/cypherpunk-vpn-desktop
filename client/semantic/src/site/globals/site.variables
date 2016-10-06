@@ -23,6 +23,16 @@
 //@fontSize: 16px;
 @lineHeight: 1em;
 
+
+@cpBlue              : #1560bd;
+@cpDarkBlue          : #0f50a0;
+@cpYellow            : #f8cf1c;
+@cpDarkYellow        : #b69812;
+@cpLighter           : rgba(255, 255, 255, 0.16);
+@cpBlueGradientLight : #76a8e7;
+@cpBlueGradientDark  : #034698;
+
+
 @linkColor           : #fff;
 @linkUnderline       : none;
 @linkHoverColor      : rgba(255,255,255,0.5);
@@ -37,9 +47,9 @@
 @textColor: #ffffff;
 
 @orange           : #d19e12;
-@blue             : #034698;
-@yellow           : #f8cf1c;
-@olive            : rgba(255,255,255,0.16);
+@blue             : @cpBlueGradientDark;
+@yellow           : @cpYellow;
+@olive            : @cpLighter;
 
 @headerFontWeight : normal;
 @yellowHeaderColor : @yellow;
@@ -58,6 +68,10 @@
 @darkTextColor               : rgba(0, 0, 0, 0.85);
 @mutedTextColor              : rgba(0, 0, 0, 0.6);
 @lightTextColor              : rgba(0, 0, 0, 0.4);
+
+@subtleShadow:
+  0px 1px 2px 0 @veryStrongTransparentBlack
+;
 
 @unselectedTextColor         : rgba(0, 0, 0, 0.4);
 @hoveredTextColor            : #f8cf1c;

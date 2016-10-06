@@ -43,6 +43,9 @@
 @tabularActiveWeight: normal;
 @textMenuHeaderFontWeight: normal;
 
-@verticalHeaderFontSize: 20px;
+@verticalHeaderFontSize: 14px;
 
 @iconMenuItemColor: #fff;
+
+@dividerBackground: rgba(255,255,255,0.3);
+@verticalDividerBackground: @dividerBackground;
