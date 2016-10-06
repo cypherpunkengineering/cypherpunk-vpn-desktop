@@ -100,7 +100,6 @@ function displayNotification(message) {
 
 
 ipc.on('close', event => {
-  console.log('ipc:close');
   if (exiting) {
     event.sender.send('close');
   } else {
@@ -120,7 +119,6 @@ ipc.on('close', event => {
 });
 
 app.on('before-quit', event => {
-  console.log('before-quit');
   exiting = true;
   if (main) {
     main.webContents.send('close');
@@ -128,7 +126,6 @@ app.on('before-quit', event => {
 });
 
 app.on('will-quit', event => {
-  console.log('will-quit');
   if (daemon) {
     event.preventDefault();
     let d = daemon;
@@ -253,13 +250,13 @@ function createMainWindow() {
   main.setMenu(null);
   main.on('close', () => {
     main.webContents.closeDevTools();
-  })
+  });
   main.on('closed', () => {
     if (daemon) {
       daemon.setMainWindow(null);
     }
     main = null;
-  })
+  });
   main.on('ready-to-show', function() {
     if (args.showWindowOnStart) {
       main.show();
