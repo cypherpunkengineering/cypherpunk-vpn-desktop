@@ -7,10 +7,8 @@
 
 
 html, body { -webkit-user-select: none; user-select: none; cursor: default; min-width: 350px; }
-body { color: #fff; background: #1560bd; transition: 2s background; font-family: Dosis; font-weight: 500; letter-spacing: 0.02em;
+body { color: #fff; background: #1560bd; transition: 2s background; font-family: Dosis; font-weight: 500; -webkit-font-smoothing: antialiased; }
 
--webkit-font-smoothing: antialiased;
-}
 /*:not(input):not(textarea), :not(input):not(textarea)::after, :not(input):not(textarea)::before { -webkit-user-select: none; user-select: none; cursor: default; }*/
 /*input, button, textarea, :focus { outline: none; }*/
 /*a:not([draggable=true]), img:not([draggable=true]) { -webkit-user-drag: none; user-drag: none; }
@@ -88,7 +86,7 @@ div.screen {
 
 #connect-container { margin-top: 130px; height: 140px; display: flex; align-items: center; justify-content: center; }
 #connect { transition: 0.5s color; text-shadow: 0 0 15px rgba(0,0,0,0.25); }
-#connect-status { margin-top: 5px; font-size: 24px; font-weight: 600; color: #ccc; letter-spacing: 0.5px;}
+#connect-status { margin-top: 5px; font-size: 24px; font-weight: 600; color: #ccc; }
 #region-select { margin-top: 50px; width: 200px; height: 50px !important; position: absolute; bottom: 30px; border-radius: 5px !important;}
 #connection-stats { margin-top: 30px; width: 60%; display: none; }
 #connection-stats .value { color: #aaa; }
@@ -154,7 +152,6 @@ div.screen {
   color: #f8e71c;
   font-size: 18px;
   text-align: center;
-  letter-spacing: 0.4px;
   width: 100%;
   height: 50px;
   line-height: 50px;
