@@ -82,14 +82,58 @@ function getFlag(country) {
   return getResource(`assets/img/flags/${country}.png`);
 }
 
-app.on('will-quit', event => {
-  if (!exiting && daemon) {
-    exiting = true;
-    event.preventDefault();
-    daemon.disconnect().then(() => {
-      daemon = null;
-      app.quit();
+
+function displayNotification(message) {
+  if (os == '_osx' && main) {
+    // Apparently only works in the renderer process via webkitNotifications?
+    main.webContents.executeJavaScript(`
+      new Notification("Cypherpunk VPN", { body: ${JSON.stringify(message)} });
+    `);
+  } else if (os == '_win' && tray) {
+    tray.displayBalloon({
+      icon: undefined,
+      title: "Cypherpunk VPN",
+      content: message,
     });
+  }
+}
+
+
+ipc.on('close', event => {
+  console.log('ipc:close');
+  if (exiting) {
+    event.sender.send('close');
+  } else {
+    // FIXME: If we have a dock/taskbar button, minimize.
+    // if (...) { main.minimize(); } else
+    // Otherwise, just hide the window.
+    {
+      main.hide();
+
+      // However, the first time the window is "closed" (and we're not exiting),
+      // we should display a desktop notification to remind the user that the
+      // application is still running, at least on Windows since that's not
+      // common to all applications.
+      displayNotification("Cypherpunk VPN will keep running in the background - control it from the system tray.");
+    }
+  }
+});
+
+app.on('before-quit', event => {
+  console.log('before-quit');
+  exiting = true;
+  if (main) {
+    main.webContents.send('close');
+  }
+});
+
+app.on('will-quit', event => {
+  console.log('will-quit');
+  if (daemon) {
+    event.preventDefault();
+    let d = daemon;
+    daemon = null;
+    d.disconnect().then(() => { app.quit(); });
     return;
   }
   if (tray) {
@@ -175,6 +219,8 @@ function createTray() {
   tray.on('click', (evt, bounds) => {
     if (main) {
       main.show();
+    } else {
+      createMainWindow();
     }
   });
 }
@@ -197,6 +243,7 @@ function createMainWindow() {
     minHeight: 508,
     maxWidth: 350,
     maxHeight: 508,
+    //skipTaskbar: true,
     //acceptFirstMouse: true,
   });
   if (daemon) {
