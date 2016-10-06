@@ -22,9 +22,7 @@ process.argv.forEach(arg => {
 });
 
 
-let AutoLaunch = new (require('auto-launch'))({
-  name: "Cypherpunk VPN"
-});
+const AutoLaunch = require('./autostart.js');
 
 ipc.on('autostart-get', (event) => {
   AutoLaunch.isEnabled()
