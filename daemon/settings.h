@@ -67,7 +67,7 @@ public:
 	namedmember(bool, runOpenVPNAsRoot, true)
 
 	// TODO: These are actually user-specific settings
-	namedmember(bool, autoConnect, true)
+	namedmember(bool, autoConnect, false)
 	namedmember(bool, showNotifications, true)
 };
 
