@@ -238,6 +238,8 @@ function createMainWindow() {
     minHeight: 508,
     maxWidth: 350,
     maxHeight: 508,
+    frame: false,
+    titleBarStyle : 'hidden-inset'
     //skipTaskbar: true,
     //acceptFirstMouse: true,
   });
