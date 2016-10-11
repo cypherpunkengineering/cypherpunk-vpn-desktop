@@ -158,8 +158,8 @@ const preinitPromises = [
 
 timeoutPromise(Promise.all(preinitPromises), 2000).then(() => {
   dpi = electron.screen.getPrimaryDisplay().scaleFactor >= 2 ? '@2x' : '';
-  createTray();
   createMainWindow();
+  createTray();
 }).catch(err => {
   // FIXME: Message box with initialization error
   console.error(err);
@@ -170,6 +170,8 @@ function createTrayMenu() {
   let server = daemon.config.servers.find(s => s.id === daemon.settings.server);
   let connected = daemon.state.state !== 'DISCONNECTED';
   let items = [
+    { label: "Show", visible: !main || !main.isVisible(), click: () => { if (!main) createMainWindow(); else main.show(); } },
+    { type: 'separator', visible: !main || !main.isVisible() },
     { label: "Reconnect (apply changed settings)", visible: !!(connected && daemon.state.needsReconnect) },
     { label: "Connect", visible: !connected, click: () => { daemon.post.connect(); } },
     { label: "Disconnect", visible: connected, click: () => { daemon.post.disconnect(); } },
@@ -194,6 +196,8 @@ function createTrayMenu() {
     //{ label: 'Sign out' },
     { label: 'Quit', click: () => { app.quit(); } },
   ];
+  // Windows fix: hidden separators don't work, so manually strip out hidden items entirely
+  items = items.filter(i => !i.hasOwnProperty('visible') || i.visible);
   return Menu.buildFromTemplate(items);
 }
 
@@ -215,13 +219,17 @@ function createTray() {
   daemon.on('config', config => { if (config.servers) refresh(); });
   daemon.on('state', state => { if (state.state || state.remoteIP) refresh(); });
   daemon.on('settings', settings => { if (settings.server) refresh(); });
-  tray.on('click', (evt, bounds) => {
-    if (main) {
-      main.show();
-    } else {
-      createMainWindow();
-    }
-  });
+  main.on('hide', () => { refresh(); });
+  main.on('show', () => { refresh(); });
+  if (os == '_win') {
+    tray.on('click', (evt, bounds) => {
+      if (main) {
+        main.show();
+      } else {
+        createMainWindow();
+      }
+    });
+  }
 }
 
 function createMainWindow() {
