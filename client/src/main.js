@@ -198,13 +198,17 @@ function createTrayMenu() {
 }
 
 function createTray() {
-  var trayIcon = NativeImage.createFromPath(getOSResource('assets/img/tray.png'));
+  var trayIconConnected = NativeImage.createFromPath(getOSResource('assets/img/tray.png'));
+  var trayIconDisconnected = NativeImage.createFromPath(getOSResource('assets/img/tray_disconnected.png'));
   if (os == '_osx') {
-    trayIcon.setTemplateImage(true);
+    trayIconConnected.setTemplateImage(true);
+    trayIconDisconnected.setTemplateImage(true);
   }
-  tray = new Tray(trayIcon);
+  function getTrayIcon() { return daemon.state.state == 'CONNECTED' ? trayIconConnected : trayIconDisconnected; }
+  tray = new Tray(getTrayIcon());
   tray.setToolTip('Cypherpunk VPN');
   function refresh() {
+    tray.setImage(getTrayIcon());
     tray.setContextMenu(createTrayMenu());
   }
   refresh();
