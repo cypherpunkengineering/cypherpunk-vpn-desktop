@@ -170,7 +170,7 @@ function createTrayMenu() {
   let server = daemon.config.servers.find(s => s.id === daemon.settings.server);
   let connected = daemon.state.state !== 'DISCONNECTED';
   let items = [
-    { label: "Show", visible: !main || !main.isVisible(), click: () => { if (!main) createMainWindow(); else main.show(); } },
+    { label: "Show", visible: !main || !main.isVisible(), click: () => { showMainWindow(); } },
     { type: 'separator', visible: !main || !main.isVisible() },
     { label: "Reconnect (apply changed settings)", visible: !!(connected && daemon.state.needsReconnect) },
     { label: "Connect", visible: !connected, click: () => { daemon.post.connect(); } },
@@ -223,12 +223,16 @@ function createTray() {
   main.on('show', () => { refresh(); });
   if (os == '_win') {
     tray.on('click', (evt, bounds) => {
-      if (main) {
-        main.show();
-      } else {
-        createMainWindow();
-      }
+      showMainWindow();
     });
+  }
+}
+
+function showMainWindow() {
+  if (main) {
+    main.show();
+  } else {
+    createMainWindow();
   }
 }
 
