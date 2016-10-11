@@ -238,7 +238,7 @@ function showMainWindow() {
 
 function createMainWindow() {
   main = new BrowserWindow({
-    title: 'Cypherpunk VPN (Semantic UI)',
+    title: 'Cypherpunk VPN',
     //icon: icon,
     backgroundColor: '#1560bd',
     show: false,
