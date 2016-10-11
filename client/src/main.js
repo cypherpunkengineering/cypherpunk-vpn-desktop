@@ -82,6 +82,8 @@ function getFlag(country) {
 
 
 function displayNotification(message) {
+  if (daemon && !daemon.settings.showNotifications)
+    return;
   if (os == '_osx' && main) {
     // Apparently only works in the renderer process via webkitNotifications?
     main.webContents.executeJavaScript(`
@@ -160,6 +162,10 @@ timeoutPromise(Promise.all(preinitPromises), 2000).then(() => {
   dpi = electron.screen.getPrimaryDisplay().scaleFactor >= 2 ? '@2x' : '';
   createMainWindow();
   createTray();
+  if (daemon.settings.autoConnect) {
+    // FIXME: This should actually be in response to establishing a user login session
+    daemon.post.connect();
+  }
 }).catch(err => {
   // FIXME: Message box with initialization error
   console.error(err);
@@ -274,6 +280,7 @@ function createMainWindow() {
   main.on('ready-to-show', function() {
     if (args.showWindowOnStart) {
       main.show();
+      args.showWindowOnStart = false;
     }
   });
   main.maximizedPrev = null;

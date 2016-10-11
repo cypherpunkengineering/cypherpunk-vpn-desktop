@@ -65,6 +65,10 @@ public:
 	namedmember(bool, blockIPv6, true)
 
 	namedmember(bool, runOpenVPNAsRoot, true)
+
+	// TODO: These are actually user-specific settings
+	namedmember(bool, autoConnect, true)
+	namedmember(bool, showNotifications, true)
 };
 
 extern Settings g_settings;
