@@ -253,19 +253,16 @@ class ConnectScreen extends React.Component {
 class LoginScreen extends React.Component {
   render() {
     return (
-      <div className="ui container cp">
-        <h1 className="ui center aligned header"><img className="logo" src={CypherPunkLogo}/></h1>
-        <form className="login_screen">
-        <div>
-          <input placeholder="Username/Email" />
-        </div>
-        <div>
+      <div className="cp" id="login-screen">
+        <img class="logo" src={CypherPunkLogo}/>
+        <h3 class="ui title header"><span>Cypherpunk</span>Privacy</h3>
+        <form class="ui form">
+          <input placeholder="Username / Email" />
           <input placeholder="Password" />
-        </div>
-        <Link className="login" to="/connect">Log in</Link>
-        <div className="forgot">Forgot password?</div>
-        <div className="signup">Sign Up</div>
+          <Link class="ui login button" to="/connect">Log in</Link>
+          <a class="forgot">Forgot password?</a>
         </form>
+        <div class="signup">Sign up</div>
       </div>
     );
   }
