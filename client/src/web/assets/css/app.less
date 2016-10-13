@@ -115,6 +115,7 @@ div.screen {
   top: 0;
   right: 0;
   bottom: 0;
+  padding: 0 2.5em;
   img.logo {
     width: 80px;
     height: 6.5em;
@@ -134,64 +135,86 @@ div.screen {
     }
   }
   form {
-    input:nth-of-type(1) {
-      border-radius: 6px 6px 0 0;
-      margin-bottom: 2px;
-    }
-    input:nth-of-type(2) {
-      border-radius: 0 0 6px 6px;
-      margin-bottom: 20px;
-    }
     input {
       border: none;
       background: rgba(255,255,255,0.1);
-      width: 300px;
+      width: 100%;
       color: #fff;
       padding: 15px;
       font-size: 115%;
+      transition: background-color 0.2s;
       &:focus {
         background: rgba(255,255,255,0.16);
       }
-    }
-    .login {
-      font-size: 130%;
-      font-weight: 500;
-      color: #fff;
-      background: rgba(0,0,0,0.1);
-      box-shadow: 2px 5px 5px -5px rgba(0,0,0,0.5);
-      width: 300px;
-      padding: 0.6em;
-      &:hover, &:focus {
-        background: rgba(0,0,0,0.16);
-        color: @cpYellow;
+      &:first-of-type {
+        border-radius: 6px 6px 0 0;
       }
-    }
-    .forgot {
-      cursor: pointer;
-      display: inline-block;
-      color: rgba(255,255,255,0.75);
-      text-decoration: none;
-      font-size: 14px;
-      margin-top: 20px;
-      padding-bottom: 2px;
-      border-bottom: 1px dotted rgba(255,255,255,0.5);
-      &:hover, &:active, &:focus {
-        color: #fff;
-        border-bottom-color: #fff;
+      &:last-of-type {
+        border-radius: 0 0 6px 6px;
+      }
+      + input {
+        margin-top: 2px;
       }
     }
   }
-  .signup {
+  .button {
+    display: inline-block;
     cursor: pointer;
-    color: @cpYellow;
-    font-size: 18px;
-    text-align: center;
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 0.75em;
-    background: rgba(255,255,255,0.25);
+    width: 100%;
+    font-size: 125%;
+    color: rgba(255,255,255,0.75);
+    background: rgba(0,0,0,0.125);
+    box-shadow: 2px 5px 5px -5px rgba(0,0,0,0.5);
+    line-height: 1em;
+    padding: 0.6em;
+    border-radius: 2px;
+    transition: background-color 0.2s, color 0.2s;
+    &:hover, &:focus {
+      background: rgba(0,0,0,0.25);
+      color: #fff;
+    }
+    .icon {
+      margin-left: -1.18em;
+    }
+  }
+  .forgot {
+    cursor: pointer;
+    display: block;
+    float: right;
+    color: rgba(255,255,255,0.16);
+    text-decoration: none;
+    font-size: 14px;
+    margin-right: 8px;
+    padding: 2px 0;
+    position: relative;
+    top: -0.6em;
+    border-bottom: 1px dotted transparent;
+    transition: color 0.2s, border-bottom-color 0.2s, visibility 0.2s;
+    &:hover, &:active, &:focus {
+      color: @cpYellow !important; //#fff;
+      border-bottom: 1px dotted #fff;
+    }
+  }
+  input:focus + .forgot {
+    color: rgba(255,255,255,0.5);
+  }
+  input:valid + .forgot {
+    color: transparent;
+    visibility: hidden;
+  }
+  .login {
+    margin-top: 0.3em;
+  }
+  .signup {
+    color: @cpYellow !important;
+  }
+  .divider {
+    margin: 1.5em 2em 1.3em;
+    color: rgba(255,255,255,0.25);
+    font-size: 90%;
+  }
+  a:focus {
+    outline: none;
   }
 }
 

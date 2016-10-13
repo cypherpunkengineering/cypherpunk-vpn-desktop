@@ -259,12 +259,13 @@ class LoginScreen extends React.Component {
         <img class="logo" src={CypherPunkLogo}/>
         <h3 class="ui title header"><span>Cypherpunk</span>Privacy</h3>
         <form class="ui form">
-          <input placeholder="Username / Email" />
-          <input placeholder="Password" />
-          <Link class="ui login button" to="/connect">Log in</Link>
-          <a class="forgot">Forgot password?</a>
+          <input placeholder="Username / Email" required autoFocus="true" />
+          <input placeholder="Password" type="password" required />
+          <a class="forgot" tabIndex="0">Forgot password?</a>
+          <Link class="login button" to="/connect"><i class="sign in icon"></i>Log in</Link>
+          <div class="ui horizontal divider">OR</div>
+          <a class="signup button" tabIndex="0"><i class="write icon"></i>Sign up</a>
         </form>
-        <div class="signup">Sign up</div>
       </div>
     );
   }
