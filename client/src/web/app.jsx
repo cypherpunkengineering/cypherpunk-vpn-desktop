@@ -5,7 +5,7 @@ import 'semantic';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, hashHistory as History } from 'react-router';
+import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, createMemoryHistory/*, hashHistory as History*/ } from 'react-router';
 
 import SpinningImage from './assets/img/bgring3.png';
 import CypherPunkLogo from './assets/img/cp_logo1.png';
@@ -22,6 +22,8 @@ import EncryptionScreen from './ConfigurationScreen/EncryptionScreen.jsx';
 import PasswordScreen from './ConfigurationScreen/PasswordScreen.jsx';
 import EmailScreen from './ConfigurationScreen/EmailScreen.jsx';
 import HelpScreen from './ConfigurationScreen/HelpScreen.jsx';
+
+window.History = createMemoryHistory(window.location.href);
 
 daemon.ready(() => {
   daemon.once('state', state => {
