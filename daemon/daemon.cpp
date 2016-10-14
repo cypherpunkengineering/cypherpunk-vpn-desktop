@@ -85,6 +85,7 @@ int CypherDaemon::Run()
 		d.AddMethod("connect", &CypherDaemon::RPC_connect, *this);
 		d.AddMethod("disconnect", &CypherDaemon::RPC_disconnect, *this);
 		d.AddMethod("applySettings", &CypherDaemon::RPC_applySettings, *this);
+		d.AddMethod("setAccount", &CypherDaemon::RPC_setAccount, *this);
 		d.AddMethod("ping", [](){});
 	}
 
@@ -593,6 +594,11 @@ void CypherDaemon::RPC_applySettings(const JsonObject& settings)
 	}
 	if (changed.size() > 0)
 		g_settings.OnChanged(changed);
+}
+
+void CypherDaemon::RPC_setAccount(const JsonObject& account)
+{
+
 }
 
 void WriteOpenVPNProfile(std::ostream& out, const ServerInfo& server)

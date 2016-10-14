@@ -169,9 +169,11 @@ div.screen {
     padding: 0.6em;
     border-radius: 2px;
     transition: background-color 0.2s, color 0.2s;
+    border: none;
     &:hover, &:focus {
       background: rgba(0,0,0,0.25);
       color: #fff;
+      outline: none;
     }
     .icon {
       margin-left: -1.18em;
@@ -213,8 +215,29 @@ div.screen {
     color: rgba(255,255,255,0.25);
     font-size: 90%;
   }
+  .dimmer {
+    background-color: rgba(0,0,0,0.4) !important;
+  }
   a:focus {
     outline: none;
+  }
+}
+
+dialog.dimmer {
+  border: none;
+  &::backdrop {
+    background: none;
+  }
+  a {
+    cursor: pointer;
+    position: relative;
+    top: 96%;
+    padding-bottom: 2px 0;
+    border-bottom: 1px solid transparent;
+    &:hover, &:active, &:focus {
+      color: @cpYellow !important; //#fff;
+      border-bottom: 1px dotted #fff;
+    }
   }
 }
 
