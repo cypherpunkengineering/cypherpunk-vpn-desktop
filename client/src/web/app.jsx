@@ -98,6 +98,14 @@ class Titlebar extends React.Component {
   }
 }
 
+class Dragbar extends React.Component {
+  render() {
+    return (
+      <div id="dragbar"></div>
+    )
+  }
+}
+
 class LoadDimmer extends React.Component {
   render() {
     return(
@@ -214,6 +222,7 @@ class ConnectScreen extends React.Component {
 
     return(
       <div id="connect-screen" class="full screen" style={{visibility: 'visible'}}>
+        <Dragbar/>
         <Titlebar/>
         <div id="connect-container">
 
@@ -346,6 +355,7 @@ class LoginScreen extends React.Component {
   render() {
     return (
       <div className="cp blurring" id="login-screen" ref="root">
+        <Dragbar/>
         <dialog class="ui dimmer" ref="dimmer">
           <div class="ui big text loader">Logging in</div>
           <a tabIndex="0" onClick={this.onLoginCancel.bind(this)}>Cancel</a>
@@ -391,8 +401,9 @@ class RootContainer extends React.Component {
   render() {
     return(
       <div class="full screen" style={{visibility: 'visible'}}>
+        {/* <Dragbar/> */}
         <MainBackground/>
-        <OneZeros/>
+        {/* <OneZeros/> */}
         <ConnectScreen/>
       </div>
     );

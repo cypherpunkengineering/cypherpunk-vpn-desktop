@@ -4,6 +4,14 @@ import { ipcRenderer as ipc } from 'electron';
 import daemon, { DaemonAware } from './daemon.js';
 
 
+class Dragbar extends React.Component {
+  render() {
+    return (
+      <div id="dragbar"></div>
+    )
+  }
+}
+
 export default class ConfigurationScreen extends React.Component  {
   componentDidMount() {
     $(this.refs.tab).find('.item').tab();
@@ -11,6 +19,7 @@ export default class ConfigurationScreen extends React.Component  {
   render() {
     return(
       <div>
+        <Dragbar/>
         <div className="ui fluid inverted borderless icon menu cp_config_header">
           <Link className="item" to="/connect"><i className="arrow left icon"></i></Link>
           <div className="header item center aligned">Configuration</div>
@@ -29,6 +38,8 @@ export default class ConfigurationScreen extends React.Component  {
     );
   }
 }
+
+
 
 class AdvancedSettings extends DaemonAware(React.Component)  {
   constructor(props) {

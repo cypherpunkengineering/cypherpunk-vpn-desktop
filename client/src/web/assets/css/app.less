@@ -4,6 +4,16 @@
 @cpWhite20:   rgba(255,255,255,0.2);
 @cpWhite25:   rgba(255,255,255,0.25);
 @cpWhite40:   rgba(255,255,255,0.4);
+@cpOrange:    #ffc933;
+@cpOrangeDark:#d19e12;
+
+@dragbarHeight: 30px;
+
+// Mixins
+// Button Gradient
+.btn-gradient--primary {
+  background-image: linear-gradient(to top, @cpOrangeDark, @cpOrange);
+}
 
 
 html, body { -webkit-user-select: none; user-select: none; cursor: default; min-width: 350px; }
@@ -23,8 +33,18 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 
 //#root-container { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
 
+#dragbar {
+  height: @dragbarHeight;
+  left: 0;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  -webkit-app-region: drag;
+}
+
 #titlebar {
   font-size: 22px !important;
+  top: @dragbarHeight;
 }
 
 #main-background {
@@ -91,6 +111,7 @@ div.screen {
   &.full { top: 0; }
 }
 
+
 #connect-container { margin-top: 130px; height: 140px; display: flex; align-items: center; justify-content: center; }
 #connect { transition: 0.5s color; text-shadow: 0 0 15px rgba(0,0,0,0.25); }
 #connect-status { margin-top: 5px; font-size: 24px; font-weight: 600; color: #ccc; }
@@ -109,6 +130,50 @@ div.screen {
 #login-screen {
   background: linear-gradient(329deg, #034698, #76a8e7), #1560bd;
   padding: 0 1em;
+
+.cp .login_screen input {
+  display: inline-block;
+  width: 300px;
+	height: 48px;
+  text-align: left;
+  background: @cpWhite20;
+  // color: @cpWhite20;
+  color: #fff;
+  border: none;
+  font-size: 16px;
+  padding:15px;
+  outline: none;
+}
+
+.bottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+}
+
+.cp .login_screen div:nth-of-type(1) input {
+  border-radius: 4px 4px 0 0;
+  margin-bottom: 2px;
+}
+
+.cp .login_screen div:nth-of-type(2) input{
+  border-radius: 0 0 4px 4px;
+  margin-bottom: 20px;
+}
+
+.cp .logo {
+  margin-top: 40px !important;
+  margin-bottom: 20px;
+}
+
+.cp .forgot {
+  text-decoration: underline;
+  font-size: 14px;
+  margin-top: 20px;
+}
+
+.cp {
+>>>>>>> Starting to add drag-able bar to views
   text-align: center;
   position: absolute;
   left: 0;
@@ -249,7 +314,7 @@ dialog.dimmer {
 
 .button1 {
   display: inline-block;
-  border: 1px solid #fff;
+  // border: 1px solid #fff;
   height: 40px;
   width: 300px;
   font-size: 18px;
@@ -258,6 +323,8 @@ dialog.dimmer {
   color: #fff;
   border-radius: 4px;
   padding: 11px;
+  background-color: @cpYellow;
+  .btn-gradient--primary;
 }
 
 .button2 {
@@ -309,9 +376,10 @@ dialog.dimmer {
 
 .cp_config_header {
   font-size: 20px !important;
-  height: 49px !important;
-  min-height: 49px !important;
-  border-bottom: 1px solid rgba(255,255,255,0.3) !important;
+  // height: 49px !important;
+  // min-height: 49px !important;
+  border-bottom: 1px solid rgba(255,255,255,0.15) !important;
+  // padding-top: 26px;
 }
 
 .cp_config_tabs {
