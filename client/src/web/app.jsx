@@ -273,8 +273,8 @@ class LoginScreen extends React.Component {
   onLoginClick(event) {
     if (event) event.preventDefault();
     this.showDimmer();
-    var username = $(this.refs.username).val();
-    var password = $(this.refs.password).val();
+    var username = $(this.refs.username).val((i,v) => v || "test@test.test").val(); // FIXME: debug value
+    var password = $(this.refs.password).val((i,v) => v || "test123").val(); // FIXME: debug value
     var login;
     var serverList;
     jQuery.ajax('https://cypherpunk.engineering/account/authenticate/userpasswd', {
