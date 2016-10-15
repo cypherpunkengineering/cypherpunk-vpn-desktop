@@ -360,7 +360,9 @@ class LoginScreen extends React.Component {
           <div class="ui big text loader">Logging in</div>
           <a tabIndex="0" onClick={this.onLoginCancel.bind(this)}>Cancel</a>
         </dialog>
-        <img class="logo" src={CypherPunkLogo}/>
+        <div className="logo">
+          <img class="logo" src={CypherPunkLogo}/>
+        </div>
         <h3 class="ui title header"><span>Cypherpunk</span>Privacy</h3>
         <form class="ui form">
           <input placeholder="Username / Email" required autoFocus="true" onChange={this.onUsernameKeyPress.bind(this)} ref="username" />

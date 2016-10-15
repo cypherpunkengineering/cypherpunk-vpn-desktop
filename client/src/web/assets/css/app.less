@@ -24,7 +24,9 @@ body {
   font-family: Dosis;
   font-weight: 500;
   -webkit-font-smoothing: antialiased;
-  height: 100%;
+  // height: 100%;
+  height: calc(~"100vh -" (@dragbarHeight));
+  top: 30px;
 }
 
 /*:not(input):not(textarea), :not(input):not(textarea)::after, :not(input):not(textarea)::before { -webkit-user-select: none; user-select: none; cursor: default; }*/
@@ -33,6 +35,10 @@ body {
 a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: auto; user-drag: auto; }*/
 
 //#root-container { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+
+#root-container {
+  height: 100%;
+}
 
 #dragbar {
   height: @dragbarHeight;
@@ -58,12 +64,11 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   &:before {
     content: '';
     position: absolute;
-    width: 100%; height: 100%;
+    width: 100%;
+    height: 100%;
     //background: radial-gradient(circle 300px at 50% 200px, rgba(0,0,0,0), #444, #222);
   }
 
-
-// make more specific
   div {
     position: absolute;
     left: 50%;
@@ -286,6 +291,17 @@ div.screen {
       margin-left: -1.18em;
     }
   }
+
+  .logo {
+    display: inline-block;
+    margin-top: 40px;
+    margin-bottom: 40px;
+
+    img {
+      width: 60px;
+    }
+  }
+
   .forgot {
     cursor: pointer;
     display: block;
