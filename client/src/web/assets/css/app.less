@@ -1,5 +1,7 @@
 @cpBlue:      #034698;
 @cpLightBlue: #76a8e7;
+@cpBg:        #1560bd;
+@cpBgDark:    #023f7d;
 @cpYellow:    #f8e71c;
 @cpWhite20:   rgba(255,255,255,0.2);
 @cpWhite25:   rgba(255,255,255,0.25);
@@ -9,7 +11,13 @@
 
 @dragbarHeight: 30px;
 
+
 // Mixins
+// Background Gradient
+.bg-gradient--main {
+  background-image: linear-gradient(@cpBg, @cpBgDark);
+}
+
 // Button Gradient
 .btn-gradient--primary {
   background-image: linear-gradient(to top, @cpOrangeDark, @cpOrange);
@@ -19,7 +27,7 @@
 html, body { -webkit-user-select: none; user-select: none; cursor: default; min-width: 350px; }
 body {
   color: #fff;
-  background: #1560bd;
+  background: @cpBg;
   transition: 2s background;
   font-family: Dosis;
   font-weight: 500;
@@ -59,7 +67,8 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   left: 0; top: 0; right: 0; bottom: 0;
   overflow: hidden;
   //background-color: #666;
-  background: linear-gradient(328deg, @cpBlue, @cpLightBlue);
+  // background: linear-gradient(328deg, @cpBlue, @cpLightBlue);
+  .bg-gradient--main;
   transition: 5s background;
   &:before {
     content: '';
