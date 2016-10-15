@@ -7,6 +7,10 @@ import 'semantic/components/dimmer.min.css';
 import 'semantic/components/loader.min.css';
 import './assets/css/index.css';
 
+import { webFrame } from 'electron';
+
+webFrame.setZoomLevelLimits(1, 1);
+
 let app = null;
 
 // Do this one old school (i.e. without React) so it can display near-instantaneously

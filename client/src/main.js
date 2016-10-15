@@ -82,6 +82,8 @@ function getFlag(country) {
 
 
 function displayNotification(message) {
+  if (daemon && !daemon.settings.showNotifications)
+    return;
   if (os == '_osx' && main) {
     // Apparently only works in the renderer process via webkitNotifications?
     main.webContents.executeJavaScript(`
@@ -158,8 +160,12 @@ const preinitPromises = [
 
 timeoutPromise(Promise.all(preinitPromises), 2000).then(() => {
   dpi = electron.screen.getPrimaryDisplay().scaleFactor >= 2 ? '@2x' : '';
-  createTray();
   createMainWindow();
+  createTray();
+  if (daemon.settings.autoConnect) {
+    // FIXME: This should actually be in response to establishing a user login session
+    daemon.post.connect();
+  }
 }).catch(err => {
   // FIXME: Message box with initialization error
   console.error(err);
@@ -170,6 +176,8 @@ function createTrayMenu() {
   let server = daemon.config.servers.find(s => s.id === daemon.settings.server);
   let connected = daemon.state.state !== 'DISCONNECTED';
   let items = [
+    { label: "Show", visible: !main || !main.isVisible(), click: () => { showMainWindow(); } },
+    { type: 'separator', visible: !main || !main.isVisible() },
     { label: "Reconnect (apply changed settings)", visible: !!(connected && daemon.state.needsReconnect) },
     { label: "Connect", visible: !connected, click: () => { daemon.post.connect(); } },
     { label: "Disconnect", visible: connected, click: () => { daemon.post.disconnect(); } },
@@ -194,35 +202,49 @@ function createTrayMenu() {
     //{ label: 'Sign out' },
     { label: 'Quit', click: () => { app.quit(); } },
   ];
+  // Windows fix: hidden separators don't work, so manually strip out hidden items entirely
+  items = items.filter(i => !i.hasOwnProperty('visible') || i.visible);
   return Menu.buildFromTemplate(items);
 }
 
 function createTray() {
-  var trayIcon = NativeImage.createFromPath(getOSResource('assets/img/tray.png'));
+  var trayIconConnected = NativeImage.createFromPath(getOSResource('assets/img/tray.png'));
+  var trayIconDisconnected = NativeImage.createFromPath(getOSResource('assets/img/tray_disconnected.png'));
   if (os == '_osx') {
-    trayIcon.setTemplateImage(true);
+    trayIconConnected.setTemplateImage(true);
+    trayIconDisconnected.setTemplateImage(true);
   }
-  tray = new Tray(trayIcon);
+  function getTrayIcon() { return daemon.state.state == 'CONNECTED' ? trayIconConnected : trayIconDisconnected; }
+  tray = new Tray(getTrayIcon());
   tray.setToolTip('Cypherpunk VPN');
   function refresh() {
+    tray.setImage(getTrayIcon());
     tray.setContextMenu(createTrayMenu());
   }
   refresh();
   daemon.on('config', config => { if (config.servers) refresh(); });
   daemon.on('state', state => { if (state.state || state.remoteIP) refresh(); });
   daemon.on('settings', settings => { if (settings.server) refresh(); });
-  tray.on('click', (evt, bounds) => {
-    if (main) {
-      main.show();
-    } else {
-      createMainWindow();
-    }
-  });
+  main.on('hide', () => { refresh(); });
+  main.on('show', () => { refresh(); });
+  if (os == '_win') {
+    tray.on('click', (evt, bounds) => {
+      showMainWindow();
+    });
+  }
+}
+
+function showMainWindow() {
+  if (main) {
+    main.show();
+  } else {
+    createMainWindow();
+  }
 }
 
 function createMainWindow() {
   main = new BrowserWindow({
-    title: 'Cypherpunk VPN (Semantic UI)',
+    title: 'Cypherpunk VPN',
     //icon: icon,
     backgroundColor: '#1560bd',
     show: false,
@@ -260,6 +282,7 @@ function createMainWindow() {
   main.on('ready-to-show', function() {
     if (args.showWindowOnStart) {
       main.show();
+      args.showWindowOnStart = false;
     }
   });
   main.maximizedPrev = null;

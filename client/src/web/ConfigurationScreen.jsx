@@ -188,7 +188,7 @@ class AdvancedSettings extends DaemonAware(React.Component)  {
   }
 }
 
-class GeneralSettings extends React.Component  {
+class GeneralSettings extends DaemonAware(React.Component)  {
   constructor(props) {
     super(props);
     this.listeners = {
@@ -200,12 +200,21 @@ class GeneralSettings extends React.Component  {
     ipc.send('autostart-get');
   }
   componentDidMount() {
+    super.componentDidMount();
     $(this.refs.showinDropdown).dropdown();
-    $(this.refs.root).find('.ui.checkbox').checkbox();
+    //$(this.refs.root).find('.ui.checkbox').checkbox();
     $(this.refs.runonstartup).parent().checkbox({ onChange: function() { ipc.send('autostart-set', this.checked); } });
+    $(this.refs.autoconnect).parent().checkbox({ onChange: function() { daemon.post.applySettings({ autoConnect: this.checked }); }});
+    $(this.refs.desktopnotifications).parent().checkbox({ onChange: function() { daemon.post.applySettings({ showNotifications: this.checked }); }});
+    this.daemonSettingsChanged(daemon.settings);
   }
   componentWillUnmount() {
+    super.componentWillUnmount();
     ipc.removeListener('autostart-value', this.listeners.autostart);
+  }
+  daemonSettingsChanged(settings) {
+    if (settings.hasOwnProperty('autoConnect')) { $(this.refs.autoconnect).parent().checkbox('set ' + (settings.autoConnect ? 'checked' : 'unchecked')); }
+    if (settings.hasOwnProperty('showNotifications')) { $(this.refs.desktopnotifications).parent().checkbox('set ' + (settings.showNotifications ? 'checked' : 'unchecked'))};
   }
   onAutoStartSettingChanged(enabled) {
     $(this.refs.runonstartup).parent().checkbox('set ' + (enabled ? 'checked' : enabled === null ? 'indeterminate' : 'unchecked'));
@@ -283,23 +292,22 @@ class GeneralSettings extends React.Component  {
           <div class="cp-setting clickable item">
             <div class="ui toggle checkbox">
               <input type="checkbox" name="runonstartup" id="runonstartup" ref="runonstartup"/>
-              <label>
-                Launch on startup
-              </label>
+              <label>Launch on startup</label>
             </div>
           </div>
           <div class="cp-setting clickable item">
             <div class="ui checkbox">
-              <input type="checkbox" name="autoconnect" id="autoconnect"/>
+              <input type="checkbox" name="autoconnect" id="autoconnect" ref="autoconnect"/>
               <label>Auto-connect on launch</label>
             </div>
           </div>
           <div class="cp-setting clickable item">
             <div class="ui checkbox">
-              <input type="checkbox" id="desktopnotifications" name="desktopnotifications"/>
+              <input type="checkbox" id="desktopnotifications" name="desktopnotifications" ref="desktopnotifications"/>
               <label>Show desktop notifications</label>
             </div>
           </div>
+          <div style={{display:'none'}}>
           <div class="cp-setting item">
             <div class="ui olive button selection dropdown" ref="showinDropdown">
               <input type="hidden" id="showin" name="showin"/>
@@ -312,6 +320,7 @@ class GeneralSettings extends React.Component  {
               </div>
             </div>
             <label>Show Cypherpunk icon in</label>
+          </div>
           </div>
         </div>
 

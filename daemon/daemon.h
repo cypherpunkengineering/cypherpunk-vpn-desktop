@@ -89,6 +89,8 @@ protected:
 	JsonObject RPC_get(const std::string& type);
 	// Apply one or more settings.
 	void RPC_applySettings(const JsonObject& settings);
+	// Set the user account info. FIXME: should probably have the daemon be in charge of this instead, or at least validate the information independently from the client.
+	void RPC_setAccount(const JsonObject& account);
 	// Connect to the currently configured server. Returns false if already
 	// connected and no changes are required.
 	bool RPC_connect();

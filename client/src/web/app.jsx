@@ -5,7 +5,7 @@ import 'semantic';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, hashHistory as History } from 'react-router';
+import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, createMemoryHistory/*, hashHistory as History*/ } from 'react-router';
 
 import SpinningImage from './assets/img/bgring3.png';
 import CypherPunkLogo from './assets/img/cp_logo1.png';
@@ -22,6 +22,8 @@ import EncryptionScreen from './ConfigurationScreen/EncryptionScreen.jsx';
 import PasswordScreen from './ConfigurationScreen/PasswordScreen.jsx';
 import EmailScreen from './ConfigurationScreen/EmailScreen.jsx';
 import HelpScreen from './ConfigurationScreen/HelpScreen.jsx';
+
+window.History = createMemoryHistory(window.location.href);
 
 daemon.ready(() => {
   daemon.once('state', state => {
@@ -251,20 +253,93 @@ class ConnectScreen extends React.Component {
 }
 
 class LoginScreen extends React.Component {
+  componentDidMount() {
+    $(this.refs.dimmer).dimmer({ closable: false });
+    this.refs.dimmer.addEventListener('cancel', this.onLoginCancel.bind(this));
+  }
+  onUsernameKeyPress(event) {
+    if (event.which == 13) {
+      event.preventDefault();
+      this.refs.password.focus();
+    }
+  }
+  onPasswordKeyPress(event) {
+    if (event.which == 13) {
+      event.preventDefault();
+      this.refs.login.focus();
+      this.onLoginClick();
+    }
+  }
+  onLoginClick(event) {
+    if (event) event.preventDefault();
+    this.showDimmer();
+    var username = $(this.refs.username).val((i,v) => v || "test@test.test").val(); // FIXME: debug value
+    var password = $(this.refs.password).val((i,v) => v || "test123").val(); // FIXME: debug value
+    var login;
+    var serverList;
+    jQuery.ajax('https://cypherpunk.engineering/account/authenticate/userpasswd', {
+      cache: false,
+      contentType: 'application/json',
+      data: JSON.stringify({ login: username, password: password }),
+      dataType: 'json',
+      method: 'POST',
+      xhrFields: { withCredentials: true },
+    }).then((data, status, xhr) => {
+      login = data;
+      return jQuery.ajax('https://cypherpunk.engineering/api/vpn/serverList', {
+        contentType: 'application/json',
+        dataType: 'json',
+        xhrFields: { withCredentials: true },
+      });
+    }).catch((xhr, status, err) => {
+      throw new Error("Login failed with status code " + xhr.status);
+    }).then((data, status, xhr) => {
+      serverList = data;
+      return daemon.call.setAccount({
+        username: username,
+        secret: login.secret,
+        name: "Cypher",
+        email: login.acct.email,
+        plan: login.acct.powerLevel, // FIXME
+      });
+    }).then(() => {
+      this.hideDimmer();
+      History.push('/connect');
+    }).catch(err => {
+      alert(err.message || "Failed to log in"); // FIXME: Don't use alert
+      this.hideDimmer();
+      this.refs.username.focus();
+      console.dir(err);
+    });
+  }
+  onLoginCancel() {
+    this.hideDimmer();
+  }
+  showDimmer() {
+    $(this.refs.dimmer).dimmer('show');
+    this.refs.dimmer.showModal();
+    $(this.refs.dimmer).find('*:focus').blur();
+  }
+  hideDimmer() {
+    $(this.refs.dimmer).dimmer('hide');
+    this.refs.dimmer.close();
+  }
   render() {
     return (
-      <div className="ui container cp">
-        <h1 className="ui center aligned header"><img className="logo" src={CypherPunkLogo}/></h1>
-        <form className="login_screen">
-        <div>
-          <input placeholder="Username/Email" />
-        </div>
-        <div>
-          <input placeholder="Password" />
-        </div>
-        <Link className="login" to="/connect">Log in</Link>
-        <div className="forgot">Forgot password?</div>
-        <div className="signup">Sign Up</div>
+      <div className="cp blurring" id="login-screen" ref="root">
+        <dialog class="ui dimmer" ref="dimmer">
+          <div class="ui big text loader">Logging in</div>
+          <a tabIndex="0" onClick={this.onLoginCancel.bind(this)}>Cancel</a>
+        </dialog>
+        <img class="logo" src={CypherPunkLogo}/>
+        <h3 class="ui title header"><span>Cypherpunk</span>Privacy</h3>
+        <form class="ui form">
+          <input placeholder="Username / Email" required autoFocus="true" onChange={this.onUsernameKeyPress.bind(this)} ref="username" />
+          <input placeholder="Password" type="password" required onChange={this.onPasswordKeyPress.bind(this)} ref="password" />
+          <a class="forgot" tabIndex="0">Forgot password?</a>
+          <button class="login button" onClick={this.onLoginClick.bind(this)} ref="login"><i class="sign in icon"></i>Log in</button>
+          <div class="ui horizontal divider">OR</div>
+          <a class="signup button" tabIndex="0"><i class="write icon"></i>Sign up</a>
         </form>
       </div>
     );
