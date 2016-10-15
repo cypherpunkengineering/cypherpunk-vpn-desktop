@@ -9,7 +9,8 @@
 @cpOrange:    #ffc933;
 @cpOrangeDark:#d19e12;
 
-@dragbarHeight: 30px;
+@dragbarHeight:  30px;
+@headerHeight:   48px;
 
 
 // Mixins
@@ -502,6 +503,7 @@ dialog.dimmer {
   // height: 49px !important;
   // min-height: 49px !important;
   border-bottom: 1px solid rgba(255,255,255,0.15) !important;
+  height: @headerHeight;
   // padding-top: 26px;
 }
 
@@ -549,9 +551,10 @@ small {
 
 .tabscroll
 {
-  max-height: 411px;
-  overflow-x: hidden;
-  overflow-y: scroll;
+  // max-height: 411px;
+  // overflow-x: hidden;
+  // overflow-y: scroll;
+  height: calc(~"100vh -" (@dragbarHeight + @headerHeight));
 }
 
 
