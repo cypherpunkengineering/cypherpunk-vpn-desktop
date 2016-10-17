@@ -2,13 +2,6 @@
         User Overrides
 *******************************/
 
-#region-select {
-  border: 1px solid #ffffff;
-  border-radius: 5px;
-  width: 200px;
-  /*padding: 15px;*/
-}
-
 .ui.upward.selection.dropdown .menu > .item {
   border-top: none !important;
   border-bottom: @selectionItemDivider;

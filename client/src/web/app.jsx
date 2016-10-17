@@ -137,6 +137,7 @@ class ConnectScreen extends React.Component {
     daemon.on('settings', this.handleDaemonSettingsChange);
     daemon.on('state', this.handleDaemonStateChange);
     $(this.refs.regionDropdown).dropdown({
+      direction: 'upward',
       onChange: this.handleRegionSelect
     });
   }
@@ -213,7 +214,7 @@ class ConnectScreen extends React.Component {
           <i class="dropdown icon"></i>
           <div class="default text">Select Region</div>
           <div class="menu">
-            { this.state.regions.map(s => <div class="item" data-value={s.id} key={s.id}><i class={s.country + " flag"}></i>{s.name}</div>) }
+            { this.state.regions.map((s, i) => <div class="item" data-value={s.id} key={s.id}><i class={s.country + " flag"}></i>{s.name}<i class="cp-fav icon"></i></div>) }
           </div>
         </div>
         <div id="connection-stats" class="ui two column center aligned grid">

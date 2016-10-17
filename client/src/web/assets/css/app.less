@@ -94,10 +94,90 @@ div.screen {
 #connect-container { margin-top: 130px; height: 140px; display: flex; align-items: center; justify-content: center; }
 #connect { transition: 0.5s color; text-shadow: 0 0 15px rgba(0,0,0,0.25); }
 #connect-status { margin-top: 5px; font-size: 24px; font-weight: 600; color: #ccc; }
-#region-select { margin-top: 50px; width: 200px; height: 50px !important; position: absolute; bottom: 30px; border-radius: 5px !important;}
 #connection-stats { margin-top: 30px; width: 60%; display: none; }
 #connection-stats .value { color: #aaa; }
 #connection-stats .label { color: #777; }
+
+#connect-screen {
+  #region-select {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    font-size: 16px;
+    padding: 14px;
+    border-radius: 0 !important;
+    background: #3370bb;
+    transition: background-color 0.3s;
+    &.active {
+      background-color: #4c81c3;
+    }
+    > i.dropdown.icon {
+      top: 13px;
+      right: 14px;
+      font-family: 'icons' !important;
+      &::before {
+        content: '\f077' !important;
+      }
+    }
+    &.active > i.dropdown.icon::before {
+      content: '\f078' !important;
+    }
+    > .menu {
+      border-radius: 0 !important;
+      background: linear-gradient(0deg, #669fe4, #5282bd);
+      max-height: (508px - 44px - 63px);
+      > .header {
+        cursor: default;
+        color: rgba(255,255,255,0.6);
+      }
+      > .item {
+        padding: 0.5em 14px !important;
+        border-top: none !important;
+        border-bottom: 1px solid rgba(255,255,255,0.2);
+        color: rgba(255,255,255,0.75);
+        &:first-child {
+          border-top: 1px solid rgba(255,255,255,0.16) !important;
+        }
+        &:hover {
+          color: #fff;
+          background: rgba(0,0,0,0.05);
+        }
+        &.selected {
+          font-weight: 500;
+          color: @cpYellow;
+          background: rgba(0,0,0,0.10);
+        }
+        i.cp-fav.icon {
+          cursor: pointer;
+          font-size: 120%;
+          position: absolute;
+          right: 0;
+          color: rgba(255,255,255,0.5);
+          &:before {
+            content: '\f006';
+          }
+          &:hover {
+            color: #fff !important;
+          }
+        }
+        &.favorite i.cp-fav.icon {
+          color: @cpYellow;
+          &:before {
+            content: '\f005';
+          }
+        }
+      }
+    }
+    > .text .cp-fav {
+      display: none;
+    }
+    i.ch.flag {
+      position: relative;
+      left: 3px;
+    }
+  }
+}
 
 #upgrade {
   width: 200px !important;
