@@ -31,7 +31,7 @@
   "webLibraries": {
     "flux": "https://cdnjs.cloudflare.com/ajax/libs/flux/2.1.1/Flux.min.js",
     "jquery": "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js",
-    "react": "https://cdnjs.cloudflare.com/ajax/libs/react/15.3.1/react.min.js",
+    "react": "https://cdnjs.cloudflare.com/ajax/libs/react/15.3.1/react-with-addons.min.js",
     "react-dom": "https://cdnjs.cloudflare.com/ajax/libs/react/15.3.1/react-dom.min.js",
     "react-motion": "https://cdnjs.cloudflare.com/ajax/libs/react-motion/0.0.3/Spring.min.js",
     "react-router": "https://cdnjs.cloudflare.com/ajax/libs/react-router/2.7.0/ReactRouter.min.js"
@@ -94,6 +94,7 @@
     "react-dom": "^15.3.1",
     "react-motion": "^0.4.4",
     "react-router": "^2.7.0",
+    "react-addons-css-transition-group": "^15.3.1",
     "run-sequence": "^1.2.2",
     "sass-loader": "^4.0.0",
     "semantic-ui": "^2.2.4",

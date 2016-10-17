@@ -6,6 +6,7 @@ import 'semantic';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, createMemoryHistory/*, hashHistory as History*/ } from 'react-router';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
 import SpinningImage from './assets/img/bgring3.png';
 import CypherPunkLogo from './assets/img/logomark.svg';
