@@ -16,7 +16,8 @@
 // Mixins
 // Background Gradient
 .bg-gradient--main {
-  background-image: linear-gradient(@cpBg, @cpBgDark);
+  // background-image: linear-gradient(@cpBg, @cpBgDark);
+  background: linear-gradient(329deg, @cpBg, @cpLightBlue), @cpBg;
 }
 
 // Button Gradient
@@ -36,6 +37,7 @@ body {
   // height: 100%;
   height: calc(~"100vh -" (@dragbarHeight));
   top: 30px;
+  .bg-gradient--main;
 }
 
 /*:not(input):not(textarea), :not(input):not(textarea)::after, :not(input):not(textarea)::before { -webkit-user-select: none; user-select: none; cursor: default; }*/
@@ -167,23 +169,144 @@ div.screen {
 }
 
 #login-screen {
-  background: linear-gradient(329deg, #034698, #76a8e7), #1560bd;
+  // background: linear-gradient(329deg, #034698, #76a8e7), #1560bd;
   padding: 0 1em;
+  text-align: center;
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  padding: 0 2.5em;
+
+  img.logo {
+    width: 80px;
+    height: 6.5em;
+    opacity: 0.5;
+    margin: 3em auto 0;
+  }
+
+  h3.title {
+    font-size: 150%;
+    font-weight: 600;
+    margin-top: 1em;
+    margin-bottom: 2em;
+
+    span {
+      font-weight: 200;
+      margin-right: 0.3em;
+      border-right: 1px solid #fff;
+      padding: 0.3em 0.3em 0.4em 0;
+    }
+  }
+
+  form {
+    input {
+      border: none;
+      background: rgba(255,255,255,0.1);
+      width: 100%;
+      color: #fff;
+      padding: 15px;
+      font-size: 115%;
+      transition: background-color 0.2s;
+
+      &:focus {
+        background: rgba(255,255,255,0.16);
+      }
+
+      &:first-of-type {
+        border-radius: 6px 6px 0 0;
+      }
+
+      &:last-of-type {
+        border-radius: 0 0 6px 6px;
+      }
+
+      + input {
+        margin-top: 2px;
+      }
+    }
+  }
+
+  .button {
+    display: inline-block;
+    cursor: pointer;
+    width: 100%;
+    font-size: 125%;
+    color: rgba(255,255,255,0.75);
+    background: rgba(0,0,0,0.125);
+    box-shadow: 2px 5px 5px -5px rgba(0,0,0,0.5);
+    line-height: 1em;
+    padding: 0.6em;
+    border-radius: 2px;
+    transition: background-color 0.2s, color 0.2s;
+    border: none;
+
+    &:hover,
+    &:focus {
+      background: rgba(0,0,0,0.25);
+      color: #fff;
+      outline: none;
+    }
+
+    .icon {
+      margin-left: -1.18em;
+    }
+  }
+
+  .forgot {
+    cursor: pointer;
+    display: block;
+    float: left;
+    color: rgba(255,255,255,0.16);
+    text-decoration: none;
+    font-size: 14px;
+    margin-right: 8px;
+    padding: 10px 0;
+    position: relative;
+    top: 0;
+    width: 100%;
+    border-bottom: 1px dotted transparent;
+    transition: color 0.2s, border-bottom-color 0.2s, visibility 0.2s;
+
+    &:hover, &:active, &:focus {
+      color: @cpYellow !important; //#fff;
+      border-bottom: 1px dotted #fff;
+    }
+  }
+
+  input:focus + .forgot {
+    color: rgba(255,255,255,0.5);
+  }
+
+  input:valid + .forgot {
+    color: transparent;
+    visibility: hidden;
+  }
+
+  .login {
+    margin-top: 0.3em;
+  }
+
+  .signup {
+    color: @cpYellow !important;
+  }
+
+  .divider {
+    margin: 1.5em 2em 1.3em;
+    color: rgba(255,255,255,0.25);
+    font-size: 90%;
+  }
+
+  .dimmer {
+    background-color: rgba(0,0,0,0.4) !important;
+  }
+
+  a:focus {
+    outline: none;
+  }
 }
 
-.cp .login_screen input {
-  display: inline-block;
-  width: 300px;
-	height: 48px;
-  text-align: left;
-  background: @cpWhite20;
-  // color: @cpWhite20;
-  color: #fff;
-  border: none;
-  font-size: 16px;
-  padding:15px;
-  outline: none;
-}
 
 #connect-status {
   margin-top: 5px;
@@ -240,12 +363,14 @@ div.screen {
   right: 0;
   bottom: 0;
   padding: 0 2.5em;
+
   img.logo {
     width: 80px;
     height: 6.5em;
     opacity: 0.5;
-    margin: 3em auto 0;
+    margin: 30px auto 0;
   }
+
   h3.title {
     font-size: 150%;
     font-weight: 600;
@@ -306,32 +431,15 @@ div.screen {
 
   .logo {
     display: inline-block;
-    margin-top: 40px;
-    margin-bottom: 40px;
+    // margin-top: 40px;
+    // margin-bottom: 40px;
 
     img {
-      width: 60px;
+      height: auto;
+      width: 80px;
     }
   }
 
-  .forgot {
-    cursor: pointer;
-    display: block;
-    float: right;
-    color: rgba(255,255,255,0.16);
-    text-decoration: none;
-    font-size: 14px;
-    margin-right: 8px;
-    padding: 2px 0;
-    position: relative;
-    top: -0.6em;
-    border-bottom: 1px dotted transparent;
-    transition: color 0.2s, border-bottom-color 0.2s, visibility 0.2s;
-    &:hover, &:active, &:focus {
-      color: @cpYellow !important; //#fff;
-      border-bottom: 1px dotted #fff;
-    }
-  }
   input:focus + .forgot {
     color: rgba(255,255,255,0.5);
   }
