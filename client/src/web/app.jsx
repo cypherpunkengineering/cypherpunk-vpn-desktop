@@ -8,7 +8,7 @@ import ReactDOM from 'react-dom';
 import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, createMemoryHistory/*, hashHistory as History*/ } from 'react-router';
 
 import SpinningImage from './assets/img/bgring3.png';
-import CypherPunkLogo from './assets/img/cp_logo1.png';
+import CypherPunkLogo from './assets/img/logomark.svg';
 import InfoIcon from './assets/img/icon_info.svg';
 import SettingsIcon from './assets/img/icon_settings.svg';
 
