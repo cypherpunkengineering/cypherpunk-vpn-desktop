@@ -149,9 +149,10 @@ div.screen {
           background: rgba(0,0,0,0.10);
         }
         &.disabled {
+          opacity: 1; // don't dim entire item, as that would affect borders
           color: rgba(255,255,255,0.25);
           .flag, .cp-fav {
-            opacity: 0.5 !important;
+            opacity: 0.25 !important;
           }
         }
         i.cp-fav.icon {
