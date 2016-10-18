@@ -5,7 +5,7 @@ import 'semantic';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, createMemoryHistory/*, hashHistory as History*/ } from 'react-router';
+import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, createMemoryHistory, hashHistory as History } from 'react-router';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
 import SpinningImage from './assets/img/bgring3.png';
@@ -28,7 +28,7 @@ window.History = createMemoryHistory(window.location.href);
 
 daemon.ready(() => {
   daemon.once('state', state => {
-    History.push('/login');
+    History.push('/');
   });
   daemon.post.get('state');
 });
@@ -66,12 +66,30 @@ class MainBackground extends React.Component {
 }
 
 class Titlebar extends React.Component {
+  constructor(props) {
+    super(props);
+    this._handler= this._handler.bind(this);
+  }
+
+  _handler(props) {
+    // handler scope doesn't know what this is unless you call bind
+    console.log(props);
+  }
+
   componentDidMount() {
     $(this.refs.dropdown).dropdown({ action: 'hide' });
   }
   render() {
+    console.log(this.props);
     return(
       <div id="titlebar" className="ui fixed borderless icon menu">
+        <ReactCSSTransitionGroup 
+          transitionName="example" 
+          transitionEnterTimeout={300} 
+          transitionLeaveTimeout={500}
+          transitionAppear={true}>
+          <h1>Hello World!</h1>
+        </ReactCSSTransitionGroup>
         <Link className="item" to="/status"><img src={InfoIcon} height="22" width="22" /></Link>
         <div className="header item" style={{ flexGrow: 1, justifyContent: "center" }}>Cypherpunk</div>
         <Link className="item" to="/configuration"><img src={SettingsIcon} height="22" width="22" /></Link>
@@ -305,7 +323,7 @@ class LoginScreen extends React.Component {
       });
     }).then(() => {
       this.hideDimmer();
-      History.push('/connect');
+      History.push('connect');
     }).catch(err => {
       alert(err.message || "Failed to log in"); // FIXME: Don't use alert
       this.hideDimmer();
@@ -399,17 +417,18 @@ class CypherPunkApp extends React.Component {
   render() {
     return(
       <Router history={History}>
-        <Route path="/connect" component={RootContainer}></Route>
-        <Route path="/account" component={AccountScreen}></Route>
-        <Route path="/status" component={StatusScreen}></Route>
-        <Route path="/configuration" component={ConfigurationScreen}></Route>
-        <Route path="/firewall" component={FirewallScreen}></Route>
-        <Route path="/encryption" component={EncryptionScreen}></Route>
-        <Route path="/password" component={PasswordScreen}></Route>
-        <Route path="/email" component={EmailScreen}></Route>
-        <Route path="/help" component={HelpScreen}></Route>
-        <Route path="/login" component={LoginScreen}></Route>
-        <Route path="*" component={LoadingPlaceholder}></Route>
+        <Route path="/" component={LoginScreen}>
+          <Route path="account" component={AccountScreen}></Route>
+          <Route path="connect" component={RootContainer}></Route>
+          <Route path="status" component={StatusScreen}></Route>
+          <Route path="configuration" component={ConfigurationScreen}></Route>
+          <Route path="firewall" component={FirewallScreen}></Route>
+          <Route path="encryption" component={EncryptionScreen}></Route>
+          <Route path="password" component={PasswordScreen}></Route>
+          <Route path="email" component={EmailScreen}></Route>
+          <Route path="help" component={HelpScreen}></Route>
+          <Route path="*" component={LoadingPlaceholder}></Route>
+        </Route>
       </Router>
     );
   }

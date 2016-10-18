@@ -30,4 +30,4 @@ const [ root, loader ] = (function() {
 })();
 
 // Load the full app asynchronously
-require.ensure(['./app.jsx'], function(require) { app = require('./app.jsx'); });
+require.ensure(['./Application'], function(require) { app = require('./Application'); });
