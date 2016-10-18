@@ -54,7 +54,7 @@ public:
 	JsonValue& operator[](const std::string& name);
 
 	namedmember(std::string, protocol, "udp")
-	namedmember(std::string, server, "freebsd-test.tokyo.vpn.cypherpunk.network") // FIXME: don't hardcode
+	namedmember(std::string, server, "tokyodev") // FIXME: don't hardcode
 	namedmember(std::string, remotePort, "auto")
 	namedmember(int, localPort, 0)
 	namedmember(int, mtu, 1400)
@@ -69,6 +69,10 @@ public:
 	// TODO: These are actually user-specific settings
 	namedmember(bool, autoConnect, false)
 	namedmember(bool, showNotifications, true)
+
+	// FIXME: should be a config
+	namedmember(JsonObject, regions, {})
+	namedmember(JsonObject, servers, {})
 };
 
 extern Settings g_settings;

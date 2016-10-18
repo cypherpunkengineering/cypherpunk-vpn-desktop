@@ -26,14 +26,14 @@ typedef jsonrpc::Client JsonRPCClient;
 typedef jsonrpc::Dispatcher JsonRPCDispatcher;
 
 
-struct ServerInfo
+/*struct ServerInfo
 {
 	std::string id;
 	std::string name;
 	std::string country;
 	double latitude, longitude;
 	std::map<std::string, std::string> ips;
-};
+};*/
 
 class CypherDaemon
 {
@@ -108,7 +108,7 @@ protected:
 	std::string _localIP, _remoteIP;
 	int64_t _bytesReceived, _bytesSent;
 	bool _needsReconnect;
-	std::map<std::string, ServerInfo> _servers;
+	//std::map<std::string, ServerInfo> _servers;
 
 protected:
 	// Create a platform-specific handler around an OpenVPN process.

@@ -34,6 +34,7 @@ CypherDaemon::CypherDaemon()
 	, _state(STARTING)
 	, _needsReconnect(false)
 {
+	/*
 	// FIXME: Don't hardcode
 	ServerInfo hardcoded_servers[] = {
 #define SERVER(id, name, country, lat, lon, ip_default, ip_none, ip_strong, ip_stealth) { id, name, country, lat, lon, { { "default", ip_default }, { "none", ip_none }, { "strong", ip_strong }, { "stealth", ip_stealth } } }
@@ -44,6 +45,7 @@ CypherDaemon::CypherDaemon()
 	};
 	for (auto& s : hardcoded_servers)
 		_servers.emplace(std::pair<std::string, ServerInfo>(s.id, std::move(s)));
+	*/
 }
 
 int CypherDaemon::Run()
@@ -377,12 +379,8 @@ static std::vector<JsonValue> GetCertificateAuthorities()
 JsonObject CypherDaemon::MakeConfigObject()
 {
 	JsonObject config;
-	std::vector<JsonObject> servers;
-	for (auto& s : _servers)
-	{
-		servers.push_back({ { "id", s.second.id }, { "name", s.second.name }, { "country", s.second.country }, { "location", JsonObject { { "latitude", s.second.latitude }, { "longitude", s.second.longitude } } } });
-	}
-	config["servers"] = std::move(servers);
+	config["servers"] = g_settings.servers();
+	config["regions"] = g_settings.regions();
 	config["certificateAuthorities"] = GetCertificateAuthorities();
 	return std::move(config);
 }
@@ -594,6 +592,10 @@ void CypherDaemon::RPC_applySettings(const JsonObject& settings)
 	}
 	if (changed.size() > 0)
 		g_settings.OnChanged(changed);
+	
+	// FIXME: Temporary workaround, these should be configs instead
+	if (settings.find("servers") != settings.end() || settings.find("regions") != settings.end())
+		SendToAllClients(_rpc_client.BuildNotificationData("config", MakeConfigObject()));
 }
 
 void CypherDaemon::RPC_setAccount(const JsonObject& account)
@@ -601,7 +603,7 @@ void CypherDaemon::RPC_setAccount(const JsonObject& account)
 
 }
 
-void WriteOpenVPNProfile(std::ostream& out, const ServerInfo& server)
+void WriteOpenVPNProfile(std::ostream& out, const JsonObject& server)
 {
 	using namespace std;
 
@@ -626,7 +628,7 @@ void WriteOpenVPNProfile(std::ostream& out, const ServerInfo& server)
 		{ "tls-version-min", "1.2" },
 		//{ "remote-cert-tls", "server" },
 		{ "remote-cert-eku", "\"TLS Web Server Authentication\"" },
-		{ "verify-x509-name", server.id + " name" },
+		{ "verify-x509-name", server.at("ovHostname").AsString() + " name" },
 		{ "persist-tun", "" },
 	};
 
@@ -636,7 +638,9 @@ void WriteOpenVPNProfile(std::ostream& out, const ServerInfo& server)
 		config["lport"] = std::to_string(g_settings.localPort());
 
 	const auto& encryption = g_settings.encryption();
-	config["remote"] = server.ips.at(encryption) + (g_settings.remotePort() == "auto" ? " 7133" : " " + g_settings.remotePort());
+	std::string ipKey = "ov" + encryption;
+	ipKey[2] = std::toupper(ipKey[2]);
+	config["remote"] = server.at(ipKey).AsString() + (g_settings.remotePort() == "auto" ? " 7133" : " " + g_settings.remotePort());
 	if (encryption == "stealth")
 	{
 		config["tls-cipher"] = "TLS-DHE-RSA-WITH-AES-128-GCM-SHA256:TLS-DHE-RSA-WITH-AES-128-CBC-SHA256";
@@ -797,7 +801,7 @@ bool CypherDaemon::RPC_connect()
 #endif
 	{
 		std::ofstream f(profile_filename.c_str());
-		WriteOpenVPNProfile(f, _servers.at(g_settings.server()));
+		WriteOpenVPNProfile(f, g_settings.servers().at(g_settings.server()).AsStruct());
 		f.close();
 	}
 	args.push_back(profile_filename);
