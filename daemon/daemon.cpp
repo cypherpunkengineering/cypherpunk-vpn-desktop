@@ -630,6 +630,7 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& server)
 		{ "remote-cert-eku", "\"TLS Web Server Authentication\"" },
 		{ "verify-x509-name", server.at("ovHostname").AsString() + " name" },
 		{ "persist-tun", "" },
+		{ "auth-user-pass", "" },
 	};
 
 	if (g_settings.localPort() == 0)
@@ -758,6 +759,7 @@ bool CypherDaemon::RPC_connect()
 	args.push_back(std::to_string(port));
 	args.push_back("--management-hold");
 	args.push_back("--management-client");
+	args.push_back("--management-query-passwords");
 
 	args.push_back("--verb");
 	args.push_back("4");
@@ -808,6 +810,15 @@ bool CypherDaemon::RPC_connect()
 
 	vpn->OnManagementResponse("HOLD", [=](const std::string& line) {
 		vpn->SendManagementCommand("\nhold release\n");
+	});
+	vpn->OnManagementResponse("PASSWORD", [=](const std::string& line) {
+		LOG(INFO) << line;
+		size_t q1 = line.find('\'');
+		size_t q2 = line.find('\'', q1 + 1);
+		auto id = line.substr(q1 + 1, q2 - q1 - 1);
+		// FIXME: Obviously shouldn't be hardcoded
+		vpn->SendManagementCommand("\nusername \"" + id + "\" \"test@test.test\"\n");
+		vpn->SendManagementCommand("\npassword \"" + id + "\" \"test123\"\n");
 	});
 	vpn->OnManagementResponse("STATE", [=](const std::string& line) {
 		try
