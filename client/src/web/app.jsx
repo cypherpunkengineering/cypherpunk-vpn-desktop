@@ -1,4 +1,3 @@
-window.$ = window.jQuery = require('jquery');
 
 // Always use this stub to import standard React addons, as we will either use
 // their node module (development) or dig them out of react.min.js (production). 
