@@ -1,12 +1,18 @@
 window.$ = window.jQuery = require('jquery');
 
+// Always use this stub to import standard React addons, as we will either use
+// their node module (development) or dig them out of react.min.js (production). 
+function reactAddon(module, name) {
+  return module.addons ? module.addons[name] : module;
+}
+
 import './assets/css/app.less';
 import 'semantic';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, createMemoryHistory/*, hashHistory as History*/ } from 'react-router';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+const ReactCSSTransitionGroup = reactAddon(require('react-addons-css-transition-group'), 'CSSTransitionGroup');
 
 import SpinningImage from './assets/img/bgring3.png';
 import CypherPunkLogo from './assets/img/logomark.svg';

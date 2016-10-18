@@ -80,8 +80,21 @@ var options = {
   }
 }
 
-if (useWebLibraries)
+if (useWebLibraries) {
   options.resolve.modulesDirectories.unshift(path.resolve(__dirname, 'src/web/lib'));
+  Object.assign(options.resolve.alias, {
+    'react/addons': 'react',
+    'react/lib': 'react',
+    'react/dist': 'react',
+    'react-addons-css-transition-group': 'react',
+    'react-addons-linked-state-mixin': 'react',
+    'react-addons-clone-with-props': 'react',
+    'react-addons-create-fragment': 'react',
+    'react-addons-update': 'react',
+    'react-addons-pure-render-mixin': 'react',
+    'react-addons-shallow-compare': 'react',
+  });
+}
 
 options.target = webpackTargetElectronRenderer(options);
 
