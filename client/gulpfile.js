@@ -151,6 +151,9 @@ gulp.task('watch-semantic', function(callback) {
 gulp.task('build-web-libraries', function() {
   var requests = [];
   for (var file in (packageJson.webLibraries || {})) {
+    if (!fs.existsSync('src/web/lib/' + file + '.js')) {
+      requests.push({ file: file + '.js', url: packageJson.webLibraries[file].replace(/\.min\.js$/, '.js') });
+    }
     if (!fs.existsSync('src/web/lib/' + file + '.min.js')) {
       requests.push({ file: file + '.min.js', url: packageJson.webLibraries[file] });
     }
@@ -159,7 +162,7 @@ gulp.task('build-web-libraries', function() {
     .pipe(gulp.dest('src/web/lib'));
 });
 gulp.task('clean-web-libraries', function() {
-  return gulp.src(Object.keys(packageJson.webLibraries || {}).map(m => 'src/web/lib/' + m + '.min.js'), { read: false })
+  return gulp.src(Object.keys(packageJson.webLibraries || {}).map(m => 'src/web/lib/' + m + '?(.min).js'), { read: false })
     .pipe(clean());
 });
 
