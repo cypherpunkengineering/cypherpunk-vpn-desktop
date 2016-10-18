@@ -15,7 +15,7 @@ rm -f out/"${APPNAME}".pkg.zip
 # Client
 mkdir -p out/osx/Applications
 cd client
-npm --production install
+npm install
 npm --production run build
 ./node_modules/.bin/electron-rebuild
 ./node_modules/.bin/electron-packager ./app/ "${APPNAME}" --platform=darwin --arch=x64 --icon=../res/logo.icns --out=../out/osx/Applications

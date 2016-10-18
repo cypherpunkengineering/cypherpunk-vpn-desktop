@@ -17,7 +17,7 @@ if %errorlevel% neq 0 goto error
 
 cd ..\client
 echo * Updating Node modules...
-call npm --production --loglevel=silent install
+call npm --loglevel=silent install
 if %errorlevel% neq 0 goto error
 
 echo * Building client...
