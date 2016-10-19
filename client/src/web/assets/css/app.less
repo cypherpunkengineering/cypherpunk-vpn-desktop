@@ -3,6 +3,7 @@
 @cpBg:        #1560bd;
 @cpBgDark:    #023f7d;
 @cpYellow:    #f8e71c;
+@cpYellowDark: #f8cf1c;
 @cpWhite20:   rgba(255,255,255,0.2);
 @cpWhite25:   rgba(255,255,255,0.25);
 @cpWhite40:   rgba(255,255,255,0.4);
@@ -10,7 +11,9 @@
 @cpOrangeDark:#d19e12;
 
 @dragbarHeight:  30px;
-@headerHeight:   48px;
+@headerHeight:   56px;
+// @headerHeight:   48px;
+
 
 
 // Mixins
@@ -57,7 +60,12 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   position: fixed;
   top: 0;
   width: 100%;
+  z-index: 1001;
   -webkit-app-region: drag;
+
+  &.dark {
+    background-color: @cpBg;
+  }
 }
 
 #titlebar {
@@ -614,7 +622,28 @@ dialog.dimmer {
   // min-height: 49px !important;
   border-bottom: 1px solid rgba(255,255,255,0.15) !important;
   height: @headerHeight;
+  position: fixed;
+  top: 30px;
+  z-index: 1001;
   // padding-top: 26px;
+}
+
+.settingsContainer {
+  position: relative;
+  top: 56px;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  height: calc(~"100vh -" (@dragbarHeight + @headerHeight));
+}
+
+.cp-settings {
+  .header {
+    text-transform: uppercase;
+    margin: 14px 1rem;
+    color: @cpYellowDark;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
 }
 
 .cp_config_tabs {

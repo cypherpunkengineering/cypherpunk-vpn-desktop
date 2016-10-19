@@ -7,7 +7,7 @@ import daemon, { DaemonAware } from './daemon.js';
 class Dragbar extends React.Component {
   render() {
     return (
-      <div id="dragbar"></div>
+      <div id="dragbar" class="dark"></div>
     )
   }
 }
@@ -24,7 +24,7 @@ export default class ConfigurationScreen extends React.Component  {
           <Link className="item" to="/connect"><i className="arrow left icon"></i></Link>
           <div className="header item center aligned">Configuration</div>
         </div>
-        <div className="ui two item tabular menu cp_config_tabs" ref="tab">
+        {/* <div className="ui two item tabular menu cp_config_tabs" ref="tab">
           <a className="item active" data-tab="general">General</a>
           <a className="item" data-tab="advanced">Advanced</a>
         </div>
@@ -33,6 +33,14 @@ export default class ConfigurationScreen extends React.Component  {
         </div>
         <div className="ui tab tabscroll" data-tab="advanced">
           <AdvancedSettings />
+        </div> */}
+        <div className="settingsContainer">
+          <div className="" data-tab="general">
+            <GeneralSettings />
+          </div>
+          <div className="" data-tab="advanced">
+            <AdvancedSettings />
+          </div>
         </div>
       </div>
     );
@@ -64,8 +72,9 @@ class AdvancedSettings extends DaemonAware(React.Component)  {
   }
   render() {
     return(
-      <div>
+      <div className="cp-settings">
       <div className="ui padded grid">
+        <div class="header row">Advanced settings</div>
         <div className="row cp_row">
           <div className="eleven wide olive column">
             Protocol
@@ -125,7 +134,7 @@ class AdvancedSettings extends DaemonAware(React.Component)  {
             </label>
           </div>
           <div className="three wide olive right aligned column">
-            <div className="ui checkbox">
+            <div className="ui toggle checkbox">
               <input type="checkbox" name="smallpackets" id="smallpackets"/>
               <label />
             </div>
@@ -136,7 +145,7 @@ class AdvancedSettings extends DaemonAware(React.Component)  {
             <label for="allowlocaltraffic">Allow local traffic when firewall is on</label>
           </div>
           <div className="three wide olive right aligned column">
-            <div className="ui checkbox">
+            <div className="ui toggle checkbox">
               <input type="checkbox" name="allowlocaltraffic" id="allowlocaltraffic"/>
               <label />
             </div>
@@ -149,7 +158,7 @@ class AdvancedSettings extends DaemonAware(React.Component)  {
             </label>
           </div>
           <div className="three wide olive right aligned column">
-            <div className="ui checkbox">
+            <div className="ui toggle checkbox">
               <input type="checkbox" name="requestportforwarding" id="requestportforwarding"/>
               <label />
             </div>
@@ -162,7 +171,7 @@ class AdvancedSettings extends DaemonAware(React.Component)  {
             </label>
           </div>
           <div className="three wide olive right aligned column">
-            <div className="ui checkbox">
+            <div className="ui toggle checkbox">
               <input type="checkbox" name="ipv6leakprotection" id="ipv6leakprotection"/>
               <label />
             </div>
@@ -176,7 +185,7 @@ class AdvancedSettings extends DaemonAware(React.Component)  {
             </label>
           </div>
           <div className="three wide olive right aligned column">
-            <div className="ui checkbox">
+            <div className="ui toggle checkbox">
               <input type="checkbox" name="dnsleakprotection" id="dnsleakprotection" />
               <label />
             </div>
@@ -307,13 +316,13 @@ class GeneralSettings extends DaemonAware(React.Component)  {
             </div>
           </div>
           <div class="cp-setting clickable item">
-            <div class="ui checkbox">
+            <div class="ui toggle checkbox">
               <input type="checkbox" name="autoconnect" id="autoconnect" ref="autoconnect"/>
               <label>Auto-connect on launch</label>
             </div>
           </div>
           <div class="cp-setting clickable item">
-            <div class="ui checkbox">
+            <div class="ui toggle checkbox">
               <input type="checkbox" id="desktopnotifications" name="desktopnotifications" ref="desktopnotifications"/>
               <label>Show desktop notifications</label>
             </div>
