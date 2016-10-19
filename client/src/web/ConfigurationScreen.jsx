@@ -2,15 +2,7 @@ import React from 'react';
 import { Link } from 'react-router';
 import { ipcRenderer as ipc } from 'electron';
 import daemon, { DaemonAware } from './daemon.js';
-
-
-class Dragbar extends React.Component {
-  render() {
-    return (
-      <div id="dragbar" class="dark"></div>
-    )
-  }
-}
+import Dragbar from './Dragbar'
 
 export default class ConfigurationScreen extends React.Component  {
   componentDidMount() {
@@ -19,7 +11,7 @@ export default class ConfigurationScreen extends React.Component  {
   render() {
     return(
       <div>
-        <Dragbar/>
+        <Dragbar theme="dark" />
         <div className="ui fluid inverted borderless icon menu cp_config_header">
           <Link className="item" to="/connect"><i className="arrow left icon"></i></Link>
           <div className="header item center aligned">Configuration</div>

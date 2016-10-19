@@ -17,7 +17,7 @@ export default class Dragbar extends React.Component {
   }
   render() {
     return(
-      <div id="dragbar" className="">
+      <div id="dragbar" className={this.props.theme}>
       </div>
     );
   }
