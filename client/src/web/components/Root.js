@@ -39,8 +39,8 @@ export default class Root extends React.Component {
         <ReactCSSTransitionGroup
           component="div"
           transitionName={this.determineTransition(segment)}
-          transitionEnterTimeout={600}
-          transitionLeaveTimeout={600}
+          transitionEnterTimeout={6000}
+          transitionLeaveTimeout={6000}
         >
           {React.cloneElement(children, {
             key: segment

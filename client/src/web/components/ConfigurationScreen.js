@@ -25,7 +25,7 @@ export default class ConfigurationScreen extends React.Component  {
     }
     else {
       return (
-        <div>
+        <div className="container__comp">
           <div className="ui fluid inverted borderless icon menu cp_config_header">
             <Link className="item" to="/connect"><i className="arrow left icon"></i></Link>
             <div className="header item center aligned">Configuration</div>
@@ -34,7 +34,7 @@ export default class ConfigurationScreen extends React.Component  {
             <a className="item active" data-tab="general">General</a>
             <a className="item" data-tab="advanced">Advanced</a>
           </div> */}
-          <div className="config-container">
+          <div className="container__comp--config">
             <GeneralSettings/>
             <AdvancedSettings/>
           </div>

@@ -126,7 +126,7 @@ export default class ConnectScreen extends React.Component {
 
     return(
       <div class="full screen" style={{visibility: 'visible'}}>
-        <Dragbar/>
+        {/*<Dragbar/>*/}
         <OneZeros/>
         <MainBackground/>
         <div id="connect-screen" class="full screen" style={{visibility: 'visible'}}>

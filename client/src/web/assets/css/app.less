@@ -50,8 +50,9 @@ body {
   font-weight: 500;
   overflow-y: hidden;
   -webkit-font-smoothing: antialiased;
-  height: calc(~"100vh -" (@dragbarHeight));
-  top: 30px;
+  height: 100vh;
+  // height: calc(~"100vh -" (@dragbarHeight));
+  // top: 30px;
   .bg-gradient--main;
 }
 
@@ -82,7 +83,10 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 
 #titlebar {
   font-size: 22px !important;
-  top: @dragbarHeight;
+  // top: @dragbarHeight;
+  top: 0px;
+  padding-top: @dragbarHeight;
+  .draggable;
 }
 
 #main-background {
@@ -151,16 +155,17 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 }
 
 #onezeros {
+  .bodyHeight;
   font-family: Menlo;
   font-size: 21px;
-  height: calc(~"100vh -" (@dragbarHeight + @headerHeight));
+  // height: calc(~"100vh -" (@dragbarHeight + @headerHeight));
   line-height: 21px;
   letter-spacing: 0.4px;
   position: absolute;
   width: 100%;
   text-align: center;
   color: rgba(255,255,255,0.07);
-  top: @headerHeight;
+  top: @fullHeaderHeight;
   left: 0;
   word-wrap:break-word;
   overflow-y: hidden;
@@ -192,12 +197,11 @@ div.screen {
 }
 
 #login-screen {
-  // background: linear-gradient(329deg, #034698, #76a8e7), #1560bd;
   padding: 0 1em;
   text-align: center;
   position: absolute;
   left: 0;
-  top: 0;
+  top: @dragbarHeight;
   right: 0;
   bottom: 0;
   padding: 0 2.5em;
@@ -622,15 +626,22 @@ dialog.dimmer {
 #status-screen {
   min-height: 459px;
   background: rgba(255,255,255,0.16);
+  position: relative;
+  top: @fullHeaderHeight;
 }
 
-.config-container {
+.container__comp {
+  position: relative;
+  top: 86px;
+}
+
+.container__comp--config {
   .bodyHeight;
   color: #f8cf1c;
   position: relative;
   overflow-x: hidden;
   overflow-y: scroll;
-  top: @headerHeight;
+  // top: @headerHeight;
 
   .header {
     margin: 14px 1rem;
@@ -744,6 +755,8 @@ small {
 	background: rgba(255,255,255,0.3);
 }
 
+
+// Animations
 .example-enter {
   opacity: 0.01;
 }
@@ -779,12 +792,12 @@ small {
 .pageSwap-leave.pageSwap-leave-active {
 
   transform: translate3d(-100%, 0, 0);
-  transition: all ease-out 600ms;
+  transition: all ease-out 5000ms;
 }
 
 .pageSwap-enter {
+  .bg-gradient--main;
   position: absolute;
-  background-color: #EEE;
   left: 0;
   width: 100%;
   height: 100%;
@@ -792,13 +805,13 @@ small {
 }
 
 .pageSwap-enter.pageSwap-enter-active {
+  .bg-gradient--main;
   position: absolute;
-  background-color: #EEE;
   left: 0;
   width: 100%;
   height: 100%;
   transform: translate3d(0, 0, 0);
-  transition: all ease-out 600ms;
+  transition: all ease-out 5000ms;
 
 }
 
@@ -812,7 +825,7 @@ small {
 
 .reversePageSwap-leave.reversePageSwap-leave-active {
   transform: translate3d(100%, 0, 0);
-  transition: all ease-out 600ms;
+  transition: all ease-out 5000ms;
 }
 
 .reversePageSwap-enter {
@@ -821,5 +834,5 @@ small {
 
 .reversePageSwap-enter.reversePageSwap-enter-active {
   transform: translate3d(0, 0, 0);
-  transition: all ease-out 600ms;
+  transition: all ease-out 5000ms;
 }
