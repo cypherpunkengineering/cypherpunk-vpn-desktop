@@ -21,6 +21,10 @@
   filter: blur(1px);
 }
 
+.draggable {
+  -webkit-app-region: drag;
+}
+
 // Background Gradient
 .bg-gradient--main {
   // background-image: linear-gradient(@cpBg, @cpBgDark);
@@ -65,7 +69,7 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   top: 0;
   width: 100%;
   z-index: 1001;
-  -webkit-app-region: drag;
+  .draggable;
 
   &.dark {
     background-color: @cpBg;
@@ -621,10 +625,12 @@ dialog.dimmer {
   // height: 49px !important;
   // min-height: 49px !important;
   border-bottom: 1px solid rgba(255,255,255,0.15) !important;
-  height: @headerHeight;
+  height: (@dragbarHeight + @headerHeight);
+  padding-top: @dragbarHeight;
   position: fixed;
-  top: 30px;
+  top: 0;
   z-index: 1001;
+  .draggable;
   // padding-top: 26px;
 }
 
