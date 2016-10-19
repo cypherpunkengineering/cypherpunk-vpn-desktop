@@ -30,16 +30,20 @@ export default class ConfigurationScreen extends React.Component  {
             <Link className="item" to="/connect"><i className="arrow left icon"></i></Link>
             <div className="header item center aligned">Configuration</div>
           </div>
-          <div className="ui two item tabular menu cp_config_tabs" ref="tab">
+          {/* <div className="ui two item tabular menu cp_config_tabs" ref="tab">
             <a className="item active" data-tab="general">General</a>
             <a className="item" data-tab="advanced">Advanced</a>
+          </div> */}
+          <div className="config-container">
+            <GeneralSettings/>
+            <AdvancedSettings/>
           </div>
-          <div className="ui tab active tabscroll" data-tab="general">
+          {/* <div className="ui tab active tabscroll" data-tab="general">
             <GeneralSettings />
           </div>
           <div className="ui tab tabscroll" data-tab="advanced">
             <AdvancedSettings />
-          </div>
+          </div> */}
         </div>
       )
     }
@@ -49,24 +53,6 @@ export default class ConfigurationScreen extends React.Component  {
     return(
       <div>
         {this.cloneChildren()}
-        <div className="ui fluid inverted borderless icon menu cp_config_header">
-          <Link className="item" to="/connect"><i className="arrow left icon"></i></Link>
-          <div className="header item center aligned">Configuration</div>
-        </div>
-        {/* <div className="ui two item tabular menu cp_config_tabs" ref="tab">
-          <a className="item active" data-tab="general">General</a>
-          <a className="item" data-tab="advanced">Advanced</a>
-        </div> */}
-        <div className="config-container">
-          <GeneralSettings/>
-          <AdvancedSettings/>
-        </div>
-        {/*<div className="ui tab active tabscroll" data-tab="general">
-          <GeneralSettings />
-        </div>
-        <div className="ui tab tabscroll" data-tab="advanced">
-          <AdvancedSettings />
-        </div> */}
       </div>
     );
   }
