@@ -17,6 +17,10 @@
 
 
 // Mixins
+.blur {
+  filter: blur(1px);
+}
+
 // Background Gradient
 .bg-gradient--main {
   // background-image: linear-gradient(@cpBg, @cpBgDark);
@@ -79,7 +83,7 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   overflow: hidden;
   //background-color: #666;
   // background: linear-gradient(328deg, @cpBlue, @cpLightBlue);
-  .bg-gradient--main;
+  // .bg-gradient--main;
   transition: 5s background;
   &:before {
     content: '';
@@ -144,12 +148,14 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   line-height: 21px;
   letter-spacing: 0.4px;
    position: absolute;
-   width: 328px;
+   width: 100%;
    text-align: center;
-   color: rgba(255,255,255,0.08);
-   top: 80px;
-   left: 11px;
+   color: rgba(255,255,255,0.07);
+   top: (@dragbarHeight + @headerHeight);
+   left: 0;
    word-wrap:break-word;
+   overflow-y: hidden;
+   .blur;
 }
 
 @keyframes bge { from { transform: scale(0.5) rotate(0deg); } to { transform: scale(1.5) rotate(360deg); } }
@@ -186,13 +192,6 @@ div.screen {
   right: 0;
   bottom: 0;
   padding: 0 2.5em;
-
-  img.logo {
-    width: 80px;
-    height: 6.5em;
-    opacity: 0.5;
-    margin: 3em auto 0;
-  }
 
   h3.title {
     font-size: 150%;
