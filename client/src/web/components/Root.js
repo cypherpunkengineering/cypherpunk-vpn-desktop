@@ -13,8 +13,6 @@ export default class Root extends React.Component {
     window.previousLocation = this.props.location
   }
   determineTransition(segment) {
-    var path = this.props.location.pathname;
-    console.log(segment);
     var transitionName = 'example'
     if (segment === 'login' || segment === 'root') {
       transitionName = '';
@@ -22,7 +20,7 @@ export default class Root extends React.Component {
     else if (window.previousLocation.pathname === '/login') {
       transitionName = 'example'
     }
-    else if (segment === 'connect') {
+    else if (segment === 'connect' || window.previousLocation.pathname === '/email') {
       transitionName = 'reversePageSwap'
     }
     else {
