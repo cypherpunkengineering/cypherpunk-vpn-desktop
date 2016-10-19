@@ -12,11 +12,15 @@
 
 @dragbarHeight:  30px;
 @headerHeight:   56px;
-// @headerHeight:   48px;
+@fullHeaderHeight:   (@dragbarHeight + @headerHeight);
 
 
 
 // Mixins
+.bodyHeight {
+  height: calc(~"100vh -" @fullHeaderHeight);
+}
+
 .blur {
   filter: blur(1px);
 }
@@ -44,8 +48,8 @@ body {
   transition: 2s background;
   font-family: Dosis;
   font-weight: 500;
+  overflow-y: hidden;
   -webkit-font-smoothing: antialiased;
-  // height: 100%;
   height: calc(~"100vh -" (@dragbarHeight));
   top: 30px;
   .bg-gradient--main;
@@ -620,6 +624,21 @@ dialog.dimmer {
   background: rgba(255,255,255,0.16);
 }
 
+.config-container {
+  .bodyHeight;
+  color: #f8cf1c;
+  position: relative;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  top: @headerHeight;
+
+  .header {
+    margin: 14px 1rem;
+    text-transform: uppercase;
+    width: 100%;
+  }
+}
+
 .cp_config_header {
   font-size: 20px !important;
   // height: 49px !important;
@@ -639,7 +658,7 @@ dialog.dimmer {
   top: 56px;
   overflow-x: hidden;
   overflow-y: scroll;
-  height: calc(~"100vh -" (@dragbarHeight + @headerHeight));
+  .bodyHeight;
 }
 
 .cp-settings {

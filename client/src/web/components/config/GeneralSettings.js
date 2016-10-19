@@ -36,7 +36,7 @@ export default class GeneralSettings extends DaemonAware(React.Component)  {
   }
   render() {
     return(
-      <div class="cp-settings" ref="root">
+      <div class="cp-settings config__settings--basic" ref="root">
         <div className="ui equal width center aligned padded grid ">
           <div className="row cp_row">
             <div className="olive column cp_account_avatar">
@@ -111,13 +111,13 @@ export default class GeneralSettings extends DaemonAware(React.Component)  {
             </div>
           </div>
           <div class="cp-setting clickable item">
-            <div class="ui checkbox">
+            <div class="ui checkbox toggle">
               <input type="checkbox" name="autoconnect" id="autoconnect" ref="autoconnect"/>
               <label>Auto-connect on launch</label>
             </div>
           </div>
           <div class="cp-setting clickable item">
-            <div class="ui checkbox">
+            <div class="ui checkbox toggle">
               <input type="checkbox" id="desktopnotifications" name="desktopnotifications" ref="desktopnotifications"/>
               <label>Show desktop notifications</label>
             </div>
