@@ -20,7 +20,7 @@ export default class Root extends React.Component {
     else if (window.previousLocation.pathname === '/login') {
       transitionName = 'example'
     }
-    else if (segment === 'connect' || window.previousLocation.pathname === '/email') {
+    else if (segment === 'connect' || window.previousLocation.pathname === '/email' || window.previousLocation.pathname === '/password' || window.previousLocation.pathname === '/encryption' || window.previousLocation.pathname === '/firewall' || window.previousLocation.pathname === '/help') {
       transitionName = 'reversePageSwap'
     }
     else {
