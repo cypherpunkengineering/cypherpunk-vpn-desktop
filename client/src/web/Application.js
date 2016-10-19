@@ -6,6 +6,7 @@ import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, browserHistor
 import LoginScreen from './components/LoginScreen';
 import ConnectScreen from './components/ConnectScreen';
 import ConfigurationScreen from './components/ConfigurationScreen'
+import StatusScreen from './components/StatusScreen'
 import './assets/css/app.less';
 
 // import { configureStore } from './store/configureStore';
@@ -28,6 +29,7 @@ render((
       <Route path="/login" component={LoginScreen}/>
       <Route path="/connect" component={ConnectScreen}/>
       <Route path="/configuration" component={ConfigurationScreen}/>
+      <Route path="/status" component={StatusScreen}/>
     </Route>
   </Router>
 ), document.getElementById('root-container'));

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router';
-import WorldMap from './assets/img/map_wh.svg';
+import WorldMap from '../assets/img/map_wh.svg';
 
 export default class StatusScreen extends React.Component  {
   render() {
