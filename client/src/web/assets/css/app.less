@@ -145,17 +145,18 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 #onezeros {
   font-family: Menlo;
   font-size: 21px;
+  height: calc(~"100vh -" (@dragbarHeight + @headerHeight));
   line-height: 21px;
   letter-spacing: 0.4px;
-   position: absolute;
-   width: 100%;
-   text-align: center;
-   color: rgba(255,255,255,0.07);
-   top: (@dragbarHeight + @headerHeight);
-   left: 0;
-   word-wrap:break-word;
-   overflow-y: hidden;
-   .blur;
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  color: rgba(255,255,255,0.07);
+  top: @headerHeight;
+  left: 0;
+  word-wrap:break-word;
+  overflow-y: hidden;
+  .blur;
 }
 
 @keyframes bge { from { transform: scale(0.5) rotate(0deg); } to { transform: scale(1.5) rotate(360deg); } }
