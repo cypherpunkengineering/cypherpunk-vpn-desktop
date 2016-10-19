@@ -30,9 +30,6 @@ export default class EmailScreen extends React.Component  {
               </div>
             </div>
           </div>
-        </div>
-        <br />
-        <div class="ui padded grid">
           <div class="row">
             <div class="seven wide olive column">
               Password
@@ -43,15 +40,13 @@ export default class EmailScreen extends React.Component  {
               </div>
             </div>
           </div>
-        </div>
-        <div class="ui equal width center aligned padded grid">
           <div class="row">
             <div class="column">
-              <button class="ui inverted button">Update</button>
+              <button id="update" class="ui inverted button">Update</button>
             </div>
           </div>
-        </div>
 
+        </div>
       </div>
     );
   }

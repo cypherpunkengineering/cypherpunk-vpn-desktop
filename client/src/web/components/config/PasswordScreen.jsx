@@ -5,7 +5,7 @@ export default class PasswordScreen extends React.Component  {
   render() {
     return(
       <div>
-        <div className="ui fluid inverted borderless icon menu">
+        <div className="ui fluid inverted borderless icon menu cp_config_header">
           <Link className="item" to="/configuration"><i className="arrow left icon"></i></Link>
           <div className="header item center aligned">Update Password</div>
         </div>
@@ -30,9 +30,6 @@ export default class PasswordScreen extends React.Component  {
               </div>
             </div>
           </div>
-        </div>
-        <br />
-        <div class="ui padded grid">
           <div class="row">
             <div class="seven wide olive column">
               Password
@@ -43,15 +40,12 @@ export default class PasswordScreen extends React.Component  {
               </div>
             </div>
           </div>
-        </div>
-        <div class="ui equal width center aligned padded grid">
           <div class="row">
             <div class="column">
-              <button class="ui inverted button">Update</button>
+              <button id="update" class="ui inverted button">Update</button>
             </div>
           </div>
         </div>
-
       </div>
     );
   }
