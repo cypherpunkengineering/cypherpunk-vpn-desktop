@@ -7,16 +7,19 @@ import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 export default class Root extends React.Component {
   render() {
     var { children, location } = this.props;
+
+    var path = location.pathname;
+    var segment = path.split('/')[1] || 'root';
     return(
       <div>
         <ReactCSSTransitionGroup
           component="div"
-          transitionName="example"
-          transitionEnterTimeout={500}
-          transitionLeaveTimeout={500}
+          transitionName="pageSlider"
+          transitionEnterTimeout={600}
+          transitionLeaveTimeout={600}
         >
           {React.cloneElement(children, {
-            key: location.pathname
+            key: segment
           })}
         </ReactCSSTransitionGroup>
       </div>

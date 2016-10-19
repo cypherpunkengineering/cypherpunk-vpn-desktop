@@ -138,7 +138,6 @@ export default class GeneralSettings extends DaemonAware(React.Component)  {
           </div>
           </div>
         </div>
-
       </div>
     );
   }

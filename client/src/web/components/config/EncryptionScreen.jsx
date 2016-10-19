@@ -1,15 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router';
-import daemon from '../daemon.js';
+import daemon from '../../daemon.js';
 
 
-export default class FirewallScreen extends React.Component  {
+export default class EncryptionScreen extends React.Component  {
   constructor() {
     super();
     this.onDaemonSettingsChanged = this.onDaemonSettingsChanged.bind(this);
   }
   componentDidMount() {
-    $(this.refs.tab).find('.item').tab();
     $(this.refs.root).find('.ui.checkbox').checkbox({ onChange: this.onChanged.bind(this) });
     this.onDaemonSettingsChanged();
     daemon.on('settings', this.onDaemonSettingsChanged);
@@ -18,27 +17,27 @@ export default class FirewallScreen extends React.Component  {
     daemon.removeListener('settings', this.onDaemonSettingsChanged);
   }
   onChanged() {
-    var value = $(this.refs.root).find('input[name=firewall]:checked').val();
-    daemon.post.applySettings({ 'firewall': value });
+    var value = $(this.refs.root).find('input[name=encryption]:checked').val();
+    daemon.post.applySettings({ 'encryption': value });
   }
   onDaemonSettingsChanged() {
-    $(this.refs.root).find('#firewall-' + daemon.settings.firewall).parent().checkbox('set checked');
+    $(this.refs.root).find('#encryption-' + daemon.settings.encryption).parent().checkbox('set checked');
   }
   render() {
     return(
       <div ref="root">
         <div className="ui fluid inverted borderless icon menu">
           <Link className="item" to="/configuration"><i className="arrow left icon"></i></Link>
-          <div className="header item center aligned">Firewall</div>
+          <div className="header item center aligned">Encryption</div>
         </div>
         <div className="ui inverted padded grid">
           <div className="row">
             <div className="olive column">
               <div className="ui radio checkbox">
-                <input id="firewall-auto" type="radio" name="firewall" value="auto" />
-                <label for="firewall-auto">Automatic
+                <input id="encryption-default" type="radio" name="encryption" value="default" />
+                <label for="encryption-default">Automatic
                 <small>
-                  (Default) - Firewall will be enabled when you connect and disables when you disconnect from a location. It will remain on if your connection suddenly drops
+                  Good combination of speed and security.
                 </small>
                 </label>
               </div>
@@ -47,11 +46,10 @@ export default class FirewallScreen extends React.Component  {
           <div className="row">
             <div className="olive column">
             <div className="ui radio checkbox">
-              <input id="firewall-on" type="radio" name="firewall" value="on" />
-              <label for="firewall-on">Always on
+              <input id="encryption-none" type="radio" name="encryption" value="none" />
+              <label for="encryption-none">None
               <small>
-                Firewall is always on, and cannot be disabled unless
-                You change this setting. You will not have any Internet access when you’re disconnected from Cypherpunk Network.
+                Fastest speed but lower security.
               </small>
               </label>
             </div>
@@ -60,16 +58,24 @@ export default class FirewallScreen extends React.Component  {
           <div className="row">
             <div className="olive column">
             <div className="ui radio checkbox">
-              <input id="firewall-off" type="radio" name="firewall" value="off" />
-              <label for="firewall-off">
-              Off
-              <small>Firewall is off.</small>
+              <input id="encryption-strong" type="radio" name="encryption" value="strong" />
+              <label for="encryption-strong">Strong
+              <small>Higher security but slower speed.</small>
+              </label>
+            </div>
+            </div>
+          </div>
+          <div className="row">
+            <div className="olive column">
+            <div className="ui radio checkbox">
+              <input id="encryption-stealth" type="radio" name="encryption" value="stealth" />
+              <label for="encryption-stealth">Stealth
+              <small>Suitable for restrictive network environments.</small>
               </label>
             </div>
             </div>
           </div>
         </div>
-
       </div>
     );
   }
