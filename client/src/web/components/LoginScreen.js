@@ -1,6 +1,7 @@
 import React from 'react';
 import { hashHistory } from 'react-router';
 import CypherPunkLogo from '../assets/img/cp_logo1.png';
+import Dragbar from './Dragbar.js';
 import daemon from '../daemon.js';
 
 export default class LoginScreen extends React.Component {
@@ -82,6 +83,7 @@ export default class LoginScreen extends React.Component {
   render() {
     return (
       <div className="cp blurring" id="login-screen" ref="root">
+        <Dragbar/>
         <dialog class="ui dimmer" ref="dimmer">
           <div class="ui big text loader">Logging in</div>
           <a tabIndex="0" onClick={this.onLoginCancel.bind(this)}>Cancel</a>
@@ -99,4 +101,4 @@ export default class LoginScreen extends React.Component {
       </div>
     );
   }
-} 
+}

@@ -3,6 +3,7 @@ import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import Titlebar from './Titlebar';
 import MainBackground from './MainBackground';
 import OneZeros from './OneZeros';
+import Dragbar from './Dragbar';
 import daemon from '../daemon';
 
 function humanReadableSize(count) {
@@ -125,8 +126,9 @@ export default class ConnectScreen extends React.Component {
 
     return(
       <div class="full screen" style={{visibility: 'visible'}}>
-        <MainBackground/>
+        <Dragbar/>
         <OneZeros/>
+        <MainBackground/>
         <div id="connect-screen" class="full screen" style={{visibility: 'visible'}}>
           <Titlebar/>
           <div id="connect-container">
