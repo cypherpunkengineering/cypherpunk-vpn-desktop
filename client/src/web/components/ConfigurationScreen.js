@@ -18,7 +18,8 @@ export default class ConfigurationScreen extends React.Component  {
   }
   cloneChildren() {
     var path = this.props.location.pathname;
-    console.log(this.props.children);
+    // console.log(this.props.children);
+    // console.log(path);
     if (this.props.children) {
       return React.cloneElement(this.props.children, { key: path })
     }
@@ -47,14 +48,7 @@ export default class ConfigurationScreen extends React.Component  {
     var { props } = this;
     return(
       <div>
-        <ReactCSSTransitionGroup
-          component="div"
-          transitionName="pageSlider"
-          transitionEnterTimeout={600}
-          transitionLeaveTimeout={600}
-        >
-          {this.cloneChildren()}
-        </ReactCSSTransitionGroup>
+        {this.cloneChildren()}
       </div>
     );
   }
