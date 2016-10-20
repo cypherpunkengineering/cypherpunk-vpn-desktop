@@ -28,7 +28,7 @@ daemon.ready(() => {
 render((
   <Router history={hashHistory}>
     <Route path="/" component={Root}>
-      <IndexRoute component={LoginScreen}/>
+      {/*<IndexRoute component={LoginScreen}/>*/}
       <Route path="/login" component={LoginScreen}/>
       <Route path="/connect" component={ConnectScreen}/>
       <Route path="/configuration" component={ConfigurationScreen}>
@@ -39,6 +39,7 @@ render((
         <Route path="/help" component={HelpScreen}/>
       </Route>
       <Route path="/status" component={StatusScreen}/>
+      <IndexRedirect to="/login"/>
     </Route>
   </Router>
 ), document.getElementById('root-container'));
