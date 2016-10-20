@@ -5,6 +5,7 @@ import MainBackground from './MainBackground';
 import OneZeros from './OneZeros';
 import Dragbar from './Dragbar';
 import daemon from '../daemon';
+import { REGION_GROUP_NAMES, REGION_GROUP_ORDER } from '../util';
 
 function humanReadableSize(count) {
   if (count >= 1024 * 1024 * 1024 * 1024) {
@@ -32,7 +33,7 @@ export default class ConnectScreen extends React.Component {
   }
 
   state = {
-    regions: daemon.config.servers,
+    regions: daemon.config.regions,
     selectedRegion: daemon.settings.server,
     receivedBytes: 0,
     sentBytes: 0,
@@ -68,6 +69,7 @@ export default class ConnectScreen extends React.Component {
     daemon.on('settings', this.handleDaemonSettingsChange);
     daemon.on('state', this.handleDaemonStateChange);
     $(this.refs.regionDropdown).dropdown({
+      direction: 'upward',
       onChange: this.handleRegionSelect
     });
   }
@@ -124,6 +126,13 @@ export default class ConnectScreen extends React.Component {
       'disconnecting': "Disconnecting...",
     }[this.state.connectionState];
 
+    var regions = Array.flatten(
+      REGION_GROUP_ORDER.map(g => ({
+        name: REGION_GROUP_NAMES[g],
+        locations: Object.mapToArray(this.state.regions[g], (country, locations) => locations.map(s => daemon.config.servers[s]).map(s => <div class={"item" + (s.ovDefault == "255.255.255.255" ? " disabled" : "")} data-value={s.id} key={s.id}><i class={s.country.toLowerCase() + " flag"}></i>{s.regionName}<i class="cp-fav icon"></i></div>)).filter(l => l && l.length > 0)
+      })).filter(r => r.locations && r.locations.length > 0).map(r => [ <div class="header">{r.name}</div> ].concat(r.locations))
+    );
+
     return(
       <div class="full screen" style={{visibility: 'visible'}}>
         {/*<Dragbar/>*/}
@@ -148,7 +157,7 @@ export default class ConnectScreen extends React.Component {
             <i class="dropdown icon"></i>
             <div class="default text">Select Region</div>
             <div class="menu">
-              { this.state.regions.map(s => <div class="item" data-value={s.id} key={s.id}><i class={s.country + " flag"}></i>{s.name}</div>) }
+              { regions }
             </div>
           </div>
           <div id="connection-stats" class="ui two column center aligned grid">

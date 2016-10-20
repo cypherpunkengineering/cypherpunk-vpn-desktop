@@ -1,15 +1,13 @@
-window.$ = window.jQuery = require('jquery');
-
 import './assets/css/app.less';
 import 'semantic';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, createMemoryHistory, hashHistory as History } from 'react-router';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, createMemoryHistory/*, hashHistory as History*/ } from 'react-router';
+const ReactCSSTransitionGroup = reactAddon(require('react-addons-css-transition-group'), 'CSSTransitionGroup');
 
 import SpinningImage from './assets/img/bgring3.png';
-import CypherPunkLogo from './assets/img/cp_logo1.png';
+import CypherPunkLogo from './assets/img/logomark.svg';
 import InfoIcon from './assets/img/icon_info.svg';
 import SettingsIcon from './assets/img/icon_settings.svg';
 
@@ -23,6 +21,8 @@ import EncryptionScreen from './ConfigurationScreen/EncryptionScreen.jsx';
 import PasswordScreen from './ConfigurationScreen/PasswordScreen.jsx';
 import EmailScreen from './ConfigurationScreen/EmailScreen.jsx';
 import HelpScreen from './ConfigurationScreen/HelpScreen.jsx';
+
+import { REGION_GROUP_NAMES, REGION_GROUP_ORDER } from './util.js';
 
 window.History = createMemoryHistory(window.location.href);
 
@@ -128,7 +128,7 @@ class ConnectScreen extends React.Component {
   }
 
   state = {
-    regions: daemon.config.servers,
+    regions: daemon.config.regions,
     selectedRegion: daemon.settings.server,
     receivedBytes: 0,
     sentBytes: 0,
@@ -164,6 +164,7 @@ class ConnectScreen extends React.Component {
     daemon.on('settings', this.handleDaemonSettingsChange);
     daemon.on('state', this.handleDaemonStateChange);
     $(this.refs.regionDropdown).dropdown({
+      direction: 'upward',
       onChange: this.handleRegionSelect
     });
   }
@@ -220,6 +221,13 @@ class ConnectScreen extends React.Component {
       'disconnecting': "Disconnecting...",
     }[this.state.connectionState];
 
+    var regions = Array.flatten(
+      REGION_GROUP_ORDER.map(g => ({
+        name: REGION_GROUP_NAMES[g],
+        locations: Object.mapToArray(this.state.regions[g], (country, locations) => locations.map(s => daemon.config.servers[s]).map(s => <div class={"item" + (s.ovDefault == "255.255.255.255" ? " disabled" : "")} data-value={s.id} key={s.id}><i class={s.country.toLowerCase() + " flag"}></i>{s.regionName}<i class="cp-fav icon"></i></div>)).filter(l => l && l.length > 0)
+      })).filter(r => r.locations && r.locations.length > 0).map(r => [ <div class="header">{r.name}</div> ].concat(r.locations))
+    );
+
     return(
       <div id="connect-screen" class="full screen" style={{visibility: 'visible'}}>
         <Dragbar/>
@@ -241,7 +249,7 @@ class ConnectScreen extends React.Component {
           <i class="dropdown icon"></i>
           <div class="default text">Select Region</div>
           <div class="menu">
-            { this.state.regions.map(s => <div class="item" data-value={s.id} key={s.id}><i class={s.country + " flag"}></i>{s.name}</div>) }
+            { regions }
           </div>
         </div>
         <div id="connection-stats" class="ui two column center aligned grid">
@@ -304,7 +312,6 @@ class LoginScreen extends React.Component {
     var username = $(this.refs.username).val((i,v) => v || "test@test.test").val(); // FIXME: debug value
     var password = $(this.refs.password).val((i,v) => v || "test123").val(); // FIXME: debug value
     var login;
-    var serverList;
     jQuery.ajax('https://cypherpunk.engineering/account/authenticate/userpasswd', {
       cache: false,
       contentType: 'application/json',
@@ -322,13 +329,19 @@ class LoginScreen extends React.Component {
     }).catch((xhr, status, err) => {
       throw new Error("Login failed with status code " + xhr.status);
     }).then((data, status, xhr) => {
-      serverList = data;
+      var servers = Array.toDict(Array.flatten(Array.flatten(Object.mapToArray(data, (r, countries) => Object.mapToArray(countries, (c, locations) => locations.map(l => Object.assign({}, l, { country: c, region: r })))))), s => s.id);
+      var regions = Object.mapValues(Array.toMultiDict(Object.values(servers), s => s.region), (r,c) => Object.mapValues(Array.toMultiDict(c, l => l.country), (c,l) => l.map(m => m.id)));
       return daemon.call.setAccount({
         username: username,
         secret: login.secret,
         name: "Cypher",
         email: login.acct.email,
         plan: login.acct.powerLevel, // FIXME
+      }).then(() => {
+        return daemon.call.applySettings({
+          regions: regions,
+          servers: servers,
+        });
       });
     }).then(() => {
       this.hideDimmer();

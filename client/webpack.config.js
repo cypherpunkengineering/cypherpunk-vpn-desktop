@@ -11,6 +11,7 @@ const development = ENV === 'development';
 const production = !development;
 const extractCss = true;
 const useWebLibraries = production;
+const libExtension = production ? '.min.js' : '.js';
 
 const devMap = production ? '' : '?sourceMap';
 function cssLoader(a, b) { return extractCss ? ExtractTextPlugin.extract(a, b) : (a + '!' + b); }
@@ -28,18 +29,18 @@ var options = {
     libraryTarget: 'commonjs2'
   },
   resolve: {
-		modulesDirectories: [
+    modulesDirectories: production ? [] : [
       path.resolve(__dirname, 'node_modules'),
-			'node_modules'
-		],
+      'node_modules',
+    ],
     alias: {
       'semantic': path.resolve(__dirname, 'src/web/semantic'),
     },
-    extensions: [ '', '.webpack', '.webpack.js', '.min.js', '.js', '.jsx' ],
-	},
+    extensions: [ '', '.webpack', '.webpack.js', libExtension, '.min.js', '.js', '.jsx' ],
+  },
   externals: [
-    Object.keys(pkg.dependencies || {}), // exclude packaged node modules 
-	],
+    Object.keys(pkg.dependencies || {}), // exclude packaged node modules
+  ],
   module: {
     loaders: [
       { test: /\.jsx?$/, exclude: /(node_modules|[\/]~[\/]|semantic[\/]|webpack\-dev\-server|socket\.io\-client|\.min\.js$)/, loader: 'babel' },
@@ -79,8 +80,21 @@ var options = {
   }
 }
 
-if (useWebLibraries)
+if (useWebLibraries) {
   options.resolve.modulesDirectories.unshift(path.resolve(__dirname, 'src/web/lib'));
+  Object.assign(options.resolve.alias, {
+    'react/addons': 'react',
+    'react/lib': 'react',
+    'react/dist': 'react',
+    'react-addons-css-transition-group': 'react',
+    'react-addons-linked-state-mixin': 'react',
+    'react-addons-clone-with-props': 'react',
+    'react-addons-create-fragment': 'react',
+    'react-addons-update': 'react',
+    'react-addons-pure-render-mixin': 'react',
+    'react-addons-shallow-compare': 'react',
+  });
+}
 
 options.target = webpackTargetElectronRenderer(options);
 

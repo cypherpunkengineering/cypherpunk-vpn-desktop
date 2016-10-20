@@ -1,8 +1,6 @@
-window.$ = window.jQuery = require('jquery');
-
 import React from 'react';
 import { render } from 'react-dom';
-import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, browserHistory, hashHistory} from 'react-router';
+import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, browserHistory, hashHistory } from 'react-router';
 import LoginScreen from './components/LoginScreen';
 import ConnectScreen from './components/ConnectScreen';
 import ConfigurationScreen from './components/ConfigurationScreen'

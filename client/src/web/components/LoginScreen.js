@@ -1,6 +1,6 @@
 import React from 'react';
 import { hashHistory } from 'react-router';
-import CypherPunkLogo from '../assets/img/cp_logo1.png';
+import CypherPunkLogo from '../assets/img/logomark.svg';
 import Dragbar from './Dragbar.js';
 import daemon from '../daemon.js';
 
@@ -32,7 +32,6 @@ export default class LoginScreen extends React.Component {
     var username = $(this.refs.username).val((i,v) => v || "test@test.test").val(); // FIXME: debug value
     var password = $(this.refs.password).val((i,v) => v || "test123").val(); // FIXME: debug value
     var login;
-    var serverList;
     jQuery.ajax('https://cypherpunk.engineering/account/authenticate/userpasswd', {
       cache: false,
       contentType: 'application/json',
@@ -50,13 +49,19 @@ export default class LoginScreen extends React.Component {
     }).catch((xhr, status, err) => {
       throw new Error("Login failed with status code " + xhr.status);
     }).then((data, status, xhr) => {
-      serverList = data;
+      var servers = Array.toDict(Array.flatten(Array.flatten(Object.mapToArray(data, (r, countries) => Object.mapToArray(countries, (c, locations) => locations.map(l => Object.assign({}, l, { country: c, region: r })))))), s => s.id);
+      var regions = Object.mapValues(Array.toMultiDict(Object.values(servers), s => s.region), (r,c) => Object.mapValues(Array.toMultiDict(c, l => l.country), (c,l) => l.map(m => m.id)));
       return daemon.call.setAccount({
         username: username,
         secret: login.secret,
         name: "Cypher",
         email: login.acct.email,
         plan: login.acct.powerLevel, // FIXME
+      }).then(() => {
+        return daemon.call.applySettings({
+          regions: regions,
+          servers: servers,
+        });
       });
     }).then(() => {
       this.hideDimmer();

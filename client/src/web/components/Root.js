@@ -2,7 +2,14 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import LoginScreen from '../components/LoginScreen';
 import ConnectScreen from '../components/ConnectScreen';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+
+// Always use this stub to import standard React addons, as we will either use
+// their node module (development) or dig them out of react.min.js (production).
+function reactAddon(module, name) {
+  return module.addons ? module.addons[name] : module;
+}
+
+const ReactCSSTransitionGroup = reactAddon(require('react-addons-css-transition-group'), 'CSSTransitionGroup');
 
 export default class Root extends React.Component {
   constructor(props) {

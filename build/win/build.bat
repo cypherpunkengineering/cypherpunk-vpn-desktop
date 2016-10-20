@@ -21,7 +21,7 @@ call npm --loglevel=silent install
 if %errorlevel% neq 0 goto error
 
 echo * Building client...
-call npm run build
+call npm --production run build
 if %errorlevel% neq 0 goto error
 
 echo * Rebuilding Electron modules...

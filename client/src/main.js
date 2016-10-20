@@ -173,7 +173,7 @@ timeoutPromise(Promise.all(preinitPromises), 2000).then(() => {
 });
 
 function createTrayMenu() {
-  let server = daemon.config.servers.find(s => s.id === daemon.settings.server);
+  let server = daemon.config.servers[daemon.settings.server];
   let connected = daemon.state.state !== 'DISCONNECTED';
   let items = [
     { label: "Show", visible: !main || !main.isVisible(), click: () => { showMainWindow(); } },
@@ -183,13 +183,14 @@ function createTrayMenu() {
     { label: "Disconnect", visible: connected, click: () => { daemon.post.disconnect(); } },
     { type: 'separator' },
     {
-      label: "Server: " + (server ? server.name : "None"),
+      label: (server ? server.regionName : "No region selected"),
       icon: server ? getFlag(server.country) : null,
-      submenu: !connected ? daemon.config.servers.map(s => ({
-        label: s.name,
-        icon: getFlag(s.country),
+      submenu: !connected ? Object.keys(daemon.config.servers).map(k => daemon.config.servers[k]).map(s => ({
+        label: s.regionName,
+        icon: getFlag(s.country.toLowerCase()),
         type: 'checkbox',
         checked: daemon.settings.server === s.id,
+        enabled: s.ovDefault && s.ovDefault != "255.255.255.255",
         click: () => { if (!connected) daemon.post.applySettings({ server: s.id }); }
       })) : null,
       enabled: !connected,
