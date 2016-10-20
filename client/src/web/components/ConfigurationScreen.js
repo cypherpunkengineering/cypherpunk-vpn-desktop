@@ -27,7 +27,7 @@ export default class ConfigurationScreen extends React.Component  {
       return (
         <div className="container__comp">
           <div className="ui fluid inverted borderless icon menu cp_config_header">
-            <Link className="item" to="/connect"><i className="arrow left icon"></i></Link>
+            <Link className="item" to="/connect"><i className="angle left icon"></i></Link>
             <div className="header item center aligned">Configuration</div>
           </div>
           {/* <div className="ui two item tabular menu cp_config_tabs" ref="tab">

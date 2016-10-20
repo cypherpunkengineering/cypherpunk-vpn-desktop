@@ -6,7 +6,7 @@ export default class PasswordScreen extends React.Component  {
     return(
       <div>
         <div className="ui fluid inverted borderless icon menu cp_config_header">
-          <Link className="item" to="/configuration"><i className="arrow left icon"></i></Link>
+          <Link className="item" to="/configuration"><i className="angle left icon"></i></Link>
           <div className="header item center aligned">Update Password</div>
         </div>
         <div class="ui padded grid">

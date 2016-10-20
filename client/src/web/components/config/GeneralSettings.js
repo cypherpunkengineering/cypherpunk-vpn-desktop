@@ -73,7 +73,7 @@ export default class GeneralSettings extends DaemonAware(React.Component)  {
             </div>
             <div className="twelve wide olive right aligned column">
               <Link to="/email">
-              wiz@cypherpunk.com <i className="chevron right icon"></i>
+              wiz@cypherpunk.com <i className="angle right icon"></i>
               </Link>
             </div>
           </div>
@@ -82,7 +82,7 @@ export default class GeneralSettings extends DaemonAware(React.Component)  {
               <Link to="/password">Password</Link>
             </div>
             <div className="nine wide olive right aligned column">
-              <Link to="/password"><i className="chevron right icon"></i></Link>
+              <Link to="/password"><i className="angle right icon"></i></Link>
             </div>
           </div>
           <div className="row cp_row">
@@ -90,7 +90,7 @@ export default class GeneralSettings extends DaemonAware(React.Component)  {
               <Link to="/help">Help</Link>
             </div>
             <div className="nine wide olive right aligned column">
-              <Link to="/help"><i className="chevron right icon"></i></Link>
+              <Link to="/help"><i className="angle right icon"></i></Link>
             </div>
           </div>
           <div className="row cp_row">
