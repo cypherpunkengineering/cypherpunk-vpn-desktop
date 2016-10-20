@@ -1,23 +1,25 @@
 import React from 'react';
-import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, createMemoryHistory, hashHistory as History } from 'react-router';
+
+// The Dragbar is a minimal component that sits at the top of the frameless
+// window and provides space for the OS controls and acts as a draggable
+// region to be able to move the window. On OS X, the minimize/close buttons
+// are automatically provided, whereas we must draw them ourselves on Windows.
 
 export default class Dragbar extends React.Component {
   constructor(props) {
     super(props);
-    this._handler= this._handler.bind(this);
-  }
-
-  _handler(props) {
-    // handler scope doesn't know what this is unless you call bind
-    console.log(props);
-  }
-
-  componentDidMount() {
-    $(this.refs.dropdown).dropdown({ action: 'hide' });
   }
   render() {
+    var className = "cp dragbar";
+    var styles={};
+    if (this.props.className) {
+      className += " " + this.props.className;
+    }
+    if (this.props.height) {
+      styles.height = this.props.height;
+    }
     return(
-      <div id="dragbar" className={this.props.theme}>
+      <div id="dragbar" className={className} style={styles}>
       </div>
     );
   }

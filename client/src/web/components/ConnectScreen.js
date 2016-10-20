@@ -130,40 +130,37 @@ export default class ConnectScreen extends React.Component {
       REGION_GROUP_ORDER.map(g => ({
         name: REGION_GROUP_NAMES[g],
         locations: Object.mapToArray(this.state.regions[g], (country, locations) => locations.map(s => daemon.config.servers[s]).map(s => <div class={"item" + (s.ovDefault == "255.255.255.255" ? " disabled" : "")} data-value={s.id} key={s.id}><i class={s.country.toLowerCase() + " flag"}></i>{s.regionName}<i class="cp-fav icon"></i></div>)).filter(l => l && l.length > 0)
-      })).filter(r => r.locations && r.locations.length > 0).map(r => [ <div class="header">{r.name}</div> ].concat(r.locations))
+      })).filter(r => r.locations && r.locations.length > 0).map(r => [ <div key={"region-" + r.name} class="header">{r.name}</div> ].concat(r.locations))
     );
 
     return(
-      <div class="full screen" style={{visibility: 'visible'}}>
-        {/*<Dragbar/>*/}
+      <div id="connect-screen" class="screen">
+        <Titlebar/>
         <OneZeros/>
         <MainBackground/>
-        <div id="connect-screen" class="full screen" style={{visibility: 'visible'}}>
-          <Titlebar/>
-          <div id="connect-container">
+        <div id="connect-container">
 
-            <svg width="120" height="400" ref="connectButton" onClick={this.handleConnectClick}>
-              <circle cx="60" cy="200" r="50" style={connectCircleStyle} />
-              <line x1="60" y1="98" x2="60" y2="181" style={connectLineStyle} />
-              <line x1="60" y1="111" x2="80" y2="111"  style={connectSmallLineStyle} />
-              <line x1="60" y1="137" x2="80" y2="137"  style={connectSmallLineStyle} />
-            </svg>
+          <svg width="120" height="400" ref="connectButton" onClick={this.handleConnectClick}>
+            <circle cx="60" cy="200" r="50" style={connectCircleStyle} />
+            <line x1="60" y1="98" x2="60" y2="181" style={connectLineStyle} />
+            <line x1="60" y1="111" x2="80" y2="111"  style={connectSmallLineStyle} />
+            <line x1="60" y1="137" x2="80" y2="137"  style={connectSmallLineStyle} />
+          </svg>
 
-            {/*<i id="connect" class={"ui fitted massive power link icon" + (this.state.connectionState === 'connected' ? " green" : this.state.connectionState == 'disconnected' ? " red" : " orange disabled")} ref="connectButton" onClick={this.handleConnectClick}></i>*/}
+          {/*<i id="connect" class={"ui fitted massive power link icon" + (this.state.connectionState === 'connected' ? " green" : this.state.connectionState == 'disconnected' ? " red" : " orange disabled")} ref="connectButton" onClick={this.handleConnectClick}></i>*/}
+        </div>
+        <div id="connect-status" ref="connectStatus">{buttonLabel}</div>
+        <div id="region-select" class={"ui selection dropdown" + (this.state.connectionState === 'disconnected' ? "" : " disabled")} ref="regionDropdown">
+          <input type="hidden" name="region" value={this.state.selectedRegion}/>
+          <i class="dropdown icon"></i>
+          <div class="default text">Select Region</div>
+          <div class="menu">
+            { regions }
           </div>
-          <div id="connect-status" ref="connectStatus">{buttonLabel}</div>
-          <div id="region-select" class={"ui selection dropdown" + (this.state.connectionState === 'disconnected' ? "" : " disabled")} ref="regionDropdown">
-            <input type="hidden" name="region" value={this.state.selectedRegion}/>
-            <i class="dropdown icon"></i>
-            <div class="default text">Select Region</div>
-            <div class="menu">
-              { regions }
-            </div>
-          </div>
-          <div id="connection-stats" class="ui two column center aligned grid">
-            <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.receivedBytes)}</div><div class="label">Received</div></div></div>
-            <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.sentBytes)}</div><div class="label">Sent</div></div></div>
-          </div>
+        </div>
+        <div id="connection-stats" class="ui two column center aligned grid">
+          <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.receivedBytes)}</div><div class="label">Received</div></div></div>
+          <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.sentBytes)}</div><div class="label">Sent</div></div></div>
         </div>
       </div>
     );

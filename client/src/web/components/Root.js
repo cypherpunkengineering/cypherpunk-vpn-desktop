@@ -45,7 +45,6 @@ export default class Root extends React.Component {
     var segment = path.split('/')[1] || 'root';
 
     return(
-      <div>
         <ReactCSSTransitionGroup
           component="div"
           transitionName={this.determineTransition(segment)}
@@ -56,7 +55,6 @@ export default class Root extends React.Component {
             key: segment
           })}
         </ReactCSSTransitionGroup>
-      </div>
     );
   };
 }

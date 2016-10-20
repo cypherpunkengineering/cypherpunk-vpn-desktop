@@ -2,6 +2,7 @@ import React from 'react';
 import { hashHistory } from 'react-router';
 import CypherPunkLogo from '../assets/img/logomark.svg';
 import Dragbar from './Dragbar.js';
+import { Title } from './Titlebar.js';
 import daemon from '../daemon.js';
 
 export default class LoginScreen extends React.Component {
@@ -87,14 +88,14 @@ export default class LoginScreen extends React.Component {
   }
   render() {
     return (
-      <div className="cp blurring" id="login-screen" ref="root">
-        <Dragbar/>
+      <div className="cp blurring full screen" id="login-screen" ref="root">
+        <Dragbar height="225px"/>
         <dialog class="ui dimmer" ref="dimmer">
           <div class="ui big text loader">Logging in</div>
           <a tabIndex="0" onClick={this.onLoginCancel.bind(this)}>Cancel</a>
         </dialog>
         <img class="logo" src={CypherPunkLogo}/>
-        <h3 class="ui title header"><span>Cypherpunk</span>Privacy</h3>
+        <Title component="h3" />
         <form class="ui form">
           <input placeholder="Username / Email" required autoFocus="true" onChange={this.onUsernameKeyPress.bind(this)} ref="username" />
           <input placeholder="Password" type="password" required onChange={this.onPasswordKeyPress.bind(this)} ref="password" />
