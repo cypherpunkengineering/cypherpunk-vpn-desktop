@@ -1,3 +1,20 @@
 /*******************************
         User Overrides
 *******************************/
+
+[data-tooltip]:before {
+  transform-origin: center;
+}
+[data-position="bottom right"][data-tooltip]:before {
+  margin-left: @tooltipArrowHorizontalOffset;
+  margin-top: -@tooltipArrowVerticalOffset;
+}
+[data-position~="bottom"][data-tooltip]:before {
+  transform-origin: center;
+}
+[data-position="left center"][data-tooltip]:before {
+  transform-origin: center;
+}
+[data-position="right center"][data-tooltip]:before {
+  transform-origin: center;
+}

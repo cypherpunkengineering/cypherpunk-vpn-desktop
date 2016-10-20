@@ -1,3 +1,7 @@
 /*******************************
     User Variable Overrides
 *******************************/
+
+@arrowDistanceFromEdge: auto;
+@tooltipArrowHorizontalOffset: 0;
+@tooltipArrowVerticalOffset: -3px;
