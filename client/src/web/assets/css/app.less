@@ -376,25 +376,56 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
       width: 100%;
       color: #fff;
       padding: 15px;
-      font-size: 115%;
+      font-size: 125%;
       transition: background-color 0.2s;
+      border-radius: 0;
 
       &:focus {
         background: rgba(255,255,255,0.16);
       }
 
       &:first-of-type {
-        border-radius: 6px 6px 0 0;
+        border-top-left-radius: 6px;
+        border-top-right-radius: 6px;
       }
 
       &:last-of-type {
-        border-radius: 0 0 6px 6px;
+        border-bottom-left-radius: 6px;
+        border-bottom-right-radius: 6px;
       }
 
       + input {
         margin-top: 2px;
       }
     }
+    .input {
+      width: 100%;
+      &.icon .icon {
+        font-size: 120%;
+      }
+    }
+  }
+
+  .login-email {
+    .welcome {
+      font-size: 170%;
+      font-weight: 600;
+      margin-bottom: 1em;
+    }
+    .desc {
+      font-size: 130%;
+      font-weight: 300;
+      color: rgba(255,255,255,0.8);
+      margin-bottom: 1em;
+    }
+  }
+
+  .login-password {
+
+  }
+
+  .login-register {
+
   }
 
   .cp.button {

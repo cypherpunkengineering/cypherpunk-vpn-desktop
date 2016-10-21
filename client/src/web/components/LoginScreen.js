@@ -3,7 +3,79 @@ import { hashHistory } from 'react-router';
 import CypherPunkLogo from '../assets/img/logomark.svg';
 import Dragbar from './Dragbar.js';
 import { Title } from './Titlebar.js';
+import RouteTransition from './Transition';
 import daemon from '../daemon.js';
+
+
+
+export class EmailStep extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+  onSubmit() {
+    //console.dir(this);
+    History.push({ pathname: '/login/password', query: { email: this.refs.email.value } });
+  }
+  render() {
+    return(
+      <form className="cp login-email ui form">
+        {/*<div className="welcome">Welcome.</div>*/}
+        <div className="desc">Please input your email to begin.</div>
+        <div className="ui icon input">
+          <input type="text" placeholder="Email" required autoFocus="true" ref="email" onKeyPress={e => { if (e.key == 'Enter') this.onSubmit(); }} />
+          <i className="chevron right link icon" onClick={() => this.onSubmit()}></i>
+        </div>
+      </form>
+    );
+      /*
+        <input placeholder="Username / Email" required autoFocus="true" onChange={this.onUsernameKeyPress.bind(this)} ref="username" />
+        <input placeholder="Password" type="password" required onChange={this.onPasswordKeyPress.bind(this)} ref="password" />
+        <a class="forgot" tabIndex="0">Forgot password?</a>
+        <button class="login button" onClick={this.onLoginClick.bind(this)} ref="login"><i class="sign in icon"></i>Log in</button>
+        <div class="ui horizontal divider">OR</div>
+        <a class="signup button" tabIndex="0"><i class="write icon"></i>Sign up</a>
+      </form>
+    );*/
+  }
+}
+
+export class PasswordStep extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+  onSubmit() {
+    History.push('connect');
+  }
+  render() {
+    return(
+      <form className="cp login-password ui form">
+        <div className="desc">Logging in to {this.props.location.query.email}...</div>
+        <div className="ui icon input">
+          <input type="password" placeholder="Password" required autoFocus="true" ref="password" />
+          <i className="chevron right link icon" onClick={() => this.onSubmit()}></i>
+        </div>
+        <a class="forgot" tabIndex="0">Forgot password?</a>
+      </form>
+    );
+  }
+}
+
+export class RegisterStep extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+  return() {
+    return(
+      <form class="cp login-register ui form">
+        <input placeholder="Password" required autoFocus="true" ref="password" />
+        <input placeholder="Password (again)" required ref="password2" />
+      </form>
+    );
+  }
+}
+
+
+
 
 export default class LoginScreen extends React.Component {
   constructor(props) {
@@ -96,14 +168,9 @@ export default class LoginScreen extends React.Component {
         </dialog>
         <img class="logo" src={CypherPunkLogo}/>
         <Title component="h3" />
-        <form class="ui form">
-          <input placeholder="Username / Email" required autoFocus="true" onChange={this.onUsernameKeyPress.bind(this)} ref="username" />
-          <input placeholder="Password" type="password" required onChange={this.onPasswordKeyPress.bind(this)} ref="password" />
-          <a class="forgot" tabIndex="0">Forgot password?</a>
-          <button class="login button" onClick={this.onLoginClick.bind(this)} ref="login"><i class="sign in icon"></i>Log in</button>
-          <div class="ui horizontal divider">OR</div>
-          <a class="signup button" tabIndex="0"><i class="write icon"></i>Sign up</a>
-        </form>
+        <RouteTransition transition="nudgeLeft">
+          {this.props.children}
+        </RouteTransition>
       </div>
     );
   }
