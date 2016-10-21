@@ -10,13 +10,6 @@ function reactAddon(module, name) {
 const ReactCSSTransitionGroup = reactAddon(require('react-addons-css-transition-group'), 'CSSTransitionGroup');
 
 
-export class FirstChild extends React.Component {
-  render() {
-    var children = React.Children.toArray(this.props.children);
-    return children[0] || null;
-  }
-}
-
 export class TransitionContainer extends React.Component {
   render() {
     return(
@@ -34,6 +27,13 @@ const transitionDurations = {
   'swipeLeft': 350,
   'swipeRight': 350,
 }
+
+
+// Component to wrap ReactCSSTransitionGroup with convenience functionality
+// to fit inside a Router or just with children that are inserted by Routes.
+// The transition to use is specified with the 'transition' prop, which is
+// a function(from, to) or map[from][to] where from/to are the route path
+// components associated with the children entering/leaving.
 
 export default class RouteTransition extends React.Component {
   constructor(props) {
@@ -93,20 +93,8 @@ export default class RouteTransition extends React.Component {
       return this.getChildKey(children[0]);
     }
   }
-  componentDidMount() {
-    console.log("componentDidMount");
-  }
-  componentWillUnmount() {
-    console.log("componentWillUnmount");
-  }
   componentWillReceiveProps(nextProps) {
-    console.log("Saving old location " + this.getCurrentKey(this.props));
     this.setState({ oldKey: this.getCurrentKey(this.props) });
-    //var currentKey = this.getFirstChildKey(this.props);
-    //var newKey = this.getFirstChildKey(nextProps);
-    //if (newKey !== currentKey) {
-    //  this.setState({ oldKey: currentKey });
-    //}
   }
   render() {
     var { children, location } = this.props;
@@ -114,7 +102,7 @@ export default class RouteTransition extends React.Component {
     var to = this.getCurrentKey(this.props);
     var transition = this.determineTransition(from, to);
     var transitionTime = transitionDurations[transition] || 350;
-    if (from !== to) {
+    if (from !== to && transition) {
       console.log(`Transitioning from ${from} to ${to} using ${JSON.stringify(transition)} (${transitionTime}ms)`);
     }
     return(
