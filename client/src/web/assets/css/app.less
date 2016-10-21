@@ -49,6 +49,7 @@
 html, body {
   cursor: default;
   min-width: 350px;
+  touch-action: none;
 }
 body {
   color: #fff;
@@ -153,7 +154,6 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   position: absolute;
   left: 0; top: 0; right: 0; bottom: 0;
   overflow: hidden;
-  z-index: -1;
   //background-color: #666;
   // background: linear-gradient(328deg, @cpBlue, @cpLightBlue);
   // .bg-gradient--main;
@@ -232,7 +232,6 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   left: 0;
   word-wrap:break-word;
   overflow-y: hidden;
-  z-index: -2;
   .blur;
 }
 
@@ -257,13 +256,19 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   flex-direction: column;
   align-items: center;
   #connect-container {
+    z-index: 1;
+    cursor: pointer;
     margin-top: (130px - @fullHeaderHeight);
     height: 140px;
     display: flex;
     align-items: center;
     justify-content: center;
+    svg {
+      pointer-events: none;
+    }
   }
   #region-select {
+    z-index: 1;
     position: fixed;
     left: 0;
     right: 0;

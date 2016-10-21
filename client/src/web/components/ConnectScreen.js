@@ -138,9 +138,9 @@ export default class ConnectScreen extends React.Component {
         <MainTitlebar/>
         <OneZeros/>
         <MainBackground/>
-        <div id="connect-container">
+        <div id="connect-container" onClick={this.handleConnectClick}>
 
-          <svg width="120" height="400" ref="connectButton" onClick={this.handleConnectClick}>
+          <svg width="120" height="400" ref="connectButton">
             <circle cx="60" cy="200" r="50" style={connectCircleStyle} />
             <line x1="60" y1="98" x2="60" y2="181" style={connectLineStyle} />
             <line x1="60" y1="111" x2="80" y2="111"  style={connectSmallLineStyle} />
