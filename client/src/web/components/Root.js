@@ -20,12 +20,12 @@ export default class Root extends React.Component {
     window.previousLocation = this.props.location
   }
   determineTransition(segment) {
-    var transitionName = 'example'
+    var transitionName = 'fadeIn'
     if (segment === 'login' || segment === 'root') {
       transitionName = '';
     }
     else if (window.previousLocation.pathname === '/login') {
-      transitionName = 'example'
+      transitionName = 'fadeIn'
     }
     else if (window.previousLocation.pathname === '/status') {
       transitionName = 'pageSwap';
