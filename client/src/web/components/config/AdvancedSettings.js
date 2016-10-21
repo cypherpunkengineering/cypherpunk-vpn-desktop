@@ -80,7 +80,7 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
               <small>Manage all internet connectivity when you are not connected to our network</small>
             </div>
             <div className="six wide olive right aligned column">
-              <Link to="/firewall"><span id="firewall_text">Automatic</span> <i className="chevron right icon"></i></Link>
+              <Link to="/configuration/firewall"><span id="firewall_text">Automatic</span> <i className="chevron right icon"></i></Link>
             </div>
           </div>
           <div className="row cp_row">
@@ -149,12 +149,12 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
           </div>
           <div className="row cp_row">
             <div className="nine wide olive column">
-              <Link to="/encryption">Encryption
+              <Link to="/configuration/encryption">Encryption
               <small>Cipher AES-256 Auth SHA512 Key 4096-bit</small>
               </Link>
             </div>
             <div className="seven wide olive right aligned column">
-              <Link to="/encryption"><span id="encryption_text">Automatic</span> <i className="chevron right icon"></i></Link>
+              <Link to="/configuration/encryption"><span id="encryption_text">Automatic</span> <i className="chevron right icon"></i></Link>
             </div>
           </div>
 

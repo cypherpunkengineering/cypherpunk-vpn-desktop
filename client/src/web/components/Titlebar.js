@@ -35,10 +35,32 @@ export default class Titlebar extends React.Component {
   render() {
     return(
       <div id="titlebar" className="cp titlebar">
-        <Link className="account" to="/status" data-tooltip="Account" data-inverted="" data-position="bottom left"><img src={AccountIcon} /></Link>
-        <Title />
-        <Link className="settings" to="/configuration" data-tooltip="Settings" data-inverted="" data-position="bottom right"><img src={SettingsIcon} /></Link>
+        {this.props.children}
       </div>
+    );
+  }
+}
+
+export class MainTitlebar extends React.Component {
+  render() {
+    return(
+      <Titlebar>
+        <Link className="account" to="/status" data-tooltip="Account" data-inverted="" data-position="bottom left"><img src={AccountIcon} /></Link>
+        <Title/>
+        <Link className="settings" to="/configuration" data-tooltip="Settings" data-inverted="" data-position="bottom right"><img src={SettingsIcon} /></Link>
+      </Titlebar>
+    );
+  }
+}
+
+export class SecondaryTitlebar extends React.Component {
+  render() {
+    return(
+      <Titlebar>
+        <Link className="back" to={this.props.back}><i className="arrow left icon"></i></Link>
+        {this.props.title}
+        <a style={{ visibility: 'hidden' }}/>
+      </Titlebar>
     );
   }
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
-import Titlebar from './Titlebar';
+import { MainTitlebar } from './Titlebar';
 import MainBackground from './MainBackground';
 import OneZeros from './OneZeros';
 import Dragbar from './Dragbar';
@@ -135,7 +135,7 @@ export default class ConnectScreen extends React.Component {
 
     return(
       <div id="connect-screen" class="screen">
-        <Titlebar/>
+        <MainTitlebar/>
         <OneZeros/>
         <MainBackground/>
         <div id="connect-container">

@@ -113,28 +113,38 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   right: 0;
   height: @fullHeaderHeight;
   z-index: 1001;
+  font-size: 20px;
   padding-top: (@dragbarHeight - 6px);
   display: flex;
   align-items: center;
   .draggable;
 
   .title {
-    font-size: 150%;
+    font-size: 110%;
     width: 100%;
     text-align: center;
   }
 
   a {
     display: flex;
+    align-items: center;
     justify-content: center;
-    width: 3em;
-    height: 3em;
+    width: 2.5em;
+    height: 2em;
     margin: 0 1em;
     cursor: pointer;
     opacity: 0.6;
     transition: opacity 0.1s ease-in;
+    color: #fff;
     &:hover, &:focus, &:active {
+      color: #fff;
       opacity: 1;
+    }
+    &.back {
+      align-self: stretch;
+      width: 3em;
+      margin: 0;
+      height: auto;
     }
   }
 }
@@ -241,6 +251,8 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 
 
 #connect-screen {
+  .screen;
+  .bg-gradient--main;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -340,6 +352,7 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 
 #login-screen {
   .screen;
+  .bg-gradient--main;
   text-align: center;
   padding: 0 2.5em;
 
@@ -384,7 +397,7 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     }
   }
 
-  .button {
+  .cp.button {
     display: inline-block;
     cursor: pointer;
     width: 100%;
@@ -496,6 +509,10 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 //   color: #777;
 // }
 
+#config-screen {
+  .screen;
+}
+
 #upgrade {
   // width: 200px !important;
   height: 40px !important;
@@ -568,8 +585,8 @@ button.button,
 }
 
 .container__comp {
-  position: relative;
-  top: 86px;
+  //position: relative;
+  //top: 86px;
 }
 
 .container__comp--config {

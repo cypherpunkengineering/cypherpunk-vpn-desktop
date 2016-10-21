@@ -72,25 +72,25 @@ export default class GeneralSettings extends DaemonAware(React.Component)  {
               Email
             </div>
             <div className="twelve wide olive right aligned column">
-              <Link to="/email">
+              <Link to="/configuration/email">
               wiz@cypherpunk.com <i className="chevron right icon"></i>
               </Link>
             </div>
           </div>
           <div className="row cp_row">
             <div className="seven wide olive column">
-              <Link to="/password">Password</Link>
+              <Link to="/configuration/password">Password</Link>
             </div>
             <div className="nine wide olive right aligned column">
-              <Link to="/password"><i className="chevron right icon"></i></Link>
+              <Link to="/configuration/password"><i className="chevron right icon"></i></Link>
             </div>
           </div>
           <div className="row cp_row">
             <div className="seven wide olive column">
-              <Link to="/help">Help</Link>
+              <Link to="/configuration/help">Help</Link>
             </div>
             <div className="nine wide olive right aligned column">
-              <Link to="/help"><i className="chevron right icon"></i></Link>
+              <Link to="/configuration/help"><i className="chevron right icon"></i></Link>
             </div>
           </div>
           <div className="row cp_row">
