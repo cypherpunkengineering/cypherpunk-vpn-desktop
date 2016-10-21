@@ -8,6 +8,32 @@ import daemon from '../daemon.js';
 
 
 
+function postLoginActions(email, password, account) {
+  return jQuery.ajax('https://cypherpunk.engineering/api/vpn/serverList', {
+    contentType: 'application/json',
+    dataType: 'json',
+    xhrFields: { withCredentials: true },
+  }).catch((xhr, status, err) => {
+    throw new Error("Login failed with status code " + xhr.status);
+  }).then((data, status, xhr) => {
+    var servers = Array.toDict(Array.flatten(Array.flatten(Object.mapToArray(data, (r, countries) => Object.mapToArray(countries, (c, locations) => locations.map(l => Object.assign({}, l, { country: c, region: r })))))), s => s.id);
+    var regions = Object.mapValues(Array.toMultiDict(Object.values(servers), s => s.region), (r,c) => Object.mapValues(Array.toMultiDict(c, l => l.country), (c,l) => l.map(m => m.id)));
+    return daemon.call.setAccount({
+      username: this.props.location.query.email,
+      secret: account.secret,
+      name: "Cypher",
+      email: account.acct.email,
+      plan: account.acct.powerLevel, // FIXME
+    }).then(() => {
+      return daemon.call.applySettings({
+        regions: regions,
+        servers: servers,
+      });
+    });
+  });
+}
+
+
 export class EmailStep extends React.Component {
   constructor(props) {
     super(props);
@@ -64,38 +90,17 @@ export class PasswordStep extends React.Component {
   onSubmit() {
     var password = this.refs.password.value || (this.refs.password.value = "test123"); // FIXME: debug value
     $(this.refs.password).prop('disabled', true).parent().addClass('loading');
-    var account;
     jQuery.ajax('https://cypherpunk.engineering/account/authenticate/password', {
       cache: false,
       contentType: 'application/json',
-      data: JSON.stringify({ password: password }),
-      //dataType: 'json',
+      data: JSON.stringify({ password: password }), // TODO: email not needed?
+      dataType: 'json',
       method: 'POST',
       xhrFields: { withCredentials: true },
-    }).then((data, status, xhr) => {
-      account = data;
-      return jQuery.ajax('https://cypherpunk.engineering/api/vpn/serverList', {
-        contentType: 'application/json',
-        dataType: 'json',
-        xhrFields: { withCredentials: true },
-      });
     }).catch((xhr, status, err) => {
       throw new Error("Login failed with status code " + xhr.status);
     }).then((data, status, xhr) => {
-      var servers = Array.toDict(Array.flatten(Array.flatten(Object.mapToArray(data, (r, countries) => Object.mapToArray(countries, (c, locations) => locations.map(l => Object.assign({}, l, { country: c, region: r })))))), s => s.id);
-      var regions = Object.mapValues(Array.toMultiDict(Object.values(servers), s => s.region), (r,c) => Object.mapValues(Array.toMultiDict(c, l => l.country), (c,l) => l.map(m => m.id)));
-      return daemon.call.setAccount({
-        username: this.props.location.query.email,
-        secret: account.secret,
-        name: "Cypher",
-        email: account.acct.email,
-        plan: account.acct.powerLevel, // FIXME
-      }).then(() => {
-        return daemon.call.applySettings({
-          regions: regions,
-          servers: servers,
-        });
-      });
+      return postLoginActions(this.props.location.query.email, password, data);
     }).then(() => {
       History.push('/connect');
     }).catch(err => {
@@ -121,11 +126,41 @@ export class RegisterStep extends React.Component {
   constructor(props) {
     super(props);
   }
-  return() {
+  onSubmit() {
+    var password = this.refs.password.value;
+    if (this.refs.password2.value !== password) {
+      alert("Password mismatch"); // FIXME
+      return;
+    }
+    $([this.refs.password, this.refs.password2]).prop('disabled', true).parent().addClass('loading')
+    $(this.refs.password).prop('disabled', true).parent().addClass('loading');
+    var account;
+    jQuery.ajax('https://cypherpunk.engineering/account/register/signup', {
+      cache: false,
+      contentType: 'application/json',
+      data: JSON.stringify({ email: this.props.location.query.email, password: password }),
+      dataType: 'json',
+      method: 'POST',
+      xhrFields: { withCredentials: true },
+    }).catch((xhr, status, err) => {
+      throw new Error("Login failed with status code " + xhr.status);
+    }).then((data, status, xhr) => {
+      return postLoginActions(this.props.location.query.email, password, data);
+    }).then(() => {
+      History.push('/connect');
+    }).catch(err => {
+      alert(err.message);
+      $(this.refs.password).prop('disabled', false).focus().select().parent().removeClass('loading');
+      this.refs.password2.disabled = false;
+    });
+  }
+  render() {
     return(
       <form class="cp login-register ui form">
-        <input placeholder="Password" required autoFocus="true" ref="password" />
-        <input placeholder="Password (again)" required ref="password2" />
+        <div className="desc">Registering new account for {this.props.location.query.email}...</div>
+        <input type="password" placeholder="Password" required autoFocus="true" ref="password" onKeyPress={e => { if (e.key == 'Enter') { this.refs.password2.focus(); e.preventDefault(); } }} />
+        <input type="password" placeholder="Password (again)" required ref="password2" onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
+        <button class="cp yellow button" onClick={() => this.onSubmit()}>Register</button>
       </form>
     );
   }
