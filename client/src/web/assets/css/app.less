@@ -409,19 +409,31 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
       &.icon .icon {
         font-size: 120%;
       }
+      &.loading.icon .icon {
+        margin-right: 0.5em;
+        cursor: default;
+        pointer-events: none;
+        &:before {
+          border-color: rgba(0,0,0,0.1);
+        }
+        &:after {
+          border-color: rgba(255,255,255,0.8) transparent transparent;
+        }
+      }
     }
+  }
+
+  .desc {
+    font-size: 130%;
+    font-weight: 300;
+    color: rgba(255,255,255,0.8);
+    margin-bottom: 1em;
   }
 
   .login-email {
     .welcome {
       font-size: 170%;
       font-weight: 600;
-      margin-bottom: 1em;
-    }
-    .desc {
-      font-size: 130%;
-      font-weight: 300;
-      color: rgba(255,255,255,0.8);
       margin-bottom: 1em;
     }
   }
@@ -472,8 +484,9 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     display: block;
     float: right;
     position: relative;
-    top: -0.6em;
-    margin-right: 8px;
+    //top: -0.6em;
+    margin-top: 4px;
+    //margin-right: 8px;
     // Separate line:
     // display: inline-block;
     // margin: 14px auto;

@@ -13,8 +13,26 @@ export class EmailStep extends React.Component {
     super(props);
   }
   onSubmit() {
-    //console.dir(this);
-    History.push({ pathname: '/login/password', query: { email: this.refs.email.value } });
+    var email = this.refs.email.value || (this.refs.email.value = "test@test.test"); // FIXME: debug value
+    $(this.refs.email).prop('disabled', true).parent().addClass('loading');
+    jQuery.ajax('https://cypherpunk.engineering/account/identify/email', {
+      cache: false,
+      contentType: 'application/json',
+      data: JSON.stringify({ email: email }),
+      //dataType: 'json',
+      method: 'POST',
+      xhrFields: { withCredentials: true },
+    }).then((data, status, xhr) => {
+      History.push({ pathname: '/login/password', query: { email: email } });
+    }).catch((xhr, status, err) => {
+      if (xhr.status == 401) {
+        History.push({ pathname: '/login/register', query: { email: email } });
+      } else {
+        alert("Login failed with status code " + xhr.status);
+        $(this.refs.email).prop('disabled', false).focus().select().parent().removeClass('loading');
+        throw new Error("Login failed with status code " + xhr.status);
+      }
+    });
   }
   render() {
     return(
@@ -22,8 +40,8 @@ export class EmailStep extends React.Component {
         {/*<div className="welcome">Welcome.</div>*/}
         <div className="desc">Please input your email to begin.</div>
         <div className="ui icon input">
-          <input type="text" placeholder="Email" required autoFocus="true" ref="email" onKeyPress={e => { if (e.key == 'Enter') this.onSubmit(); }} />
-          <i className="chevron right link icon" onClick={() => this.onSubmit()}></i>
+          <input type="text" placeholder="Email" required autoFocus="true" ref="email" onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
+          <i className="search chevron right link icon" onClick={() => this.onSubmit()}></i>
         </div>
       </form>
     );
@@ -44,14 +62,53 @@ export class PasswordStep extends React.Component {
     super(props);
   }
   onSubmit() {
-    History.push('connect');
+    var password = this.refs.password.value || (this.refs.password.value = "test123"); // FIXME: debug value
+    $(this.refs.password).prop('disabled', true).parent().addClass('loading');
+    var account;
+    jQuery.ajax('https://cypherpunk.engineering/account/authenticate/password', {
+      cache: false,
+      contentType: 'application/json',
+      data: JSON.stringify({ password: password }),
+      //dataType: 'json',
+      method: 'POST',
+      xhrFields: { withCredentials: true },
+    }).then((data, status, xhr) => {
+      account = data;
+      return jQuery.ajax('https://cypherpunk.engineering/api/vpn/serverList', {
+        contentType: 'application/json',
+        dataType: 'json',
+        xhrFields: { withCredentials: true },
+      });
+    }).catch((xhr, status, err) => {
+      throw new Error("Login failed with status code " + xhr.status);
+    }).then((data, status, xhr) => {
+      var servers = Array.toDict(Array.flatten(Array.flatten(Object.mapToArray(data, (r, countries) => Object.mapToArray(countries, (c, locations) => locations.map(l => Object.assign({}, l, { country: c, region: r })))))), s => s.id);
+      var regions = Object.mapValues(Array.toMultiDict(Object.values(servers), s => s.region), (r,c) => Object.mapValues(Array.toMultiDict(c, l => l.country), (c,l) => l.map(m => m.id)));
+      return daemon.call.setAccount({
+        username: this.props.location.query.email,
+        secret: account.secret,
+        name: "Cypher",
+        email: account.acct.email,
+        plan: account.acct.powerLevel, // FIXME
+      }).then(() => {
+        return daemon.call.applySettings({
+          regions: regions,
+          servers: servers,
+        });
+      });
+    }).then(() => {
+      History.push('/connect');
+    }).catch(err => {
+      alert(err.message);
+      $(this.refs.password).prop('disabled', false).focus().select().parent().removeClass('loading');
+    });
   }
   render() {
     return(
       <form className="cp login-password ui form">
         <div className="desc">Logging in to {this.props.location.query.email}...</div>
         <div className="ui icon input">
-          <input type="password" placeholder="Password" required autoFocus="true" ref="password" />
+          <input type="password" placeholder="Password" required autoFocus="true" ref="password" onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
           <i className="chevron right link icon" onClick={() => this.onSubmit()}></i>
         </div>
         <a class="forgot" tabIndex="0">Forgot password?</a>
