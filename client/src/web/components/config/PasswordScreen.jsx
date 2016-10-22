@@ -42,7 +42,7 @@ export default class PasswordScreen extends React.Component  {
           </div>
           <div class="row">
             <div class="column">
-              <button id="update" class="ui inverted button">Update</button>
+              <button id="update" class="ui button">Update</button>
             </div>
           </div>
         </div>

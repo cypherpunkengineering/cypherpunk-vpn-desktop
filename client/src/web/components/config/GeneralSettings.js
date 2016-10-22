@@ -56,7 +56,7 @@ export default class GeneralSettings extends DaemonAware(React.Component)  {
         <div className="ui equal width center aligned padded grid">
           <div className="row cp_row">
             <div className="column">
-              <button id="upgrade" className="ui inverted button cp_button">Upgrade</button>
+              <button id="upgrade" className="ui button">Upgrade</button>
             </div>
           </div>
         </div>
