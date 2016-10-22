@@ -27,10 +27,10 @@ export default class Root extends React.Component {
     else if (window.previousLocation.pathname === '/login') {
       transitionName = 'fadeIn'
     }
-    else if (window.previousLocation.pathname === '/status') {
+    else if (window.previousLocation.pathname === '/account') {
       transitionName = 'pageSwap';
     }
-    else if (segment === 'connect' || segment === 'status' || window.previousLocation.pathname === '/email' || window.previousLocation.pathname === '/password' || window.previousLocation.pathname === '/encryption' || window.previousLocation.pathname === '/firewall' || window.previousLocation.pathname === '/help') {
+    else if (segment === 'connect' || segment === 'account' || window.previousLocation.pathname === '/email' || window.previousLocation.pathname === '/password' || window.previousLocation.pathname === '/encryption' || window.previousLocation.pathname === '/firewall' || window.previousLocation.pathname === '/help') {
       transitionName = 'reversePageSwap';
     }
     else {

@@ -35,7 +35,7 @@ export default class Titlebar extends React.Component {
   render() {
     return(
       <div id="titlebar" className="cp titlebar">
-        <Link className="account" to="/status" data-tooltip="Account" data-inverted="" data-position="bottom left"><img src={AccountIcon} /></Link>
+        <Link className="account" to="/account" data-tooltip="Account" data-inverted="" data-position="bottom left"><img src={AccountIcon} /></Link>
         <Title />
         <Link className="settings" to="/configuration" data-tooltip="Settings" data-inverted="" data-position="bottom right"><img src={SettingsIcon} /></Link>
       </div>

@@ -9,7 +9,7 @@ import EncryptionScreen from './components/config/EncryptionScreen'
 import FirewallScreen from './components/config/FirewallScreen'
 import HelpScreen from './components/config/HelpScreen'
 import PasswordScreen from './components/config/PasswordScreen'
-import StatusScreen from './components/StatusScreen'
+import AccountScreen from './components/AccountScreen'
 import './assets/css/app.less';
 
 // import { configureStore } from './store/configureStore';
@@ -38,7 +38,7 @@ render((
         <Route path="/firewall" component={FirewallScreen}/>
         <Route path="/help" component={HelpScreen}/>
       </Route>
-      <Route path="/status" component={StatusScreen}/>
+      <Route path="/account" component={AccountScreen}/>
       <IndexRedirect to="/login"/>
     </Route>
   </Router>
