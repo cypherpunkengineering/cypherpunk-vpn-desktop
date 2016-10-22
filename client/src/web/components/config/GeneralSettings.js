@@ -37,7 +37,7 @@ export default class GeneralSettings extends DaemonAware(React.Component)  {
   render() {
     return(
       <div class="cp-settings config__settings--basic" ref="root">
-        <div className="ui equal width center aligned padded grid ">
+        {/* <div className="ui equal width center aligned padded grid ">
           <div className="row cp_row">
             <div className="olive column cp_account_avatar">
               <i className="spy icon"></i> Wiz
@@ -100,7 +100,7 @@ export default class GeneralSettings extends DaemonAware(React.Component)  {
             <div className="nine wide olive right aligned column">
             </div>
           </div>
-        </div>
+        </div> */}
 
         <div class="ui fluid vertical cp-settings menu">
           <div class="header">Basic settings</div>
