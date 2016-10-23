@@ -1,6 +1,8 @@
 @cpBlue:      #034698;
 @cpLightBlue: #76a8e7;
+@cpDarkBlue:  #0f3c75;
 @cpBg:        #1560bd;
+@cpBgMed:     #384857;
 @cpBgDark:    #023f7d;
 @cpYellow:    #f8e71c;
 @cpYellowDark: #f8cf1c;
@@ -597,6 +599,18 @@ dialog.dimmer {
 .container__comp {
   position: relative;
   top: 86px;
+
+  &.account {
+    background-color: @cpBgDark;
+    overflow-y: auto;
+    .bodyHeight;
+  }
+}
+
+.account {
+  .ui.grid>.row>.olive.column {
+    background-color: none;
+  }
 }
 
 .container__comp--config {
@@ -629,6 +643,10 @@ dialog.dimmer {
   &.ui.menu .item {
     padding-left: 0.5rem;
   }
+
+  .account & {
+    background-color: @cpBgDark;
+  }
 }
 
 .settingsContainer {
@@ -657,17 +675,26 @@ dialog.dimmer {
 
 .cp_account_avatar {
   font-size: 20px !important;
-  height: 60px !important;
+  // height: 60px !important;;
   line-height: 30px !important;
+  width: 100% !important;
+}
+
+.cp_account_stats {
+  font-size: 1.5rem;
+  margin-top: 10px !important;
 }
 
 .cp_renew_date {
   font-size: 14px;
   color: #fff;
+  display: block;
+  margin-top: 10px;
 }
 
 .cp_h3 {
   font-size: 14px !important;
+  text-transform: uppercase;
 }
 
 .cp_row {
