@@ -3,18 +3,21 @@ import { Link } from 'react-router';
 import { PanelTitlebar } from './Titlebar';
 import Modal from './modal';
 import daemon from '../daemon';
+const { shell } = require('electron').remote;
 
 import AccountIcon from '../assets/img/icon-account-big.svg';
 
 export default class AccountScreen extends React.Component  {
+  isPremium() {
+    return daemon.settings.subscription.type == 'premium';
+  }
   getPlanName() {
-    switch (daemon.account.plan) {
-      // ...
-    }
-    return "Monthly Premium";
+    return this.isPremium() ? "Premium" : "Free";
   }
   getRenewalDate() {
-    return "02/02/2017";
+    var d = new Date(0);
+    d.setUTCSeconds(daemon.settings.subscription.expiration);
+    return `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`;
   }
   render() {
     return(
@@ -27,6 +30,7 @@ export default class AccountScreen extends React.Component  {
             <div className="period">Renews on {this.getRenewalDate()}</div>
           </div>
           <div className="pane" data-title="Account Settings">
+            <div className="setting"><a tabIndex="0" onClick={() => { shell.openExternal('https://cypherpunk.engineering/upgrade?user=' + encodeURI(daemon.account.email) + '&secret=' + encodeURI(daemon.account.secret)); }}>{this.isPremium() ? "Change Plan" : "Upgrade"}</a></div>
             <div className="setting"><a tabIndex="0"><div>Email<small>{daemon.account.email}</small></div></a></div>
             <div className="setting"><a tabIndex="0">Password</a></div>
           </div>
