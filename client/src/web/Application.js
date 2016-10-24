@@ -9,7 +9,7 @@ import EncryptionScreen from './components/config/EncryptionScreen'
 import FirewallScreen from './components/config/FirewallScreen'
 import HelpScreen from './components/config/HelpScreen'
 import PasswordScreen from './components/config/PasswordScreen'
-import StatusScreen from './components/StatusScreen'
+import AccountScreen from './components/AccountScreen'
 import './assets/css/app.less';
 
 // import { configureStore } from './store/configureStore';
@@ -25,21 +25,23 @@ daemon.ready(() => {
 
 const transitionMap = {
     'login': {
-      '*': 'example',
+      'connect': 'fadeIn',
     },
-    'status': {
-      '*': 'swipeLeft',
+    'account': {
+      'connect': 'swipeLeft',
+    },
+    'connect': {
+      'account': 'swipeRight',
+      'configuration': 'swipeLeft',
     },
     'configuration': {
       'configuration/*': 'swipeLeft',
-      '*': 'swipeRight',
+      'connect': 'swipeRight',
     },
     '*': {
       'login': '',
       'root': '',
-      'connect': 'swipeRight',
-      'status': 'swipeRight',
-      '*': 'swipeLeft',
+      '*': 'fadeIn',
     },
 };
 
@@ -64,7 +66,7 @@ render((
         <Route path="firewall" component={FirewallScreen}/>
         <Route path="help" component={HelpScreen}/>
       </Route>
-      <Route path="status" component={StatusScreen}/>
+      <Route path="account" component={AccountScreen}/>
       <IndexRedirect to="login"/>
     </Route>
   </Router>

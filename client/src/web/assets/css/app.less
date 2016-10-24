@@ -1,6 +1,8 @@
 @cpBlue:      #034698;
 @cpLightBlue: #76a8e7;
+@cpDarkBlue:  #0f3c75;
 @cpBg:        #1560bd;
+@cpBgMed:     #384857;
 @cpBgDark:    #023f7d;
 @cpYellow:    #f8e71c;
 @cpYellowDark: #f8cf1c;
@@ -365,7 +367,7 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   .logo {
     margin-top: 20px;
     width: auto;
-    height: 6.5em;
+    height: 80px;
     opacity: 0.5;
   }
 
@@ -481,16 +483,8 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     padding: 2px 0;
     border-bottom: 1px dotted transparent;
     transition: color 0.2s, border-bottom-color 0.2s, visibility 0.2s;
-    // Attached to password field:
-    display: block;
-    float: right;
-    position: relative;
-    //top: -0.6em;
-    margin-top: 4px;
-    //margin-right: 8px;
-    // Separate line:
-    // display: inline-block;
-    // margin: 14px auto;
+    display: inline-block;
+    margin: 14px auto;
 
     &:hover, &:active, &:focus {
       color: @cpYellow !important; //#fff;
@@ -566,9 +560,9 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 
 #upgrade {
   // width: 200px !important;
-  height: 40px !important;
-  border: 1px solid #fff !important;
-  box-shadow: none !important;
+  // height: 40px !important;
+  // border: 1px solid #fff !important;
+  // box-shadow: none !important;
 }
 
 dialog.dimmer {
@@ -591,13 +585,40 @@ dialog.dimmer {
 
 
 // button styles
-button,
-button.button,
-#update {
-  padding: 1rem;
+.ui.button {
+  display: inline-block;
+  cursor: pointer;
   width: 100%;
+  font-size: 125%;
+  color: rgba(255,255,255,0.75);
+  background: rgba(0,0,0,0.125);
+  box-shadow: 2px 5px 5px -5px rgba(0,0,0,0.5);
+  line-height: 1em;
+  padding: 0.6em;
+  border-radius: 2px;
+  transition: background-color 0.2s, box-shadow 0.2s, color 0.2s;
+  border: none;
 
+  &:hover,
+  &:focus {
+    background: rgba(0,0,0,0.25);
+    box-shadow: 2px 7px 8px -5px rgba(0,0,0,0.5);
+    color: #fff;
+    outline: none;
+  }
+
+  .icon {
+    margin-left: -1.18em;
+  }
 }
+
+
+// button,
+// button.button,
+// #update {
+//   padding: 1rem;
+//   width: 100%;
+// }
 
 .button1 {
   display: inline-block;
@@ -638,6 +659,18 @@ button.button,
 .container__comp {
   //position: relative;
   //top: 86px;
+
+  &.account {
+    background-color: @cpBgDark;
+    overflow-y: auto;
+    .bodyHeight;
+  }
+}
+
+.account {
+  .ui.grid>.row>.olive.column {
+    background-color: none;
+  }
 }
 
 .container__comp--config {
@@ -667,9 +700,12 @@ button.button,
   z-index: 1001;
   .draggable;
 
-  & + .grid {
-    top: @fullHeaderHeight;
-    position: relative;
+  &.ui.menu .item {
+    padding-left: 0.5rem;
+  }
+
+  .account & {
+    background-color: @cpBgDark;
   }
 }
 
@@ -699,23 +735,38 @@ button.button,
 
 .cp_account_avatar {
   font-size: 20px !important;
-  height: 60px !important;
+  // height: 60px !important;;
   line-height: 30px !important;
+  width: 100% !important;
+}
+
+.cp_account_stats {
+  font-size: 1.5rem;
+  margin-top: 10px !important;
 }
 
 .cp_renew_date {
   font-size: 14px;
   color: #fff;
+  display: block;
+  margin-top: 10px;
 }
 
 .cp_h3 {
   font-size: 14px !important;
+  text-transform: uppercase;
 }
 
 .cp_row {
   font-size: 16px !important;
   min-height: 48px !important;
   line-height: 16px !important;
+
+  .right {
+    i {
+      margin-right: 0;
+    }
+  }
 }
 
 .cp_button {
@@ -790,7 +841,7 @@ small {
   }
 }
 
-.example {
+.fadeIn {
   @transitionTime: @screenTransitionTime;
   &-enter {
     opacity: 0;

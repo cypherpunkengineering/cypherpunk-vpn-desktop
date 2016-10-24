@@ -72,6 +72,9 @@ export default class RouteTransition extends React.Component {
             }
             key = key.replace(/\/?\*$/, '');
           } while (key);
+          if (key in map) {
+            return map[key];
+          }
         }
         var map = lookupMap(from || '', transition);
         if (map) {

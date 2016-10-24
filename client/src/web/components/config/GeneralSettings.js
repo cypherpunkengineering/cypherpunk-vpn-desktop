@@ -37,7 +37,7 @@ export default class GeneralSettings extends DaemonAware(React.Component)  {
   render() {
     return(
       <div class="cp-settings config__settings--basic" ref="root">
-        <div className="ui equal width center aligned padded grid ">
+        {/* <div className="ui equal width center aligned padded grid ">
           <div className="row cp_row">
             <div className="olive column cp_account_avatar">
               <i className="spy icon"></i> Wiz
@@ -56,7 +56,7 @@ export default class GeneralSettings extends DaemonAware(React.Component)  {
         <div className="ui equal width center aligned padded grid">
           <div className="row cp_row">
             <div className="column">
-              <button id="upgrade" className="ui inverted button cp_button">Upgrade</button>
+              <button id="upgrade" className="ui button">Upgrade</button>
             </div>
           </div>
         </div>
@@ -73,7 +73,7 @@ export default class GeneralSettings extends DaemonAware(React.Component)  {
             </div>
             <div className="twelve wide olive right aligned column">
               <Link to="/configuration/email">
-              wiz@cypherpunk.com <i className="chevron right icon"></i>
+              wiz@cypherpunk.com <i className="angle right icon"></i>
               </Link>
             </div>
           </div>
@@ -82,7 +82,7 @@ export default class GeneralSettings extends DaemonAware(React.Component)  {
               <Link to="/configuration/password">Password</Link>
             </div>
             <div className="nine wide olive right aligned column">
-              <Link to="/configuration/password"><i className="chevron right icon"></i></Link>
+              <Link to="/configuration/password"><i className="angle right icon"></i></Link>
             </div>
           </div>
           <div className="row cp_row">
@@ -90,7 +90,7 @@ export default class GeneralSettings extends DaemonAware(React.Component)  {
               <Link to="/configuration/help">Help</Link>
             </div>
             <div className="nine wide olive right aligned column">
-              <Link to="/configuration/help"><i className="chevron right icon"></i></Link>
+              <Link to="/configuration/help"><i className="angle right icon"></i></Link>
             </div>
           </div>
           <div className="row cp_row">
@@ -100,7 +100,7 @@ export default class GeneralSettings extends DaemonAware(React.Component)  {
             <div className="nine wide olive right aligned column">
             </div>
           </div>
-        </div>
+        </div> */}
 
         <div class="ui fluid vertical cp-settings menu">
           <div class="header">Basic settings</div>

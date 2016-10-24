@@ -4,9 +4,9 @@ import { Link } from 'react-router';
 export default class PasswordScreen extends React.Component  {
   render() {
     return(
-      <div>
+      <div class="container__comp">
         <div className="ui fluid inverted borderless icon menu cp_config_header">
-          <Link className="item" to="/configuration"><i className="arrow left icon"></i></Link>
+          <Link className="item" to="/account"><i className="angle left icon"></i></Link>
           <div className="header item center aligned">Update Password</div>
         </div>
         <div class="ui padded grid">
@@ -42,7 +42,7 @@ export default class PasswordScreen extends React.Component  {
           </div>
           <div class="row">
             <div class="column">
-              <button id="update" class="ui inverted button">Update</button>
+              <button id="update" class="ui button">Update</button>
             </div>
           </div>
         </div>
