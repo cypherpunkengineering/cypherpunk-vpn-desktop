@@ -17,7 +17,7 @@ export default class GeneralSettings extends DaemonAware(React.Component)  {
   componentDidMount() {
     super.componentDidMount();
     var self = this;
-    $(this.refs.root).find('.ui.dropdown').dropdown({ onChange: function(value) { self.onChange(this.children[0].name, value); } }).parent().click(event => $(event.currentTarget.children[0]).dropdown('show'));
+    $(this.refs.root).find('.ui.dropdown').dropdown({ onChange: function(value) { self.onChange(this.children[0].name, value); } });
     $(this.refs.root).find('.ui.checkbox').checkbox({ onChange: function() { self.onChange(this.name, this.checked); } });
     $(this.refs.root).find('.ui.input').change(event => self.onChange(event.target.name, event.target.value)).parent().click(event => event.currentTarget.children[0].children[0].focus());
     this.daemonSettingsChanged(daemon.settings);
@@ -68,14 +68,14 @@ export default class GeneralSettings extends DaemonAware(React.Component)  {
           <div class="ui selection button dropdown" ref="showinDropdown">
             <input type="hidden" id="showin" name="showin"/>
             <i class="dropdown icon"></i>
-            <div class="text"></div>
+            <div class="text">Dock &amp; Menu</div>
             <div className="menu">
               <div class="item" data-value="dockonly">Dock Only</div>
               <div class="item" data-value="menuonly">Menu Only</div>
               <div class="item" data-value="dockmenu">Dock &amp; Menu</div>
             </div>
           </div>
-          <label>Show Cypherpunk in</label>
+          <label>Show app in</label>
         </div>
       </div>
     );
