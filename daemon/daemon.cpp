@@ -532,13 +532,14 @@ static const std::vector<std::string> g_user_private_key = {
 
 JsonObject CypherDaemon::MakeAccountObject()
 {
-	JsonObject account;
-	account["name"] = "Cypher";
-	account["email"] = "cypher@cypherpunk.com";
-	account["plan"] = "free";
-	account["certificate"] = std::vector<JsonValue>(g_user_certificate.begin(), g_user_certificate.end());
-	account["privateKey"] = std::vector<JsonValue>(g_user_private_key.begin(), g_user_private_key.end());
-	return std::move(account);
+	try
+	{
+		return g_settings.at("account").AsStruct();
+	}
+	catch (...)
+	{
+		return JsonObject();
+	}
 }
 
 void CypherDaemon::OnStateChanged()
@@ -596,11 +597,13 @@ void CypherDaemon::RPC_applySettings(const JsonObject& settings)
 	// FIXME: Temporary workaround, these should be configs instead
 	if (settings.find("servers") != settings.end() || settings.find("regions") != settings.end())
 		SendToAllClients(_rpc_client.BuildNotificationData("config", MakeConfigObject()));
+	if (settings.find("account") != settings.end())
+		SendToAllClients(_rpc_client.BuildNotificationData("account", MakeAccountObject()));
 }
 
 void CypherDaemon::RPC_setAccount(const JsonObject& account)
 {
-
+	RPC_applySettings({{ "account", account }});
 }
 
 void WriteOpenVPNProfile(std::ostream& out, const JsonObject& server)

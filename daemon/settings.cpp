@@ -15,6 +15,11 @@ Settings::Settings()
 
 }
 
+JsonValue& Settings::at(const std::string& name)
+{
+	return JsonObject::at(name);
+}
+
 JsonValue& Settings::operator[](const std::string& name)
 {
 	//return JsonObject::at(name);
