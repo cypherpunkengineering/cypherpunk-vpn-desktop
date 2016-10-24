@@ -578,7 +578,7 @@ void CypherDaemon::RPC_applySettings(const JsonObject& settings)
 {
 	// Look up all keys first to throw if there are any invalid settings
 	// before we actually make any changes
-	for (auto& p : settings) g_settings.map().at(p.first);
+	//for (auto& p : settings) g_settings.map().at(p.first);
 
 	std::vector<std::string> changed;
 	for (auto& p : settings)

@@ -9,11 +9,34 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
   }
   componentDidMount() {
     super.componentDidMount();
-    $(this.refs.protocol).dropdown({ onChange: value => { daemon.post.applySettings({ protocol: value }); }});
-    $(this.refs.remotePort).dropdown({ onChange: value => { daemon.post.applySettings({ remotePort: value }); }});
-    $(this.refs.localPort).val(daemon.settings.localPort || "");
+    var self = this;
+    $(this.refs.root).find('.ui.dropdown').dropdown({ onChange: function(value) { self.onChange(this.children[0].name, value); } }).parent().click(event => $(event.currentTarget.children[0]).dropdown('show'));
+    $(this.refs.root).find('.ui.checkbox').checkbox({ onChange: function() { self.onChange(this.name, this.checked); } });
+    $(this.refs.root).find('.ui.input').change(event => self.onChange(event.target.name, event.target.value)).parent().click(event => event.currentTarget.children[0].children[0].focus());
+    //$(this.refs.firewall).dropdown({ onChange: value => { daemon.post.applySettings({ firewall: value }); }});
+    //$(this.refs.protocol).dropdown({ onChange: value => { daemon.post.applySettings({ protocol: value }); }});
+    //$(this.refs.remotePort).dropdown({ onChange: value => { daemon.post.applySettings({ remotePort: value }); }});
+    //$(this.refs.localPort).val(daemon.settings.localPort || "");
+    this.daemonSettingsChanged(daemon.settings);
+  }
+  onChange(name, value) {
+    console.log(JSON.stringify(name) + " changed to " + JSON.stringify(value));
+    switch (name) {
+      case 'firewall': daemon.post.applySettings({ firewall: value }); break;
+      case 'protocol': daemon.post.applySettings({ protocol: value }); break;
+      case 'remotePort': daemon.post.applySettings({ remotePort: value }); break;
+      case 'localPort': daemon.post.applySettings({ localPort: parseInt(value, 10) }); break;
+      case 'blockIPv6': break;
+      case 'blockDNS': break;
+      case 'allowLAN': break;
+      case 'exemptApple': break;
+      case 'forwardPort': break;
+    }
   }
   daemonSettingsChanged(settings) {
+    if (settings.firewall !== undefined) {
+      $(this.refs.firewall).dropdown('set selected', settings.firewall);
+    }
     if (settings.protocol !== undefined) {
       $(this.refs.protocol).dropdown('set selected', settings.protocol);
     }
@@ -26,138 +49,93 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
   }
   render() {
     return(
-      <div className="config__settings--advanced">
-        <div className="ui padded grid">
-          <div className="header">
-            Advanced Settings
-          </div>
-          <div className="row cp_row">
-            <div className="eleven wide olive column">
-              Protocol
-            </div>
-            <div className="five wide olive right aligned column">
-              <div className="ui olive button selection dropdown" ref="protocol">
-                <input type="hidden" name="protocol" value={daemon.settings.protocol}/>
-                <i className="dropdown icon"></i>
-                <div className="default text">UDP</div>
+      <div className="collapsible" ref="root">
+        <div className="collapsible-title">Advanced Settings</div>
+        <div className="collapsible-content">
+
+          <div className="pane" data-title="Privacy Firewall">
+            <div class="setting">
+              <div class="ui selection button dropdown" ref="firewall">
+                <input type="hidden" id="firewall" name="firewall"/>
+                <i class="dropdown icon"></i>
+                {/*<div class="default text">When connected</div>*/}
+                <div class="text"></div>
                 <div className="menu">
-                  <div className="item" data-value="udp">UDP</div>
-                  <div className="item" data-value="tcp">TCP</div>
+                  <div class="item" data-value="on">Always</div>
+                  <div class="item" data-value="auto">When connected</div>
+                  <div class="item" data-value="off">Never</div>
                 </div>
+              </div>
+              <label>Block Non-VPN Traffic</label>
+            </div>
+            <div className="setting">
+              <div className="ui toggle checkbox">
+                <input type="checkbox" name="blockIPv6" id="blockIPv6" ref="blockIPv6"/>
+                <label>Block IPv6 Traffic</label>
+              </div>
+            </div>
+            <div className="setting">
+              <div className="ui toggle checkbox">
+                <input type="checkbox" name="blockDNS" id="blockDNS" ref="blockDNS"/>
+                <label>Use Only Cypherpunk DNS</label>
               </div>
             </div>
           </div>
-          <div className="row cp_row">
-            <div className="nine wide olive column">
-              Remote port
+
+          <div className="pane" data-title="Compatibility">
+            <div className="setting">
+              <div className="ui toggle checkbox">
+                <input type="checkbox" name="allowLAN" id="allowLAN" ref="allowLAN"/>
+                <label>Always Allow LAN Traffic</label>
+              </div>
             </div>
-            <div className="seven wide olive right aligned column">
-              <div className="ui olive button selection dropdown" ref="remotePort">
+            <div className="setting">
+              <div className="ui toggle checkbox">
+                <input type="checkbox" name="exemptApple" id="exemptApple" ref="exemptApple"/>
+                <label>Exempt Apple Services from VPN</label>
+              </div>
+            </div>
+          </div>
+
+          <div className="pane" data-title="VPN Settings">
+            <div class="setting">
+              <div class="ui selection button dropdown" ref="protocol">
+                <input type="hidden" id="protocol" name="protocol"/>
+                <i class="dropdown icon"></i>
+                {/*<div class="default text">UDP</div>*/}
+                <div class="text"></div>
+                <div className="menu">
+                  <div class="item" data-value="udp">UDP</div>
+                  <div class="item" data-value="tcp">TCP</div>
+                </div>
+              </div>
+              <label>Transport Protocol</label>
+            </div>
+            <div className="setting">
+              <div className="ui input">
+                <input type="text" size="5" name="localPort" id="localPort" ref="localPort"/>
+              </div>
+              <label>Local Port</label>
+            </div>
+            <div className="setting">
+              <div className="ui button selection dropdown" ref="remotePort">
                 <input type="hidden" name="remoteport" />
                 <i className="dropdown icon"></i>
-                <div className="default text">Auto</div>
+                {/*<div className="default text">7133</div>*/}
+                <div class="text"></div>
                 <div className="menu">
-                  <div className="item" data-value="auto">Auto</div>
                   <div className="item" data-value="7133">7133</div>
                 </div>
               </div>
+              <label>Remote Port</label>
             </div>
-          </div>
-          <div className="row cp_row">
-            <div className="eleven wide olive column">
-              Local port
-              <small>Customize the port used to connect to Cypherpunk</small>
-            </div>
-            <div className="five wide olive right aligned column">
-              <div className="ui input">
-                <input type="text" size="5" name="localport" ref="localPort" onChange={(function(event) { daemon.post.applySettings({ localPort: parseInt(event.target.value, 10) }); return true; })} />
+            <div className="setting">
+              <div className="ui toggle checkbox">
+                <input type="checkbox" name="forwardPort" id="forwardPort" ref="forwardPort"/>
+                <label>Request Port Forwarding</label>
               </div>
             </div>
           </div>
-          <div className="row cp_row">
-            <div className="ten wide olive column">
-              Firewall
-              <small>Manage all internet connectivity when you are not connected to our network</small>
-            </div>
-            <div className="six wide olive right aligned column">
-              <Link to="/configuration/firewall"><span id="firewall_text">Automatic</span> <i className="angle right icon"></i></Link>
-            </div>
-          </div>
-          <div className="row cp_row">
-            <div className="thirteen wide olive column">
-              <label for="smallpackets">Use small packets
-              <small>Optimized packet size for improved connectivity to various router and mobile networks</small>
-              </label>
-            </div>
-            <div className="three wide olive right aligned column">
-              <div className="ui checkbox toggle">
-                <input type="checkbox" name="smallpackets" id="smallpackets"/>
-                <label />
-              </div>
-            </div>
-          </div>
-          <div className="row cp_row">
-            <div className="thirteen wide olive column">
-              <label for="allowlocaltraffic">Allow local traffic when firewall is on</label>
-            </div>
-            <div className="three wide olive right aligned column">
-              <div className="ui checkbox toggle">
-                <input type="checkbox" name="allowlocaltraffic" id="allowlocaltraffic"/>
-                <label />
-              </div>
-            </div>
-          </div>
-          <div className="row cp_row">
-            <div className="thirteen wide olive column">
-              <label for="requestportforwarding">Request port forwarding
-              <small>Allow incoming connections to your mobile device over an external port</small>
-              </label>
-            </div>
-            <div className="three wide olive right aligned column">
-              <div className="ui checkbox toggle">
-                <input type="checkbox" name="requestportforwarding" id="requestportforwarding"/>
-                <label />
-              </div>
-            </div>
-          </div>
-          <div className="row cp_row">
-            <div className="thirteen wide olive column">
-              <label for="ipv6leakprotection">IPv6 leak protection
-              <small>Disable IPv6 while using Cypherpunk</small>
-              </label>
-            </div>
-            <div className="three wide olive right aligned column">
-              <div className="ui checkbox toggle">
-                <input type="checkbox" name="ipv6leakprotection" id="ipv6leakprotection"/>
-                <label />
-              </div>
-            </div>
-          </div>
-
-          <div className="row cp_row">
-            <div className="thirteen wide olive column">
-              <label for="dnsleakprotection">DNS leak protection
-              <small>Prevent leaking DNS queries using Cypherpunk</small>
-              </label>
-            </div>
-            <div className="three wide olive right aligned column">
-              <div className="ui checkbox toggle">
-                <input type="checkbox" name="dnsleakprotection" id="dnsleakprotection" />
-                <label />
-              </div>
-            </div>
-          </div>
-          <div className="row cp_row">
-            <div className="nine wide olive column">
-              <Link to="/configuration/encryption">Encryption
-              <small>Cipher AES-256 Auth SHA512 Key 4096-bit</small>
-              </Link>
-            </div>
-            <div className="seven wide olive right aligned column">
-              <Link to="/configuration/encryption"><span id="encryption_text">Automatic</span> <i className="angle right icon"></i></Link>
-            </div>
-          </div>
-
         </div>
       </div>
     );

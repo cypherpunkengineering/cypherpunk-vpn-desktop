@@ -16,6 +16,8 @@
 @headerHeight:   50px;
 @fullHeaderHeight:   (@dragbarHeight + @headerHeight);
 
+@loaderRingColor: rgba(0,0,0,0.1);
+@loaderActiveColor: rgba(255,255,255,0.8);
 
 
 // Mixins
@@ -49,8 +51,12 @@
   user-select: none;
 }
 html, body {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
   cursor: default;
-  min-width: 350px;
   touch-action: none;
 }
 body {
@@ -59,6 +65,7 @@ body {
   // transition: 2s background;
   font-family: Dosis;
   font-weight: 500;
+  line-height: normal;
   overflow-y: hidden;
   -webkit-font-smoothing: antialiased;
   height: 100vh;
@@ -66,6 +73,7 @@ body {
   // top: 30px;
   .bg-gradient--main;
 }
+
 
 /*:not(input):not(textarea), :not(input):not(textarea)::after, :not(input):not(textarea)::before { -webkit-user-select: none; user-select: none; cursor: default; }*/
 /*input, button, textarea, :focus { outline: none; }*/
@@ -75,7 +83,12 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 //#root-container { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
 
 #root-container {
-  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .cp.title {
@@ -97,7 +110,7 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 
 .cp.dragbar {
   left: 0;
-  position: fixed;
+  position: absolute;
   top: 0;
   right: 0;
   height: @dragbarHeight;
@@ -110,16 +123,14 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 }
 
 .cp.titlebar {
-  position: fixed;
-  left: 0;
-  top: 0;
-  right: 0;
+  width: 100%;
   height: @fullHeaderHeight;
   z-index: 1001;
   font-size: 20px;
   padding-top: (@dragbarHeight - 6px);
   display: flex;
   align-items: center;
+  justify-content: center;
   .draggable;
 
   .title {
@@ -128,7 +139,12 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     text-align: center;
   }
 
+  * {
+    flex-grow: 1;
+  }
+
   a {
+    flex-grow: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -147,9 +163,12 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
       align-self: stretch;
       width: 3em;
       margin: 0;
-      margin-top: 0.3em;
       height: auto;
     }
+  }
+
+  .account img {
+    height: 26px;
   }
 }
 
@@ -245,10 +264,6 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 .screen {
   position: absolute;
   left: 0; top: 0; right: 0; bottom: 0;
-  padding-top: @fullHeaderHeight;
-  &.full {
-    padding-top: @dragbarHeight;
-  }
 }
 
 
@@ -272,7 +287,7 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   }
   #region-select {
     z-index: 1;
-    position: fixed;
+    position: absolute;
     left: 0;
     right: 0;
     bottom: 0;
@@ -362,7 +377,7 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   .screen;
   .bg-gradient--main;
   text-align: center;
-  padding: 0 2.5em;
+  padding: 3em 2.5em 0;
 
   .logo {
     margin-top: 20px;
@@ -386,24 +401,10 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
       padding: 15px;
       font-size: 125%;
       transition: background-color 0.2s;
-      border-radius: 0;
+      border-radius: 6px;
 
       &:focus {
         background: rgba(255,255,255,0.16);
-      }
-
-      &:first-of-type {
-        border-top-left-radius: 6px;
-        border-top-right-radius: 6px;
-      }
-
-      &:last-of-type {
-        border-bottom-left-radius: 6px;
-        border-bottom-right-radius: 6px;
-      }
-
-      + input {
-        margin-top: 2px;
       }
     }
     .input {
@@ -415,11 +416,18 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
         margin-right: 0.5em;
         cursor: default;
         pointer-events: none;
-        &:before {
-          border-color: rgba(0,0,0,0.1);
+      }
+      + .input {
+        margin-top: 2px;
+      }
+      &.group {
+        input {
+          border-bottom-left-radius: 0;
+          border-bottom-right-radius: 0;
         }
-        &:after {
-          border-color: rgba(255,255,255,0.8) transparent transparent;
+        + .input input {
+          border-top-left-radius: 0;
+          border-top-right-radius: 0;
         }
       }
     }
@@ -445,7 +453,15 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   }
 
   .login-register {
+    .loader {
+      margin-top: 30px;
+    }
+  }
 
+  .login-confirm {
+    .loader {
+      margin-top: 30px;
+    }
   }
 
   .cp.button {
@@ -477,14 +493,16 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 
   .forgot {
     cursor: pointer;
-    color: rgba(255,255,255,0.16);
+    color: rgba(255,255,255,0.3);
     text-decoration: none;
     font-size: 14px;
     padding: 2px 0;
     border-bottom: 1px dotted transparent;
     transition: color 0.2s, border-bottom-color 0.2s, visibility 0.2s;
-    display: inline-block;
-    margin: 14px auto;
+    display: block;
+    float: right;
+    position: relative;
+    margin-top: 4px;
 
     &:hover, &:active, &:focus {
       color: @cpYellow !important; //#fff;
@@ -565,24 +583,53 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   // box-shadow: none !important;
 }
 
-dialog.dimmer {
+dialog {
   border: none;
+  margin: 0;
+  padding: 0;
   &::backdrop {
     background: none;
   }
-  a {
-    cursor: pointer;
-    position: relative;
-    top: 96%;
-    padding-bottom: 2px 0;
-    border-bottom: 1px solid transparent;
-    &:hover, &:active, &:focus {
-      color: @cpYellow !important; //#fff;
-      border-bottom: 1px dotted #fff;
+  &.dimmer {
+    z-index: 9000;
+    background: rgba(0,0,0,0.6) !important;
+    a {
+      cursor: pointer;
+      position: relative;
+      top: 96%;
+      padding-bottom: 2px 0;
+      border-bottom: 1px solid transparent;
+      &:hover, &:active, &:focus {
+        color: @cpYellow !important; //#fff;
+        border-bottom: 1px dotted #fff;
+      }
     }
   }
 }
 
+// Used to turn Semantic tooltips translucent
+[data-tooltip][data-inverted] {
+  &:before, &:after {
+    //background-color: #4670a7 !important;
+  }
+}
+
+.ui.input.loading.icon .icon {
+  &:before {
+    border-color: @loaderRingColor !important;
+  }
+  &:after {
+    border-color: @loaderActiveColor transparent transparent !important;
+  }
+}
+.ui.loader {
+  &:before {
+    border-color: @loaderRingColor !important;
+  }
+  &:after {
+    border-color: @loaderActiveColor transparent transparent !important;
+  }
+}
 
 // button styles
 .ui.button {
@@ -656,6 +703,8 @@ dialog.dimmer {
   top: @fullHeaderHeight;
 }
 
+
+
 .container__comp {
   //position: relative;
   //top: 86px;
@@ -666,6 +715,8 @@ dialog.dimmer {
     .bodyHeight;
   }
 }
+
+
 
 .account {
   .ui.grid>.row>.olive.column {
@@ -695,7 +746,7 @@ dialog.dimmer {
   border-bottom: 1px solid rgba(255,255,255,0.15) !important;
   height: (@dragbarHeight + @headerHeight);
   padding-top: @dragbarHeight;
-  position: fixed;
+  position: absolute;
   top: 0;
   z-index: 1001;
   .draggable;
@@ -724,6 +775,9 @@ dialog.dimmer {
     color: @cpYellowDark;
     padding-top: 0;
     padding-bottom: 0;
+  }
+  .dropdown {
+    font-size: 1rem !important;
   }
 }
 
@@ -792,9 +846,12 @@ small {
 }
 
 
+
+
+
 // Positioning
 .bottom {
-  position: fixed;
+  position: absolute;
   bottom: 0;
   left: 0;
 }
@@ -804,15 +861,25 @@ small {
 ::-webkit-scrollbar {
 	width: 8px;
 }
-
+::-webkit-scrollbar-button {
+  width: 8px;
+}
 ::-webkit-scrollbar-track {
   border-radius: 10px;
 }
-
+::-webkit-scrollbar-track-piece {
+  width: 8px;
+}
 ::-webkit-scrollbar-thumb {
   width: 6px;
   border-radius: 10px;
 	background: rgba(255,255,255,0.3);
+}
+::-webkit-scrollbar-corner {
+  width: 8px;
+}
+::-webkit-resizer {
+  width: 8px;
 }
 
 
@@ -827,11 +894,16 @@ small {
 
 #root-container > .transition-container {
   position: absolute;
-  left: 0; top: 0; right: 0; bottom: 0;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
 }
 .transition-container {
   position: relative;
   padding: 0;
+  width: 100%;
+  height: 100%;
   > * {
     position: absolute !important;
     left: 0;
@@ -925,5 +997,280 @@ small {
       transform: translateX(100vw);
       transition: transform @transitionTime ease-out;
     }
+  }
+}
+
+
+
+@panelWidth: 80vw;
+@leftPanelWidth: @panelWidth;
+@rightPanelWidth: @panelWidth;
+
+
+.panel {
+  display: block;
+  position: absolute;
+  top: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: none;
+  color: #fff;
+  background: transparent;
+
+  > div { // modal wrapper
+    width: 100%;
+    height: 100%;
+  }
+
+  .titlebar {
+    text-align: center;
+  }
+
+  .content {
+    width: 100%;
+    height: calc(~"100vh - " @fullHeaderHeight);
+    &.scrollable {
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+    .pane {
+      background: rgba(255,255,255,0.16);
+
+      &[data-title]:before {
+        font-size: 14px;
+        content: attr(data-title);
+        display: block;
+        width: 100%;
+        padding: 10px 15px 2px;
+        color: @cpYellowDark;
+      }
+      + .pane {
+        margin-top: 10px;
+      }
+
+      .setting {
+        width: 100%;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 16px;
+        position: relative;
+        color: rgba(255,255,255,0.75);
+        cursor: pointer;
+
+        > * {
+          //flex-grow: 1;
+        }
+        label {
+          cursor: pointer;
+          flex-grow: 1;
+        }
+
+        > a {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 8px 15px 9px;
+          color: inherit;
+          &:after {
+            font-family: 'Icons';
+            content: "\f105";
+            flex-grow: 0;
+            font-size: 22px;
+            color: rgba(255,255,255,0.75);
+            margin-left: 10px;
+          }
+          &:hover, &:focus {
+            color: #fff;
+            &:after {
+              color: inherit;
+            }
+          }
+          &:focus {
+            outline: none !important;
+            &:after {
+              text-shadow: 0 0 10px #fff;
+            }
+          }
+        }
+
+        > .ui.checkbox {
+          > input:checked + label {
+            color: inherit;
+          }
+          > label {
+            color: inherit;
+          }
+        }
+
+        > .ui.dropdown {
+          order: 10;
+          width: auto;
+          margin-right: 15px;
+          + label {
+            margin-left: 15px;
+          }
+        }
+
+        > .ui.input {
+          order: 10;
+          width: auto;
+          margin-right: 15px;
+          > input {
+            padding: 4px 8px;
+            border: 1px solid rgba(255,255,255,0.16);
+            border-radius: 5px;
+            &:focus {
+              border-color: #fff;
+            }
+          }
+          + label {
+            margin-left: 15px;
+          }
+        }
+
+        + .setting {
+          background-image: linear-gradient(to bottom, rgba(255,255,255,0.3) 1px, transparent 1px);
+        }
+        &:hover {
+          background: linear-gradient(to left, rgba(255,255,255,0.1), transparent);
+        }
+        + .setting:hover {
+          background-image: linear-gradient(to bottom, rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(to left, rgba(255,255,255,0.1), transparent);
+        }
+      }
+    }
+    .collapsible {
+      > .collapsible-title {
+        font-size: 18px;
+        padding: 10px 15px;
+      }
+      > .collapsible-content {
+
+      }
+    }
+  }
+
+  // Main screen (i.e. connect screen) should always act disabled when a panel is present
+  ~ .screen {
+    pointer-events: none !important;
+  }
+
+  // Panel which goes on the left side of the screen
+  &.left {
+    left: 0;
+    width: @leftPanelWidth;
+
+    > div {
+      background: linear-gradient(to left, rgba(0,0,0,0.25) 0, transparent 30px), linear-gradient(329deg, transparent, rgba(255,255,255,0.2)), @cpDarkBlue;
+    }
+
+    ~ .screen {
+      transform: translateX(@leftPanelWidth);
+    }
+
+    &.reveal {
+      @transitionTime: @screenTransitionTime;
+      &-enter {
+        pointer-events: none !important;
+        &::backdrop { pointer-events: none !important; }
+        > div { transform: translateX(-@leftPanelWidth); }
+        ~ .screen { transform: translateX(0); pointer-events: none !important; }
+        &-active {
+          > div { transform: translateX(0); transition: transform @transitionTime ease-out; }
+          ~ .screen { transform: translateX(@leftPanelWidth); transition: transform @transitionTime ease-out; }
+        }
+      }
+      &-leave {
+        pointer-events: none !important;
+        &::backdrop { pointer-events: none !important; }
+        > div { transform: translateX(0); pointer-events: none !important; }
+        ~ .screen { transform: translateX(@leftPanelWidth); }
+        &-active {
+          > div { transform: translateX(-@leftPanelWidth); transition: transform @transitionTime ease-out; }
+          ~ .screen { transform: translateX(0); transition: transform @transitionTime ease-out; }
+        }
+      }
+    }
+  }
+
+  // Panel which goes on the right side of the screen
+  &.right {
+    left: calc(~"100vw - " @rightPanelWidth);
+    width: @rightPanelWidth;
+
+    > div {
+      background: linear-gradient(to right, rgba(0,0,0,0.25) 0, transparent 30px), linear-gradient(329deg, transparent, rgba(255,255,255,0.2)), @cpDarkBlue;
+    }
+
+    ~ .screen {
+      transform: translateX(-@rightPanelWidth);
+    }
+
+    &.reveal {
+      @transitionTime: @screenTransitionTime;
+      &-enter {
+        pointer-events: none !important;
+        &::backdrop { pointer-events: none !important; }
+        > div { transform: translateX(@rightPanelWidth); }
+        ~ .screen { transform: translateX(0); pointer-events: none !important; }
+        &-active {
+          > div { transform: translateX(0); transition: transform @transitionTime ease-out; }
+          ~ .screen { transform: translateX(-@rightPanelWidth); transition: transform @transitionTime ease-out; }
+        }
+      }
+      &-leave {
+        pointer-events: none !important;
+        &::backdrop { pointer-events: none !important; }
+        > div { transform: translateX(0); }
+        ~ .screen { transform: translateX(-@rightPanelWidth); }
+        &-active {
+          > div { transform: translateX(@rightPanelWidth); transition: transform @transitionTime ease-out; }
+          ~ .screen { transform: translateX(0); transition: transform @transitionTime ease-out; }
+        }
+      }
+    }
+  }
+}
+
+
+
+.account.panel {
+  .content {
+    .user.pane {
+      text-align: center;
+      padding: 3px 15px 10px;
+      .user {
+        height: 48px;
+        font-size: 17px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+        img { width: auto; height: 30px; margin-right: 10px; }
+        span { line-height: 48px; overflow-x: hidden; text-overflow: ellipsis; }
+      }
+      .plan {
+        font-size: 17px;
+        line-height: 20px;
+        &.premium {
+          color: @cpYellowDark;
+        }
+      }
+      .period {
+        font-size: 13px;
+        line-height: 20px;
+        color: rgba(255,255,255,0.6);
+      }
+    }
+  }
+}
+
+.settings.panel {
+  .content {
+
   }
 }

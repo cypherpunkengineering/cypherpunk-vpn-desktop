@@ -7,12 +7,15 @@
   border-bottom: @selectionItemDivider;
 }
 
-.cp-settings.menu > .item .ui.dropdown {
-  .menu > .item {
-    padding: 0.5em 0.75em !important;
-    white-space: nowrap;
-  }
-  .text {
-    text-align: left;
+.settings {
+  .ui.dropdown {
+    font-size: 1rem;
+    .menu > .item {
+      padding: 0.5em 0.75em !important;
+      white-space: nowrap;
+    }
+    .text {
+      text-align: left;
+    }
   }
 }

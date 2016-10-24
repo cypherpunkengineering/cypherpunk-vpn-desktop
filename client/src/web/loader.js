@@ -1,33 +1,30 @@
 import 'semantic';
 
-var loader = $('#load-screen');
-var loaderLabel = loader.find('div');
+var loader = document.getElementById('load-screen');
+var loaderLabel = $(loader).find('div');
 var loading = true;
 
-loader.dimmer({ closable: false });
-loader.dimmer('show');
+loader.addEventListener('cancel', event => event.preventDefault());
 
-function filterEvent(e) {
-  if (loading) {
-    e.preventDefault();
-    e.stopPropagation();
-    return false;
-  }
-}
-
-[ 'keydown', 'keypress', 'keyup', 'scroll' ].forEach(e => {
-  document.body.addEventListener(e, filterEvent, true);
-});
+$(loader).dimmer({ closable: false });
+$(loader).dimmer('show');
+loader.showModal();
 
 export default class Loader {
   static show(text) {
     var label = text || "Loading";
     loading = true;
     loaderLabel.text(label);
-    loader.dimmer('show');
+    $(loader).dimmer('show');
+    if (!loader.open) {
+      loader.showModal();
+    }
   }
   static hide() {
-    loader.dimmer('hide');
+    $(loader).dimmer('hide');
+    if (loader.open) {
+      loader.close();
+    }
     loading = false;
   }
 }

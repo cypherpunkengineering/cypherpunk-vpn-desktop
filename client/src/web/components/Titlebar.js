@@ -45,7 +45,7 @@ export class MainTitlebar extends React.Component {
   render() {
     return(
       <Titlebar>
-        <Link className="account" to="/account" data-tooltip="Account" data-inverted="" data-position="bottom left"><img src={AccountIcon} /></Link>
+        <Link className="account" to="/account" data-tooltip="Account" data-inverted="" data-position="bottom left"><img src={AccountIcon}/></Link>
         <Title/>
         <Link className="settings" to="/configuration" data-tooltip="Settings" data-inverted="" data-position="bottom right"><img src={SettingsIcon} /></Link>
       </Titlebar>
@@ -62,5 +62,15 @@ export class SecondaryTitlebar extends React.Component {
         <a style={{ visibility: 'hidden' }}/>
       </Titlebar>
     );
+  }
+}
+
+export class PanelTitlebar extends React.Component {
+  render() {
+    return(
+      <Titlebar>
+        {this.props.title}
+      </Titlebar>
+    )
   }
 }

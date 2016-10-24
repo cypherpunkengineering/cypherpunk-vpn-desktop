@@ -56,17 +56,19 @@ render((
         <Route path="email" component={Login.EmailStep}/>
         <Route path="password" component={Login.PasswordStep}/>
         <Route path="register" component={Login.RegisterStep}/>
+        <Route path="confirm" component={Login.ConfirmationStep}/>
         <IndexRedirect to="email"/>
       </Route>
-      <Route path="connect" component={ConnectScreen}/>
-      <Route path="configuration" component={ConfigurationScreen}>
-        <Route path="email" component={EmailScreen}/>
-        <Route path="password" component={PasswordScreen}/>
-        <Route path="encryption" component={EncryptionScreen}/>
-        <Route path="firewall" component={FirewallScreen}/>
-        <Route path="help" component={HelpScreen}/>
+      <Route path="connect" component={ConnectScreen}>
+        <Route path="/configuration" component={ConfigurationScreen}>
+          <Route path="email" component={EmailScreen}/>
+          <Route path="password" component={PasswordScreen}/>
+          <Route path="encryption" component={EncryptionScreen}/>
+          <Route path="firewall" component={FirewallScreen}/>
+          <Route path="help" component={HelpScreen}/>
+        </Route>
+        <Route path="/account" component={AccountScreen}/>
       </Route>
-      <Route path="account" component={AccountScreen}/>
       <IndexRedirect to="login"/>
     </Route>
   </Router>

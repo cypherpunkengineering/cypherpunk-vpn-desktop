@@ -26,6 +26,7 @@ const transitionDurations = {
   'nudgeRight': 700,
   'swipeLeft': 350,
   'swipeRight': 350,
+  'reveal': 350,
 }
 
 
@@ -51,7 +52,7 @@ export default class RouteTransition extends React.Component {
       return def;
   }
   determineTransition(from, to) {
-    if (from !== to) {
+    if (from !== to && (from || to)) {
       var transition = this.getProp('transition');
       if (typeof transition === 'string') {
         // Transition specified as simple constant string
@@ -72,8 +73,11 @@ export default class RouteTransition extends React.Component {
             }
             key = key.replace(/\/?\*$/, '');
           } while (key);
-          if (key in map) {
-            return map[key];
+          if ('' in map) {
+            return map[''];
+          }
+          if (null in map) {
+            return map[null];
           }
         }
         var map = lookupMap(from || '', transition);
@@ -88,12 +92,14 @@ export default class RouteTransition extends React.Component {
     return '';
   }
   getChildKey(child) {
-    return child.props.route && child.props.route.path || child.props.id || child.props.key;
+    return child.props.route && child.props.route.path || null /*|| child.props.id || child.props.ref || child.props.name*/;
   }
   getCurrentKey(props) {
     var children = React.Children.toArray(props.children);
-    if (children.length > 0) {
-      return this.getChildKey(children[0]);
+    for (var i = 0; i < children.length; i++) {
+      if (typeof (children[i]) === 'object') {
+        return this.getChildKey(children[0]);
+      }
     }
   }
   componentWillReceiveProps(nextProps) {
@@ -105,7 +111,7 @@ export default class RouteTransition extends React.Component {
     var to = this.getCurrentKey(this.props);
     var transition = this.determineTransition(from, to);
     var transitionTime = transitionDurations[transition] || 350;
-    if (from !== to && transition) {
+    if ((from || to) && from !== to && transition) {
       console.log(`Transitioning from ${from} to ${to} using ${JSON.stringify(transition)} (${transitionTime}ms)`);
     }
     return(
@@ -114,10 +120,12 @@ export default class RouteTransition extends React.Component {
         transitionName={transition}
         transitionEnter={!!transition}
         transitionLeave={!!transition}
+        transitionAppear={!!transition}
         transitionEnterTimeout={transitionTime}
         transitionLeaveTimeout={transitionTime}
+        transitionAppearTimeout={transitionTime}
         >
-        {React.Children.map(children, c => React.cloneElement(c, { key: this.getChildKey(c) }))}
+        {React.Children.map(children, c => c ? React.cloneElement(c, { key: this.getChildKey(c) }) : null)}
       </ReactCSSTransitionGroup>
     );
   }

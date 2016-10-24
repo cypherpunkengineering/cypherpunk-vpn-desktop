@@ -17,7 +17,8 @@ Settings::Settings()
 
 JsonValue& Settings::operator[](const std::string& name)
 {
-	return JsonObject::at(name);
+	//return JsonObject::at(name);
+	return JsonObject::operator[](name);
 }
 
 void Settings::ReadFromDisk()

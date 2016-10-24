@@ -1,11 +1,12 @@
 import React from 'react';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import ReactDOM from 'react-dom'; 
 import { MainTitlebar } from './Titlebar';
 import MainBackground from './MainBackground';
 import OneZeros from './OneZeros';
 import Dragbar from './Dragbar';
 import daemon from '../daemon';
 import { REGION_GROUP_NAMES, REGION_GROUP_ORDER } from '../util';
+import RouteTransition from './Transition';
 
 function humanReadableSize(count) {
   if (count >= 1024 * 1024 * 1024 * 1024) {
@@ -77,9 +78,6 @@ export default class ConnectScreen extends React.Component {
     daemon.removeListener('state', this.handleDaemonStateChange);
     daemon.removeListener('settings', this.handleDaemonSettingsChange);
   }
-  shouldComponentUpdate(nextProps, nextState) {
-    return true;
-  }
   componentWillUpdate(nextProps, nextState) {
     if (this.state.connectionState !== nextState.connectionState) {
       $(document.body).removeClass(this.state.connectionState).addClass(nextState.connectionState);
@@ -134,35 +132,38 @@ export default class ConnectScreen extends React.Component {
     );
 
     return(
-      <div id="connect-screen" class="screen">
-        <MainTitlebar/>
-        <OneZeros/>
-        <MainBackground/>
-        <div id="connect-container" onClick={this.handleConnectClick}>
+      <RouteTransition transition="reveal">
+        {this.props.children || null}
+        <div id="connect-screen" key="self" class="screen">
+          <MainTitlebar/>
+          <OneZeros/>
+          <MainBackground/>
+          <div id="connect-container" onClick={this.handleConnectClick}>
 
-          <svg width="120" height="400" ref="connectButton">
-            <circle cx="60" cy="200" r="50" style={connectCircleStyle} />
-            <line x1="60" y1="98" x2="60" y2="181" style={connectLineStyle} />
-            <line x1="60" y1="111" x2="80" y2="111"  style={connectSmallLineStyle} />
-            <line x1="60" y1="137" x2="80" y2="137"  style={connectSmallLineStyle} />
-          </svg>
+            <svg width="120" height="400" ref="connectButton">
+              <circle cx="60" cy="200" r="50" style={connectCircleStyle} />
+              <line x1="60" y1="98" x2="60" y2="181" style={connectLineStyle} />
+              <line x1="60" y1="111" x2="80" y2="111"  style={connectSmallLineStyle} />
+              <line x1="60" y1="137" x2="80" y2="137"  style={connectSmallLineStyle} />
+            </svg>
 
-          {/*<i id="connect" class={"ui fitted massive power link icon" + (this.state.connectionState === 'connected' ? " green" : this.state.connectionState == 'disconnected' ? " red" : " orange disabled")} ref="connectButton" onClick={this.handleConnectClick}></i>*/}
-        </div>
-        <div id="connect-status" ref="connectStatus">{buttonLabel}</div>
-        <div id="region-select" class={"ui selection dropdown" + (this.state.connectionState === 'disconnected' ? "" : " disabled")} ref="regionDropdown">
-          <input type="hidden" name="region" value={this.state.selectedRegion}/>
-          <i class="dropdown icon"></i>
-          <div class="default text">Select Region</div>
-          <div class="menu">
-            { regions }
+            {/*<i id="connect" class={"ui fitted massive power link icon" + (this.state.connectionState === 'connected' ? " green" : this.state.connectionState == 'disconnected' ? " red" : " orange disabled")} ref="connectButton" onClick={this.handleConnectClick}></i>*/}
+          </div>
+          <div id="connect-status" ref="connectStatus">{buttonLabel}</div>
+          <div id="region-select" class={"ui selection dropdown" + (this.state.connectionState === 'disconnected' ? "" : " disabled")} ref="regionDropdown">
+            <input type="hidden" name="region" value={this.state.selectedRegion}/>
+            <i class="dropdown icon"></i>
+            <div class="default text">Select Region</div>
+            <div class="menu">
+              { regions }
+            </div>
+          </div>
+          <div id="connection-stats" class="ui two column center aligned grid">
+            <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.receivedBytes)}</div><div class="label">Received</div></div></div>
+            <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.sentBytes)}</div><div class="label">Sent</div></div></div>
           </div>
         </div>
-        <div id="connection-stats" class="ui two column center aligned grid">
-          <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.receivedBytes)}</div><div class="label">Received</div></div></div>
-          <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.sentBytes)}</div><div class="label">Sent</div></div></div>
-        </div>
-      </div>
+      </RouteTransition>
     );
   }
   handleConnectClick() {
@@ -189,7 +190,7 @@ export default class ConnectScreen extends React.Component {
   getSelectedRegion() {
     return $(this.refs.regionDropdown).dropdown('get value');
   }
-handleRegionSelect(server) {
+  handleRegionSelect(server) {
     daemon.post.applySettings({ server: server });
   }
 }

@@ -6,47 +6,30 @@ import Titlebar, { SecondaryTitlebar } from './Titlebar';
 import GeneralSettings from './config/GeneralSettings.js'
 import AdvancedSettings from './config/AdvancedSettings.js'
 import RouteTransition from './Transition';
+import { PanelTitlebar } from './Titlebar';
+import Modal from './modal';
 
 const transitionMap = {
   '': { '*': 'swipeLeft' },
-  '*': { '': 'swipeRight' },
+  '*': { 'configuration/*': 'swipeRight' },
 };
 
 export default class ConfigurationScreen extends React.Component  {
-  constructor(props) {
-    super(props);
-    this.cloneChildren = this.cloneChildren.bind(this);
-  }
-
-  componentDidMount() {
-    $(this.refs.tab).find('.item').tab();
-  }
-  cloneChildren() {
-    var path = this.props.location.pathname;
-    // console.log(this.props.children);
-    // console.log(path);
-    // TODO: Should preserve previous menu while displaying subscreen
-    if (this.props.children) {
-      return React.cloneElement(this.props.children, { key: path })
-    }
-    else {
-      return (
-        <div id="config-screen" className="container__comp">
-          <SecondaryTitlebar title="Configuration" back="/connect"/>
-          <div className="container__comp--config">
-            <GeneralSettings/>
-            <AdvancedSettings/>
-          </div>
-        </div>
-      )
-    }
-  }
   render() {
     var { props } = this;
     return(
-      <RouteTransition transition={transitionMap}>
-        {this.cloneChildren()}
-      </RouteTransition>
+      <Modal className="settings right panel" onClose={() => { History.push('/connect'); }}>
+        {/*<RouteTransition transition={transitionMap}>
+          {this.props.children || null}*/}
+          <div className="panel" key="self" id="settings-main-panel">
+            <PanelTitlebar title="Configuration"/>
+            <div className="scrollable content">
+              <GeneralSettings/>
+              <AdvancedSettings/>
+            </div>
+          </div>
+        {/*</RouteTransition>*/}
+      </Modal>
     );
   }
 }
