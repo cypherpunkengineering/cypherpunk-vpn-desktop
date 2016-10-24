@@ -140,11 +140,7 @@ export class PasswordStep extends React.Component {
 export class RegisterStep extends React.Component {
   onSubmit() {
     var password = this.refs.password.value;
-    if (this.refs.password2.value !== password) {
-      alert("Password mismatch"); // FIXME
-      return;
-    }
-    $([this.refs.password, this.refs.password2]).prop('disabled', true);
+    $(this.refs.password).prop('disabled', true);
     $(this.refs.register).hide();
     $(this.refs.loader).addClass('active');
     var account;
@@ -160,7 +156,7 @@ export class RegisterStep extends React.Component {
     }).then((data, status, xhr) => {
       return postLoginActions(this.props.location.query.email, password, data);
     }).catch(err => {
-      $([this.refs.password, this.refs.password2]).prop('disabled', false);
+      $(this.refs.password).prop('disabled', false);
       $(this.refs.register).show();
       $(this.refs.loader).removeClass('active');
     });
@@ -169,11 +165,8 @@ export class RegisterStep extends React.Component {
     return(
       <form className="cp login-register ui form">
         <div className="desc">Registering new account for {this.props.location.query.email}...</div>
-        <div className="ui icon input group">
-          <input type="password" placeholder="Password" required autoFocus="true" ref="password" onKeyPress={e => { if (e.key == 'Enter') { this.refs.password2.focus(); e.preventDefault(); } }} />
-        </div>
         <div className="ui icon input">
-          <input type="password" placeholder="Password (again)" required ref="password2" onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
+          <input type="password" placeholder="Password" required autoFocus="true" ref="password" onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
         </div>
         <a class="cp yellow button" ref="register" onClick={() => this.onSubmit()}>Register</a>
         <div className="ui inline text loader" ref="loader"></div>
