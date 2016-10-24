@@ -962,6 +962,28 @@ small {
     }
   }
 }
+.nudgeRight {
+  @transitionTime: 700ms;
+  &-enter {
+    transform: translateX(-100vw);
+    opacity: 0;
+    &-active {
+      transform: translateX(0);
+      opacity: 1;
+      transition: transform @transitionTime @stepSlide, opacity @transitionTime @easeInQuart;    
+    }
+  }
+  &-leave {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: none !important;
+    &-active {
+      transform: translateX(100vw);
+      opacity: 0;
+      transition: transform @transitionTime @stepSlide, opacity @transitionTime @easeOutQuart;
+    }
+  }
+}
 
 .swipeLeft {
   @transitionTime: @screenTransitionTime;
