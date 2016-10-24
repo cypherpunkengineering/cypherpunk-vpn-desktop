@@ -26,7 +26,7 @@ export default class AccountScreen extends React.Component  {
         <div className="scrollable content">
           <div className="user pane">
             <div className="user"><img src={AccountIcon}/><span className="email">{daemon.account.email}</span></div>
-            <div className="plan">{this.getPlanName()}</div>
+            <div className={this.isPremium() ? "premium plan" : "plan"}>{this.getPlanName()}</div>
             <div className="period">Renews on {this.getRenewalDate()}</div>
           </div>
           <div className="pane" data-title="Account Settings">
