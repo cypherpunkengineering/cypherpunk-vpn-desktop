@@ -1,5 +1,4 @@
 import React from 'react';
-import { hashHistory } from 'react-router';
 import CypherPunkLogo from '../assets/img/logomark.svg';
 import Dragbar from './Dragbar.js';
 import { Title } from './Titlebar.js';

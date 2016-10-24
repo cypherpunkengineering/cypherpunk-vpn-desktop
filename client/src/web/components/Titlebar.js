@@ -1,5 +1,5 @@
 import React from 'react';
-import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, createMemoryHistory, hashHistory as History } from 'react-router';
+import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, createMemoryHistory } from 'react-router';
 
 import AccountIcon from '../assets/img/icon-account-big.svg';
 import SettingsIcon from '../assets/img/icon_settings.svg';
