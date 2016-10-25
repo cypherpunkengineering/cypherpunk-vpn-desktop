@@ -336,14 +336,17 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
         &:first-child {
           border-top: 1px solid rgba(255,255,255,0.16) !important;
         }
-        &:hover {
-          color: #fff;
-          background: rgba(0,0,0,0.1);
-        }
         &.selected {
           font-weight: 500;
           color: @cpYellow;
           background: rgba(0,0,0,0.10);
+        }
+        &:hover {
+          color: #fff;
+          // background: rgba(0,0,0,0.1);
+          background-color: #0f3c75;
+          box-shadow: 0 2px 6px rgba(0,0,0,.2);
+          transition: all ease 0.2s;
         }
         &.disabled {
           opacity: 1; // don't dim entire item, as that would affect borders
@@ -1070,6 +1073,7 @@ small {
         position: relative;
         color: rgba(255,255,255,0.75);
         cursor: pointer;
+        border-bottom: 1px solid rgba(0,0,0,.2);
 
         > * {
           flex-grow: 1;
@@ -1143,13 +1147,16 @@ small {
         }
 
         + .setting {
-          background-image: linear-gradient(to bottom, rgba(255,255,255,0.3) 1px, transparent 1px);
+          // background-image: linear-gradient(to bottom, rgba(255,255,255,0.3) 1px, transparent 1px);
         }
         &:hover {
-          background: linear-gradient(to left, rgba(255,255,255,0.1), transparent);
+          // background: linear-gradient(to left, rgba(255,255,255,0.1), transparent);
+          background-color: #072e5f;
+          box-shadow: 0 2px 6px rgba(0,0,0,.2);
+          transition: all ease 0.2s;
         }
         + .setting:hover {
-          background-image: linear-gradient(to bottom, rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(to left, rgba(255,255,255,0.1), transparent);
+          // background-image: linear-gradient(to bottom, rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(to left, rgba(255,255,255,0.1), transparent);
         }
       }
     }
