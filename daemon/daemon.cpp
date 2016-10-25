@@ -741,6 +741,9 @@ bool CypherDaemon::RPC_connect()
 		return false;
 	}
 
+	// Access the region early, should trigger an exception if it doesn't exist (before we've done any state changes)
+	g_settings.servers().at(g_settings.server());
+
 	_bytesReceived = 0;
 	_bytesSent = 0;
 	_state = CONNECTING;
