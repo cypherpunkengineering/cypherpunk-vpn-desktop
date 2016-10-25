@@ -32,6 +32,9 @@
 .draggable {
   -webkit-app-region: drag;
 }
+.nondraggable {
+  -webkit-app-region: no-drag;
+}
 
 // Background Gradient
 .bg-gradient--main {
@@ -120,6 +123,10 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   &.dark {
     background-color: @cpBg;
   }
+
+  a {
+    .nondraggable;
+  }
 }
 
 .cp.titlebar {
@@ -144,6 +151,7 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   }
 
   a {
+    .nondraggable;
     flex-grow: 0;
     display: flex;
     align-items: center;
