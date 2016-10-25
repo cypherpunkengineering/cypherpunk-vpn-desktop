@@ -30,7 +30,7 @@ export default class AccountScreen extends React.Component  {
             <div className="period">Renews on {this.getRenewalDate()}</div>
           </div>
           <div className="pane" data-title="Account Settings">
-            <div className="setting"><a tabIndex="0" onClick={() => { shell.openExternal('https://cypherpunk.engineering/account/upgrade?user=' + encodeURI(daemon.account.email) + '&secret=' + encodeURI(daemon.account.secret)); }}>{this.isPremium() ? "Change Plan" : "Upgrade"}</a></div>
+            <div className="setting"><a tabIndex="0" onClick={() => { shell.openExternal('https://cypherpunk.engineering/user/upgrade?user=' + encodeURI(daemon.account.email) + '&secret=' + encodeURI(daemon.account.secret)); }}>{this.isPremium() ? "Change Plan" : "Upgrade"}</a></div>
             <div className="setting"><a tabIndex="0"><div>Email<small>{daemon.account.email}</small></div></a></div>
             <div className="setting"><a tabIndex="0">Password</a></div>
           </div>
