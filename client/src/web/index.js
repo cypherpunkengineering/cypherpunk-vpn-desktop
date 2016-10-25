@@ -26,6 +26,14 @@ const [ root, loader ] = (function() {
   l.appendChild(i);
   document.body.appendChild(r)
   document.body.appendChild(l);
+  if (process.platform !== 'darwin') {
+    let c = document.createElement('i');
+    c.id = 'window-close';
+    c.className = 'link icon';
+    c.addEventListener('click', function() { window.close(); });
+    document.body.appendChild(c);
+    window.closeButton = c;
+  }
   return [r, l];
 })();
 
