@@ -1012,7 +1012,7 @@ small {
 
 
 
-@panelWidth: 80vw;
+@panelWidth: 85vw;
 @leftPanelWidth: @panelWidth;
 @rightPanelWidth: @panelWidth;
 
@@ -1072,7 +1072,7 @@ small {
         cursor: pointer;
 
         > * {
-          //flex-grow: 1;
+          flex-grow: 1;
         }
         label {
           cursor: pointer;
@@ -1172,10 +1172,12 @@ small {
   // Panel which goes on the left side of the screen
   &.left {
     left: 0;
+    box-shadow: 4px 0 16px 0 rgba(0,0,0,.5);
     width: @leftPanelWidth;
 
     > div {
-      background: linear-gradient(to left, rgba(0,0,0,0.25) 0, transparent 30px), linear-gradient(329deg, transparent, rgba(255,255,255,0.2)), @cpDarkBlue;
+      // background: linear-gradient(to left, rgba(0,0,0,0.25) 0, transparent 30px), linear-gradient(329deg, transparent, rgba(255,255,255,0.2)), @cpDarkBlue;
+      background-color: @cpDarkBlue;
     }
 
     ~ .screen {
@@ -1211,9 +1213,11 @@ small {
   &.right {
     left: calc(~"100vw - " @rightPanelWidth);
     width: @rightPanelWidth;
+    box-shadow: -4px 0 16px 0 rgba(0,0,0,.5);
 
     > div {
-      background: linear-gradient(to right, rgba(0,0,0,0.25) 0, transparent 30px), linear-gradient(329deg, transparent, rgba(255,255,255,0.2)), @cpDarkBlue;
+      // background: linear-gradient(to right, rgba(0,0,0,0.25) 0, transparent 30px), linear-gradient(329deg, transparent, rgba(255,255,255,0.2)), @cpDarkBlue;
+      background-color: @cpDarkBlue;
     }
 
     ~ .screen {
