@@ -129,6 +129,9 @@ function oncall(method, params, id) {
 }
 
 function onpost(method, params) {
+  if (mainWindow) {
+    mainWindow.webContents.send('daemon-post', method, params);
+  }
   switch (method) {
     case 'account':
     case 'config':
@@ -139,9 +142,6 @@ function onpost(method, params) {
       break;
   }
   daemon.emit(method, ...params);
-  if (mainWindow) {
-    mainWindow.webContents.send('daemon-post', method, params);
-  }
 }
 
 // Finally put everything together and export the daemon instance
