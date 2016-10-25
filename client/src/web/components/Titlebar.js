@@ -20,6 +20,21 @@ export class Title extends React.Component {
 Title.defaultProps = { component: 'div', left: "Cypherpunk", right: "Privacy", className: "" };
 
 
+// Copy of window close button (for use in modals)
+
+export class CloseButton extends React.Component {
+  componentDidMount() {
+    $('body > #window-close').css({ display: 'none' });
+  }
+  componentWillUnmount() {
+    $('body > #window-close').css({ display: '' });
+  }
+  render() {
+    return (process.platform === 'darwin') ? null : <i id="window-close" className="link icon" onClick={() => { window.close(); }}/>; 
+  }
+}
+
+
 // The Dragbar is a minimal component that sits at the top of the frameless
 // window and provides space for the OS controls and acts as a draggable
 // region to be able to move the window. On OS X, the minimize/close buttons
