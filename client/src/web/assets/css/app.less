@@ -296,6 +296,7 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     border-radius: 0 !important;
     background: #3370bb;
     transition: background-color 0.3s;
+    box-shadow: 0 -4px 20px 0 rgba(0,0,0,.1);
     &.active {
       background-color: #4c81c3;
     }
@@ -312,23 +313,32 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     }
     > .menu {
       border-radius: 0 !important;
-      background: linear-gradient(0deg, #669fe4, #5282bd);
+      background: linear-gradient(0deg, #034698, #4c8ee1);
       max-height: calc(~"100vh - " (@fullHeaderHeight + 44px)); // FIXME: Hardcoded height of region selector
       > .header {
         cursor: default;
-        color: rgba(255,255,255,0.6);
+        color: rgba(255,255,255,0.85);
+        border-top: 1px solid rgba(255,255,255,.1);
+        padding-top: 1rem;
+        text-transform: uppercase;
+
+        &:first-child {
+          margin-top: 0;
+        }
       }
       > .item {
+        font-size: 16px;
+        line-height: 1.5;
         padding: 0.5em 14px !important;
         border-top: none !important;
-        border-bottom: 1px solid rgba(255,255,255,0.2);
-        color: rgba(255,255,255,0.75);
+        border-bottom: none;
+        color: rgba(255,255,255,1);
         &:first-child {
           border-top: 1px solid rgba(255,255,255,0.16) !important;
         }
         &:hover {
           color: #fff;
-          background: rgba(0,0,0,0.05);
+          background: rgba(0,0,0,0.1);
         }
         &.selected {
           font-weight: 500;
@@ -337,7 +347,7 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
         }
         &.disabled {
           opacity: 1; // don't dim entire item, as that would affect borders
-          color: rgba(255,255,255,0.25);
+          color: rgba(255,255,255,0.5);
           .flag, .cp-fav {
             opacity: 0.25 !important;
           }
@@ -947,7 +957,7 @@ small {
     &-active {
       transform: translateX(0);
       opacity: 1;
-      transition: transform @transitionTime @stepSlide, opacity @transitionTime @easeInQuart;    
+      transition: transform @transitionTime @stepSlide, opacity @transitionTime @easeInQuart;
     }
   }
   &-leave {
@@ -968,7 +978,7 @@ small {
     transform: translateX(100vw);
     &-active {
       transform: translateX(0);
-      transition: transform @transitionTime ease-out;    
+      transition: transform @transitionTime ease-out;
     }
   }
   &-leave {
@@ -987,7 +997,7 @@ small {
     transform: translateX(-100vw);
     &-active {
       transform: translateX(0);
-      transition: transform @transitionTime ease-out;    
+      transition: transform @transitionTime ease-out;
     }
   }
   &-leave {
