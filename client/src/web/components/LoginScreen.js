@@ -180,7 +180,9 @@ export class ConfirmationStep extends React.Component {
   onTimer() {
     checkSubscriptionStatus().then(confirmed => {
       if (confirmed) {
-        History.push('/connect');
+        readServerList().then(() => {
+          History.push('/connect');
+        });
       }
     })
   }
