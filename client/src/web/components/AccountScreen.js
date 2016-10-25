@@ -20,6 +20,7 @@ export default class AccountScreen extends React.Component  {
     return `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`;
   }
   render() {
+    var renewal = this.isPremium() && daemon.settings.subscription.expiration != 0 ? <div className="period">Renews on {this.getRenewalDate()}</div> : null;
     return(
       <Modal className="account left panel" onClose={() => { History.push('/connect'); }}>
         <PanelTitlebar title="Account" back="/connect"/>
@@ -27,7 +28,7 @@ export default class AccountScreen extends React.Component  {
           <div className="user pane">
             <div className="user"><img src={AccountIcon}/><span className="email">{daemon.account.email}</span></div>
             <div className={this.isPremium() ? "premium plan" : "plan"}>{this.getPlanName()}</div>
-            <div className="period">Renews on {this.getRenewalDate()}</div>
+            {renewal}
           </div>
           <div className="pane" data-title="Account Settings">
             <div className="setting"><a tabIndex="0" onClick={() => { shell.openExternal('https://cypherpunk.engineering/user/upgrade?user=' + encodeURI(daemon.account.email) + '&secret=' + encodeURI(daemon.account.secret)); }}>{this.isPremium() ? "Change Plan" : "Upgrade"}</a></div>
