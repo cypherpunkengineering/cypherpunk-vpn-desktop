@@ -172,19 +172,22 @@ export default class ConnectScreen extends React.Component {
   handleConnectClick() {
     switch (this.state.connectionState) {
       case 'disconnected':
+        // Fake a connection state for now, as the daemon is too busy to report it back
+        daemon.state.state = 'CONNECTING';
         this.setState({ connectionState: 'connecting' });
-        daemon.post.applySettings({
-          protocol: "udp",
-          server: this.getSelectedRegion(),
+        daemon.call.connect().catch(() => {
+          alert("Connect failed; did you select a region?");
+          daemon.post.get('state');
         });
-        daemon.post.connect();
-        daemon.post.get('state');
         break;
       case 'connecting':
       case 'connected':
+        // Fake a connection state for now, as the daemon is too busy to report it back
+        daemon.state.state = 'DISCONNECTING';
         this.setState({ connectionState: 'disconnecting' });
-        daemon.post.disconnect();
-        daemon.post.get('state');
+        daemon.call.disconnect().catch(() => {
+          daemon.post.get('state');
+        });
         break;
       case 'disconnecting':
         break;
