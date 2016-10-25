@@ -42,11 +42,9 @@ export default class RegionSelector extends DaemonAware(React.Component) {
     }
     var itemHeight = item.outerHeight();
     var itemTop = item[0].offsetTop;
-    console.log(item[0].offsetParent);
     var list = this.$.children('.list');
     var listHeight = list.height();
     var listScroll = list.scrollTop();
-    console.log(itemTop, itemHeight, listScroll, listHeight);
     if (itemTop + itemHeight > listScroll + listHeight) {
       list.scrollTop(itemTop + itemHeight - listHeight);
     } else if (itemTop + itemHeight <= listHeight) {
@@ -56,7 +54,6 @@ export default class RegionSelector extends DaemonAware(React.Component) {
     }
   }
   scrollIfNeeded() {
-    console.log("scrollIfNeeded", this.state.open, this.state.selected);
     if (!this.state.open) {
       this.$list.scrollTop(0);
     } else if (this.state.selected) {
@@ -70,11 +67,9 @@ export default class RegionSelector extends DaemonAware(React.Component) {
     this.close();
   }
   onServerFavoriteClick(server) {
-    console.log("favorite", server);
     this.setState({ favorites: Object.assign({}, this.state.favorites, { [server]: !this.state.favorites[server] }) });
   }
   onKeyDown(event) {
-    console.log(event.key);
     switch (event.key) {
       case "ArrowUp":
       case "ArrowDown":
@@ -94,7 +89,6 @@ export default class RegionSelector extends DaemonAware(React.Component) {
       classes.push('favorite');
     }
     var onclick = event => {
-      console.dir(event);
       var value = event.currentTarget.getAttribute('data-value');
       if (event.target.className.indexOf('cp-fav') != -1) {
         this.onServerFavoriteClick(value);
@@ -142,15 +136,13 @@ export default class RegionSelector extends DaemonAware(React.Component) {
   }
 
   render() {
-    console.log("rerendering");
-    console.dir(this.state.favorites);
     var classes = [ 'region-selector2' ];
     if (this.state.open) {
       classes.push('open');
     }
     // Leave keyboard navigation for later
     //tabIndex="0"
-    //onFocus={event => { console.dir(event.target, event.relatedTarget); this.open(); }}
+    //onFocus={event => { this.open(); }}
     //onBlur={event => { if (document.activeElement !== this.dom) this.close(); }}
     return(
       <div className={classes.join(' ')}
