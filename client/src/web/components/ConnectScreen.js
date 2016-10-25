@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { MainTitlebar } from './Titlebar';
 import MainBackground from './MainBackground';
 import OneZeros from './OneZeros';
-import Dragbar from './Dragbar';
+import { Dragbar } from './Titlebar';
 import daemon from '../daemon';
 import { REGION_GROUP_NAMES, REGION_GROUP_ORDER } from '../util';
 import RouteTransition from './Transition';

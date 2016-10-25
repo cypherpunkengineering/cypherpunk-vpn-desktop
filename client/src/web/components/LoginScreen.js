@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router';
 import CypherPunkLogo from '../assets/img/logomark.svg';
-import Dragbar from './Dragbar.js';
+import { Dragbar } from './Titlebar.js';
 import { Title } from './Titlebar.js';
 import RouteTransition from './Transition';
 import daemon from '../daemon.js';
