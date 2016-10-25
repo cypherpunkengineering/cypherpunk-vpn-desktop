@@ -19,7 +19,7 @@ export default class RegionSelector extends DaemonAware(React.Component) {
     if (config.regions) this.setState({ regions: config.regions });
   }
   daemonSettingsChanged(settings) {
-    if (settings.server) this.setState({ selected: settings.server });
+    if (settings.hasOwnProperty('server')) this.setState({ selected: settings.server });
   }
 
   open() {
@@ -36,6 +36,9 @@ export default class RegionSelector extends DaemonAware(React.Component) {
       item = this.$item(item);
     } else {
       item = $(item);
+    }
+    if (!item || !item[0]) {
+      return;
     }
     var itemHeight = item.outerHeight();
     var itemTop = item[0].offsetTop;
