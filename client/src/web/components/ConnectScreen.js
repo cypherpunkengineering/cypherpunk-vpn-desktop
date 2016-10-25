@@ -7,6 +7,7 @@ import { Dragbar } from './Titlebar';
 import daemon from '../daemon';
 import { REGION_GROUP_NAMES, REGION_GROUP_ORDER } from '../util';
 import RouteTransition from './Transition';
+import RegionSelector from './RegionSelector';
 
 function humanReadableSize(count) {
   if (count >= 1024 * 1024 * 1024 * 1024) {
@@ -35,6 +36,7 @@ export default class ConnectScreen extends React.Component {
 
   state = {
     regions: daemon.config.regions,
+    servers: daemon.config.servers,
     selectedRegion: daemon.settings.server,
     receivedBytes: 0,
     sentBytes: 0,
@@ -150,18 +152,19 @@ export default class ConnectScreen extends React.Component {
             {/*<i id="connect" class={"ui fitted massive power link icon" + (this.state.connectionState === 'connected' ? " green" : this.state.connectionState == 'disconnected' ? " red" : " orange disabled")} ref="connectButton" onClick={this.handleConnectClick}></i>*/}
           </div>
           <div id="connect-status" ref="connectStatus">{buttonLabel}</div>
-          <div id="region-select" class={"ui selection dropdown" + (this.state.connectionState === 'disconnected' ? "" : " disabled")} ref="regionDropdown">
+          {/*<div id="region-select" class={"ui selection dropdown" + (this.state.connectionState === 'disconnected' ? "" : " disabled")} ref="regionDropdown">
             <input type="hidden" name="region" value={this.state.selectedRegion}/>
             <i class="dropdown icon"></i>
             <div class="default text">Select Region</div>
             <div class="menu">
               { regions }
             </div>
-          </div>
+          </div>*/}
           <div id="connection-stats" class="ui two column center aligned grid">
             <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.receivedBytes)}</div><div class="label">Received</div></div></div>
             <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.sentBytes)}</div><div class="label">Sent</div></div></div>
           </div>
+          <RegionSelector/>
         </div>
       </RouteTransition>
     );

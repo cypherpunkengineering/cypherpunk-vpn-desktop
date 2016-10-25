@@ -1,0 +1,130 @@
+
+.region-selector2 {
+  @barHeight: 40px;
+  @itemHeight: 32px;
+  @visibleItems: 4;
+
+  position: absolute;
+  left: 0;
+  top: calc(~"100vh - " (@barHeight + (@itemHeight * @visibleItems)));
+  width: 100%;
+  bottom: 0;
+  z-index: 2;
+  transition: top 350ms cubic-bezier(0.5,0,0,1);
+  background: linear-gradient(to top, #034698, #4c8ee1) fixed;
+  > .bar {
+    position: relative;
+    height: @barHeight;
+    background: rgba(255,255,255,0.1);
+    border-top: 1px solid rgba(255,255,255,0.3);
+    border-bottom: 1px solid rgba(255,255,255,0.3);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 120%;
+    .cp-fav {
+      display: none;
+    }
+    &:after {
+      content: '\f106';
+      font-family: Icons;
+      font-size: 20px;
+      flex: none;
+      position: absolute;
+      right: 20px;
+    }
+  }
+  > .list {
+    position: absolute;
+    width: 100%;
+    top: @barHeight;
+    bottom: 0;
+    display: flex;
+    flex-flow: column;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.13) 0, transparent 50px);
+    overflow: hidden;
+    > * {
+      flex: 0 0 auto;
+    }
+    > .header {
+      height: @itemHeight;
+      padding: 0 15px;
+      display: flex;
+      align-items: flex-end;
+      font-size: 12px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.6);
+    }
+    > .region {
+      height: @itemHeight;
+      display: flex;
+      align-items: center;
+      padding: 0 15px;
+      cursor: pointer;
+      > .flag {
+        color: #fff;
+      }
+      > span {
+        flex-grow: 1;
+      }
+      > .cp-fav {
+        cursor: pointer;
+        font-size: 120%;
+        width: auto;
+        height: auto;
+        color: rgba(255,255,255,0.5);
+        &:before {
+          content: '\f006';
+        }
+        &:hover {
+          color: #fff !important;
+        }
+      }
+      &.favorite > .cp-fav {
+        color: @cpYellow;
+        &:before {
+          content: '\f005';
+        }
+      }
+      &:hover {
+        background: rgba(255,255,255,0.1);
+      }
+      &.selected {
+        font-weight: 700;
+        color: @cpYellow;
+      }
+      &.disabled {
+        > * { // Reduce opacity of children to prevent border from fading
+          opacity: 0.5;
+        }
+        cursor: default;
+        /*> .cp-fav { // uncomment if favoriting should be disabled for disabled items
+          cursor: default;
+          &:hover {
+            color: inherit !important;
+          }
+        }*/
+        &:hover {
+          background: none;
+        }
+      }
+      + .region {
+        border-top: 1px solid rgba(255,255,255,0.1);
+      }
+    }
+  }
+
+  &.open {
+    top: @fullHeaderHeight;
+
+    > .bar {
+      &:after {
+        content: '\f107';
+      }
+    }
+    > .list {
+      overflow-y: overlay;
+    }
+  }
+}
