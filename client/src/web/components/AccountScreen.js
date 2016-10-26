@@ -15,8 +15,9 @@ export default class AccountScreen extends React.Component  {
     return this.isPremium() ? "Premium" : "Free";
   }
   getRenewalDate() {
-    var d = new Date(0);
-    d.setUTCSeconds(daemon.settings.subscription.expiration);
+    //var d = new Date(0);
+    //d.setUTCSeconds(daemon.settings.subscription.expiration);
+    var d = new Date(daemon.settings.subscription.expiration);
     return `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`;
   }
   render() {
