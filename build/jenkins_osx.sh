@@ -1,6 +1,8 @@
-#!/bin/bash -e
+#!/bin/bash
 cd "$( dirname "${BASH_SOURCE[0]}" )"
-export PATH=$PATH:$HOME/.nvm/versions/node/v6.4.0/bin/
+export NVM_DIR="$HOME/.nvm"
+source "$(brew --prefix nvm)/nvm.sh"
+nvm use v6.8.0
 ./build_osx.sh
 PKG="../out/CypherpunkVPN.pkg"
 ARTIFACT="../`printf 'cypherpunk-vpn-macos-%05d' ${BUILD_NUMBER}`.pkg"
