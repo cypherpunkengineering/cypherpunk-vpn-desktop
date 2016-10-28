@@ -1,4 +1,8 @@
 #!/bin/bash -e
+
+# set umask to prevent weird permission bugs
+umask 022
+
 cd "$( dirname "${BASH_SOURCE[0]}" )"
 cd ../
 
