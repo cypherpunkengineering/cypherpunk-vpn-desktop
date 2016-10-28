@@ -16,3 +16,10 @@ all:
 	$(INCS) \
 	$(SRCS) \
 	-o cypherpunkvpn-service
+
+stop:
+	sudo launchctl unload /Library/LaunchDaemons/com.cypherpunk.vpn.service.plist || true
+
+run:
+	sudo ./cypherpunkvpn-service
+
