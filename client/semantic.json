@@ -1,6 +1,6 @@
 {
   "base": "semantic/",
-  "version": "2.2.4",
+  "version": "2.2.6",
   "paths": {
     "source": {
       "config": "src/theme.config",
