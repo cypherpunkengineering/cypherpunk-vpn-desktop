@@ -5,6 +5,7 @@ import { Dragbar } from './Titlebar.js';
 import { Title } from './Titlebar.js';
 import RouteTransition from './Transition';
 import daemon from '../daemon.js';
+import server from '../server.js';
 
 
 
@@ -69,23 +70,12 @@ export class EmailStep extends React.Component {
   onSubmit() {
     var email = this.refs.email.value || (this.refs.email.value = "test@test.test"); // FIXME: debug value
     $(this.refs.email).prop('disabled', true).parent().addClass('loading');
-    jQuery.ajax('https://cypherpunk.engineering/account/identify/email', {
-      cache: false,
-      contentType: 'application/json',
-      data: JSON.stringify({ email: email }),
-      //dataType: 'json',
-      method: 'POST',
-      xhrFields: { withCredentials: true },
-    }).then((data, status, xhr) => {
-      History.push({ pathname: '/login/password', query: { email: email } });
-    }).catch((xhr, status, err) => {
-      if (xhr.status == 401) {
-        History.push({ pathname: '/login/register', query: { email: email } });
-      } else {
-        alert("Login failed with status code " + xhr.status);
-        $(this.refs.email).prop('disabled', false).focus().select().parent().removeClass('loading');
-        throw new Error("Login failed with status code " + xhr.status);
-      }
+    server.post('/account/identify/email', { email: email }).then({
+      200: data => History.push({ pathname: '/login/password', query: { email: email }}),
+      401: data => History.push({ pathname: '/login/register', query: { email: email }})
+    }).catch(err => {
+      alert(err.message);
+      $(this.refs.email).prop('disabled', false).focus().select().parent().removeClass('loading');
     });
   }
   render() {
