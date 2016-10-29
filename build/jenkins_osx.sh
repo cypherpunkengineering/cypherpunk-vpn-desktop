@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/bin/bash -e
+
+# fetch submodules
+git submodule update --init --recursive
 
 # fix cwd
 cd "$( dirname "${BASH_SOURCE[0]}" )"
@@ -8,7 +11,9 @@ export PATH=$PATH:/usr/local/bin
 
 # use nvm to set nodejs version
 export NVM_DIR="$HOME/.nvm"
-source "$(brew --prefix nvm)/nvm.sh"
+source "$(brew --prefix nvm)/nvm.sh" v6.8.0
+nvm install v6.8.0
+nvm alias default v6.8.0
 nvm use v6.8.0
 
 # select and unlock keychain for signing
@@ -25,6 +30,7 @@ security unlock-keychain -p cypherpunkkeychainpassword "${KEYCHAIN}"
 PKG="../out/CypherpunkVPN.pkg"
 ARTIFACT="../`printf 'cypherpunk-vpn-macos-%05d' ${BUILD_NUMBER}`.pkg"
 mv "${PKG}" "${ARTIFACT}"
+scp -P92 "${ARTIFACT}" upload@builds-upload.cypherpunk.engineering:/data/builds/
 
 # done
 exit 0
