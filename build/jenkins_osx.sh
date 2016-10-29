@@ -3,6 +3,9 @@
 # fix cwd
 cd "$( dirname "${BASH_SOURCE[0]}" )"
 
+# fix path
+export PATH=$PATH:/usr/local/bin
+
 # use nvm to set nodejs version
 export NVM_DIR="$HOME/.nvm"
 source "$(brew --prefix nvm)/nvm.sh"
