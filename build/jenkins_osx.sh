@@ -22,6 +22,7 @@ KEYCHAIN="cypherpunk.keychain-db"
 # security find-identity # should list signing identities
 security default-keychain -s "${KEYCHAIN}"
 security unlock-keychain -p cypherpunkkeychainpassword "${KEYCHAIN}"
+security set-keychain-settings -u -t 3600 "${KEYCHAIN}"
 
 # call macos build script
 ./build_osx.sh
