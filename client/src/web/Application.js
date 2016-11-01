@@ -61,13 +61,14 @@ render((
       </Route>
       <Route path="connect" component={ConnectScreen}>
         <Route path="/configuration" component={ConfigurationScreen}>
-          <Route path="email" component={EmailScreen}/>
-          <Route path="password" component={PasswordScreen}/>
           <Route path="encryption" component={EncryptionScreen}/>
           <Route path="firewall" component={FirewallScreen}/>
           <Route path="help" component={HelpScreen}/>
         </Route>
-        <Route path="/account" component={AccountScreen}/>
+        <Route path="/account" component={AccountScreen}>
+          <Route path="email" component={EmailScreen}/>
+          <Route path="password" component={PasswordScreen}/>
+        </Route>
       </Route>
       <IndexRedirect to="login"/>
     </Route>
