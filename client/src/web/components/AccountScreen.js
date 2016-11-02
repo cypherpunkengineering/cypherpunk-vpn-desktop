@@ -7,10 +7,8 @@ import RouteTransition from './Transition';
 import AccountIcon from '../assets/img/icon-account-big.svg';
 
 const transitionMap = {
-  'email': 'swipeLeft',
-  'password': 'swipeLeft',
-  'help': 'swipeLeft',
-  'account': 'swipeRight'
+  '': { '*': 'swipeLeft' },
+  '*': { '': 'swipeRight', 'account/*': 'swipeRight' },
 };
 
 export default class AccountScreen extends React.Component  {
@@ -62,7 +60,7 @@ export default class AccountScreen extends React.Component  {
 
     return(
       <Modal className="account left panel" onClose={() => { History.push('/connect'); }}>
-        <RouteTransition transition={transition}>
+        <RouteTransition transition={transitionMap}>
           {this.getContent()}
         </RouteTransition>
       </Modal>
