@@ -759,8 +759,7 @@ dialog {
 
 
 .container__comp {
-  //position: relative;
-  //top: 86px;
+  height: 100vh !important;
 
   &.account {
     background-color: @cpBgDark;
@@ -1107,7 +1106,7 @@ small {
     &-active {
       transform: translateX(0);
       opacity: 1;
-      transition: transform @transitionTime @stepSlide, opacity @transitionTime @easeInQuart;    
+      transition: transform @transitionTime @stepSlide, opacity @transitionTime @easeInQuart;
     }
   }
   &-leave {
