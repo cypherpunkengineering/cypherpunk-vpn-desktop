@@ -38,6 +38,10 @@ const transitionMap = {
       'configuration/*': 'swipeLeft',
       'connect': 'swipeRight',
     },
+    'account': {
+      'account/*': 'swipeLeft',
+      'connect': 'swipeRight',
+    },
     '*': {
       'login': '',
       'root': '',
