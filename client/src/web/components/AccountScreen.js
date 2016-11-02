@@ -9,6 +9,7 @@ import AccountIcon from '../assets/img/icon-account-big.svg';
 const transitionMap = {
   'email': 'swipeLeft',
   'password': 'swipeLeft',
+  'help': 'swipeLeft',
   'account': 'swipeRight'
 };
 
@@ -44,7 +45,7 @@ export default class AccountScreen extends React.Component  {
             <div className="setting"><a tabIndex="0">Get 30 Days Premium Free</a></div>
             <div className="setting"><a tabIndex="0">Rate Our Service</a></div>
             <div className="setting"><a tabIndex="0"><div>Message the Founders<small>We love interacting with our users, all messages are responded to within 12 hours.</small></div></a></div>
-            <div className="setting"><a tabIndex="0">Help</a></div>
+            <div className="setting"><Link to="/account/help" tabIndex="0">Help</Link></div>
             <div className="setting"><a tabIndex="0" onClick={() => History.push('/login')}>Log Out</a></div>
           </div>
         </div>
@@ -54,13 +55,11 @@ export default class AccountScreen extends React.Component  {
   }
 
   render() {
-    // console.log(this.props.location.pathname);
     var pathname = this.props.location.pathname;
     var pathArray = pathname.split("/");
     var currentRoute = pathArray[pathArray.length - 1];
     var transition = transitionMap[currentRoute];
-    console.log(transition);
-    console.log(transitionMap);
+
     return(
       <Modal className="account left panel" onClose={() => { History.push('/connect'); }}>
         <RouteTransition transition={transition}>

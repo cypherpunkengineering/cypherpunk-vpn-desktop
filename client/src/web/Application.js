@@ -67,11 +67,11 @@ render((
         <Route path="/configuration" component={ConfigurationScreen}>
           <Route path="encryption" component={EncryptionScreen}/>
           <Route path="firewall" component={FirewallScreen}/>
-          <Route path="help" component={HelpScreen}/>
         </Route>
         <Route path="/account" component={AccountScreen}>
           <Route path="email" component={EmailScreen}/>
           <Route path="password" component={PasswordScreen}/>
+          <Route path="help" component={HelpScreen}/>
         </Route>
       </Route>
       <IndexRedirect to="login"/>
