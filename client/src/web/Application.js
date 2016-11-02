@@ -5,6 +5,7 @@ import LoginScreen, * as Login from './components/LoginScreen';
 import ConnectScreen from './components/ConnectScreen';
 import ConfigurationScreen from './components/ConfigurationScreen'
 import EmailScreen from './components/account/EmailScreen'
+import ShareScreen from './components/account/ShareScreen'
 import PrivacyScreen from './components/config/PrivacyScreen'
 import FirewallScreen from './components/config/FirewallScreen'
 import HelpScreen from './components/account/HelpScreen'
@@ -72,6 +73,7 @@ render((
           <Route path="email" component={EmailScreen}/>
           <Route path="password" component={PasswordScreen}/>
           <Route path="help" component={HelpScreen}/>
+          <Route path="share" component={ShareScreen}/>
         </Route>
       </Route>
       <IndexRedirect to="login"/>

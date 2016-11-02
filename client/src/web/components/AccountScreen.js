@@ -47,8 +47,7 @@ export default class AccountScreen extends React.Component  {
             <div className="setting"><Link to="/account/password" tabIndex="0">Password</Link></div>
           </div>
           <div className="pane" data-title="More">
-            <div className="setting"><a tabIndex="0">Get 30 Days Premium Free</a></div>
-            <div className="setting"><a tabIndex="0">Rate Our Service</a></div>
+            <div className="setting"><Link to="/account/share" tabIndex="0">Share Cypherpunk with a Friend</Link></div>
             <div className="setting"><a tabIndex="0"><div>Message the Founders<small>We love interacting with our users, all messages are responded to within 12 hours.</small></div></a></div>
             <div className="setting"><Link to="/account/help" tabIndex="0">Help</Link></div>
             <div className="setting"><a tabIndex="0" onClick={() => History.push('/login')}>Log Out</a></div>
