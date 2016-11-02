@@ -11,24 +11,33 @@ import Modal from './modal';
 
 const transitionMap = {
   '': { '*': 'swipeLeft' },
-  '*': { 'configuration/*': 'swipeRight' },
+  '*': { '': 'swipeRight', 'configuration/*': 'swipeRight' },
 };
 
 export default class ConfigurationScreen extends React.Component  {
+  getContent() {
+    if(this.props.children) {
+      return this.props.children
+    }
+    else {
+      return(
+        <div className="panel" key="self" id="settings-main-panel">
+          <PanelTitlebar title="Configuration"/>
+          <div className="scrollable content">
+            <GeneralSettings/>
+            <AdvancedSettings/>
+          </div>
+        </div>
+      );
+    }
+  }
   render() {
     var { props } = this;
     return(
       <Modal className="settings right panel" onClose={() => { History.push('/connect'); }}>
-        {/*<RouteTransition transition={transitionMap}>
-          {this.props.children || null}*/}
-          <div className="panel" key="self" id="settings-main-panel">
-            <PanelTitlebar title="Configuration"/>
-            <div className="scrollable content">
-              <GeneralSettings/>
-              <AdvancedSettings/>
-            </div>
-          </div>
-        {/*</RouteTransition>*/}
+        <RouteTransition transition={transitionMap}>
+          {this.getContent()}
+        </RouteTransition>
       </Modal>
     );
   }

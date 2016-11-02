@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import daemon from '../../daemon.js';
 
 
-export default class EncryptionScreen extends React.Component  {
+export default class PrivacyScreen extends React.Component  {
   constructor() {
     super();
     this.onDaemonSettingsChanged = this.onDaemonSettingsChanged.bind(this);
@@ -28,7 +28,7 @@ export default class EncryptionScreen extends React.Component  {
       <div ref="root" class="container__comp">
         <div className="ui fluid inverted borderless icon menu cp_config_header">
           <Link className="item" to="/configuration"><i className="angle left icon"></i></Link>
-          <div className="header item center aligned">Encryption</div>
+          <div className="header item center aligned">Privacy Mode</div>
         </div>
         <div className="ui inverted padded grid">
           <div className="row">
