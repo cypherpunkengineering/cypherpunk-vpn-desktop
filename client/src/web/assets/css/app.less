@@ -19,10 +19,15 @@
 @loaderRingColor: rgba(0,0,0,0.1);
 @loaderActiveColor: rgba(255,255,255,0.8);
 
+@border-light: rgba(255,255,255,0.25);
 
 // Mixins
 .bodyHeight {
   height: calc(~"100vh -" @fullHeaderHeight);
+}
+
+.border-full--light {
+  border: 1px solid @border-light;
 }
 
 .blur {
@@ -759,10 +764,14 @@ dialog {
   border-bottom: 1px solid rgba(255,255,255,0.15) !important;
   height: (@dragbarHeight + @headerHeight);
   padding-top: @dragbarHeight;
-  position: absolute;
+  // position: absolute;
   top: 0;
   z-index: 1001;
   .draggable;
+
+  &.ui.menu.inverted {
+    background: none;
+  }
 
   &.ui.menu .item {
     padding-left: 0.5rem;
@@ -858,6 +867,86 @@ small {
   height: calc(~"100vh -" (@dragbarHeight + @headerHeight));
 }
 
+
+
+// Forms
+.cp-form {
+  overflow-y: auto;
+  padding-bottom: 4rem;
+  .bodyHeight;
+
+  .row {
+    display: flex;
+    flex-direction: column;
+    padding: 0.75rem 1rem;
+    align-items: center;
+    // border-bottom: 1px solid @border-light;
+  }
+
+  .form__field {
+    width: 100%;
+    // flex-direction: row;
+    // flex-grow: 2;
+    // text-align: right;
+
+    .material & {
+      border-bottom: 1px solid @border-light;
+      flex-direction: row;
+      align-items: center;
+
+      i.icon {
+        color: rgba(255,255,255,0.5);
+        margin-right: 0.5rem;
+      }
+    }
+  }
+
+  .form-email__password {
+    margin-top: 1.5rem;
+  }
+
+  input[type="text"],
+  input[type="password"] {
+    background: 0 0;
+    .border-full--light;
+    font-size: 1.25rem;
+    padding: 0.75rem 1rem;
+    width: 100%;
+
+    &:focus {
+      outline: none;
+      background-color: darken(@cpBgDark, 5);
+    }
+
+    .material & {
+      border: none;
+      // border-bottom: 1px solid @border-light;
+      padding-left: 0;
+      transition: all ease 0.2s;
+      width: calc(100% - 25px);
+
+      &:focus {
+        background-color: transparent;
+        border-color: #fff;
+      }
+    }
+  }
+
+  .actions__form {
+    padding: 0.75rem 1rem;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+  }
+
+  .button {
+    background-color: @cpBg;
+    // border: 1px solid rgba(255,255,255,0.75);
+    &:hover {
+      background-color: lighten(@cpBg, 10);
+    }
+  }
+}
 
 
 
