@@ -332,6 +332,7 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     border-radius: 0 !important;
     background: #3370bb;
     transition: background-color 0.3s;
+    box-shadow: 0 -4px 20px 0 rgba(0,0,0,.1);
     &.active {
       background-color: #4c81c3;
     }
@@ -348,32 +349,44 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     }
     > .menu {
       border-radius: 0 !important;
-      background: linear-gradient(0deg, #669fe4, #5282bd);
+      background: linear-gradient(0deg, #034698, #4c8ee1);
       max-height: calc(~"100vh - " (@fullHeaderHeight + 44px)); // FIXME: Hardcoded height of region selector
       > .header {
         cursor: default;
-        color: rgba(255,255,255,0.6);
+        color: rgba(255,255,255,0.85);
+        border-top: 1px solid rgba(255,255,255,.1);
+        padding-top: 1rem;
+        text-transform: uppercase;
+
+        &:first-child {
+          margin-top: 0;
+        }
       }
       > .item {
+        font-size: 16px;
+        line-height: 1.5;
         padding: 0.5em 14px !important;
         border-top: none !important;
-        border-bottom: 1px solid rgba(255,255,255,0.2);
-        color: rgba(255,255,255,0.75);
+        border-bottom: none;
+        color: rgba(255,255,255,1);
         &:first-child {
           border-top: 1px solid rgba(255,255,255,0.16) !important;
-        }
-        &:hover {
-          color: #fff;
-          background: rgba(0,0,0,0.05);
         }
         &.selected {
           font-weight: 500;
           color: @cpYellow;
           background: rgba(0,0,0,0.10);
         }
+        &:hover {
+          // color: #fff;
+          background: rgba(0,0,0,0.2);
+          // background-color: #0f3c75;
+          box-shadow: 0 2px 6px rgba(0,0,0,.2);
+          transition: all ease 0.2s;
+        }
         &.disabled {
           opacity: 1; // don't dim entire item, as that would affect borders
-          color: rgba(255,255,255,0.25);
+          color: rgba(255,255,255,0.5);
           .flag, .cp-fav {
             opacity: 0.25 !important;
           }
@@ -996,7 +1009,7 @@ small {
     &-active {
       transform: translateX(0);
       opacity: 1;
-      transition: transform @transitionTime @stepSlide, opacity @transitionTime @easeInQuart;    
+      transition: transform @transitionTime @stepSlide, opacity @transitionTime @easeInQuart;
     }
   }
   &-leave {
@@ -1039,7 +1052,7 @@ small {
     transform: translateX(100vw);
     &-active {
       transform: translateX(0);
-      transition: transform @transitionTime ease-out;    
+      transition: transform @transitionTime ease-out;
     }
   }
   &-leave {
@@ -1058,7 +1071,7 @@ small {
     transform: translateX(-100vw);
     &-active {
       transform: translateX(0);
-      transition: transform @transitionTime ease-out;    
+      transition: transform @transitionTime ease-out;
     }
   }
   &-leave {
@@ -1073,7 +1086,7 @@ small {
 
 
 
-@panelWidth: 80vw;
+@panelWidth: 85vw;
 @leftPanelWidth: @panelWidth;
 @rightPanelWidth: @panelWidth;
 
@@ -1135,9 +1148,10 @@ small {
         position: relative;
         color: rgba(255,255,255,0.75);
         cursor: pointer;
+        border-bottom: 1px solid rgba(0,0,0,.2);
 
         > * {
-          //flex-grow: 1;
+          flex-grow: 1;
         }
         label {
           cursor: pointer;
@@ -1229,13 +1243,16 @@ small {
         }
 
         + .setting {
-          background-image: linear-gradient(to bottom, rgba(255,255,255,0.3) 1px, transparent 1px);
+          // background-image: linear-gradient(to bottom, rgba(255,255,255,0.3) 1px, transparent 1px);
         }
         &:hover {
           background: linear-gradient(to left, rgba(255,255,255,0.1), transparent);
+          // background-color: #072e5f;
+          box-shadow: 0 2px 6px rgba(0,0,0,.1);
+          transition: all ease 0.2s;
         }
         + .setting:hover {
-          background-image: linear-gradient(to bottom, rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(to left, rgba(255,255,255,0.1), transparent);
+          // background-image: linear-gradient(to bottom, rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(to left, rgba(255,255,255,0.1), transparent);
         }
       }
     }
@@ -1258,10 +1275,12 @@ small {
   // Panel which goes on the left side of the screen
   &.left {
     left: 0;
+    box-shadow: 4px 0 16px 0 rgba(0,0,0,.5);
     width: @leftPanelWidth;
 
     > div {
-      background: linear-gradient(to left, rgba(0,0,0,0.25) 0, transparent 30px), linear-gradient(329deg, transparent, rgba(255,255,255,0.2)), @cpDarkBlue;
+      // background: linear-gradient(to left, rgba(0,0,0,0.25) 0, transparent 30px), linear-gradient(329deg, transparent, rgba(255,255,255,0.2)), @cpDarkBlue;
+      background-color: @cpDarkBlue;
     }
 
     ~ .screen {
@@ -1297,9 +1316,11 @@ small {
   &.right {
     left: calc(~"100vw - " @rightPanelWidth);
     width: @rightPanelWidth;
+    box-shadow: -4px 0 16px 0 rgba(0,0,0,.5);
 
     > div {
-      background: linear-gradient(to right, rgba(0,0,0,0.25) 0, transparent 30px), linear-gradient(329deg, transparent, rgba(255,255,255,0.2)), @cpDarkBlue;
+      // background: linear-gradient(to right, rgba(0,0,0,0.25) 0, transparent 30px), linear-gradient(329deg, transparent, rgba(255,255,255,0.2)), @cpDarkBlue;
+      background-color: @cpDarkBlue;
     }
 
     ~ .screen {
