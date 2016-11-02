@@ -23,9 +23,9 @@ export default class EmailScreen extends React.Component  {
               <input type="text" placeholder="Confirm email address" />
             </div>
           </div>
-          <div class="form-email__password row">
+          <div class="form-email__password row isolate">
             <div className="form__field">
-              <i className="icon lock"></i>
+              <i className="icon unlock"></i>
               <input type="password" placeholder="Current Password" />
             </div>
           </div>
