@@ -16,13 +16,6 @@ import './assets/css/app.less';
 import RouteTransition from './components/Transition';
 import daemon from './daemon.js';
 
-daemon.ready(() => {
-  daemon.once('state', state => {
-    hashHistory.push('/login');
-  });
-  daemon.post.get('state');
-});
-
 const transitionMap = {
     'login': {
       'connect': 'fadeIn',
@@ -51,6 +44,13 @@ const transitionMap = {
 
 // const store = configureStore();
 window.History = hashHistory;
+
+daemon.ready(() => {
+  daemon.once('state', state => {
+    History.push('/login');
+  });
+  daemon.post.get('state');
+});
 
 render((
   <Router history={window.History}>

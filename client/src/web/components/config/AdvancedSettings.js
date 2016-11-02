@@ -10,7 +10,7 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
   componentDidMount() {
     super.componentDidMount();
     var self = this;
-    $(this.refs.root).find('.ui.dropdown').dropdown({ onChange: function(value) { self.onChange(this.children[0].name, value); } }).parent().click(event => $(event.currentTarget.children[0]).dropdown('show'));
+    $(this.refs.root).find('.ui.dropdown').dropdown({ onChange: function(value) { self.onChange(this.children[0].name, value); } });
     $(this.refs.root).find('.ui.checkbox').checkbox({ onChange: function() { self.onChange(this.name, this.checked); } });
     $(this.refs.root).find('.ui.input').change(event => self.onChange(event.target.name, event.target.value)).parent().click(event => event.currentTarget.children[0].children[0].focus());
     //$(this.refs.firewall).dropdown({ onChange: value => { daemon.post.applySettings({ firewall: value }); }});
@@ -58,12 +58,11 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
               <div class="ui selection button dropdown" ref="firewall">
                 <input type="hidden" id="firewall" name="firewall"/>
                 <i class="dropdown icon"></i>
-                {/*<div class="default text">When connected</div>*/}
-                <div class="text"></div>
+                <div class="default text">Yes</div>
                 <div className="menu">
                   <div class="item" data-value="on">Always</div>
-                  <div class="item" data-value="auto">When connected</div>
-                  <div class="item" data-value="off">Never</div>
+                  <div class="item" data-value="auto">Yes</div>
+                  <div class="item" data-value="off">No</div>
                 </div>
               </div>
               <label>Block Non-VPN Traffic</label>
@@ -102,8 +101,7 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
               <div class="ui selection button dropdown" ref="protocol">
                 <input type="hidden" id="protocol" name="protocol"/>
                 <i class="dropdown icon"></i>
-                {/*<div class="default text">UDP</div>*/}
-                <div class="text"></div>
+                <div class="default text">UDP</div>
                 <div className="menu">
                   <div class="item" data-value="udp">UDP</div>
                   <div class="item" data-value="tcp">TCP</div>
@@ -121,8 +119,7 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
               <div className="ui button selection dropdown" ref="remotePort">
                 <input type="hidden" name="remoteport" />
                 <i className="dropdown icon"></i>
-                {/*<div className="default text">7133</div>*/}
-                <div class="text"></div>
+                <div className="default text">7133</div>
                 <div className="menu">
                   <div className="item" data-value="7133">7133</div>
                 </div>

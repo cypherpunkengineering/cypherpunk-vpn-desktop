@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { CloseButton } from './Titlebar';
 
 export default class Modal extends React.Component {
   showIfNeeded(self) {
@@ -49,14 +50,17 @@ export default class Modal extends React.Component {
     delete props['onClose'];
     delete props['onClick'];
     delete props['children'];
-    // The extra <div> wrapper below is needed as the dialog sits in the top-level
+    // The extra <div> wrappers below are needed as the dialog sits in the top-level
     // layer while modal and can't be clipped, so instead we animate the div inside
     // the dialog for transition effects. 
     return (
       <dialog {...props}>
         <div>
-          {this.props.children}
+          <div>
+            {this.props.children}
+          </div>
         </div>
+        <CloseButton/>
       </dialog>
     )
   }

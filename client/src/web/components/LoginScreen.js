@@ -1,10 +1,11 @@
 import React from 'react';
-import { hashHistory } from 'react-router';
+import { Link } from 'react-router';
 import CypherPunkLogo from '../assets/img/logomark.svg';
-import Dragbar from './Dragbar.js';
+import { Dragbar } from './Titlebar.js';
 import { Title } from './Titlebar.js';
 import RouteTransition from './Transition';
 import daemon from '../daemon.js';
+import server from '../server.js';
 
 
 
@@ -69,23 +70,12 @@ export class EmailStep extends React.Component {
   onSubmit() {
     var email = this.refs.email.value || (this.refs.email.value = "test@test.test"); // FIXME: debug value
     $(this.refs.email).prop('disabled', true).parent().addClass('loading');
-    jQuery.ajax('https://cypherpunk.engineering/account/identify/email', {
-      cache: false,
-      contentType: 'application/json',
-      data: JSON.stringify({ email: email }),
-      //dataType: 'json',
-      method: 'POST',
-      xhrFields: { withCredentials: true },
-    }).then((data, status, xhr) => {
-      History.push({ pathname: '/login/password', query: { email: email } });
-    }).catch((xhr, status, err) => {
-      if (xhr.status == 401) {
-        History.push({ pathname: '/login/register', query: { email: email } });
-      } else {
-        alert("Login failed with status code " + xhr.status);
-        $(this.refs.email).prop('disabled', false).focus().select().parent().removeClass('loading');
-        throw new Error("Login failed with status code " + xhr.status);
-      }
+    server.post('/account/identify/email', { email: email }).then({
+      200: data => History.push({ pathname: '/login/password', query: { email: email }}),
+      401: data => History.push({ pathname: '/login/register', query: { email: email }})
+    }).catch(err => {
+      alert(err.message);
+      $(this.refs.email).prop('disabled', false).focus().select().parent().removeClass('loading');
     });
   }
   render() {
@@ -130,7 +120,8 @@ export class PasswordStep extends React.Component {
           <input type="password" placeholder="Password" required autoFocus="true" ref="password" onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
           <i className="chevron right link icon" onClick={() => this.onSubmit()}></i>
         </div>
-        <a class="forgot" tabIndex="0">Forgot password?</a>
+        <a className="forgot link" tabIndex="0">Forgot password?</a>
+        <Link className="back link" to="/login/email" tabIndex="0"><i className="undo icon"></i>Back</Link>
       </form>
     );
   }
@@ -139,11 +130,7 @@ export class PasswordStep extends React.Component {
 export class RegisterStep extends React.Component {
   onSubmit() {
     var password = this.refs.password.value;
-    if (this.refs.password2.value !== password) {
-      alert("Password mismatch"); // FIXME
-      return;
-    }
-    $([this.refs.password, this.refs.password2]).prop('disabled', true);
+    $(this.refs.password).prop('disabled', true);
     $(this.refs.register).hide();
     $(this.refs.loader).addClass('active');
     var account;
@@ -159,7 +146,7 @@ export class RegisterStep extends React.Component {
     }).then((data, status, xhr) => {
       return postLoginActions(this.props.location.query.email, password, data);
     }).catch(err => {
-      $([this.refs.password, this.refs.password2]).prop('disabled', false);
+      $(this.refs.password).prop('disabled', false);
       $(this.refs.register).show();
       $(this.refs.loader).removeClass('active');
     });
@@ -168,14 +155,12 @@ export class RegisterStep extends React.Component {
     return(
       <form className="cp login-register ui form">
         <div className="desc">Registering new account for {this.props.location.query.email}...</div>
-        <div className="ui icon input group">
-          <input type="password" placeholder="Password" required autoFocus="true" ref="password" onKeyPress={e => { if (e.key == 'Enter') { this.refs.password2.focus(); e.preventDefault(); } }} />
-        </div>
         <div className="ui icon input">
-          <input type="password" placeholder="Password (again)" required ref="password2" onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
+          <input type="password" placeholder="Password" required autoFocus="true" ref="password" onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
         </div>
         <a class="cp yellow button" ref="register" onClick={() => this.onSubmit()}>Register</a>
         <div className="ui inline text loader" ref="loader"></div>
+        <Link className="back link" to="/login/email" tabIndex="0"><i className="undo icon"></i>Back</Link>
       </form>
     );
   }
@@ -185,7 +170,9 @@ export class ConfirmationStep extends React.Component {
   onTimer() {
     checkSubscriptionStatus().then(confirmed => {
       if (confirmed) {
-        History.push('/connect');
+        readServerList().then(() => {
+          History.push('/connect');
+        });
       }
     })
   }
@@ -200,47 +187,27 @@ export class ConfirmationStep extends React.Component {
       <form className="cp login-confirm ui form">
         <div className="desc">Awaiting email confirmation...</div>
         <div className="ui inline active large text loader" ref="loader"></div>
+        <Link className="back link" to="/login/email" tabIndex="0">Back</Link>
       </form>
     );
   }
 }
 
 
+const LOGIN_ORDER = [ 'email', 'password', 'register', 'confirm' ];
 
 export default class LoginScreen extends React.Component {
-  constructor(props) {
-    super(props);
+  getTransition(from,to) {
+    console.log(from, to);
+    return (LOGIN_ORDER.indexOf(to) < LOGIN_ORDER.indexOf(from)) ? 'nudgeRight' : 'nudgeLeft';
   }
-
-  /*
-  componentDidMount() {
-    $(this.refs.dimmer).dimmer({ closable: false });
-    this.refs.dimmer.addEventListener('cancel', this.onLoginCancel.bind(this));
-  }
-  onLoginCancel() {
-    this.hideDimmer();
-  }
-  showDimmer() {
-    $(this.refs.dimmer).dimmer('show');
-    this.refs.dimmer.showModal();
-    $(this.refs.dimmer).find('*:focus').blur();
-  }
-  hideDimmer() {
-    $(this.refs.dimmer).dimmer('hide');
-    this.refs.dimmer.close();
-  }
-  */
   render() {
     return (
       <div className="cp blurring full screen" id="login-screen" ref="root">
         <Dragbar height="225px"/>
-        {/*<dialog class="ui dimmer" ref="dimmer">
-          <div class="ui big text loader">Logging in</div>
-          <a tabIndex="0" onClick={this.onLoginCancel.bind(this)}>Cancel</a>
-        </dialog>*/}
         <img class="logo" src={CypherPunkLogo}/>
         <Title component="h3" />
-        <RouteTransition transition="nudgeLeft">
+        <RouteTransition transition={this.getTransition}>
           {this.props.children}
         </RouteTransition>
       </div>

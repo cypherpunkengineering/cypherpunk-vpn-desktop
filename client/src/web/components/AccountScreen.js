@@ -4,6 +4,8 @@ import { PanelTitlebar } from './Titlebar';
 import Modal from './modal';
 import daemon from '../daemon';
 import RouteTransition from './Transition';
+const { shell } = require('electron').remote;
+
 import AccountIcon from '../assets/img/icon-account-big.svg';
 
 const transitionMap = {
@@ -12,30 +14,35 @@ const transitionMap = {
 };
 
 export default class AccountScreen extends React.Component  {
+  isPremium() {
+    return daemon.settings.subscription.type == 'premium';
+  }
   getPlanName() {
-    switch (daemon.account.plan) {
-      // ...
-    }
-    return "Monthly Premium";
+    return this.isPremium() ? "Premium" : "Free";
   }
   getRenewalDate() {
-    return "02/02/2017";
+    //var d = new Date(0);
+    //d.setUTCSeconds(daemon.settings.subscription.expiration);
+    var d = new Date(daemon.settings.subscription.expiration);
+    return `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`;
   }
   getContent() {
     if (this.props.children) {
       return this.props.children
     }
     else {
+      var renewal = this.isPremium() && daemon.settings.subscription.expiration != 0 ? <div className="period">Renews on {this.getRenewalDate()}</div> : null;
       return(
         <div>
         <PanelTitlebar title="Account" back="/connect"/>
         <div className="scrollable content">
           <div className="user pane">
             <div className="user"><img src={AccountIcon}/><span className="email">{daemon.account.email}</span></div>
-            <div className="plan">{this.getPlanName()}</div>
-            <div className="period">Renews on {this.getRenewalDate()}</div>
+            <div className={this.isPremium() ? "premium plan" : "plan"}>{this.getPlanName()}</div>
+            {renewal}
           </div>
           <div className="pane" data-title="Account Settings">
+            <div className="setting"><a tabIndex="0" onClick={() => { shell.openExternal('https://cypherpunk.engineering/user/upgrade?user=' + encodeURI(daemon.account.email) + '&secret=' + encodeURI(daemon.account.secret)); }}>{this.isPremium() ? "Change Plan" : "Upgrade"}</a></div>
             <div className="setting"><Link to="/account/email" tabIndex="0"><div>Email<small>{daemon.account.email}</small></div></Link></div>
             <div className="setting"><Link to="/account/password" tabIndex="0">Password</Link></div>
           </div>

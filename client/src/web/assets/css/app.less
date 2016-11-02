@@ -37,6 +37,31 @@
 .draggable {
   -webkit-app-region: drag;
 }
+.nondraggable {
+  -webkit-app-region: no-drag;
+}
+
+#window-close {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: @dragbarHeight;
+  height: @dragbarHeight;
+  line-height: @dragbarHeight;
+  font-size: 18px;
+  margin: 0;
+  z-index: 9001;
+  opacity: 0.25;
+  .nondraggable;
+  &:before {
+    content: '\f00D';
+  }
+  &:hover, &:active {
+    &:before {
+      content: '\f057';
+    }
+  }
+}
 
 // Background Gradient
 .bg-gradient--main {
@@ -54,6 +79,9 @@
   -webkit-user-drag: none;
   -webkit-user-select: none;
   user-select: none;
+  &:focus {
+    outline: none;
+  }
 }
 html, body {
   position: absolute;
@@ -125,6 +153,10 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   &.dark {
     background-color: @cpBg;
   }
+
+  a {
+    .nondraggable;
+  }
 }
 
 .cp.titlebar {
@@ -149,6 +181,7 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   }
 
   a {
+    .nondraggable;
     flex-grow: 0;
     display: flex;
     align-items: center;
@@ -269,12 +302,14 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 .screen {
   position: absolute;
   left: 0; top: 0; right: 0; bottom: 0;
+  display: flex;
+  flex-flow: column;
 }
 
 
 #connect-screen {
   .screen;
-  .bg-gradient--main;
+  background: linear-gradient(to top, #034698, #4c8ee1);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -288,6 +323,7 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     justify-content: center;
     svg {
       pointer-events: none;
+      -webkit-filter: drop-shadow(0px 0px 5px rgba(0,0,0,0.5));
     }
   }
   #region-select {
@@ -301,7 +337,6 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     border-radius: 0 !important;
     background: #3370bb;
     transition: background-color 0.3s;
-    box-shadow: 0 -4px 20px 0 rgba(0,0,0,.1);
     &.active {
       background-color: #4c81c3;
     }
@@ -318,44 +353,32 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     }
     > .menu {
       border-radius: 0 !important;
-      background: linear-gradient(0deg, #034698, #4c8ee1);
+      background: linear-gradient(0deg, #669fe4, #5282bd);
       max-height: calc(~"100vh - " (@fullHeaderHeight + 44px)); // FIXME: Hardcoded height of region selector
       > .header {
         cursor: default;
-        color: rgba(255,255,255,0.85);
-        border-top: 1px solid rgba(255,255,255,.1);
-        padding-top: 1rem;
-        text-transform: uppercase;
-
-        &:first-child {
-          margin-top: 0;
-        }
+        color: rgba(255,255,255,0.6);
       }
       > .item {
-        font-size: 16px;
-        line-height: 1.5;
         padding: 0.5em 14px !important;
         border-top: none !important;
-        border-bottom: none;
-        color: rgba(255,255,255,1);
+        border-bottom: 1px solid rgba(255,255,255,0.2);
+        color: rgba(255,255,255,0.75);
         &:first-child {
           border-top: 1px solid rgba(255,255,255,0.16) !important;
+        }
+        &:hover {
+          color: #fff;
+          background: rgba(0,0,0,0.05);
         }
         &.selected {
           font-weight: 500;
           color: @cpYellow;
           background: rgba(0,0,0,0.10);
         }
-        &:hover {
-          // color: #fff;
-          background: rgba(0,0,0,0.2);
-          // background-color: #0f3c75;
-          box-shadow: 0 2px 6px rgba(0,0,0,.2);
-          transition: all ease 0.2s;
-        }
         &.disabled {
           opacity: 1; // don't dim entire item, as that would affect borders
-          color: rgba(255,255,255,0.5);
+          color: rgba(255,255,255,0.25);
           .flag, .cp-fav {
             opacity: 0.25 !important;
           }
@@ -458,6 +481,11 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     margin-bottom: 1em;
   }
 
+  .back {
+    position: absolute;
+    bottom: 25px;
+  }
+
   .login-email {
     .welcome {
       font-size: 170%;
@@ -509,7 +537,7 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     }
   }
 
-  .forgot {
+  a.link {
     cursor: pointer;
     color: rgba(255,255,255,0.3);
     text-decoration: none;
@@ -518,14 +546,21 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     border-bottom: 1px dotted transparent;
     transition: color 0.2s, border-bottom-color 0.2s, visibility 0.2s;
     display: block;
-    float: right;
-    position: relative;
-    margin-top: 4px;
-
     &:hover, &:active, &:focus {
       color: @cpYellow !important; //#fff;
       border-bottom: 1px dotted #fff;
     }
+  }
+  .forgot {
+    float: right;
+    position: relative;
+    margin-top: 4px;
+  }
+  .back {
+    position: absolute;
+    font-size: 16px !important;
+    bottom: 25px;
+    border-color: transparent !important;
   }
 
   input:focus + .forgot {
@@ -965,6 +1000,7 @@ small {
 }
 ::-webkit-scrollbar-button {
   width: 8px;
+  display: none;
 }
 ::-webkit-scrollbar-track {
   border-radius: 10px;
@@ -1005,7 +1041,7 @@ small {
   position: relative;
   padding: 0;
   width: 100%;
-  height: 100%;
+  flex-grow: 1;
   > * {
     position: absolute !important;
     left: 0;
@@ -1058,6 +1094,28 @@ small {
     pointer-events: none !important;
     &-active {
       transform: translateX(-100vw);
+      opacity: 0;
+      transition: transform @transitionTime @stepSlide, opacity @transitionTime @easeOutQuart;
+    }
+  }
+}
+.nudgeRight {
+  @transitionTime: 700ms;
+  &-enter {
+    transform: translateX(-100vw);
+    opacity: 0;
+    &-active {
+      transform: translateX(0);
+      opacity: 1;
+      transition: transform @transitionTime @stepSlide, opacity @transitionTime @easeInQuart;    
+    }
+  }
+  &-leave {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: none !important;
+    &-active {
+      transform: translateX(100vw);
       opacity: 0;
       transition: transform @transitionTime @stepSlide, opacity @transitionTime @easeOutQuart;
     }
@@ -1116,14 +1174,18 @@ small {
   height: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden;
   border: none;
   color: #fff;
   background: transparent;
 
-  > div { // modal wrapper
+  dialog& > div { // modal wrapper
     width: 100%;
     height: 100%;
+    overflow: hidden;
+    > div {
+      width: 100%;
+      height: 100%;
+    }
   }
 
   .titlebar {
@@ -1162,10 +1224,9 @@ small {
         position: relative;
         color: rgba(255,255,255,0.75);
         cursor: pointer;
-        border-bottom: 1px solid rgba(0,0,0,.2);
 
         > * {
-          flex-grow: 1;
+          //flex-grow: 1;
         }
         label {
           cursor: pointer;
@@ -1176,6 +1237,7 @@ small {
           display: flex;
           align-items: center;
           justify-content: space-between;
+          flex-grow: 1;
           padding: 8px 15px 9px;
           color: inherit;
           &:after {
@@ -1212,7 +1274,27 @@ small {
         > .ui.dropdown {
           order: 10;
           width: auto;
+          font-size: 15px;
           margin-right: 15px;
+          margin-top: 1px;
+          background: rgba(0,0,0,0.08) !important;
+          white-space: nowrap;
+          &:hover {
+            color: #fff !important;
+          }
+          > .menu {
+            background: #6283ad;
+            > .item {
+              border-color: rgba(255,255,255,0.5);
+              &:hover, &:focus {
+                background: rgba(255,255,255,0.1) !important;
+                color: #fff;
+              }
+              &.selected {
+                color: @cpYellowDark !important;
+              }
+            }
+          }
           + label {
             margin-left: 15px;
           }
@@ -1236,16 +1318,13 @@ small {
         }
 
         + .setting {
-          // background-image: linear-gradient(to bottom, rgba(255,255,255,0.3) 1px, transparent 1px);
+          background-image: linear-gradient(to bottom, rgba(255,255,255,0.3) 1px, transparent 1px);
         }
         &:hover {
           background: linear-gradient(to left, rgba(255,255,255,0.1), transparent);
-          // background-color: #072e5f;
-          box-shadow: 0 2px 6px rgba(0,0,0,.1);
-          transition: all ease 0.2s;
         }
         + .setting:hover {
-          // background-image: linear-gradient(to bottom, rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(to left, rgba(255,255,255,0.1), transparent);
+          background-image: linear-gradient(to bottom, rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(to left, rgba(255,255,255,0.1), transparent);
         }
       }
     }
@@ -1268,12 +1347,10 @@ small {
   // Panel which goes on the left side of the screen
   &.left {
     left: 0;
-    box-shadow: 4px 0 16px 0 rgba(0,0,0,.5);
     width: @leftPanelWidth;
 
     > div {
-      // background: linear-gradient(to left, rgba(0,0,0,0.25) 0, transparent 30px), linear-gradient(329deg, transparent, rgba(255,255,255,0.2)), @cpDarkBlue;
-      background-color: @cpDarkBlue;
+      background: linear-gradient(to left, rgba(0,0,0,0.25) 0, transparent 30px), linear-gradient(329deg, transparent, rgba(255,255,255,0.2)), @cpDarkBlue;
     }
 
     ~ .screen {
@@ -1309,11 +1386,9 @@ small {
   &.right {
     left: calc(~"100vw - " @rightPanelWidth);
     width: @rightPanelWidth;
-    box-shadow: -4px 0 16px 0 rgba(0,0,0,.5);
 
     > div {
-      // background: linear-gradient(to right, rgba(0,0,0,0.25) 0, transparent 30px), linear-gradient(329deg, transparent, rgba(255,255,255,0.2)), @cpDarkBlue;
-      background-color: @cpDarkBlue;
+      background: linear-gradient(to right, rgba(0,0,0,0.25) 0, transparent 30px), linear-gradient(329deg, transparent, rgba(255,255,255,0.2)), @cpDarkBlue;
     }
 
     ~ .screen {
@@ -1384,3 +1459,5 @@ small {
 
   }
 }
+
+@import "region-selector.less";

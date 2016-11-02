@@ -51,6 +51,7 @@ public:
 	void OnChanged(const std::vector<std::string>& params) noexcept;
 
 	JsonObject& map() { return *this; }
+	JsonValue& at(const std::string& name);
 	JsonValue& operator[](const std::string& name);
 
 	namedmember(std::string, protocol, "udp")
