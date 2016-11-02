@@ -85,7 +85,7 @@ class Titlebar extends React.Component {
       <div id="titlebar" className="ui fixed borderless icon menu">
         <ReactCSSTransitionGroup
           transitionName="example"
-          transitionEnterTimeout={300} 
+          transitionEnterTimeout={300}
           transitionLeaveTimeout={500}
           transitionAppear={true}>
           <h1>Hello World!</h1>
