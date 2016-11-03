@@ -16,9 +16,10 @@
 class PosixOpenVPNProcess : public OpenVPNProcess
 {
 	FILE* _file;
+	pid_t _pid;
 
 public:
-	PosixOpenVPNProcess(asio::io_service& io) : OpenVPNProcess(io), _file(nullptr) {}
+	PosixOpenVPNProcess(asio::io_service& io) : OpenVPNProcess(io), _file(nullptr), _pid(0) {}
 	~PosixOpenVPNProcess()
 	{
 		Kill();
@@ -26,17 +27,35 @@ public:
 
 	virtual void Run(const std::vector<std::string>& params) override
 	{
-		std::string cmdline = GetPath(OpenVPNExecutable);
-		for (const auto& param : params)
+		std::string openvpn = GetPath(OpenVPNExecutable);
+		const char** args = new const char*[params.size() + 1];
+		for (size_t i = 0; i < params.size(); i++)
 		{
-			cmdline += ' ';
-			// FIXME: proper quoting/escaping
-			if (param.find(' ') != param.npos)
-				cmdline += "\"" + param + "\"";
-			else
-				cmdline += param;
+			// TODO: Need any quoting?
+			args[i] = params[i].c_str();
 		}
-		LOG(INFO) << cmdline;
+		args[params.size()] = NULL;
+
+		int handles[2];
+		POSIX_CHECK(pipe, (handles));
+		pid_t pid = POSIX_CHECK(fork());
+		if (pid == 0)
+		{
+			// Child; redirect stdout to the write end of the pipe and close the read end, then exec openvpn
+			dup2(handles[1], STDOUT_FILENO);
+			close(handles[0]);
+			close(handles[1]);
+			// TODO: Should close any other file handles held by us too
+			execv(openvpn.c_str(), args);
+			// If we reach here, we failed to launch OpenVPN; immediately exit the child process.
+			_exit(9000);
+		}
+		else
+		{
+			// Parent
+			_pid = pid;
+		}
+
 		// execute cmdline asynchronously - popen?
 		_file = popen(cmdline.c_str(), "w"); // TODO: later, if parsing output, use "r" instead
 	}
@@ -101,7 +120,7 @@ void terminate_handler()
 		{
 			if (std::type_info* et = abi::__cxa_current_exception_type())
 				LOG(CRITICAL) << "Exception type: " << et->name();
-		}		
+		}
 	}
 	std::abort();
 }
