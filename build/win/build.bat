@@ -30,7 +30,7 @@ call node_modules\.bin\electron-rebuild.cmd --arch=ia32
 if %errorlevel% neq 0 goto error
 
 echo * Packaging Electron app...
-call node_modules\.bin\electron-packager.cmd .\app\ CypherpunkVPN --overwrite --platform=win32 --arch=ia32 --icon=..\res\win\logo.ico --out=..\out\win\client\ --prune --asar
+call node_modules\.bin\electron-packager.cmd .\app\ CypherpunkVPN --overwrite --platform=win32 --arch=ia32 --icon=..\res\win\logo2.ico --out=..\out\win\client\ --prune --asar
 if %errorlevel% neq 0 goto error
 
 cd ..\build\win

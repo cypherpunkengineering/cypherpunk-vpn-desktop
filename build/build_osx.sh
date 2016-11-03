@@ -22,7 +22,7 @@ cd client
 npm install
 npm --production run build
 ./node_modules/.bin/electron-rebuild
-./node_modules/.bin/electron-packager ./app/ "${APPNAME}" --platform=darwin --arch=x64 --icon=../res/osx/logo.icns --out=../out/osx/Applications
+./node_modules/.bin/electron-packager ./app/ "${APPNAME}" --platform=darwin --arch=x64 --icon=../res/osx/logo2.icns --out=../out/osx/Applications
 cd ../
 mv "out/osx/Applications/${APPNAME}-darwin-x64/${APPNAME}.app" out/osx/Applications/
 rm -rf "out/osx/Applications/${APPNAME}-darwin-x64"
