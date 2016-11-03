@@ -280,12 +280,18 @@ function createMainWindow() {
     }
     main = null;
   });
-  main.on('ready-to-show', function() {
-    if (args.showWindowOnStart) {
+
+  if (args.showWindowOnStart) {
+    let showTimeout = null;
+    let show = function() {
       main.show();
       args.showWindowOnStart = false;
-    }
-  });
+      clearTimeout(showTimeout);
+      showTimeout = null;
+    };
+    main.on('ready-to-show', show);
+    showTimeout = setTimeout(show, 500);
+  }
   main.maximizedPrev = null;
 
   main.loadURL(`file://${__dirname}/web/index.html`);
