@@ -12,10 +12,10 @@ export default class EmailScreen extends React.Component  {
 
         <div className="cp-form form-email">
           <div className="form-email__new row">
-              <div className="form__field">
-                <i className="icon envelope"></i>
-                <input type="text" placeholder="New email address" />
-              </div>
+            <div className="form__field">
+              <i className="icon envelope"></i>
+              <input type="text" placeholder="New email address" />
+            </div>
           </div>
           <div class="form-email__confirm row">
             <div className="form__field">
@@ -33,45 +33,6 @@ export default class EmailScreen extends React.Component  {
             <button id="update" class="ui button">Update</button>
           </div>
         </div>
-
-        {/*<div class="ui padded grid">
-          <div class="row">
-            <div class="seven wide olive column">
-              New Email
-            </div>
-            <div class="nine wide olive right aligned column">
-              <div className="ui input">
-                <input type="text" placeholder="verify@example.com" />
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="seven wide olive column">
-              Confirm
-            </div>
-            <div class="nine wide olive right aligned column">
-              <div className="ui input">
-                <input type="text" placeholder="verify@example.com" />
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="seven wide olive column">
-              Password
-            </div>
-            <div class="nine wide olive right aligned column">
-              <div className="ui input">
-                <input type="password" placeholder="Current Password" />
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="column">
-              <button id="update" class="ui button">Update</button>
-            </div>
-          </div>
-        </div> */}
-
       </div>
     );
   }

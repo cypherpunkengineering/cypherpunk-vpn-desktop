@@ -920,6 +920,7 @@ small {
   }
 
   .form__field {
+    position: relative;
     width: 100%;
     // flex-direction: row;
     // flex-grow: 2;
@@ -933,6 +934,8 @@ small {
       i.icon {
         color: rgba(255,255,255,0.5);
         margin-right: 0.5rem;
+        position: absolute;
+        top: 1rem;
       }
     }
   }
@@ -956,10 +959,10 @@ small {
 
     .material & {
       border: none;
-      // border-bottom: 1px solid @border-light;
-      padding-left: 0;
+      border-bottom: 1px solid @border-light;
+      padding-left: 2rem;
       transition: all ease 0.2s;
-      width: calc(100% - 25px);
+      width: 100%;
 
       &:focus {
         background-color: transparent;

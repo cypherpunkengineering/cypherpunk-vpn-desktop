@@ -33,44 +33,6 @@ export default class PasswordScreen extends React.Component  {
             <button id="update" class="ui button">Update</button>
           </div>
         </div>
-
-        {/* <div class="ui padded grid">
-          <div class="row">
-            <div class="seven wide olive column">
-              New
-            </div>
-            <div class="nine wide olive right aligned column">
-              <div className="ui input">
-                <input type="password" placeholder="New Password" />
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="seven wide olive column">
-              Confirm
-            </div>
-            <div class="nine wide olive right aligned column">
-              <div className="ui input">
-                <input type="password" placeholder="Confirm" />
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="seven wide olive column">
-              Password
-            </div>
-            <div class="nine wide olive right aligned column">
-              <div className="ui input">
-                <input type="password" placeholder="Current Password" />
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="column">
-              <button id="update" class="ui button">Update</button>
-            </div>
-          </div>
-        </div> */}
       </div>
     );
   }
