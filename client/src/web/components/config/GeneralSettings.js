@@ -57,7 +57,7 @@ export default class GeneralSettings extends DaemonAware(React.Component)  {
             <label>Auto-connect on launch</label>
           </div>
         </div>
-        <div className="setting"><a tabIndex="0">Auto-connect on untrusted networks</a></div>
+        <div className="setting"><Link to="/configuration/trustednetworks">Auto-connect on untrusted networks</Link></div>
         <div className="setting">
           <div class="ui checkbox toggle">
             <input type="checkbox" id="desktopnotifications" name="desktopnotifications" ref="desktopnotifications"/>

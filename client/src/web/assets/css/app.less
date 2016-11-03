@@ -9,6 +9,7 @@
 @cpWhite20:   rgba(255,255,255,0.2);
 @cpWhite25:   rgba(255,255,255,0.25);
 @cpWhite40:   rgba(255,255,255,0.4);
+@cpWhite60:   rgba(255,255,255,0.6);
 @cpOrange:    #ffc933;
 @cpOrangeDark:#d19e12;
 
@@ -770,9 +771,10 @@ dialog {
 
 
 
-.account {
+.account,
+.settings {
   .ui.grid>.row>.olive.column {
-    background-color: none;
+    background-color: transparent !important;
   }
 }
 
@@ -990,6 +992,11 @@ small {
   font-size: 1.25rem;
   text-align: left;
 
+  .setting {
+    border-bottom: 1px solid @border-light;
+    font-size: 1.25rem;
+  }
+
   .row {
     padding: 0 1rem;
   }
@@ -1002,6 +1009,22 @@ small {
 
   .icon {
     margin-right: 0.5rem;
+  }
+
+  h1 {
+    color: @cpYellow;
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+  }
+
+  .descrip {
+    color: @cpWhite60;
+    margin-bottom: 0.5rem;
+  }
+
+  .fieldgroup {
+    padding: 0.5rem 0;
   }
 }
 

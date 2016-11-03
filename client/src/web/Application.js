@@ -7,6 +7,7 @@ import ConfigurationScreen from './components/ConfigurationScreen'
 import EmailScreen from './components/account/EmailScreen'
 import ShareScreen from './components/account/ShareScreen'
 import PrivacyScreen from './components/config/PrivacyScreen'
+import TrustedNetworksScreen from './components/config/TrustedNetworks'
 import FirewallScreen from './components/config/FirewallScreen'
 import HelpScreen from './components/account/HelpScreen'
 import PasswordScreen from './components/account/PasswordScreen'
@@ -68,6 +69,7 @@ render((
         <Route path="/configuration" component={ConfigurationScreen}>
           <Route path="privacy" component={PrivacyScreen}/>
           <Route path="firewall" component={FirewallScreen}/>
+          <Route path="trustednetworks" component={TrustedNetworksScreen}/>
         </Route>
         <Route path="/account" component={AccountScreen}>
           <Route path="email" component={EmailScreen}/>
