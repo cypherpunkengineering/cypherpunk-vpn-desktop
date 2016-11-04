@@ -58,7 +58,7 @@ public:
 	namedmember(std::string, server, "tokyodev") // FIXME: don't hardcode
 	namedmember(std::string, remotePort, "auto")
 	namedmember(int, localPort, 0)
-	namedmember(int, mtu, 1400)
+	namedmember(int, mtu, 1500)
 	namedmember(std::string, encryption, "default") // "none", "default", "strong" or "stealth"
 
 	namedmember(std::string, firewall, "off")
