@@ -1,3 +1,6 @@
+.PHONY: all run stop
+.DEFAULT: all
+
 SRCS= \
 	$(wildcard *.cpp) \
 	$(wildcard ../*.cpp) \
