@@ -177,7 +177,7 @@ export class ConfirmationStep extends React.Component {
     })
   }
   componentDidMount() {
-    this.setState({ interval: setInterval(this.onTimer.bind(this), 2000) });
+    this.setState({ interval: setInterval(this.onTimer.bind(this), 5000) });
   }
   componentWillUnmount() {
     clearInterval(this.state.interval);
