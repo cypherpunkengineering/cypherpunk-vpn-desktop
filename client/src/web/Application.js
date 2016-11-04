@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from 'react-dom';
+import ReactDOM from 'react-dom';
 import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, browserHistory, hashHistory } from 'react-router';
 import LoginScreen, * as Login from './components/LoginScreen';
 import ConnectScreen from './components/ConnectScreen';
@@ -15,6 +15,7 @@ import './assets/css/app.less';
 // import { configureStore } from './store/configureStore';
 import RouteTransition from './components/Transition';
 import daemon from './daemon.js';
+import server from './server.js';
 
 const transitionMap = {
     'login': {
@@ -38,38 +39,56 @@ const transitionMap = {
     },
 };
 
+export default class Application {
+  static init() {
+    server.refreshSession = () => {
+      if (!daemon.account.email || !daemon.account.token) {
+        throw new Error("No stored account credentials found");
+      }
+      return server.post('/api/v1/account/authenticate/token', { email: daemon.account.email, token: daemon.account.token }).then(data => true);
+    };
+    server.onAuthFailure = () => {
+      setTimeout(() => History.push('/login/email'), 0);
+    }
+    History.push('/login');
+  }
+  static render() {
+    return (
+      <Router history={window.History}>
+        <Route path="/" component={RouteTransition} transition={transitionMap}>
+          {/*<IndexRoute component={LoginScreen}/>*/}
+          <Route path="login" component={LoginScreen}>
+            <Route path="check" component={Login.Check}/>
+            <Route path="email" component={Login.EmailStep}/>
+            <Route path="password" component={Login.PasswordStep}/>
+            <Route path="register" component={Login.RegisterStep}/>
+            <Route path="confirm" component={Login.ConfirmationStep}/>
+            <IndexRedirect to="check"/>
+          </Route>
+          <Route path="connect" component={ConnectScreen}>
+            <Route path="/configuration" component={ConfigurationScreen}>
+              <Route path="email" component={EmailScreen}/>
+              <Route path="password" component={PasswordScreen}/>
+              <Route path="encryption" component={EncryptionScreen}/>
+              <Route path="firewall" component={FirewallScreen}/>
+              <Route path="help" component={HelpScreen}/>
+            </Route>
+            <Route path="/account" component={AccountScreen}/>
+          </Route>
+        </Route>
+      </Router>
+    );
+  }
+}
+
 // const store = configureStore();
-window.History = hashHistory;
+window.History = Application.History = hashHistory;
 
 daemon.ready(() => {
   daemon.once('state', state => {
-    History.push('/login');
+    Application.init();
   });
   daemon.post.get('state');
 });
 
-render((
-  <Router history={window.History}>
-    <Route path="/" component={RouteTransition} transition={transitionMap}>
-      {/*<IndexRoute component={LoginScreen}/>*/}
-      <Route path="login" component={LoginScreen}>
-        <Route path="email" component={Login.EmailStep}/>
-        <Route path="password" component={Login.PasswordStep}/>
-        <Route path="register" component={Login.RegisterStep}/>
-        <Route path="confirm" component={Login.ConfirmationStep}/>
-        <IndexRedirect to="email"/>
-      </Route>
-      <Route path="connect" component={ConnectScreen}>
-        <Route path="/configuration" component={ConfigurationScreen}>
-          <Route path="email" component={EmailScreen}/>
-          <Route path="password" component={PasswordScreen}/>
-          <Route path="encryption" component={EncryptionScreen}/>
-          <Route path="firewall" component={FirewallScreen}/>
-          <Route path="help" component={HelpScreen}/>
-        </Route>
-        <Route path="/account" component={AccountScreen}/>
-      </Route>
-      <IndexRedirect to="login"/>
-    </Route>
-  </Router>
-), document.getElementById('root-container'));
+ReactDOM.render(Application.render(), document.getElementById('root-container'));
