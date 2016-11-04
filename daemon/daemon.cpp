@@ -616,7 +616,7 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& server)
 		{ "client", "" },
 		//{ "nobind", "" },
 		{ "dev", "tun" },
-		{ "proto", g_settings.protocol() },
+		{ "proto", g_settings.protocol() == "tcp" ? "tcp-client" : g_settings.protocol() },
 		{ "tun-mtu", std::to_string(mtu) },
 		//{ "fragment", std::to_string(mtu - 100) },
 		{ "mssfix", std::to_string(mtu - 200) },
