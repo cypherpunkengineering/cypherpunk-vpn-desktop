@@ -43,7 +43,7 @@
     display: flex;
     flex-flow: column;
     background: linear-gradient(to bottom, rgba(0,0,0,0.13) 0, transparent 50px);
-    overflow: hidden;
+    overflow-x: hidden;
     overflow-y: overlay; // keep scrollable even in collapsed state
     > * {
       flex: 0 0 auto;
@@ -83,17 +83,21 @@
         }
       }
       &.favorite > .cp-fav {
-        color: @cpYellow;
+        color: @cpYellowDark;
         &:before {
           content: '\f005';
         }
+        &:hover {
+          color: @cpYellow !important;
+        }
       }
-      &:hover {
+      &:hover, &.selected:hover {
         background: rgba(255,255,255,0.1);
       }
       &.selected {
         font-weight: 700;
-        color: @cpYellow;
+        color: @cpYellowDark;
+        background: rgba(255,255,255,0.05);
       }
       &.disabled {
         > * { // Reduce opacity of children to prevent border from fading
