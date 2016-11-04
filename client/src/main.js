@@ -254,7 +254,7 @@ function createMainWindow() {
     useContentSize: true,
     width: 350,
     height: 530,
-    //resizable: false,
+    resizable: false,
     minimizable: false,
     maximizable: false,
     minWidth: 350,
