@@ -84,6 +84,20 @@ export default class Application {
 // const store = configureStore();
 window.History = Application.History = hashHistory;
 
+// Add a simple handler for uncaught errors in promises (this will almost
+// entirely only be used by XHR promises).
+window.addEventListener('unhandledrejection', function (event) {
+  if (event.reason.handled) {
+    // e.g. a 403 which was "handled" by moving to the login screen
+    event.preventDefault();
+    return false;
+  } else {
+    console.error("Unhandled error: " + event.reason.message);
+    console.dir(event.reason);
+    alert(event.reason.message);
+  }
+});
+
 daemon.ready(() => {
   daemon.once('state', state => {
     Application.init();
