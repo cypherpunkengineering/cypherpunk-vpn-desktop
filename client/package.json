@@ -10,7 +10,8 @@
     "build": "gulp build",
     "clean": "gulp clean",
     "watch": "gulp watch",
-    "start": "electron ./app --debug"
+    "start": "electron ./app --debug",
+    "start-no-debug": "electron ./app"
   },
   "repository": {
     "type": "git",
