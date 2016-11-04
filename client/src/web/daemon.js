@@ -99,6 +99,7 @@ ipcRenderer.on('daemon-down', down);
 })();
 
 export default daemon;
+window.daemon = daemon;
 
 import React from 'react';
 
