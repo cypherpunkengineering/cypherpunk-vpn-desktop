@@ -17,9 +17,13 @@ function makeQueryString(params) {
   return queryString.substr(1);
 }
 
-function xhr(method, url, params, { paramType = 'json' } = {}) {
+function xhr(method, url, params, options = {}) {
+  var { paramType = 'json', refreshSessionOnForbidden = true, catchAuthFailure = true } = options;
+  const retry = (opts = {}) => xhr.call(this, method, url, params, Object.assign({}, options, opts));
+
+  var processedUrl = url;
   if (!url.startsWith('http')) {
-    url = SERVER + '/' + url.replace(/^\//, '');
+    processedUrl = SERVER + '/' + url.replace(/^\//, '');
   }
   var xhr = new XMLHttpRequest();
   xhr.stack = new Error().stack;
@@ -36,7 +40,6 @@ function xhr(method, url, params, { paramType = 'json' } = {}) {
   }
 
   var promise = new Promise(function xhrPromise(resolve, reject) {
-    var processedUrl = url;
     var contentType = 'application/x-www-form-urlencoded';
     var data = null;
     if (params) {
@@ -63,10 +66,45 @@ function xhr(method, url, params, { paramType = 'json' } = {}) {
           data = JSON.parse(data);
         } catch (e) {}
       }
+      var error = null;
       if (this.status < 200 || this.status >= 300 || (typeof data === 'object' && data.error)) {
-        reject(makeError(this.status, ((typeof data === 'object') && data.message) || "Server call failed with code " + (this.statusText || this.status), data));
+        error = makeError(this.status, ((typeof data === 'object') && data.message) || "Server call failed with code " + (this.statusText || this.status), data);
+      }
+      var handle = () => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve({ data: data, status: this.status, xhr: this });
+        }
+      };
+      // Check for 403 errors as an indicator the user session expired, and try to refresh it.
+      if (this.status == 403 && refreshSessionOnForbidden && server.refreshSession) {
+        console.log("Attempting to refresh session...");
+        Promise.resolve().then(() => server.refreshSession()).then(() => {
+          console.log("Successfully refreshed, retrying original request...");
+          retry({ attemptLoginRefreshOnForbidden: false }).then(data => resolve(data), err => {
+            if (err.status == 403 && catchAuthFailure && server.onAuthFailure) {
+              console.warn("Recived 403 even after refreshing session: " + err.message);
+              try { server.onAuthFailure(); } catch (e) {}
+              err.handled = true;
+            }
+            reject(err);
+          });
+        }, err => {
+          console.log("Failed to refresh session: " + err.message);
+          if (catchAuthFailure && server.onAuthFailure) {
+            try { server.onAuthFailure(); } catch (e) {}
+            error.handled = true;
+          }
+          handle();
+        });
       } else {
-        resolve({ data: data, status: this.status, xhr: this });
+        if (this.status == 403 && catchAuthFailure && server.onAuthFailure) {
+          console.log("Authentication failure.");
+          try { server.onAuthFailure(); } catch (e) {}
+          err.handler = true;
+        }
+        handle();
       }
     };
     xhr.onerror = function() {
@@ -89,22 +127,22 @@ function xhr(method, url, params, { paramType = 'json' } = {}) {
         handlers[subKey] = mapOrCallback[key];
       }
     }
-    function callHandler(status, data, error) {
+    function callHandler(status, response, error) {
       var statusString = '' + status;
       function* candidateKeys() {
         if (error && error.type) {
           yield [error.type, error];
         }
         if (typeof status === 'number') {
-          yield [status, data];
-          yield [statusString, data];
-          yield [statusString.replace(/..$/, '??'), data];
-          yield ['???', data];
+          yield [status, response];
+          yield [statusString, response];
+          yield [statusString.replace(/..$/, '??'), response];
+          yield ['???', response];
         }
         if (error) {
           yield [statusString, error];
         }
-        yield ['*', error || makeError(status, ((typeof data === 'object') && data.message) || "Unhandled response: " + status, data)];
+        yield ['*', error || makeError(status, ((typeof response.data === 'object') && response.data.message) || "Unhandled response: " + status, response.data)];
       }
       // Find first matching pattern and call its handler
       for (let [key, param] of candidateKeys()) {
@@ -124,8 +162,8 @@ function xhr(method, url, params, { paramType = 'json' } = {}) {
       }
       throw makeError(status, ((typeof data === 'object') && data.message) || "Unhandled response: " + status, data);
     };
-    return originalThen.call(promise, ({ data, status, xhr }) => {
-      return callHandler(status, data);
+    return originalThen.call(promise, response => {
+      return callHandler(response.status, response);
     }, (error) => {
       return callHandler(error.status || 'error', error.data, error);
     });
@@ -185,10 +223,10 @@ function api(url) {
 //
 // The supported handler map key/value patterns are:
 //
-//   200: data => ...        // numeric HTTP status code
-//   '202': data => ...      // string HTTP status code
-//   '4??': data => ...      // any status code between 400-499
-//   '???': data => ...      // any status code
+//   200: response => ...    // numeric HTTP status code
+//   '202': response => ...  // string HTTP status code
+//   '4??': response => ...  // any status code between 400-499
+//   '???': response => ...  // any status code
 //   'named': error => ...   // named error in response
 //   'error': error => ...   // connection or any error
 //   'abort': error => ...   // request aborted
@@ -207,8 +245,11 @@ Object.assign(server, {
   post:   xhr.bind(server, 'POST'),
   put:    xhr.bind(server, 'PUT'),
   delete: xhr.bind(server, 'DELETE'),
-
-  // Idea? put actual API endpoints here too?
+});
+// Idea? put actual API endpoints here too?
+Object.assign(server, {
+  //refreshSession: () => { throw new Error() },
+  //onAuthFailure: () => { History.push('/login/email'); },
 });
 
 export default server;
