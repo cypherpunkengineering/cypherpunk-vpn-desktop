@@ -21,7 +21,6 @@ process.argv.forEach(arg => {
   }
 });
 
-
 const AutoLaunch = require('./autostart.js');
 
 ipc.on('autostart-get', (event) => {
@@ -249,7 +248,6 @@ function createMainWindow() {
     //icon: icon,
     backgroundColor: '#1560bd',
     show: false,
-    //frame: false,
     fullscreen: false,
     useContentSize: true,
     width: 350,
