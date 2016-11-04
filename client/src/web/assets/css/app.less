@@ -9,6 +9,7 @@
 @cpWhite20:   rgba(255,255,255,0.2);
 @cpWhite25:   rgba(255,255,255,0.25);
 @cpWhite40:   rgba(255,255,255,0.4);
+@cpWhite60:   rgba(255,255,255,0.6);
 @cpOrange:    #ffc933;
 @cpOrangeDark:#d19e12;
 
@@ -19,10 +20,15 @@
 @loaderRingColor: rgba(0,0,0,0.1);
 @loaderActiveColor: rgba(255,255,255,0.8);
 
+@border-light: rgba(255,255,255,0.25);
 
 // Mixins
 .bodyHeight {
   height: calc(~"100vh -" @fullHeaderHeight);
+}
+
+.border-full--light {
+  border: 1px solid @border-light;
 }
 
 .blur {
@@ -760,8 +766,7 @@ dialog {
 
 
 .container__comp {
-  //position: relative;
-  //top: 86px;
+  height: 100vh !important;
 
   &.account {
     background-color: @cpBgDark;
@@ -772,9 +777,10 @@ dialog {
 
 
 
-.account {
+.account,
+.settings {
   .ui.grid>.row>.olive.column {
-    background-color: none;
+    background-color: transparent !important;
   }
 }
 
@@ -800,10 +806,14 @@ dialog {
   border-bottom: 1px solid rgba(255,255,255,0.15) !important;
   height: (@dragbarHeight + @headerHeight);
   padding-top: @dragbarHeight;
-  position: absolute;
+  // position: absolute;
   top: 0;
   z-index: 1001;
   .draggable;
+
+  &.ui.menu.inverted {
+    background: none;
+  }
 
   &.ui.menu .item {
     padding-left: 0.5rem;
@@ -899,6 +909,133 @@ small {
   height: calc(~"100vh -" (@dragbarHeight + @headerHeight));
 }
 
+
+
+// Forms
+.cp-form {
+  overflow-y: auto;
+  padding-bottom: 4rem;
+  .bodyHeight;
+
+  .row {
+    display: flex;
+    flex-direction: column;
+    padding: 0.75rem 1rem;
+    align-items: center;
+    // border-bottom: 1px solid @border-light;
+  }
+
+  .form__field {
+    position: relative;
+    width: 100%;
+    // flex-direction: row;
+    // flex-grow: 2;
+    // text-align: right;
+
+    .material & {
+      border-bottom: 1px solid @border-light;
+      flex-direction: row;
+      align-items: center;
+
+      i.icon {
+        color: rgba(255,255,255,0.5);
+        margin-right: 0.5rem;
+        position: absolute;
+        top: 1rem;
+      }
+    }
+  }
+
+  .isolate {
+    margin-top: 1.5rem;
+  }
+
+  input[type="text"],
+  input[type="password"] {
+    background: 0 0;
+    .border-full--light;
+    font-size: 1.25rem;
+    padding: 0.75rem 1rem;
+    width: 100%;
+
+    &:focus {
+      outline: none;
+      background-color: darken(@cpBgDark, 5);
+    }
+
+    .material & {
+      border: none;
+      border-bottom: 1px solid @border-light;
+      padding-left: 2rem;
+      transition: all ease 0.2s;
+      width: 100%;
+
+      &:focus {
+        background-color: transparent;
+        border-color: #fff;
+      }
+    }
+  }
+
+  .actions__form {
+    padding: 0.75rem 1rem;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+  }
+
+  .button {
+    background-color: @cpBg;
+    // border: 1px solid rgba(255,255,255,0.75);
+    &:hover {
+      background-color: lighten(@cpBg, 10);
+    }
+  }
+}
+
+
+// Basic panel with rows
+.cp-panel__rows {
+  display: flex;
+  flex-direction: column;
+  font-size: 1.25rem;
+  text-align: left;
+
+  .setting {
+    border-bottom: 1px solid @border-light;
+    font-size: 1.25rem;
+  }
+
+  .row {
+    padding: 0 1rem;
+  }
+
+  a {
+    cursor: pointer;
+    display: block;
+    padding: 1rem 0;
+  }
+
+  .icon {
+    margin-right: 0.5rem;
+  }
+
+  h1 {
+    color: @cpYellow;
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+  }
+
+  .descrip {
+    color: @cpWhite60;
+    margin-bottom: 0.5rem;
+  }
+
+  .fieldgroup {
+    padding: 0.5rem 0;
+  }
+}
 
 
 
@@ -1027,7 +1164,7 @@ small {
     &-active {
       transform: translateX(0);
       opacity: 1;
-      transition: transform @transitionTime @stepSlide, opacity @transitionTime @easeInQuart;    
+      transition: transform @transitionTime @stepSlide, opacity @transitionTime @easeInQuart;
     }
   }
   &-leave {
