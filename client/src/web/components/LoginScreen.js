@@ -9,73 +9,82 @@ import server from '../server.js';
 
 
 
-function checkSubscriptionStatus() {
-  var subscription;
-  return jQuery.ajax('https://cypherpunk.engineering/api/subscription/status', {
-    contentType: 'application/json',
-    dataType: 'json',
-    xhrFields: { withCredentials: true },
-  }).catch((xhr, status, err) => {
-    throw new Error("Unable to check subscription status: " + xhr.status);
-  }).then((data, status, xhr) => {
-    subscription = data;
-    return daemon.call.applySettings({
-      subscription: subscription,
-    });
-  }).then(() => {
-    return subscription.confirmed;
-  });
+function refreshSubscription() {
+  return server.get('/api/subscription/status').then(response => daemon.call.applySettings({ subscription: response.data }).then(() => response.data));
 }
 
-function readServerList() {
-  var servers, regions;
-  return jQuery.ajax('https://cypherpunk.engineering/api/vpn/serverList', {
-    contentType: 'application/json',
-    dataType: 'json',
-    xhrFields: { withCredentials: true },
-  }).catch((xhr, status, err) => {
-    throw new Error("Unable to read server list: " + xhr.status);
-  }).then((data, status, xhr) => {
-    servers = Array.toDict(Array.flatten(Array.flatten(Object.mapToArray(data, (r, countries) => Object.mapToArray(countries, (c, locations) => locations.map(l => Object.assign({}, l, { country: c, region: r })))))), s => s.id);
-    regions = Object.mapValues(Array.toMultiDict(Object.values(servers), s => s.region), (r,c) => Object.mapValues(Array.toMultiDict(c, l => l.country), (c,l) => l.map(m => m.id)));
-    return daemon.call.applySettings({
-      regions: regions,
-      servers: servers,
-    });
-  });
+function refreshServerList() {
+  return server.get('/api/vpn/serverList').then(response => {
+    var servers = Array.toDict(Array.flatten(Array.flatten(Object.mapToArray(response.data, (r, countries) => Object.mapToArray(countries, (c, locations) => locations.map(l => Object.assign({}, l, { country: c, region: r })))))), s => s.id);
+    var regions = Object.mapValues(Array.toMultiDict(Object.values(servers), s => s.region), (r,c) => Object.mapValues(Array.toMultiDict(c, l => l.country), (c,l) => l.map(m => m.id)));
+    return daemon.call.applySettings({ regions: regions, servers: servers }).then(() => servers);
+  })
 }
 
-function postLoginActions(email, password, account) {
-  return daemon.call.setAccount({
-    username: email,
-    secret: account.secret,
-    name: "Cypher",
-    email: account.acct.email,
-    plan: account.acct.powerLevel, // FIXME
-  }).then(() => {
-    return checkSubscriptionStatus();
-  }).then(confirmed => {
-    if (confirmed) {
-      readServerList().then(() => {
+// Called to refresh any updated data and take any required next steps for
+// the current account (such as confirming your email address). 
+function refreshAccount() {
+  return refreshSubscription().then(subscription => {
+    if (!subscription.confirmed) {
+      History.push({ pathname: '/login/confirm', query: { email: daemon.account.email } });
+    } else {
+      return refreshServerList().then(servers => {
         History.push('/connect');
       });
-    } else {
-      History.push({ pathname: '/login/confirm', query: { email: email } });
     }
   });
 }
 
+// Called when we have logged in to (or registered) a new account, to store
+// and refresh all relevant account data.
+function setAccount(loginData) {
+  console.dir(loginData);
+  return daemon.call.setAccount({
+    email: loginData.acct.email,
+    token: loginData.token,
+    secret: loginData.secret, // FIXME: deprecated
+  }).then(() => refreshAccount());
+}
+
+
+
+export class Check extends React.Component {
+  componentDidMount() {
+    // Not the nicest pattern, but check if we're logged in here. A successful
+    // refresh automatically takes us to the main screen, whereas an authentication
+    // error will take us to the login screen (with err.handled = true). Other errors
+    // are unexpected and we show an alert for those.
+    setTimeout(() => { // need to use setTimeout since we might modify History
+      refreshAccount().catch(err => {
+        console.warn(err);
+        if (!err.handled) {
+          alert(err.message);
+          History.push('/login/email');
+        }
+      });
+    }, 0);
+  }
+  render() {
+    return (
+      <form className="cp login-check ui form">
+        <div className="ui inline active massive text loader" ref="loader"></div>
+      </form>
+    );
+  }
+}
 
 export class EmailStep extends React.Component {
   onSubmit() {
     var email = this.refs.email.value || (this.refs.email.value = "test@test.test"); // FIXME: debug value
     $(this.refs.email).prop('disabled', true).parent().addClass('loading');
     server.post('/account/identify/email', { email: email }).then({
-      200: data => History.push({ pathname: '/login/password', query: { email: email }}),
-      401: data => History.push({ pathname: '/login/register', query: { email: email }})
+      200: response => History.push({ pathname: '/login/password', query: { email: email }}),
+      401: response => History.push({ pathname: '/login/register', query: { email: email }})
     }).catch(err => {
-      alert(err.message);
-      $(this.refs.email).prop('disabled', false).focus().select().parent().removeClass('loading');
+      if (!err.handled) {
+        alert(err.message);
+        $(this.refs.email).prop('disabled', false).focus().select().parent().removeClass('loading');
+      }
     });
   }
   render() {
@@ -84,7 +93,7 @@ export class EmailStep extends React.Component {
         {/*<div className="welcome">Welcome.</div>*/}
         <div className="desc">Please input your email to begin.</div>
         <div className="ui icon input">
-          <input type="text" placeholder="Email" required autoFocus="true" ref="email" onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
+          <input type="text" placeholder="Email" required autoFocus="true" ref="email" defaultValue={daemon.account.email} onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
           <i className="search chevron right link icon" onClick={() => this.onSubmit()}></i>
         </div>
       </form>
@@ -96,19 +105,13 @@ export class PasswordStep extends React.Component {
   onSubmit() {
     var password = this.refs.password.value || (this.refs.password.value = "test123"); // FIXME: debug value
     $(this.refs.password).prop('disabled', true).parent().addClass('loading');
-    jQuery.ajax('https://cypherpunk.engineering/account/authenticate/password', {
-      cache: false,
-      contentType: 'application/json',
-      data: JSON.stringify({ password: password }), // TODO: email not needed?
-      dataType: 'json',
-      method: 'POST',
-      xhrFields: { withCredentials: true },
-    }).catch((xhr, status, err) => {
-      throw new Error("Login failed with status code " + xhr.status);
-    }).then((data, status, xhr) => {
-      return postLoginActions(this.props.location.query.email, password, data);
+    server.post('/account/authenticate/password', { email: this.props.location.query.email, password: password }).then(response => {
+      return setAccount(response.data);
     }).catch(err => {
-      alert(err.message);
+      if (!err.handled) {
+        alert(err.message);
+        console.dir(err);
+      }
       $(this.refs.password).prop('disabled', false).focus().select().parent().removeClass('loading');
     });
   }
@@ -133,19 +136,12 @@ export class RegisterStep extends React.Component {
     $(this.refs.password).prop('disabled', true);
     $(this.refs.register).hide();
     $(this.refs.loader).addClass('active');
-    var account;
-    jQuery.ajax('https://cypherpunk.engineering/account/register/signup', {
-      cache: false,
-      contentType: 'application/json',
-      data: JSON.stringify({ email: this.props.location.query.email, password: password }),
-      //dataType: 'json',
-      method: 'POST',
-      xhrFields: { withCredentials: true },
-    }).catch((xhr, status, err) => {
-      throw new Error("Login failed with status code " + xhr.status);
-    }).then((data, status, xhr) => {
-      return postLoginActions(this.props.location.query.email, password, data);
+    server.post('/account/register/signup', { email: this.props.location.query.email, password: password }).then(response => {
+      return setAccount(response.data);
     }).catch(err => {
+      if (!err.handled) {
+        alert(err.message);
+      }
       $(this.refs.password).prop('disabled', false);
       $(this.refs.register).show();
       $(this.refs.loader).removeClass('active');
@@ -168,13 +164,7 @@ export class RegisterStep extends React.Component {
 
 export class ConfirmationStep extends React.Component {
   onTimer() {
-    checkSubscriptionStatus().then(confirmed => {
-      if (confirmed) {
-        readServerList().then(() => {
-          History.push('/connect');
-        });
-      }
-    })
+    refreshAccount(); // navigates automatically
   }
   componentDidMount() {
     this.setState({ interval: setInterval(this.onTimer.bind(this), 5000) });
@@ -197,8 +187,8 @@ export class ConfirmationStep extends React.Component {
 const LOGIN_ORDER = [ 'email', 'password', 'register', 'confirm' ];
 
 export default class LoginScreen extends React.Component {
-  getTransition(from,to) {
-    console.log(from, to);
+  static getTransition(from,to) {
+    if (from === 'check' || to === 'check') return 'fadeIn';
     return (LOGIN_ORDER.indexOf(to) < LOGIN_ORDER.indexOf(from)) ? 'nudgeRight' : 'nudgeLeft';
   }
   render() {
@@ -207,7 +197,7 @@ export default class LoginScreen extends React.Component {
         <Dragbar height="225px"/>
         <img class="logo" src={CypherPunkLogo}/>
         <Title component="h3" />
-        <RouteTransition transition={this.getTransition}>
+        <RouteTransition transition={LoginScreen.getTransition}>
           {this.props.children}
         </RouteTransition>
       </div>
