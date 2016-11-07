@@ -119,7 +119,14 @@ public:
 		std::tstring executable = convert<TCHAR>(GetPath(OpenVPNExecutable));
 		std::tstring cwd = convert<TCHAR>(GetPath(OpenVPNDir));
 
+		HANDLE hNullFile = WIN_CHECK_IF_INVALID(CreateFile, (_T("NUL"), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_NO_BUFFERING, NULL));
+		WIN_CHECK_IF_FALSE(SetHandleInformation, (hNullFile, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT));
+
 		STARTUPINFO startupinfo = { sizeof(STARTUPINFO), 0 };
+		startupinfo.hStdInput = hNullFile;
+		startupinfo.hStdOutput = hNullFile;
+		startupinfo.hStdError = hNullFile;
+		startupinfo.dwFlags |= STARTF_USESTDHANDLES;
 		PROCESS_INFORMATION processinfo = { 0 };
 		BOOL success = FALSE;
 
@@ -152,6 +159,8 @@ public:
 			else
 				PrintLastError(CreateProcess);
 		}
+
+		CloseHandle(hNullFile);
 
 		if (!success)
 		{
@@ -907,4 +916,3 @@ int _tmain(int argc, TCHAR *argv[])
 	}
 	return 0;
 }
-

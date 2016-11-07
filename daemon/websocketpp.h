@@ -60,7 +60,7 @@ public:
 	template<typename T>
 	void write(level channel, T&& msg) {
 		LogLevel l = GetLogLevel(channel, (names*)nullptr);
-		LOG_EX(PrefixLogWriter<LogWriter>, l, dynamic_test(channel)) << '[' << names::channel_name(channel) << "] " << std::forward<T>(msg);
+		LOG_EX(l, dynamic_test(channel), Location("websocketpp")) << '[' << names::channel_name(channel) << "] " << std::forward<T>(msg);
 	}
 
 	constexpr bool static_test(level channel) const {

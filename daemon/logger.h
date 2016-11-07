@@ -32,7 +32,7 @@ extern class Logger* g_logger;
 #define LOG_ENABLED(level) (STATIC_LOG_ENABLED(level) && (Logger::levels & (1 << (int)(level))))
 
 #ifdef _DEBUG
-#define LOG_WITH_LOCATION (Location(__func__, __FILE__, __LINE__))
+#define LOG_WITH_LOCATION Location(__func__, __FILE__, __LINE__)
 #else
 #define LOG_WITH_LOCATION
 #endif
@@ -44,12 +44,13 @@ extern class Logger* g_logger;
 #define LogInfo(    fmt, ...) g_logger->Write(LogLevel::INFO,     fmt,##__VA_ARGS__)
 #define LogVerbose( fmt, ...) g_logger->Write(LogLevel::VERBOSE,  fmt,##__VA_ARGS__)
 
-#define LOG_EX(classname, level, condition, ...) (!(LOG_ENABLED(level) && (condition))) ? (void)0 : Voidify() | classname(__VA_ARGS__)(level) LOG_WITH_LOCATION
+#define LOG_IMPL(classname, level, condition, location, ...) (!(LOG_ENABLED(level) && (condition))) ? (void)0 : Voidify() | classname (__VA_ARGS__) (level) (location)
+#define LOG_EX(level, condition, location) LOG_IMPL(PrefixLogWriter<LogWriter>, level, condition, location)
 
-#define LOG_IF(severity, condition)  LOG_EX(PrefixLogWriter<LogWriter>, LogLevel::severity, condition)
-#define LOG(severity)                LOG_EX(PrefixLogWriter<LogWriter>, LogLevel::severity, true)
-#define PLOG_IF(severity, condition) LOG_EX(PrefixLogWriter<ErrorLogWriter>, LogLevel::severity, condition, Error::Get())
-#define PLOG(severity)               LOG_EX(PrefixLogWriter<ErrorLogWriter>, LogLevel::severity, true, Error::Get())
+#define LOG_IF(severity, condition)  LOG_IMPL(PrefixLogWriter<LogWriter>, LogLevel::severity, condition, LOG_WITH_LOCATION)
+#define LOG(severity)                LOG_IMPL(PrefixLogWriter<LogWriter>, LogLevel::severity, true, LOG_WITH_LOCATION)
+#define PLOG_IF(severity, condition) LOG_IMPL(PrefixLogWriter<ErrorLogWriter>, LogLevel::severity, condition, LOG_WITH_LOCATION, Error::Get())
+#define PLOG(severity)               LOG_IMPL(PrefixLogWriter<ErrorLogWriter>, LogLevel::severity, true, LOG_WITH_LOCATION, Error::Get())
 
 
 struct Voidify
