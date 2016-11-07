@@ -10,11 +10,11 @@ import server from '../server.js';
 
 
 function refreshSubscription() {
-  return server.get('/api/subscription/status').then(response => daemon.call.applySettings({ subscription: response.data }).then(() => response.data));
+  return server.get('/api/v0/subscription/status').then(response => daemon.call.applySettings({ subscription: response.data }).then(() => response.data));
 }
 
 function refreshServerList() {
-  return server.get('/api/vpn/serverList').then(response => {
+  return server.get('/api/v0/vpn/serverList').then(response => {
     var servers = Array.toDict(Array.flatten(Array.flatten(Object.mapToArray(response.data, (r, countries) => Object.mapToArray(countries, (c, locations) => locations.map(l => Object.assign({}, l, { country: c, region: r })))))), s => s.id);
     var regions = Object.mapValues(Array.toMultiDict(Object.values(servers), s => s.region), (r,c) => Object.mapValues(Array.toMultiDict(c, l => l.country), (c,l) => l.map(m => m.id)));
     return daemon.call.applySettings({ regions: regions, servers: servers }).then(() => servers);
@@ -40,7 +40,7 @@ function refreshAccount() {
 function setAccount(loginData) {
   console.dir(loginData);
   return daemon.call.setAccount({
-    email: loginData.acct.email,
+    email: loginData.account.email,
     token: loginData.token,
     secret: loginData.secret, // FIXME: deprecated
   }).then(() => refreshAccount());
@@ -77,7 +77,7 @@ export class EmailStep extends React.Component {
   onSubmit() {
     var email = this.refs.email.value || (this.refs.email.value = "test@test.test"); // FIXME: debug value
     $(this.refs.email).prop('disabled', true).parent().addClass('loading');
-    server.post('/account/identify/email', { email: email }).then({
+    server.post('/api/v0/account/identify/email', { email: email }).then({
       200: response => History.push({ pathname: '/login/password', query: { email: email }}),
       401: response => History.push({ pathname: '/login/register', query: { email: email }})
     }).catch(err => {
@@ -105,7 +105,7 @@ export class PasswordStep extends React.Component {
   onSubmit() {
     var password = this.refs.password.value || (this.refs.password.value = "test123"); // FIXME: debug value
     $(this.refs.password).prop('disabled', true).parent().addClass('loading');
-    server.post('/account/authenticate/password', { email: this.props.location.query.email, password: password }).then(response => {
+    server.post('/api/v0/account/authenticate/password', { email: this.props.location.query.email, password: password }).then(response => {
       return setAccount(response.data);
     }).catch(err => {
       if (!err.handled) {
@@ -136,7 +136,7 @@ export class RegisterStep extends React.Component {
     $(this.refs.password).prop('disabled', true);
     $(this.refs.register).hide();
     $(this.refs.loader).addClass('active');
-    server.post('/account/register/signup', { email: this.props.location.query.email, password: password }).then(response => {
+    server.post('/api/v0/account/register/signup', { email: this.props.location.query.email, password: password }).then(response => {
       return setAccount(response.data);
     }).catch(err => {
       if (!err.handled) {

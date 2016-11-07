@@ -312,7 +312,7 @@ class LoginScreen extends React.Component {
     var username = $(this.refs.username).val((i,v) => v || "test@test.test").val(); // FIXME: debug value
     var password = $(this.refs.password).val((i,v) => v || "test123").val(); // FIXME: debug value
     var login;
-    jQuery.ajax('https://cypherpunk.engineering/account/authenticate/userpasswd', {
+    jQuery.ajax('https://cypherpunk.engineering/api/v0/account/authenticate/userpasswd', {
       cache: false,
       contentType: 'application/json',
       data: JSON.stringify({ login: username, password: password }),
@@ -321,7 +321,7 @@ class LoginScreen extends React.Component {
       xhrFields: { withCredentials: true },
     }).then((data, status, xhr) => {
       login = data;
-      return jQuery.ajax('https://cypherpunk.engineering/api/vpn/serverList', {
+      return jQuery.ajax('https://cypherpunk.engineering/api/v0/vpn/serverList', {
         contentType: 'application/json',
         dataType: 'json',
         xhrFields: { withCredentials: true },
@@ -335,8 +335,8 @@ class LoginScreen extends React.Component {
         username: username,
         secret: login.secret,
         name: "Cypher",
-        email: login.acct.email,
-        plan: login.acct.powerLevel, // FIXME
+        email: login.account.email,
+        plan: login.account.powerLevel, // FIXME
       }).then(() => {
         return daemon.call.applySettings({
           regions: regions,
