@@ -104,7 +104,6 @@ void OpenVPNProcess::HandleManagementReadLine(const asio::error_code& error, std
 
 void OpenVPNProcess::OnManagementInterfaceResponse(const std::string& line)
 {
-	LOG(INFO) << "[MGMT] " << line;
 	if (line.size() > 0)
 	{
 		if (line[0] == '>')
@@ -116,11 +115,19 @@ void OpenVPNProcess::OnManagementInterfaceResponse(const std::string& line)
 				auto it = _on_management_response.find(prefix);
 				if (it != _on_management_response.end())
 				{
-					it->second(line.substr(sep + 1));
+					try
+					{
+						it->second(line.substr(sep + 1));
+						return;
+					}
+					catch (const std::exception& e)
+					{
+						LOG(ERROR) << e;
+					}
 				}
 			}
 		}
-		//else (line.)
+		LOG(INFO) << "[MGMT] " << line;
 	}
 }
 

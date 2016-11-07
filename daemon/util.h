@@ -98,11 +98,11 @@ static inline std::ostream& operator<<(std::ostream& os, const std::exception& e
 
 
 template<typename IT, typename SEP, typename CB>
-static inline size_t SplitToIterators(const IT& begin, const IT& end, const SEP& sep, const CB& cb)
+static inline size_t SplitToIterators(const IT& begin, const IT& end, const SEP& sep, int max_splits, const CB& cb)
 {
 	IT pos = begin, last = pos;
 	size_t count = 0;
-	while ((pos = std::find(last, end, sep)) != end)
+	while ((max_splits < 0 || count < max_splits) && (pos = std::find(last, end, sep)) != end)
 	{
 		cb(last, pos);
 		last = pos;
@@ -113,22 +113,37 @@ static inline size_t SplitToIterators(const IT& begin, const IT& end, const SEP&
 	++count;
 	return count;
 }
+template<typename IT, typename SEP, typename CB>
+static inline size_t SplitToIterators(const IT& begin, const IT& end, const SEP& sep, const CB& cb)
+{
+	return SplitToIterators(begin, end, sep, -1, cb);
+}
 
 template<typename CB>
-static inline size_t SplitToIterators(const std::string& text, char sep, const CB& cb)
+static inline size_t SplitToIterators(const std::string& text, char sep, int max_splits, const CB& cb)
 {
 	return SplitToIterators(text.begin(), text.end(), sep, cb);
 }
+template<typename CB>
+static inline size_t SplitToIterators(const std::string& text, char sep, const CB& cb)
+{
+	return SplitToIterators(text, sep, -1, cb);
+}
 
 template<typename CB>
-static inline size_t SplitToStrings(const std::string& text, char sep, const CB& cb)
+static inline size_t SplitToStrings(const std::string& text, char sep, int max_splits, const CB& cb)
 {
 	return SplitToIterators(text, sep, [&](const std::string::const_iterator& b, const std::string::const_iterator& e) { return std::string(b, e); });
 }
+template<typename CB>
+static inline size_t SplitToStrings(const std::string& text, char sep, const CB& cb)
+{
+	return SplitToStrings(text, sep, -1, cb);
+}
 
-static inline std::vector<std::string> SplitToVector(const std::string& text, char sep)
+static inline std::vector<std::string> SplitToVector(const std::string& text, char sep, int max_splits = -1)
 {
 	std::vector<std::string> result;
-	SplitToIterators(text, sep, [&](const std::string::const_iterator& b, const std::string::const_iterator& e) { result.emplace_back(b, e); });
+	SplitToIterators(text, sep, max_splits, [&](const std::string::const_iterator& b, const std::string::const_iterator& e) { result.emplace_back(b, e); });
 	return std::move(result);
 }

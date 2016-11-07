@@ -593,7 +593,7 @@ void CypherDaemon::RPC_applySettings(const JsonObject& settings)
 	}
 	if (changed.size() > 0)
 		g_settings.OnChanged(changed);
-	
+
 	// FIXME: Temporary workaround, these should be configs instead
 	if (settings.find("servers") != settings.end() || settings.find("regions") != settings.end())
 		SendToAllClients(_rpc_client.BuildNotificationData("config", MakeConfigObject()));
@@ -626,7 +626,7 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& server)
 		//{ "cipher", g_settings.cipher() },
 		//{ "tls-cipher", "TLS-DHE-RSA-WITH-AES-128-GCM-SHA256:TLS-DHE-RSA-WITH-AES-128-CBC-SHA256" },
 		{ "auth", "SHA256" },
-		{ "redirect-gateway", "def1" },
+		//{ "redirect-gateway", "def1" },
 		{ "route-delay", "0" },
 		{ "tls-version-min", "1.2" },
 		//{ "remote-cert-tls", "server" },
@@ -885,10 +885,21 @@ bool CypherDaemon::RPC_connect()
 		}
 		catch (const std::exception& e) { LOG(WARNING) << e; }
 	});
+	vpn->OnManagementResponse("LOG", [=](const std::string& line) {
+		auto params = SplitToVector(line, ',', 2);
+		LogLevel level;
+		if (params[1] == "F") level = LogLevel::CRITICAL;
+		else if (params[1] == "N") level = LogLevel::ERROR;
+		else if (params[1] == "W") level = LogLevel::WARNING;
+		else if (params[1] == "I") level = LogLevel::INFO;
+		else /*if (params[1] == "D")*/ level = LogLevel::VERBOSE;
+		LOG_EX(level, true, Location("openvpn")) << params[2];
+		//OutputDebugStringA((line + "\n").c_str());
+	});
 
 	vpn->Run(args);
 
-	vpn->SendManagementCommand("\nstate on\nbytecount 5\nhold release\n");
+	vpn->SendManagementCommand("\nlog on\nstate on\nbytecount 5\nhold release\n");
 
 	//vpn->SendManagementCommand("signal SIGTERM\n");
 	//vpn->SendManagementCommand("exit\n");

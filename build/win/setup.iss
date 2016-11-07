@@ -4,7 +4,7 @@
 #define MyAppPublisher "Cypherpunk Partners KK"
 #define MyAppURL "https://cypherpunk.com/"
 #define MyAppExeName "CypherpunkVPN.exe"
-#define MyAppCopyright "Copyright © 2016 " + MyAppPublisher
+#define MyAppCopyright "Copyright Â© 2016 " + MyAppPublisher
 
 [Setup]
 AppId={#MyAppID}
