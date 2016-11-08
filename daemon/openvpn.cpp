@@ -53,7 +53,7 @@ void OpenVPNProcess::StopManagementInterface()
 
 void OpenVPNProcess::SendManagementCommand(const std::string& cmd)
 {
-	_io.post([=, cmd = cmd]() {
+	_io.dispatch([=, cmd = cmd]() {
 		bool first = _management_write_queue.empty();
 		_management_write_queue.push_back(cmd);
 		if (first && _management_socket.is_open())

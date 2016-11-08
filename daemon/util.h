@@ -1,6 +1,7 @@
 #pragma once
 
 #include "config.h"
+#include "debug.h"
 
 #include <ostream>
 #include <sstream>
@@ -147,3 +148,16 @@ static inline std::vector<std::string> SplitToVector(const std::string& text, ch
 	SplitToIterators(text, sep, max_splits, [&](const std::string::const_iterator& b, const std::string::const_iterator& e) { result.emplace_back(b, e); });
 	return std::move(result);
 }
+
+template<typename C, typename R, typename... Args>
+static inline std::function<R(Args...)> bind_this(R (C::*fn)(Args...), C* instance)
+{
+	return [instance, fn](Args&&... args) { return (instance->*fn)(std::forward<Args>(args)...); };
+}
+template<typename C, typename... Args>
+static inline std::function<void(Args...)> bind_this(void (C::*fn)(Args...), C* instance)
+{
+	return [instance, fn](Args&&... args) { (instance->*fn)(std::forward<Args>(args)...); };
+}
+
+#define THIS_CALLBACK(name) ::bind_this(&std::remove_cv_t<std::remove_pointer_t<decltype(this)>>::name, this)
