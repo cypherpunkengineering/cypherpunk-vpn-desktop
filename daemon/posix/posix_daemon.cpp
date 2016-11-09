@@ -131,6 +131,11 @@ public:
 		int stopsignal() const { return WSTOPSIG(_result); }
 		bool continued() const { return WIFCONTINUED(_result); }
 	};
+private:
+	static std::unordered_map<pid_t, PosixSubprocess*> _map;
+	std::vector<std::function<void(const asio::error_code&, Result)>> _waiters;
+	Result _result;
+	bool _exited;
 public:
 	PosixSubprocess(asio::io_service& io)
 		: _io(io)
@@ -138,8 +143,13 @@ public:
 		, stdout_handle(io)
 		, stderr_handle(io)
 		, _pid(0)
+		, _exited(false)
 	{
 
+	}
+	~PosixSubprocess()
+	{
+		if (_pid) _map.erase(_pid);
 	}
 	int pid() const { return _pid; }
 	// Run("/usr/local/bin/myprogrem", { "arg1", "arg2" })
@@ -167,18 +177,28 @@ public:
 	{
 		if (!_pid)
 			THROW_POSIXEXCEPTION(ECHILD, waitpid);
+		if (_exited)
+			return _result;
 		int result_value;
 		while (waitpid(_pid, &result_value, 0) == -1)
 		{
 			if (errno != EINTR)
 				THROW_POSIXEXCEPTION(errno, waitpid);
 		}
-		return Result(result_value);
+		_result = Result(result_value);
+		_exited = true;
+		return _result;
 	}
 	bool Check(Result* result)
 	{
 		if (!_pid)
 			THROW_POSIXEXCEPTION(ECHILD, waitpid);
+		if (_exited)
+		{
+			if (result)
+				*result = _result;
+			return true; 
+		}	
 		int result_value;
 		int pid;
 		while ((pid = waitpid(_pid, &result_value, WNOHANG)) == -1)
@@ -192,6 +212,16 @@ public:
 			*result = Result(result_value);
 		return true;
 	}
+	void AsyncWait(std::function<void(const asio::error_code&, Result)> cb)
+	{
+		LOG(INFO) << "_pid = " << _pid << ", _exited = " << _exited;
+		if (!_pid)
+			_io.post([cb = std::move(cb)]() { cb(asio::error::bad_descriptor, Result(0)); });
+		else if (_exited)
+			_io.post([result = _result, cb = std::move(cb)]() { cb(asio::error_code(), result); });
+		else
+			_waiters.push_back(std::move(cb));
+	}
 	void Kill(int signal = SIGTERM)
 	{
 		if (_pid)
@@ -199,6 +229,31 @@ public:
 			kill(_pid, signal);
 		}
 	}
+
+public:
+	static void NotifyTerminated(pid_t pid, int result)
+	{
+		auto it = _map.find(pid);
+		if (it != _map.end())
+		{
+			auto instance = it->second;
+			_map.erase(it);
+			instance->NotifyTerminated(result);
+		}
+		else
+			LOG(WARNING) << "Unknown child " << pid << " terminated with status " << result;
+	}
+	void NotifyTerminated(int result)
+	{
+		LOG(INFO) << "Subprocess " << _pid << " terminated with status " << result;
+		_result = Result(result);
+		_exited = true;
+		_io.dispatch([cbs = std::move(_waiters), result = _result]() {
+			for (const auto& cb : cbs)
+				cb(asio::error_code(), result);
+		});
+	}
+
 private:
 	static std::vector<const char*> MakeArgVector(const std::string& executable, const std::vector<std::string>& args)
 	{
@@ -301,9 +356,15 @@ private:
 
 			// Keep the PID around.
 			_pid = pid;
+
+			// Register in the PID map.
+			_map[pid] = this;
 		}
 	}
 };
+
+std::unordered_map<pid_t, PosixSubprocess*> PosixSubprocess::_map;
+
 
 template<class AsyncReadStream>
 class ASIOLineReader
@@ -363,6 +424,9 @@ public:
 	}
 	~PosixOpenVPNProcess()
 	{
+		stdin_handle.close();
+		stdout_handle.close();
+		stderr_handle.close();
 		Kill();
 	}
 
@@ -378,6 +442,11 @@ public:
 	virtual void Kill() override
 	{
 		PosixSubprocess::Kill();
+	}
+
+	virtual void AsyncWait(std::function<void(const asio::error_code& error)> cb) override
+	{
+		PosixSubprocess::AsyncWait([cb = std::move(cb)](const asio::error_code& error, PosixSubprocess::Result result) { cb(error); });
 	}
 
 	void WriteLineToStdIn(std::string line)
@@ -408,6 +477,7 @@ private:
 class PosixCypherDaemon : public CypherDaemon
 {
 	asio::signal_set _signals;
+	std::unordered_map<pid_t, PosixOpenVPNProcess*> _process_map;
 public:
 	PosixCypherDaemon()
 		: _signals(_io, SIGCHLD, SIGPIPE, SIGTERM)
@@ -446,14 +516,14 @@ public:
 					int status;
 					while ((pid = waitpid(-1, &status, WNOHANG)) > 0)
 					{
-						LOG(INFO) << "Process " << pid << " exited";
+						PosixSubprocess::NotifyTerminated(pid, status);
 					}
 					break;
 				}
 				case SIGTERM:
 				{
 					RequestShutdown();
-					return;
+					break;
 				}
 			}
 			_signals.async_wait(THIS_CALLBACK(OnSignal));

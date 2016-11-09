@@ -13,6 +13,7 @@ OpenVPNProcess::OpenVPNProcess(asio::io_service& io)
 	: _io(io)
 	, _management_acceptor(io, asio::ip::tcp::endpoint(asio::ip::address::from_string("127.0.0.1"), 0), true)
 	, _management_socket(io)
+	, _management_signaled(false)
 {
 
 }
@@ -26,7 +27,7 @@ int OpenVPNProcess::StartManagementInterface()
 {
 	int port = _management_acceptor.local_endpoint().port();
 
-	_io.post([=]() {
+	_io.post([this]() {
 		_management_write_queue.emplace_back("\n\n\n");
 		_management_acceptor.listen(1);
 		_management_acceptor.async_accept(_management_socket, [this](const asio::error_code& error) {
@@ -45,17 +46,17 @@ int OpenVPNProcess::StartManagementInterface()
 
 void OpenVPNProcess::StopManagementInterface()
 {
-	_io.post([=]() {
+	_io.post([this]() {
 		_management_socket.shutdown(asio::ip::tcp::socket::shutdown_both);
 		_management_socket.close();
 	});
 }
 
-void OpenVPNProcess::SendManagementCommand(const std::string& cmd)
+void OpenVPNProcess::SendManagementCommand(std::string cmd)
 {
-	_io.dispatch([=, cmd = cmd]() {
+	_io.post([this, cmd = std::move(cmd)]() {
 		bool first = _management_write_queue.empty();
-		_management_write_queue.push_back(cmd);
+		_management_write_queue.push_back(std::move(cmd));
 		if (first && _management_socket.is_open())
 		{
 			asio::async_write(_management_socket, asio::buffer(_management_write_queue.front()), std::bind(&OpenVPNProcess::HandleManagementWrite, this, _1, _2));
@@ -134,4 +135,22 @@ void OpenVPNProcess::OnManagementInterfaceResponse(const std::string& line)
 bool OpenVPNProcess::IsSameServer(const jsonrpc::Value::Struct& connection)
 {
 	return connection == _connection;
+}
+
+void OpenVPNProcess::Shutdown()
+{
+	_io.dispatch([this]() {
+		if (!_management_signaled)
+		{
+			if (_management_socket.is_open())
+			{
+				SendManagementCommand("\nsignal SIGTERM\n");
+			}
+			_management_signaled = true;
+		}
+		else
+		{
+			Kill();
+		}
+	});
 }

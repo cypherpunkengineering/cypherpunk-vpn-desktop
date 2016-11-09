@@ -102,9 +102,29 @@ int CypherDaemon::Run()
 
 void CypherDaemon::RequestShutdown()
 {
-	// FIXME: Cleanly shut down all OpenVPN connections, then exit
-	if (!_ws_server.stopped())
-		_ws_server.stop();
+	_io.post([this]() {
+		if (_process)
+		{
+			try
+			{
+				// Shut down any OpenVPN process first.
+				_process->Shutdown();
+				_process->AsyncWait([this](const asio::error_code& error) {
+					LOG(INFO) << "Stopping message loop";
+					if (!_ws_server.stopped())
+						_ws_server.stop();
+				});
+				return;
+			}
+			catch (const SystemException& e)
+			{
+				LOG(ERROR) << e;
+			}
+		}
+		// Either no process is running, or something went wrong above.
+		if (!_ws_server.stopped())
+			_ws_server.stop();
+	});
 }
 
 void CypherDaemon::SendToClient(Connection connection, const std::shared_ptr<jsonrpc::FormattedData>& data)
@@ -925,7 +945,7 @@ bool CypherDaemon::RPC_connect()
 
 	vpn->Run(args);
 
-	vpn->SendManagementCommand("\nlog on\nstate on\nbytecount 5\nhold release\n");
+	vpn->SendManagementCommand("\nstate on\nbytecount 5\nhold release\n");
 
 	//vpn->SendManagementCommand("signal SIGTERM\n");
 	//vpn->SendManagementCommand("exit\n");

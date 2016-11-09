@@ -27,6 +27,8 @@ protected:
 
 	JsonObject _connection;
 
+	bool _management_signaled;
+
 private:
 	void HandleManagementWrite(const asio::error_code& error, std::size_t bytes_transferred);
 	void HandleManagementReadLine(const asio::error_code& error, std::size_t bytes_transferred);
@@ -40,11 +42,16 @@ public:
 public:
 	int StartManagementInterface();
 	void StopManagementInterface();
-	void SendManagementCommand(const std::string& cmd);
+	void SendManagementCommand(std::string cmd);
 	void OnManagementResponse(const std::string& prefix, std::function<void(const std::string&)> callback);
 
 	bool IsSameServer(const JsonObject& settings);
 
+	// Request clean shutdown (first via management interface, calls Kill if that fails)
+	void Shutdown();
+
 	virtual void Run(const std::vector<std::string>& params) = 0;
 	virtual void Kill() = 0;
+	// Asynchronously wait for process termination
+	virtual void AsyncWait(std::function<void(const asio::error_code&)> cb) = 0;
 };

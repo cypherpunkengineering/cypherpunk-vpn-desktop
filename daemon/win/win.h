@@ -81,6 +81,7 @@ public:
 	static TypedWin32Handle Wrap(HANDLE handle) { return TypedWin32Handle(handle); }
 
 	TypedWin32Handle& operator=(TypedWin32Handle&& other) { CloseImpl(); _handle = std::exchange(other._handle, NULL); return *static_cast<DERIVED>(this); }
+	HANDLE& ref() { return _handle; }
 	operator HANDLE() const { return _handle; }
 	operator bool() const { return _handle != NULL; }
 	bool operator!() const { return _handle == NULL; }
