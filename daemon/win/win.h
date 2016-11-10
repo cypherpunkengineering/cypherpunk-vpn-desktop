@@ -75,17 +75,17 @@ private:
 	TypedWin32Handle(HANDLE handle) : _handle(handle) {}
 public:
 	TypedWin32Handle() : _handle(NULL) {}
-	TypedWin32Handle(TypedWin32Handle&& other) : _handle(std::exchange(other._handle, NULL)) {}
+	TypedWin32Handle(TypedWin32Handle&& other) : _handle(std::exchange(other._handle, (HANDLE)NULL)) {}
 	~TypedWin32Handle() noexcept { CloseImpl(); }
 
 	static TypedWin32Handle Wrap(HANDLE handle) { return TypedWin32Handle(handle); }
 
-	TypedWin32Handle& operator=(TypedWin32Handle&& other) { CloseImpl(); _handle = std::exchange(other._handle, NULL); return *static_cast<DERIVED>(this); }
+	TypedWin32Handle& operator=(TypedWin32Handle&& other) { CloseImpl(); _handle = std::exchange(other._handle, (HANDLE)NULL); return *this; }
 	HANDLE& ref() { return _handle; }
 	operator HANDLE() const { return _handle; }
 	operator bool() const { return _handle != NULL; }
 	bool operator!() const { return _handle == NULL; }
-	HANDLE Release() { return std::exchange(_handle, NULL); }
+	HANDLE Release() { return std::exchange(_handle, (HANDLE)NULL); }
 	void Close() { WIN_CHECK_IF_FALSE(CloseImpl, ()); _handle = NULL; }
 };
 typedef TypedWin32Handle<> Win32Handle;

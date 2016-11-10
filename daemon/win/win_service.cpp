@@ -80,7 +80,8 @@ public:
 
 class WinSubprocess
 {
-	asio::windows::basic_object_handle _handle;
+	asio::windows::basic_object_handle<> _handle;
+	Win32Handle _job;
 	DWORD _id;
 	bool _signaled;
 	bool _terminated;
@@ -89,7 +90,7 @@ public:
 	Win32Handle stdout_handle;
 	Win32Handle stderr_handle;
 public:
-	WinSubprocess() : _id(0), _signaled(false), _terminated(false) {}
+	WinSubprocess(asio::io_service& io) : _handle(io), _id(0), _signaled(false), _terminated(false) {}
 	void Run(const std::string& executable, const std::vector<std::string>& args, const std::string& cwd, bool as_network_user)
 	{
 		// Combine all parameters into a quoted command line string
@@ -112,10 +113,10 @@ public:
 		WinPipe stderr_pipe(false, true);
 
 		STARTUPINFO startupinfo = { sizeof(STARTUPINFO), 0 };
-		si.hStdInput = stdin_pipe.read;
-		si.hStdOutput = stdout_pipe.write;
-		si.hStdError = stderr_pipe.write;
-		si.dwFlags |= STARTF_USESTDHANDLES;
+		startupinfo.hStdInput = stdin_pipe.read;
+		startupinfo.hStdOutput = stdout_pipe.write;
+		startupinfo.hStdError = stderr_pipe.write;
+		startupinfo.dwFlags |= STARTF_USESTDHANDLES;
 		DWORD flags = CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP;
 		PROCESS_INFORMATION processinfo = { 0 };
 
@@ -138,14 +139,28 @@ public:
 		WIN_CHECK_IF_FALSE(CreateProcess, (t_executable.c_str(), &cmdline[0], NULL, NULL, TRUE, flags, NULL, t_cwd.c_str(), &startupinfo, &processinfo));
 	success:
 		// Save the process handle.
-		_handle = Win32Handle::Wrap(processinfo.hProcess);
+		_handle.assign(processinfo.hProcess);
 		_id = processinfo.dwProcessId;
 		// Don't need the thread handle.
-		CloseHandle(process.hThread);
+		CloseHandle(processinfo.hThread);
 		// Move-assign the pipe handles.
 		stdin_handle = std::move(stdin_pipe.write);
 		stdout_handle = std::move(stdout_pipe.read);
 		stderr_handle = std::move(stderr_pipe.read);
+
+		// Try to assign the new process to a job, so it gets closed automatically when the handle holder dies.
+		try
+		{
+			_job = Win32Handle::Wrap(WIN_CHECK_IF_NULL(CreateJobObject, (NULL, NULL)));
+			JOBOBJECT_EXTENDED_LIMIT_INFORMATION jobinfo = {0};
+			jobinfo.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+			WIN_CHECK_IF_FALSE(SetInformationJobObject, (_job, JobObjectExtendedLimitInformation, &jobinfo, sizeof(jobinfo)));
+			WIN_CHECK_IF_FALSE(AssignProcessToJobObject, (_job, _handle.native_handle()));
+		}
+		catch (const Win32Exception& e)
+		{
+			LOG(WARNING) << "Failed to create job object: " << e;
+		}
 	}
 	DWORD Wait()
 	{
@@ -165,7 +180,7 @@ public:
 			throw std::exception("Unexpected result from WaitForSingleObject");
 		}
 	}
-	void AsyncWait(const std::function<const asio::error_code&, DWORD code>& cb)
+	void AsyncWait(const std::function<void(const asio::error_code&, DWORD code)>& cb)
 	{
 		_handle.async_wait([this, cb](const asio::error_code& error) {
 			DWORD code;
@@ -244,35 +259,28 @@ class WinOpenVPNProcess : public OpenVPNProcess, public WinSubprocess
 	std::thread _stdout_read_thread;
 	std::thread _stderr_read_thread;
 public:
-	WinOpenVPNProcess(asio::io_service& io) : OpenVPNProcess(io), _process_handle(INVALID_HANDLE_VALUE) {}
-
-	HANDLE _process_handle;
+	WinOpenVPNProcess(asio::io_service& io) : OpenVPNProcess(io), WinSubprocess(io) {}
 
 	virtual void Run(const std::vector<std::string>& params) override
 	{
-		WinSubprocess:Run(GetPath(OpenVPNExecutable), params, GetPath(OpenVPNDir), !g_settings.runOpenVPNAsRoot());
+		WinSubprocess::Run(GetPath(OpenVPNExecutable), params, GetPath(OpenVPNDir), !g_settings.runOpenVPNAsRoot());
 
-		_stdout_read_thread = std::thread(ReadThread, std::move(stdout_handle), [this](const asio::error_code& error, std::string line) {
+		_stdout_read_thread = std::thread(THIS_CALLBACK(ReadThread), std::move(stdout_handle), [this](const asio::error_code& error, std::string line) {
 			g_daemon->OnOpenVPNStdOut(this, error, std::move(line));
 		});
-		_stderr_read_thread = std::thread(ReadThread, std::move(stderr_handle), [this](const asio::error_code& error, std::string line) {
+		_stderr_read_thread = std::thread(THIS_CALLBACK(ReadThread), std::move(stderr_handle), [this](const asio::error_code& error, std::string line) {
 			g_daemon->OnOpenVPNStdErr(this, error, std::move(line));
 		});
 	}
 
 	virtual void Kill() override
 	{
-		if (_process_handle != INVALID_HANDLE_VALUE)
-		{
-			if (!TerminateProcess(_process_handle, -1))
-				PrintLastError(TerminateProcess);
-			_process_handle = INVALID_HANDLE_VALUE;
-		}
+		WinSubprocess::Kill();
 	}
 
 	virtual void AsyncWait(std::function<void(const asio::error_code&)> cb) override
 	{
-		WinSubProcess::AsyncWait([cb = std::move(cb)](const asio::error_code& error, DWORD code) {
+		WinSubprocess::AsyncWait([cb = std::move(cb)](const asio::error_code& error, DWORD code) {
 			cb(error);
 		});
 	}
@@ -281,10 +289,9 @@ private:
 	void ReadThread(Win32Handle handle, std::function<void(const asio::error_code&, std::string)> cb)
 	{
 		asio::io_service io;
-		asio::windows::basic_stream_handle h(io, handle.Release());
 		asio::error_code error;
 		asio::streambuf buffer;
-		while (size_t size = asio::read_until(h, buffer, '\n', error))
+		while (size_t size = SyncReadUntil(handle, buffer, '\n', error))
 		{
 			if (!error)
 			{
@@ -299,6 +306,64 @@ private:
 				_io.post([=]() { cb(error, std::string()); });
 		}
 		_io.post([=](){ cb(error, std::string()); });
+	}
+
+	static size_t SyncReadUntil(Win32Handle& handle, asio::streambuf& buffer, char delim, asio::error_code& error)
+	{
+		size_t search_position = 0;
+		for (;;)
+		{
+			// Determine the range of the data to be searched.
+			typedef asio::buffers_iterator<asio::streambuf::const_buffers_type> iterator;
+			asio::streambuf::const_buffers_type buffers = buffer.data();
+			iterator begin = iterator::begin(buffers);
+			iterator pos = begin + search_position;
+			iterator end = iterator::end(buffers);
+
+			// Look for a match.
+			auto it = std::find(pos, end, '\n');
+			if (it != end)
+			{
+				// Found a match. We're done.
+				error = asio::error_code();
+				return it - begin + 1;
+			}
+			else
+			{
+				// No match. Next search can start with the new data.
+				search_position = end - begin;
+			}
+
+			// Check if buffer is full.
+			if (buffer.size() == buffer.max_size())
+			{
+				error = asio::error::not_found;
+				return 0;
+			}
+
+			// Need more data.
+			size_t bytes_to_read = asio::read_size_helper(buffer, 65536);
+			buffer.commit(SyncReadSome(handle, buffer.prepare(bytes_to_read), error));
+			if (error)
+				return 0;
+		}
+	}
+	static size_t SyncReadSome(Win32Handle& handle, asio::streambuf::mutable_buffers_type& buffers, asio::error_code& error)
+	{
+		asio::mutable_buffer buffer = buffers;
+		void* data = asio::detail::buffer_cast_helper(buffer);
+		DWORD bytes_to_read = (DWORD)asio::detail::buffer_size_helper(buffer);
+		DWORD bytes_read = 0;
+		if (ReadFile(handle, data, bytes_to_read, &bytes_read, NULL))
+		{
+			error = asio::error_code();
+			return bytes_read;
+		}
+		else
+		{
+			error = asio::error_code(GetLastError(), asio::error::get_system_category());
+			return 0;
+		}
 	}
 };
 

@@ -3,6 +3,7 @@
 #include "config.h"
 #include "debug.h"
 
+#include <functional>
 #include <ostream>
 #include <sstream>
 #include <string>

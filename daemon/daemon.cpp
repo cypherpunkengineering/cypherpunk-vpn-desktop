@@ -228,7 +228,7 @@ void CypherDaemon::OnOpenVPNStdErr(OpenVPNProcess* process, const asio::error_co
 	{
 		if (!error)
 		{
-			LOG_EX(LogLevel::WARNING, true, Location("OpenVPN:STDERR")) << line;			
+			LOG_EX(LogLevel::WARNING, true, Location("OpenVPN:STDERR")) << line;
 		}
 		else
 			LOG(WARNING) << "OpenVPN:STDERR error: " << error;
@@ -944,6 +944,9 @@ bool CypherDaemon::RPC_connect()
 	});
 
 	vpn->Run(args);
+	vpn->AsyncWait([this, vpn](const asio::error_code& error) {
+		OnOpenVPNProcessExited(vpn);
+	});
 
 	vpn->SendManagementCommand("\nstate on\nbytecount 5\nhold release\n");
 
