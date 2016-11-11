@@ -142,6 +142,24 @@ public:
 		stdin_handle = std::move(stdin_pipe.write);
 		stdout_handle = std::move(stdout_pipe.read);
 		stderr_handle = std::move(stderr_pipe.read);
+	DWORD Wait()
+	{
+		if (!_handle.is_open())
+			throw std::exception("Null pointer exception");
+		switch (WaitForSingleObject(_handle.native_handle(), INFINITE))
+		{
+		case WAIT_OBJECT_0:
+		{
+			DWORD code;
+			WIN_CHECK_IF_FALSE(GetExitCodeProcess, (_handle.native_handle(), &code));
+			return code;
+		}
+		case WAIT_FAILED:
+			THROW_WIN32EXCEPTION(GetLastError(), WaitForSingleObject);
+		default:
+			throw std::exception("Unexpected result from WaitForSingleObject");
+		}
+	}
 	}
 	void Kill()
 	{
