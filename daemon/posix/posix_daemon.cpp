@@ -365,6 +365,48 @@ private:
 
 std::unordered_map<pid_t, PosixSubprocess*> PosixSubprocess::_map;
 
+template<class AsyncReadStream>
+class ASIOLineReader
+{
+public:
+	typedef void callback_t(const asio::error_code& error, std::string line);
+private:
+	AsyncReadStream& _stream;
+	asio::streambuf _readbuf;
+	std::function<callback_t> _callback;
+public:
+	ASIOLineReader(AsyncReadStream& stream, std::function<callback_t> callback)
+		: _stream(stream), _callback(std::move(callback))
+	{
+	}
+	void Begin()
+	{
+		AsyncReadLine();
+	}
+private:
+	void AsyncReadLine()
+	{
+		asio::async_read_until(_stream, _readbuf, '\n', THIS_CALLBACK(HandleLine));
+	}
+	void HandleLine(const asio::error_code& error, std::size_t bytes_transferred)
+	{
+		if (!error)
+		{
+			std::istream is(&_readbuf);
+			std::string line;
+			std::getline(is, line);
+			if (line.size() > 0 && *line.crbegin() == '\r')
+				line.pop_back();
+			_callback(error, std::move(line));
+			AsyncReadLine();
+		}
+		else
+		{
+			_callback(error, std::string());
+		}
+	}
+};
+
 class PosixOpenVPNProcess : public OpenVPNProcess
 {
 	FILE* _file;
