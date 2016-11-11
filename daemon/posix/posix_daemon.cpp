@@ -471,7 +471,15 @@ private:
 
 class PosixCypherDaemon : public CypherDaemon
 {
+	asio::signal_set _signals;
+	std::unordered_map<pid_t, PosixOpenVPNProcess*> _process_map;
 public:
+	PosixCypherDaemon()
+		: _signals(_io, SIGCHLD, SIGPIPE, SIGTERM)
+	{
+		// Register signal listeners
+		_signals.async_wait(THIS_CALLBACK(OnSignal));
+	}
 	virtual OpenVPNProcess* CreateOpenVPNProcess(asio::io_service& io) override
 	{
 		return new PosixOpenVPNProcess(io);
@@ -491,13 +499,32 @@ public:
 	{
 		throw "not implemented";
 	}
+	void OnSignal(const asio::error_code& error, int signal)
+	{
+		if (!error)
+		{
+			switch (signal)
+			{
+				case SIGCHLD:
+				{
+					pid_t pid;
+					int status;
+					while ((pid = waitpid(-1, &status, WNOHANG)) > 0)
+					{
+						PosixSubprocess::NotifyTerminated(pid, status);
+					}
+					break;
+				}
+				case SIGTERM:
+				{
+					RequestShutdown();
+					break;
+				}
+			}
+			_signals.async_wait(THIS_CALLBACK(OnSignal));
+		}
+	}
 };
-
-void sigterm_handler(int signal)
-{
-	if (g_daemon)
-		g_daemon->RequestShutdown();
-}
 
 static void (*g_old_terminate_handler)() = nullptr;
 
@@ -538,14 +565,14 @@ int main(int argc, char **argv)
 	Logger::Push(&g_file_logger);
 	Logger::Push(&g_stderr_logger);
 
-	// Register a signal handler for SIGTERM for clean shutdowns
-	signal(SIGTERM, sigterm_handler);
-
 	// Instantiate the posix version of the daemon
 	g_daemon = new PosixCypherDaemon();
 
 	// Run the daemon synchronously
 	int result = g_daemon->Run();
+
+	// Extreme corner case of children dying after our sighandlers..?
+	signal(SIGCHLD, SIG_IGN);
 
 	if (result)
 		LOG(ERROR) << "Exited daemon with error code " << result;
