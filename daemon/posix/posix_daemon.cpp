@@ -11,6 +11,55 @@
 #include <exception>
 #include <stdexcept>
 #include <cxxabi.h>
+#include <unistd.h>
+
+
+class PosixHandle
+{
+	int _fd;
+public:
+	PosixHandle() : _fd(0) {}
+	explicit PosixHandle(int fd) : _fd(fd) {}
+	PosixHandle(const PosixHandle& copy) : _fd(copy._fd ? POSIX_CHECK(dup, (copy._fd)) : 0) {}
+	PosixHandle(PosixHandle&& move) : _fd(std::exchange(move._fd, 0)) {}
+	~PosixHandle()
+	{
+		Close();
+	}
+	PosixHandle& operator=(const PosixHandle& copy)
+	{
+		Close();
+		_fd = copy._fd ? POSIX_CHECK(dup, (copy._fd)) : 0;
+		return *this;
+	}
+	PosixHandle& operator=(PosixHandle&& move)
+	{
+		Close();
+		_fd = std::exchange(move._fd, 0);
+		return *this;
+	}
+	PosixHandle Duplicate()
+	{
+		return PosixHandle(_fd ? POSIX_CHECK(dup, (_fd)) : 0);
+	}
+	void SetCloseOnExec()
+	{
+		POSIX_CHECK(fcntl, (_fd, F_SETFD, POSIX_CHECK(fcntl, (_fd, F_GETFD)) | FD_CLOEXEC));
+	}
+	void Close()
+	{
+		if (_fd)
+		{
+			close(_fd);
+			_fd = 0;
+		}
+	}
+	int Release()
+	{
+		return std::exchange(_fd, 0);
+	}
+	operator int() const { return _fd; }
+};
 
 
 class PosixOpenVPNProcess : public OpenVPNProcess
@@ -44,6 +93,7 @@ public:
 	virtual void Kill() override
 	{
 		if (_file)
+		if (!error)
 		{
 			pclose(_file);
 			_file = nullptr;
