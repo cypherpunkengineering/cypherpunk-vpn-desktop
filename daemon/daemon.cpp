@@ -885,6 +885,16 @@ bool CypherDaemon::RPC_connect()
 		}
 		catch (const std::exception& e) { LOG(WARNING) << e; }
 	});
+	vpn->OnManagementResponse("LOG", [=](const std::string& line) {
+		auto params = SplitToVector(line, ',', 2);
+		LogLevel level;
+		if (params[1] == "F") level = LogLevel::CRITICAL;
+		else if (params[1] == "N") level = LogLevel::ERROR;
+		else if (params[1] == "W") level = LogLevel::WARNING;
+		else if (params[1] == "I") level = LogLevel::INFO;
+		else /*if (params[1] == "D")*/ level = LogLevel::VERBOSE;
+		LOG_EX(level, true, Location("openvpn")) << params[2];
+	});
 
 	vpn->Run(args);
 
