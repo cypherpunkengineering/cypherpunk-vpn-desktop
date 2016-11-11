@@ -102,9 +102,22 @@ int CypherDaemon::Run()
 
 void CypherDaemon::RequestShutdown()
 {
-	// FIXME: Cleanly shut down all OpenVPN connections, then exit
-	if (!_ws_server.stopped())
-		_ws_server.stop();
+	_io.post([this]() {
+		if (_process)
+		{
+			try
+			{
+				// Shut down any OpenVPN process first.
+				_process->Shutdown();
+			}
+			catch (const SystemException& e)
+			{
+				LOG(ERROR) << e;
+			}
+		}
+		if (!_ws_server.stopped())
+			_ws_server.stop();
+	});
 }
 
 void CypherDaemon::SendToClient(Connection connection, const std::shared_ptr<jsonrpc::FormattedData>& data)

@@ -13,6 +13,7 @@ OpenVPNProcess::OpenVPNProcess(asio::io_service& io)
 	: _io(io)
 	, _management_acceptor(io, asio::ip::tcp::endpoint(asio::ip::address::from_string("127.0.0.1"), 0), true)
 	, _management_socket(io)
+	, _management_signaled(false)
 {
 
 }
@@ -127,4 +128,22 @@ void OpenVPNProcess::OnManagementInterfaceResponse(const std::string& line)
 bool OpenVPNProcess::IsSameServer(const jsonrpc::Value::Struct& connection)
 {
 	return connection == _connection;
+}
+
+void OpenVPNProcess::Shutdown()
+{
+	_io.dispatch([this]() {
+		if (!_management_signaled)
+		{
+			if (_management_socket.is_open())
+			{
+				SendManagementCommand("\nsignal SIGTERM\n");
+			}
+			_management_signaled = true;
+		}
+		else
+		{
+			Kill();
+		}
+	});
 }
