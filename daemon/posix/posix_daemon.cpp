@@ -132,6 +132,8 @@ public:
 		bool continued() const { return WIFCONTINUED(_result); }
 	};
 private:
+	static std::unordered_map<pid_t, PosixSubprocess*> _map;
+	std::vector<std::function<void(const asio::error_code&, Result)>> _waiters;
 	Result _result;
 	bool _exited;
 public:
@@ -144,6 +146,10 @@ public:
 		, _exited(false)
 	{
 
+	}
+	~PosixSubprocess()
+	{
+		if (_pid) _map.erase(_pid);
 	}
 	int pid() const { return _pid; }
 	// Run("/usr/local/bin/myprogrem", { "arg1", "arg2" })
@@ -206,12 +212,46 @@ public:
 			*result = Result(result_value);
 		return true;
 	}
+	void AsyncWait(std::function<void(const asio::error_code&, Result)> cb)
+	{
+		LOG(INFO) << "_pid = " << _pid << ", _exited = " << _exited;
+		if (!_pid)
+			_io.post([cb = std::move(cb)]() { cb(asio::error::bad_descriptor, Result(0)); });
+		else if (_exited)
+			_io.post([result = _result, cb = std::move(cb)]() { cb(asio::error_code(), result); });
+		else
+			_waiters.push_back(std::move(cb));
+	}
 	void Kill(int signal = SIGTERM)
 	{
 		if (_pid)
 		{
 			kill(_pid, signal);
 		}
+	}
+
+public:
+	static void NotifyTerminated(pid_t pid, int result)
+	{
+		auto it = _map.find(pid);
+		if (it != _map.end())
+		{
+			auto instance = it->second;
+			_map.erase(it);
+			instance->NotifyTerminated(result);
+		}
+		else
+			LOG(WARNING) << "Unknown child " << pid << " terminated with status " << result;
+	}
+	void NotifyTerminated(int result)
+	{
+		LOG(INFO) << "Subprocess " << _pid << " terminated with status " << result;
+		_result = Result(result);
+		_exited = true;
+		_io.dispatch([cbs = std::move(_waiters), result = _result]() {
+			for (const auto& cb : cbs)
+				cb(asio::error_code(), result);
+		});
 	}
 
 private:
@@ -316,9 +356,14 @@ private:
 
 			// Keep the PID around.
 			_pid = pid;
+
+			// Register in the PID map.
+			_map[pid] = this;
 		}
 	}
 };
+
+std::unordered_map<pid_t, PosixSubprocess*> PosixSubprocess::_map;
 
 class PosixOpenVPNProcess : public OpenVPNProcess
 {
