@@ -160,6 +160,17 @@ public:
 			throw std::exception("Unexpected result from WaitForSingleObject");
 		}
 	}
+	void AsyncWait(const std::function<void(const asio::error_code&, DWORD code)>& cb)
+	{
+		_handle.async_wait([this, cb](const asio::error_code& error) {
+			DWORD code;
+			if (error)
+				cb(error, 0);
+			else if (GetExitCodeProcess(_handle.native_handle(), &code))
+				cb(error, code);
+			else
+				cb(asio::error::access_denied, 0);
+		});
 	}
 	void Kill()
 	{
