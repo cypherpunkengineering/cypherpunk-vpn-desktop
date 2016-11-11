@@ -109,12 +109,19 @@ void CypherDaemon::RequestShutdown()
 			{
 				// Shut down any OpenVPN process first.
 				_process->Shutdown();
+				_process->AsyncWait([this](const asio::error_code& error) {
+					LOG(INFO) << "Stopping message loop";
+					if (!_ws_server.stopped())
+						_ws_server.stop();
+				});
+				return;
 			}
 			catch (const SystemException& e)
 			{
 				LOG(ERROR) << e;
 			}
 		}
+		// Either no process is running, or something went wrong above.
 		if (!_ws_server.stopped())
 			_ws_server.stop();
 	});
@@ -936,6 +943,9 @@ bool CypherDaemon::RPC_connect()
 	});
 
 	vpn->Run(args);
+	vpn->AsyncWait([this, vpn](const asio::error_code& error) {
+		OnOpenVPNProcessExited(vpn);
+	});
 
 	vpn->SendManagementCommand("\nstate on\nbytecount 5\nhold release\n");
 
