@@ -76,48 +76,6 @@ public:
 	}
 };
 
-template<typename RESULT, typename INPUT>
-void AppendQuotedCommandLineArgument(std::basic_string<RESULT>& result, const std::basic_string<INPUT>& arg, bool force = false)
-{
-	static const INPUT special_chars[] = { ' ', '\t', '\n', '\v', '"', 0 };
-
-	if (!force && !arg.empty() && arg.find_first_of(special_chars) == arg.npos)
-	{
-		result.append(arg.begin(), arg.end());
-	}
-	else
-	{
-		result.push_back('"');
-
-		for (auto it = arg.begin(); ; ++it)
-		{
-			size_t backslashes = 0;
-			while (it != arg.end() && *it == '\\')
-			{
-				++it;
-				++backslashes;
-			}
-			if (it == arg.end())
-			{
-				result.append(backslashes * 2, '\\');
-				break;
-			}
-			else if (*it == '"')
-			{
-				result.append(backslashes * 2 + 1, '\\');
-				result.push_back(*it);
-			}
-			else
-			{
-				result.append(backslashes, '\\');
-				result.push_back(*it);
-			}
-		}
-
-		result.push_back('"');
-	}
-}
-
 class WinSubprocess
 {
 	asio::windows::basic_object_handle<> _handle;
@@ -201,6 +159,48 @@ public:
 					PLOG(WARNING) << "TerminateProcess failed: " << LastError;
 				_terminated = true;
 			}
+		}
+	}
+private:
+	template<typename RESULT, typename INPUT>
+	static void AppendQuotedCommandLineArgument(std::basic_string<RESULT>& result, const std::basic_string<INPUT>& arg, bool force = false)
+	{
+		static const INPUT special_chars[] = { ' ', '\t', '\n', '\v', '"', 0 };
+
+		if (!force && !arg.empty() && arg.find_first_of(special_chars) == arg.npos)
+		{
+			result.append(arg.begin(), arg.end());
+		}
+		else
+		{
+			result.push_back('"');
+
+			for (auto it = arg.begin(); ; ++it)
+			{
+				size_t backslashes = 0;
+				while (it != arg.end() && *it == '\\')
+				{
+					++it;
+					++backslashes;
+				}
+				if (it == arg.end())
+				{
+					result.append(backslashes * 2, '\\');
+					break;
+				}
+				else if (*it == '"')
+				{
+					result.append(backslashes * 2 + 1, '\\');
+					result.push_back(*it);
+				}
+				else
+				{
+					result.append(backslashes, '\\');
+					result.push_back(*it);
+				}
+			}
+
+			result.push_back('"');
 		}
 	}
 };
