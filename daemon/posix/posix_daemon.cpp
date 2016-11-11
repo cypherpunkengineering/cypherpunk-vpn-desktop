@@ -407,41 +407,64 @@ private:
 	}
 };
 
-class PosixOpenVPNProcess : public OpenVPNProcess
-{
-	FILE* _file;
 
+class PosixOpenVPNProcess : public OpenVPNProcess, public PosixSubprocess
+{
+	std::deque<std::string> _stdin_write_queue;
+	ASIOLineReader<decltype(stdout_handle)> _stdout_reader;
+	ASIOLineReader<decltype(stderr_handle)> _stderr_reader;
+	using OpenVPNProcess::_io;
 public:
-	PosixOpenVPNProcess(asio::io_service& io) : OpenVPNProcess(io), _file(nullptr) {}
+	PosixOpenVPNProcess(asio::io_service& io)
+		: OpenVPNProcess(io), PosixSubprocess(io)
+		, _stdout_reader(stdout_handle, [this](const asio::error_code& error, std::string line) { g_daemon->OnOpenVPNStdOut(this, error, std::move(line)); })
+		, _stderr_reader(stderr_handle, [this](const asio::error_code& error, std::string line) { g_daemon->OnOpenVPNStdErr(this, error, std::move(line)); })
+	{
+
+	}
 	~PosixOpenVPNProcess()
 	{
+		stdin_handle.close();
+		stdout_handle.close();
+		stderr_handle.close();
 		Kill();
 	}
 
 	virtual void Run(const std::vector<std::string>& params) override
 	{
-		std::string cmdline = GetPath(OpenVPNExecutable);
-		for (const auto& param : params)
-		{
-			cmdline += ' ';
-			// FIXME: proper quoting/escaping
-			if (param.find(' ') != param.npos)
-				cmdline += "\"" + param + "\"";
-			else
-				cmdline += param;
-		}
-		LOG(INFO) << cmdline;
-		// execute cmdline asynchronously - popen?
-		_file = popen(cmdline.c_str(), "w"); // TODO: later, if parsing output, use "r" instead
+		std::string openvpn = GetPath(OpenVPNExecutable);
+		PosixSubprocess::Run(openvpn, params);
+
+		_stdout_reader.Begin();
+		_stderr_reader.Begin();
 	}
 
 	virtual void Kill() override
 	{
-		if (_file)
+		PosixSubprocess::Kill();
+	}
+
+	void WriteLineToStdIn(std::string line)
+	{
+		WriteToStdIn(std::move(line) + '\n');
+	}
+	void WriteToStdIn(std::string data)
+	{
+		_io.dispatch([this, d = std::move(data)]() {
+			bool was_empty = _stdin_write_queue.empty();
+			_stdin_write_queue.push_back(std::move(d));
+			if (was_empty)
+				asio::async_write(stdin_handle, asio::buffer(_stdin_write_queue.front()), THIS_CALLBACK(HandleLineWritten));
+		});
+	}
+private:
+	void HandleLineWritten(const asio::error_code& error, std::size_t bytes_transferred)
+	{
 		if (!error)
 		{
-			pclose(_file);
-			_file = nullptr;
+			_stdin_write_queue.pop_front();
+			if (!_stdin_write_queue.empty())
+				asio::async_write(stdin_handle, asio::buffer(_stdin_write_queue.front()), THIS_CALLBACK(HandleLineWritten));
 		}
 	}
 };
