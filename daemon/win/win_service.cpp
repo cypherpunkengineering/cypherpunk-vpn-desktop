@@ -952,7 +952,7 @@ static BOOL WINAPI CtrlHandler(DWORD dwCtrlType)
 		WaitForSingleObject(g_service_thread_handle, INFINITE);
 		return FALSE;
 	default:
-		return TRUE;
+		return FALSE;
 	}
 }
 
