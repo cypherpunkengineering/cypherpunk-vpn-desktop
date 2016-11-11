@@ -55,6 +55,27 @@ static FileLogger g_stderr_logger(stderr);
 static FileLogger g_file_logger;
 
 
+class WinPipe
+{
+public:
+	Win32Handle read;
+	Win32Handle write;
+public:
+	WinPipe(bool inherit_read, bool inherit_write)
+	{
+		SECURITY_ATTRIBUTES sa;
+		sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+		sa.bInheritHandle = (inherit_read || inherit_write) ? TRUE : FALSE;
+		sa.lpSecurityDescriptor = NULL;
+
+		WIN_CHECK_IF_FALSE(CreatePipe, (&read.ref(), &write.ref(), &sa, 0));
+		if (!inherit_read)
+			WIN_CHECK_IF_FALSE(SetHandleInformation, (read, HANDLE_FLAG_INHERIT, 0));
+		if (!inherit_write)
+			WIN_CHECK_IF_FALSE(SetHandleInformation, (write, HANDLE_FLAG_INHERIT, 0));
+	}
+};
+
 template<typename RESULT, typename INPUT>
 void AppendQuotedCommandLineArgument(std::basic_string<RESULT>& result, const std::basic_string<INPUT>& arg, bool force = false)
 {
