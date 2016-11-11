@@ -38,7 +38,7 @@ template<typename T> static inline T      ThrowLastErrorIfNegative(T&&    result
 template<typename T> static inline T      ThrowLastErrorIfPositive(T&&    result, const char* operation _D(, LOCATION_DECL)) { if (result > 0)                     ThrowLastError(              operation _D(, LOCATION_VAR)); return std::move(result); }
 template<typename T> static inline T      ThrowLastErrorIfNull    (T&&    result, const char* operation _D(, LOCATION_DECL)) { if (result == nullptr)              ThrowLastError(              operation _D(, LOCATION_VAR)); return std::move(result); }
 template<typename T> static inline T      ThrowLastErrorIfNonNull (T&&    result, const char* operation _D(, LOCATION_DECL)) { if (result != nullptr)              ThrowLastError(              operation _D(, LOCATION_VAR)); return std::move(result); }
-                     static inline BOOL   ThrowLastErrorIfFalse   (BOOL   result, const char* operation _D(, LOCATION_DECL)) { if (!result)                        ThrowLastError(              operation _D(, LOCATION_VAR)); return result; }
+                     static inline BOOL   ThrowLastErrorIfFalse   (BOOL   result, const char* operation _D(, LOCATION_DECL)) { if (result) {} else                 ThrowLastError(              operation _D(, LOCATION_VAR)); return result; }
                      static inline BOOL   ThrowLastErrorIfTrue    (BOOL   result, const char* operation _D(, LOCATION_DECL)) { if (result)                         ThrowLastError(              operation _D(, LOCATION_VAR)); return result; }
                      static inline HANDLE ThrowLastErrorIfInvalid (HANDLE result, const char* operation _D(, LOCATION_DECL)) { if (result == INVALID_HANDLE_VALUE) ThrowLastError(              operation _D(, LOCATION_VAR)); return result; }
                      static inline DWORD  CheckError              (DWORD  result, const char* operation _D(, LOCATION_DECL)) { if (result != ERROR_SUCCESS)        throw Win32Exception(result, operation _D(, LOCATION_VAR)); return result; }
@@ -75,16 +75,17 @@ private:
 	TypedWin32Handle(HANDLE handle) : _handle(handle) {}
 public:
 	TypedWin32Handle() : _handle(NULL) {}
-	TypedWin32Handle(TypedWin32Handle&& other) : _handle(std::exchange(other._handle, NULL)) {}
+	TypedWin32Handle(TypedWin32Handle&& other) : _handle(std::exchange(other._handle, (HANDLE)NULL)) {}
 	~TypedWin32Handle() noexcept { CloseImpl(); }
 
 	static TypedWin32Handle Wrap(HANDLE handle) { return TypedWin32Handle(handle); }
 
-	TypedWin32Handle& operator=(TypedWin32Handle&& other) { CloseImpl(); _handle = std::exchange(other._handle, NULL); return *static_cast<DERIVED>(this); }
+	TypedWin32Handle& operator=(TypedWin32Handle&& other) { CloseImpl(); _handle = std::exchange(other._handle, (HANDLE)NULL); return *this; }
+	HANDLE& ref() { return _handle; }
 	operator HANDLE() const { return _handle; }
 	operator bool() const { return _handle != NULL; }
 	bool operator!() const { return _handle == NULL; }
-	HANDLE Release() { return std::exchange(_handle, NULL); }
+	HANDLE Release() { return std::exchange(_handle, (HANDLE)NULL); }
 	void Close() { WIN_CHECK_IF_FALSE(CloseImpl, ()); _handle = NULL; }
 };
 typedef TypedWin32Handle<> Win32Handle;
