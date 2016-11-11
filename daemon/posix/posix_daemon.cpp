@@ -107,6 +107,159 @@ public:
 	}
 };
 
+class PosixSubprocess
+{
+	asio::io_service& _io;
+	pid_t _pid;
+public:
+	asio::posix::stream_descriptor stdin_handle;
+	asio::posix::stream_descriptor stdout_handle;
+	asio::posix::stream_descriptor stderr_handle;
+public:
+	PosixSubprocess(asio::io_service& io)
+		: _io(io)
+		, stdin_handle(io)
+		, stdout_handle(io)
+		, stderr_handle(io)
+		, _pid(0)
+	{
+
+	}
+	int pid() const { return _pid; }
+	// Run("/usr/local/bin/myprogrem", { "arg1", "arg2" })
+	void Run(const std::string& executable, const std::vector<std::string>& args)
+	{
+		Run(executable.c_str(), MakeArgVector(executable, args).data(), NULL);
+	}
+	// Run("/usr/local/bin/myprogrem", { "arg1", "arg2" }, { "ENV1=value1", "ENV2=value2" })
+	void Run(const std::string& executable, const std::vector<std::string>& args, const std::vector<std::string>& env)
+	{
+		std::vector<const char*> c_env(env.size() + 1, NULL);
+		std::transform(env.begin(), env.end(), c_env.begin(), [](const std::string& s) { return s.c_str(); });
+		Run(executable.c_str(), MakeArgVector(executable, args).data(), c_env.data());
+	}
+	// Run("/usr/local/bin/myprogrem", { "arg1", "arg2" }, { { "ENV1", "value1" }, { "ENV2", "value2" } })
+	void Run(const std::string& executable, const std::vector<std::string>& args, const std::unordered_map<std::string, std::string>& env)
+	{
+		std::vector<std::string> env2;
+		env2.reserve(env.size());
+		for (const auto& kvp : env)
+			env2.push_back(kvp.first + "=" + kvp.second);
+		Run(executable, args, env2);
+	}
+	void Kill(int signal = SIGTERM)
+	{
+		if (_pid)
+		{
+			kill(_pid, signal);
+		}
+	}
+
+private:
+	static std::vector<const char*> MakeArgVector(const std::string& executable, const std::vector<std::string>& args)
+	{
+		LOG(INFO) << "MakeArgVector for " << executable << " called with " << args.size() << " args";
+
+		std::vector<const char*> result;
+		result.reserve(args.size() + 2);
+		size_t last_slash = executable.find_last_of('/');
+		if (last_slash != executable.npos)
+			result.push_back(&executable[0] + last_slash + 1);
+		else
+			result.push_back(executable.c_str());
+		for (const auto& arg : args)
+			result.push_back(arg.c_str());
+		result.push_back(NULL);
+		return std::move(result);
+	}
+	void Run(const char* executable, const char* const* args, const char* const* env)
+	{
+		PosixPipe stdin_pipe;
+		PosixPipe stdout_pipe;
+		PosixPipe stderr_pipe;
+		PosixPipe status_pipe;
+
+		// This makes use of a common pipe trick to detect the status of the
+		// launched subprocess; a successful exec will close the stream, whereas
+		// on failure the child will write an error code back to the parent.
+		status_pipe.write.SetCloseOnExec();
+
+		pid_t pid = POSIX_CHECK(fork, ());
+		if (pid == 0) // Child
+		{
+			try
+			{
+				// Redirect stdin to the read end of stdin_pipe and close the other handles.
+				POSIX_CHECK(dup2, (stdin_pipe.read, STDIN_FILENO));
+				stdin_pipe.Close();
+
+				// Redirect stdout to the write end of stdout_pipe and close the other handles.
+				POSIX_CHECK(dup2, (stdout_pipe.write, STDOUT_FILENO));
+				stdout_pipe.Close();
+
+				// Redirect stderr to the write end of stdout_pipe and close the other handles.
+				POSIX_CHECK(dup2, (stderr_pipe.write, STDERR_FILENO));
+				stderr_pipe.Close();
+
+				// Close unused read end of status pipe.
+				status_pipe.read.Close();
+
+				if (env)
+					POSIX_CHECK(execve, (executable, const_cast<char* const*>(args), const_cast<char* const*>(env)));
+				else
+					POSIX_CHECK(execv, (executable, const_cast<char* const*>(args)));
+				
+				// The exec function only returns on error, so the check above should already
+				// catch any problem, but put a catchall here anyway.
+				THROW_POSIXEXCEPTION(errno, exec);
+			}
+			catch (const PosixException& e)
+			{
+				int err = e.value();
+				write(status_pipe.write, &err, sizeof(int));
+				// If this fails there is very little we can do; the parent process will
+				// misinterpret the closed pipe as a successful exec, but can at least
+				// later see something wrong with the exit code (below).
+			}
+			_exit(9000);
+		}
+		else // Parent
+		{
+			// Close unused ends of standard stream pipes.
+			stdin_pipe.read.Close();
+			stdout_pipe.write.Close();
+			stderr_pipe.write.Close();
+
+			// Close write end of status pipe.
+			status_pipe.write.Close();
+
+			// Spin-read the status pipe until we get something (data or EOF).
+			int count, err;
+			do {
+				count = read(status_pipe.read, &err, sizeof(int));
+			} while (count == -1 && (errno == EAGAIN || errno == EINTR));
+
+			// If we got a status, there was a launch error.
+			if (count)
+			{
+				THROW_POSIXEXCEPTION(err, exec);
+			}
+
+			// Otherwise, all is well and the exec completed successfully.
+
+			// Explicitly close the status pipe for clarity.
+			status_pipe.read.Close();
+			
+			// Transfer the standard stream pipe handles so they stay open.
+			stdin_handle.assign(stdin_pipe.write.Release());
+			stdout_handle.assign(stdout_pipe.read.Release());
+			stderr_handle.assign(stderr_pipe.read.Release());
+
+			// Keep the PID around.
+			_pid = pid;
+		}
+	}
+};
 
 class PosixOpenVPNProcess : public OpenVPNProcess
 {
