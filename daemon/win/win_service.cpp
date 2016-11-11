@@ -142,6 +142,21 @@ public:
 		stdin_handle = std::move(stdin_pipe.write);
 		stdout_handle = std::move(stdout_pipe.read);
 		stderr_handle = std::move(stderr_pipe.read);
+
+		// Try to assign the new process to a job, so it gets closed automatically when the handle holder dies.
+		try
+		{
+			_job = Win32Handle::Wrap(WIN_CHECK_IF_NULL(CreateJobObject, (NULL, NULL)));
+			JOBOBJECT_EXTENDED_LIMIT_INFORMATION jobinfo = {0};
+			jobinfo.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+			WIN_CHECK_IF_FALSE(SetInformationJobObject, (_job, JobObjectExtendedLimitInformation, &jobinfo, sizeof(jobinfo)));
+			WIN_CHECK_IF_FALSE(AssignProcessToJobObject, (_job, _handle.native_handle()));
+		}
+		catch (const Win32Exception& e)
+		{
+			LOG(WARNING) << "Failed to create job object: " << e;
+		}
+	}
 	DWORD Wait()
 	{
 		if (!_handle.is_open())
