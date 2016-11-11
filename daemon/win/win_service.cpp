@@ -274,6 +274,13 @@ public:
 		WinSubprocess::Kill();
 	}
 
+	virtual void AsyncWait(std::function<void(const asio::error_code&)> cb) override
+	{
+		WinSubprocess::AsyncWait([cb = std::move(cb)](const asio::error_code& error, DWORD code) {
+			cb(error);
+		});
+	}
+
 private:
 	void ReadThread(Win32Handle handle, std::function<void(const asio::error_code&, std::string)> cb)
 	{

@@ -52,4 +52,6 @@ public:
 
 	virtual void Run(const std::vector<std::string>& params) = 0;
 	virtual void Kill() = 0;
+	// Asynchronously wait for process termination
+	virtual void AsyncWait(std::function<void(const asio::error_code&)> cb) = 0;
 };

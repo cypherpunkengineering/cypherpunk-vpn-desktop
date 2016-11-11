@@ -444,6 +444,11 @@ public:
 		PosixSubprocess::Kill();
 	}
 
+	virtual void AsyncWait(std::function<void(const asio::error_code& error)> cb) override
+	{
+		PosixSubprocess::AsyncWait([cb = std::move(cb)](const asio::error_code& error, PosixSubprocess::Result result) { cb(error); });
+	}
+
 	void WriteLineToStdIn(std::string line)
 	{
 		WriteToStdIn(std::move(line) + '\n');
