@@ -250,75 +250,19 @@ private:
 };
 
 
-class WinOpenVPNProcess : public OpenVPNProcess
+class WinOpenVPNProcess : public OpenVPNProcess, public WinSubprocess
 {
 public:
-	WinOpenVPNProcess(asio::io_service& io) : OpenVPNProcess(io), _process_handle(INVALID_HANDLE_VALUE) {}
-
-	HANDLE _process_handle;
+	WinOpenVPNProcess(asio::io_service& io) : OpenVPNProcess(io), WinSubprocess(io) {}
 
 	virtual void Run(const std::vector<std::string>& params) override
 	{
-		// Combine all parameters into a quoted command line string
-		std::tstring cmdline = convert<TCHAR>("cypherpunkvpn-openvpn.exe");
-		for (const auto& arg : params)
-		{
-			if (!cmdline.empty())
-				cmdline.push_back(' ');
-			AppendQuotedCommandLineArgument(cmdline, arg);
-		}
-
-		std::tstring executable = convert<TCHAR>(GetPath(OpenVPNExecutable));
-		std::tstring cwd = convert<TCHAR>(GetPath(OpenVPNDir));
-
-		STARTUPINFO startupinfo = { sizeof(STARTUPINFO), 0 };
-		PROCESS_INFORMATION processinfo = { 0 };
-		BOOL success = FALSE;
-
-		// Get a user token for the built-in Network Service user (seems appropriate for an OpenVPN process)
-		HANDLE network_service_token;
-		if (LogonUser(_T("NETWORK SERVICE"), _T("NT AUTHORITY"), NULL, LOGON32_LOGON_SERVICE, LOGON32_PROVIDER_DEFAULT, &network_service_token))
-		{
-			// Launch OpenVPN as the specified user
-			if (CreateProcessAsUser(network_service_token, executable.c_str(), &cmdline[0], NULL, NULL, FALSE, 0, NULL, cwd.c_str(), &startupinfo, &processinfo))
-			{
-				success = TRUE;
-				_process_handle = processinfo.hProcess;
-				LOG(INFO) << "Successfully started OpenVPN as network service";
-			}
-			else
-				PLOG(WARNING) << "CreateProcessAsUser failed: " << LastError << " - retrying without impersonation";
-
-			CloseHandle(network_service_token);
-		}
-		else
-			PLOG(WARNING) << "LogonUser failed: " << LastError << " - retrying without impersonation";
-
-		if (!success)
-		{
-			if (CreateProcess(executable.c_str(), &cmdline[0], NULL, NULL, FALSE, 0, NULL, cwd.c_str(), &startupinfo, &processinfo))
-			{
-				success = TRUE;
-				_process_handle = processinfo.hProcess;
-			}
-			else
-				PrintLastError(CreateProcess);
-		}
-
-		if (!success)
-		{
-			throw "unable to launch openvpn";
-		}
+		WinSubprocess::Run(GetPath(OpenVPNExecutable), params, GetPath(OpenVPNDir), !g_settings.runOpenVPNAsRoot());
 	}
 
 	virtual void Kill() override
 	{
-		if (_process_handle != INVALID_HANDLE_VALUE)
-		{
-			if (!TerminateProcess(_process_handle, -1))
-				PrintLastError(TerminateProcess);
-			_process_handle = INVALID_HANDLE_VALUE;
-		}
+		WinSubprocess::Kill();
 	}
 };
 
