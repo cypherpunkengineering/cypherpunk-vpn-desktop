@@ -115,6 +115,25 @@ public:
 	asio::posix::stream_descriptor stdin_handle;
 	asio::posix::stream_descriptor stdout_handle;
 	asio::posix::stream_descriptor stderr_handle;
+
+	class Result
+	{
+		int _result;
+	public:
+		Result() {}
+		explicit Result(int result) : _result(result) {}
+
+		bool exited() const { return WIFEXITED(_result); }
+		int status() const { return WEXITSTATUS(_result); }
+		bool signaled() const { return WIFSIGNALED(_result); }
+		int signal() const { return WTERMSIG(_result); }
+		bool stopped() const { return WIFSTOPPED(_result); }
+		int stopsignal() const { return WSTOPSIG(_result); }
+		bool continued() const { return WIFCONTINUED(_result); }
+	};
+private:
+	Result _result;
+	bool _exited;
 public:
 	PosixSubprocess(asio::io_service& io)
 		: _io(io)
@@ -122,6 +141,7 @@ public:
 		, stdout_handle(io)
 		, stderr_handle(io)
 		, _pid(0)
+		, _exited(false)
 	{
 
 	}
@@ -146,6 +166,45 @@ public:
 		for (const auto& kvp : env)
 			env2.push_back(kvp.first + "=" + kvp.second);
 		Run(executable, args, env2);
+	}
+	Result Wait()
+	{
+		if (!_pid)
+			THROW_POSIXEXCEPTION(ECHILD, waitpid);
+		if (_exited)
+			return _result;
+		int result_value;
+		while (waitpid(_pid, &result_value, 0) == -1)
+		{
+			if (errno != EINTR)
+				THROW_POSIXEXCEPTION(errno, waitpid);
+		}
+		_result = Result(result_value);
+		_exited = true;
+		return _result;
+	}
+	bool Check(Result* result)
+	{
+		if (!_pid)
+			THROW_POSIXEXCEPTION(ECHILD, waitpid);
+		if (_exited)
+		{
+			if (result)
+				*result = _result;
+			return true; 
+		}	
+		int result_value;
+		int pid;
+		while ((pid = waitpid(_pid, &result_value, WNOHANG)) == -1)
+		{
+			if (errno != EINTR)
+				THROW_POSIXEXCEPTION(errno, waitpid);
+		}
+		if (pid == 0)
+			return false;
+		if (result)
+			*result = Result(result_value);
+		return true;
 	}
 	void Kill(int signal = SIGTERM)
 	{
