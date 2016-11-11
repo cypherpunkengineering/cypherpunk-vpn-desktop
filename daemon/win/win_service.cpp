@@ -118,6 +118,93 @@ void AppendQuotedCommandLineArgument(std::basic_string<RESULT>& result, const st
 	}
 }
 
+class WinSubprocess
+{
+	asio::windows::basic_object_handle<> _handle;
+	Win32Handle _job;
+	DWORD _id;
+	bool _signaled;
+	bool _terminated;
+public:
+	Win32Handle stdin_handle;
+	Win32Handle stdout_handle;
+	Win32Handle stderr_handle;
+public:
+	WinSubprocess(asio::io_service& io) : _handle(io), _id(0), _signaled(false), _terminated(false) {}
+	void Run(const std::string& executable, const std::vector<std::string>& args, const std::string& cwd, bool as_network_user)
+	{
+		// Combine all parameters into a quoted command line string
+		std::tstring cmdline = convert<TCHAR>("cypherpunkvpn-openvpn.exe");
+		for (const auto& arg : args)
+		{
+			if (!cmdline.empty())
+				cmdline.push_back(' ');
+			AppendQuotedCommandLineArgument(cmdline, arg);
+		}
+
+		std::tstring t_executable = convert<TCHAR>(executable);
+		std::tstring t_cwd = convert<TCHAR>(cwd);
+
+		WinPipe stdin_pipe(true, false);
+		WinPipe stdout_pipe(false, true);
+		WinPipe stderr_pipe(false, true);
+
+		STARTUPINFO startupinfo = { sizeof(STARTUPINFO), 0 };
+		startupinfo.hStdInput = stdin_pipe.read;
+		startupinfo.hStdOutput = stdout_pipe.write;
+		startupinfo.hStdError = stderr_pipe.write;
+		startupinfo.dwFlags |= STARTF_USESTDHANDLES;
+		DWORD flags = CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP;
+		PROCESS_INFORMATION processinfo = { 0 };
+
+		if (as_network_user)
+		{
+			try
+			{
+				// Get a user token for the built-in Network Service user.
+				Win32Handle network_service_token;
+				WIN_CHECK_IF_FALSE(LogonUser, (_T("NETWORK SERVICE"), _T("NT AUTHORITY"), NULL, LOGON32_LOGON_SERVICE, LOGON32_PROVIDER_DEFAULT, &network_service_token.ref()));
+				// Launch OpenVPN as the specified user.
+				WIN_CHECK_IF_FALSE(CreateProcessAsUser, (network_service_token, t_executable.c_str(), &cmdline[0], NULL, NULL, TRUE, flags, NULL, t_cwd.c_str(), &startupinfo, &processinfo));
+				goto success;
+			}
+			catch (const Win32Exception& e)
+			{
+				LOG(WARNING) << e << " - retrying without impersonation";
+			}
+		}
+		WIN_CHECK_IF_FALSE(CreateProcess, (t_executable.c_str(), &cmdline[0], NULL, NULL, TRUE, flags, NULL, t_cwd.c_str(), &startupinfo, &processinfo));
+	success:
+		// Save the process handle.
+		_handle.assign(processinfo.hProcess);
+		_id = processinfo.dwProcessId;
+		// Don't need the thread handle.
+		CloseHandle(processinfo.hThread);
+		// Move-assign the pipe handles.
+		stdin_handle = std::move(stdin_pipe.write);
+		stdout_handle = std::move(stdout_pipe.read);
+		stderr_handle = std::move(stderr_pipe.read);
+	}
+	void Kill()
+	{
+		if (_handle.is_open())
+		{
+			if (!_signaled)
+			{
+				if (!GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, _id))
+					PLOG(WARNING) << "GenerateConsoleCtrlEvent failed: " << LastError;
+				_signaled = true;
+			}
+			else if (!_terminated)
+			{
+				if (!TerminateProcess(_handle.native_handle(), 9000))
+					PLOG(WARNING) << "TerminateProcess failed: " << LastError;
+				_terminated = true;
+			}
+		}
+	}
+};
+
 
 class WinOpenVPNProcess : public OpenVPNProcess
 {
