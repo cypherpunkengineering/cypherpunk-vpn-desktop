@@ -202,6 +202,32 @@ void CypherDaemon::OnReceiveMessage(Connection connection, WebSocketServer::mess
 		SendToClient(connection, data);
 }
 
+void CypherDaemon::OnOpenVPNStdOut(OpenVPNProcess* process, const asio::error_code& error, std::string line)
+{
+	if (process == _process)
+	{
+		if (!error)
+		{
+			LOG_EX(LogLevel::VERBOSE, true, Location("OpenVPN:STDOUT")) << line;
+		}
+		else
+			LOG(WARNING) << "OpenVPN:STDOUT error: " << error;
+	}
+}
+
+void CypherDaemon::OnOpenVPNStdErr(OpenVPNProcess* process, const asio::error_code& error, std::string line)
+{
+	if (process == _process)
+	{
+		if (!error)
+		{
+			LOG_EX(LogLevel::WARNING, true, Location("OpenVPN:STDERR")) << line;
+		}
+		else
+			LOG(WARNING) << "OpenVPN:STDERR error: " << error;
+	}
+}
+
 void CypherDaemon::OnOpenVPNProcessExited(OpenVPNProcess* process)
 {
 	if (process == _process)
