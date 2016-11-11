@@ -42,7 +42,7 @@ public:
 public:
 	int StartManagementInterface();
 	void StopManagementInterface();
-	void SendManagementCommand(const std::string& cmd);
+	void SendManagementCommand(std::string cmd);
 	void OnManagementResponse(const std::string& prefix, std::function<void(const std::string&)> callback);
 
 	bool IsSameServer(const JsonObject& settings);

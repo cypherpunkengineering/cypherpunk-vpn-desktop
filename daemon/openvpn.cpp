@@ -27,7 +27,7 @@ int OpenVPNProcess::StartManagementInterface()
 {
 	int port = _management_acceptor.local_endpoint().port();
 
-	_io.post([=]() {
+	_io.post([this]() {
 		_management_write_queue.emplace_back("\n\n\n");
 		_management_acceptor.listen(1);
 		_management_acceptor.async_accept(_management_socket, [this](const asio::error_code& error) {
@@ -46,17 +46,17 @@ int OpenVPNProcess::StartManagementInterface()
 
 void OpenVPNProcess::StopManagementInterface()
 {
-	_io.post([=]() {
+	_io.post([this]() {
 		_management_socket.shutdown(asio::ip::tcp::socket::shutdown_both);
 		_management_socket.close();
 	});
 }
 
-void OpenVPNProcess::SendManagementCommand(const std::string& cmd)
+void OpenVPNProcess::SendManagementCommand(std::string cmd)
 {
-	_io.post([=, cmd = cmd]() {
+	_io.post([this, cmd = std::move(cmd)]() {
 		bool first = _management_write_queue.empty();
-		_management_write_queue.push_back(cmd);
+		_management_write_queue.push_back(std::move(cmd));
 		if (first && _management_socket.is_open())
 		{
 			asio::async_write(_management_socket, asio::buffer(_management_write_queue.front()), std::bind(&OpenVPNProcess::HandleManagementWrite, this, _1, _2));
@@ -105,9 +105,9 @@ void OpenVPNProcess::HandleManagementReadLine(const asio::error_code& error, std
 
 void OpenVPNProcess::OnManagementInterfaceResponse(const std::string& line)
 {
-	LOG(INFO) << "[MGMT] " << line;
 	if (line.size() > 0)
 	{
+		LOG_EX(LogLevel::INFO, true, Location("OpenVPN:MGMT")) << line;
 		if (line[0] == '>')
 		{
 			auto sep = line.find(':');
@@ -117,11 +117,17 @@ void OpenVPNProcess::OnManagementInterfaceResponse(const std::string& line)
 				auto it = _on_management_response.find(prefix);
 				if (it != _on_management_response.end())
 				{
-					it->second(line.substr(sep + 1));
+					try
+					{
+						it->second(line.substr(sep + 1));
+					}
+					catch (const std::exception& e)
+					{
+						LOG(ERROR) << e;
+					}
 				}
 			}
 		}
-		//else (line.)
 	}
 }
 
