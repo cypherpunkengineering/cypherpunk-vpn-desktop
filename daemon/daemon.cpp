@@ -639,7 +639,7 @@ void CypherDaemon::RPC_applySettings(const JsonObject& settings)
 	}
 	if (changed.size() > 0)
 		g_settings.OnChanged(changed);
-	
+
 	// FIXME: Temporary workaround, these should be configs instead
 	if (settings.find("servers") != settings.end() || settings.find("regions") != settings.end())
 		SendToAllClients(_rpc_client.BuildNotificationData("config", MakeConfigObject()));

@@ -551,7 +551,7 @@ void terminate_handler()
 		{
 			if (std::type_info* et = abi::__cxa_current_exception_type())
 				LOG(CRITICAL) << "Exception type: " << et->name();
-		}		
+		}
 	}
 	std::abort();
 }
