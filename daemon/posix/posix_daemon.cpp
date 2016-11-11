@@ -61,6 +61,52 @@ public:
 	operator int() const { return _fd; }
 };
 
+namespace impl {
+	struct PosixPipeWrapper
+	{
+		PosixHandle read;
+		PosixHandle write;
+		operator int*() { return reinterpret_cast<int*>(this); }
+	};
+}
+
+class PosixPipe : public impl::PosixPipeWrapper
+{
+	static_assert(offsetof(impl::PosixPipeWrapper, read) == 0 && offsetof(impl::PosixPipeWrapper, write) == sizeof(int), "PosixPipe struct offset mismatch");
+	static_assert(sizeof(impl::PosixPipeWrapper) == sizeof(int[2]), "PosixPipe struct size mismatch");
+public:
+	PosixPipe()
+	{
+		POSIX_CHECK(pipe, (*this));
+	}
+	PosixPipe(PosixHandle read, PosixHandle write)
+	{
+		this->read = std::move(read);
+		this->write = std::move(write);
+	}
+	explicit PosixPipe(int read, int write)
+	{
+		this->read = PosixHandle(read);
+		this->write = PosixHandle(write);
+	}
+	~PosixPipe() {}
+	void SetCloseOnExec()
+	{
+		read.SetCloseOnExec();
+		write.SetCloseOnExec();
+	}
+	void Close()
+	{
+		read.Close();
+		write.Close();
+	}
+	void Release()
+	{
+		read.Release();
+		write.Release();
+	}
+};
+
 
 class PosixOpenVPNProcess : public OpenVPNProcess
 {
