@@ -252,17 +252,107 @@ private:
 
 class WinOpenVPNProcess : public OpenVPNProcess, public WinSubprocess
 {
+	std::thread _stdout_read_thread;
+	std::thread _stderr_read_thread;
 public:
 	WinOpenVPNProcess(asio::io_service& io) : OpenVPNProcess(io), WinSubprocess(io) {}
 
 	virtual void Run(const std::vector<std::string>& params) override
 	{
 		WinSubprocess::Run(GetPath(OpenVPNExecutable), params, GetPath(OpenVPNDir), !g_settings.runOpenVPNAsRoot());
+
+		_stdout_read_thread = std::thread(THIS_CALLBACK(ReadThread), std::move(stdout_handle), [this](const asio::error_code& error, std::string line) {
+			g_daemon->OnOpenVPNStdOut(this, error, std::move(line));
+		});
+		_stderr_read_thread = std::thread(THIS_CALLBACK(ReadThread), std::move(stderr_handle), [this](const asio::error_code& error, std::string line) {
+			g_daemon->OnOpenVPNStdErr(this, error, std::move(line));
+		});
 	}
 
 	virtual void Kill() override
 	{
 		WinSubprocess::Kill();
+	}
+
+private:
+	void ReadThread(Win32Handle handle, std::function<void(const asio::error_code&, std::string)> cb)
+	{
+		asio::io_service io;
+		asio::error_code error;
+		asio::streambuf buffer;
+		while (size_t size = SyncReadUntil(handle, buffer, '\n', error))
+		{
+			if (!error)
+			{
+				std::istream is(&buffer);
+				std::string line;
+				std::getline(is, line);
+				if (line.size() > 0 && *line.crbegin() == '\r')
+					line.pop_back();
+				_io.post([=, line = std::move(line)]() { cb(error, line); });
+			}
+			else
+				_io.post([=]() { cb(error, std::string()); });
+		}
+		_io.post([=](){ cb(error, std::string()); });
+	}
+
+	static size_t SyncReadUntil(Win32Handle& handle, asio::streambuf& buffer, char delim, asio::error_code& error)
+	{
+		size_t search_position = 0;
+		for (;;)
+		{
+			// Determine the range of the data to be searched.
+			typedef asio::buffers_iterator<asio::streambuf::const_buffers_type> iterator;
+			asio::streambuf::const_buffers_type buffers = buffer.data();
+			iterator begin = iterator::begin(buffers);
+			iterator pos = begin + search_position;
+			iterator end = iterator::end(buffers);
+
+			// Look for a match.
+			auto it = std::find(pos, end, '\n');
+			if (it != end)
+			{
+				// Found a match. We're done.
+				error = asio::error_code();
+				return it - begin + 1;
+			}
+			else
+			{
+				// No match. Next search can start with the new data.
+				search_position = end - begin;
+			}
+
+			// Check if buffer is full.
+			if (buffer.size() == buffer.max_size())
+			{
+				error = asio::error::not_found;
+				return 0;
+			}
+
+			// Need more data.
+			size_t bytes_to_read = asio::read_size_helper(buffer, 65536);
+			buffer.commit(SyncReadSome(handle, buffer.prepare(bytes_to_read), error));
+			if (error)
+				return 0;
+		}
+	}
+	static size_t SyncReadSome(Win32Handle& handle, asio::streambuf::mutable_buffers_type& buffers, asio::error_code& error)
+	{
+		asio::mutable_buffer buffer = buffers;
+		void* data = asio::detail::buffer_cast_helper(buffer);
+		DWORD bytes_to_read = (DWORD)asio::detail::buffer_size_helper(buffer);
+		DWORD bytes_read = 0;
+		if (ReadFile(handle, data, bytes_to_read, &bytes_read, NULL))
+		{
+			error = asio::error_code();
+			return bytes_read;
+		}
+		else
+		{
+			error = asio::error_code(GetLastError(), asio::error::get_system_category());
+			return 0;
+		}
 	}
 };
 
