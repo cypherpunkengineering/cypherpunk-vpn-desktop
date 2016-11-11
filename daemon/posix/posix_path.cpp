@@ -83,7 +83,7 @@ std::string ReadFile(const std::string& path)
 		if (size != fread(&result[0], 1, size, f))
 			THROW_POSIXEXCEPTION(EIO, fread);
 	}
-	return std::move(result);
+	return result;
 }
 
 void WriteFile(const std::string& path, const char* text, size_t length)
@@ -95,9 +95,8 @@ void WriteFile(const std::string& path, const char* text, size_t length)
 		if (length != fwrite(text, 1, length, f))
 			THROW_POSIXEXCEPTION(EIO, fwrite);
 		POSIX_CHECK_IF_NONZERO(fflush, (f));
-		int fd = POSIX_CHECK(fileno, (f));
 #ifdef HAVE_FSYNC
-		POSIX_CHECK_IF_NONZERO(fsync, (fd));
+		POSIX_CHECK_IF_NONZERO(fsync, (POSIX_CHECK(fileno, (f))));
 #endif
 	}
 	POSIX_CHECK_IF_NONZERO(rename, (tmp.c_str(), path.c_str()));

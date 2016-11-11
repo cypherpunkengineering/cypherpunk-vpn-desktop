@@ -54,7 +54,7 @@ static inline sentry<CB> finally(const CB& callback) { return { std::move(callba
 #define CONCAT(a,b) CONCAT_(a,b)
 
 //#define SCOPE_EXIT const auto& CONCAT(__scope_exit,__LINE__) = scope_callback_helper() * [&]()
-#define FINALLY(block) auto&& CONCAT(__scope_exit,__LINE__) = finally([&]() noexcept { block });
+#define FINALLY(block) auto&& CONCAT(__scope_exit,__LINE__) = finally([&]() noexcept { block }); (void)CONCAT(__scope_exit,__LINE__);
 
 
 class SystemException : public std::system_error, public DebugLocation
@@ -104,7 +104,7 @@ static inline size_t SplitToIterators(const IT& begin, const IT& end, const SEP&
 {
 	IT pos = begin, last = pos;
 	size_t count = 0;
-	while ((max_splits < 0 || count < max_splits) && (pos = std::find(last, end, sep)) != end)
+	while ((max_splits < 0 || count < (size_t)max_splits) && (pos = std::find(last, end, sep)) != end)
 	{
 		cb(last, pos);
 		last = pos;
@@ -147,7 +147,7 @@ static inline std::vector<std::string> SplitToVector(const std::string& text, ch
 {
 	std::vector<std::string> result;
 	SplitToIterators(text, sep, max_splits, [&](const std::string::const_iterator& b, const std::string::const_iterator& e) { result.emplace_back(b, e); });
-	return std::move(result);
+	return result;
 }
 
 template<typename C, typename R, typename... Args>

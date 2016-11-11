@@ -139,10 +139,10 @@ private:
 public:
 	PosixSubprocess(asio::io_service& io)
 		: _io(io)
+		, _pid(0)
 		, stdin_handle(io)
 		, stdout_handle(io)
 		, stderr_handle(io)
-		, _pid(0)
 		, _exited(false)
 	{
 
@@ -269,7 +269,7 @@ private:
 		for (const auto& arg : args)
 			result.push_back(arg.c_str());
 		result.push_back(NULL);
-		return std::move(result);
+		return result;
 	}
 	void Run(const char* executable, const char* const* args, const char* const* env)
 	{

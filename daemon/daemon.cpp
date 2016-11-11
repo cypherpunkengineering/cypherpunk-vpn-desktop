@@ -280,7 +280,7 @@ static inline JsonObject FilterJsonObject(const JsonObject& obj, const std::vect
 		if (it != obj.end())
 			result.insert(std::make_pair(s, it->second));
 	}
-	return std::move(result);
+	return result;
 }
 
 static inline JsonObject FilterJsonObject(JsonObject&& obj, const std::vector<std::string>& keys)
@@ -292,7 +292,7 @@ static inline JsonObject FilterJsonObject(JsonObject&& obj, const std::vector<st
 		if (it != obj.end())
 			result.insert(std::make_pair(s, std::move(it->second)));
 	}
-	return std::move(result);
+	return result;
 }
 
 JsonObject CypherDaemon::MakeStateObject()
@@ -307,7 +307,7 @@ JsonObject CypherDaemon::MakeStateObject()
 		state["bytesReceived"] = _bytesReceived;
 		state["bytesSent"] = _bytesSent;
 	}
-	return std::move(state);
+	return state;
 }
 
 static const std::vector<std::string> g_certificate_authorities[] = { {
@@ -419,7 +419,7 @@ static std::vector<JsonValue> GetCertificateAuthorities()
 	{
 		result.push_back(std::vector<JsonValue>(ca.begin(), ca.end()));
 	}
-	return std::move(result);
+	return result;
 }
 
 JsonObject CypherDaemon::MakeConfigObject()
@@ -428,7 +428,7 @@ JsonObject CypherDaemon::MakeConfigObject()
 	config["servers"] = g_settings.servers();
 	config["regions"] = g_settings.regions();
 	config["certificateAuthorities"] = GetCertificateAuthorities();
-	return std::move(config);
+	return config;
 }
 
 static const std::vector<std::string> g_user_certificate = {
