@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <cstdio>
 
 enum PredefinedDirectory
 {
@@ -33,6 +34,9 @@ extern std::string GetPath(PredefinedDirectory dir);
 extern void EnsurePathExists(const std::string& path);
 extern std::string ReadFile(const std::string& path);
 extern void WriteFile(const std::string& path, const char* text, size_t length);
+
+extern FILE* daemon_fopen(const char* filename, const char* mode);
+extern int daemon_fclose(FILE* file);
 
 extern const char PATH_SEPARATOR;
 

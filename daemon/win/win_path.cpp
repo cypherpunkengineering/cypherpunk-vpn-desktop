@@ -133,3 +133,13 @@ void WriteFile(const std::string& path, const char* text, size_t length)
 	}
 	WIN_CHECK_IF_FALSE(MoveFileEx, (tmp.c_str(), convert<TCHAR>(path).c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH));
 }
+
+FILE* daemon_fopen(const char* filename, const char* mode)
+{
+	return fopen(filename, mode);
+}
+
+int daemon_fclose(FILE* file)
+{
+	return fclose(file);
+}

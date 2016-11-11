@@ -1,6 +1,7 @@
 #pragma once
 
 #include "logger.h"
+#include "path.h"
 
 #include <cstdio>
 #include <ctime>
@@ -21,7 +22,7 @@ public:
 	}
 	bool Open(const char* filename)
 	{
-		return _timestamps = Open(fopen(filename, "at"));
+		return _timestamps = Open(daemon_fopen(filename, "at"));
 	}
 	bool Open(const std::string& filename)
 	{
@@ -32,7 +33,7 @@ public:
 	{
 		if (_file)
 		{
-			fclose(_file);
+			daemon_fclose(_file);
 			_file = nullptr;
 		}
 	}

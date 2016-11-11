@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <system_error>
+#include <fcntl.h>
 
 const char PATH_SEPARATOR = '/';
 std::string g_argv0;
@@ -72,11 +73,9 @@ std::string GetPath(PredefinedDirectory dir)
 std::string ReadFile(const std::string& path)
 {
 	std::string result;
-	FILE* f = fopen(path.c_str(), "r");
-	if (f == NULL)
-		THROW_POSIXEXCEPTION(errno, fopen);
+	FILE* f = POSIX_CHECK_IF_NULL(daemon_fopen, (path.c_str(), "r"));
 	{
-		FINALLY({ fclose(f); });
+		FINALLY({ daemon_fclose(f); });
 		fseek(f, 0, SEEK_END);
 		long size = ftell(f);
 		fseek(f, 0, SEEK_SET);
@@ -90,23 +89,40 @@ std::string ReadFile(const std::string& path)
 void WriteFile(const std::string& path, const char* text, size_t length)
 {
 	const std::string tmp = path + ".new";
-	FILE* f = fopen(tmp.c_str(), "w");
-	if (f == NULL)
-		THROW_POSIXEXCEPTION(errno, fopen);
+	FILE* f = POSIX_CHECK_IF_NULL(daemon_fopen, (tmp.c_str(), "w"));
 	{
-		FINALLY({ fclose(f); });
+		FINALLY({ daemon_fclose(f); });
 		if (length != fwrite(text, 1, length, f))
 			THROW_POSIXEXCEPTION(EIO, fwrite);
-		if (0 != fflush(f))
-			THROW_POSIXEXCEPTION(errno, fflush);
-		int fd = fileno(f);
-		if (-1 == (fd = fileno(f)))
-			THROW_POSIXEXCEPTION(errno, fileno);
+		POSIX_CHECK_IF_NONZERO(fflush, (f));
+		int fd = POSIX_CHECK(fileno, (f));
 #ifdef HAVE_FSYNC
-		if (0 != fsync(fd))
-			THROW_POSIXEXCEPTION(errno, fsync);
+		POSIX_CHECK_IF_NONZERO(fsync, (fd));
 #endif
 	}
-	if (0 != rename(tmp.c_str(), path.c_str()))
-		THROW_POSIXEXCEPTION(errno, rename);
+	POSIX_CHECK_IF_NONZERO(rename, (tmp.c_str(), path.c_str()));
+}
+
+FILE* daemon_fopen(const char* filename, const char* mode)
+{
+	FILE* file = fopen(filename, mode);
+	if (file)
+	{
+		int fd = fileno(file);
+		if (fd != -1)
+		{
+			int flags = fcntl(fd, F_GETFD);
+			if (flags != -1)
+			{
+				// Set the close-on-exec flag on the file so it's not inherited by forked processes
+				fcntl(fd, F_SETFD, flags | FD_CLOEXEC);
+			}
+		}
+	}
+	return file;
+}
+
+int daemon_fclose(FILE* file)
+{
+	return fclose(file);
 }
