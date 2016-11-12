@@ -28,7 +28,7 @@ security set-keychain-settings -u -t 3600 "${KEYCHAIN}"
 ./build_osx.sh
 
 # archive package artifact
-PKG="../out/Cypherpunk Privacy.pkg"
+PKG="../out/CypherpunkPrivacy.pkg"
 ARTIFACT="../`printf 'cypherpunk-vpn-macos-%05d' ${BUILD_NUMBER}`.pkg"
 mv "${PKG}" "${ARTIFACT}"
 scp -P92 "${ARTIFACT}" upload@builds-upload.cypherpunk.engineering:/data/builds/
