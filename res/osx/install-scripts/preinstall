@@ -1,4 +1,20 @@
 #!/bin/sh
+
+### temp old uninstall stuff
+kill -2 $(ps aux | grep CypherpunkVPN.app | awk '{print $2}') || true
+launchctl unload /Library/LaunchAgents/com.cypherpunk.vpn.client.plist || true
+launchctl unload /Library/LaunchDaemons/com.cypherpunk.vpn.service.plist || true
+rm -rf /Library/Extensions/tun.kext
+rm -rf /Library/Extensions/tap.kext
+rm -rf /Library/LaunchDaemons/net.sf.tuntaposx.tap.plist
+rm -rf /Library/LaunchDaemons/net.sf.tuntaposx.tun.plist
+rm -rf /Library/LaunchDaemons/com.cypherpunk.vpn.service.plist
+rm -rf /Library/LaunchAgents/com.cypherpunk.vpn.client.plist
+rm -rf /usr/local/bin/cypherpunkvpn-openvpn
+rm -rf /usr/local/bin/cypherpunkvpn-service
+rm -rf /Applications/CypherpunkVPN.app
+###
+
 kextunload -b net.sf.tuntaposx.tap || true
 kextunload -b net.sf.tuntaposx.tun || true
 kill -2 $(ps aux | grep CypherpunkPrivacy.app | awk '{print $2}') || true
