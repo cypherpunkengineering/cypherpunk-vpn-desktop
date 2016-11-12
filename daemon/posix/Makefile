@@ -18,11 +18,11 @@ all:
 	-D_DEBUG \
 	$(INCS) \
 	$(SRCS) \
-	-o cypherpunkvpn-service
+	-o cypherpunk-privacy-service
 
 stop:
-	sudo launchctl unload /Library/LaunchDaemons/com.cypherpunk.vpn.service.plist || true
+	sudo launchctl unload /Library/LaunchDaemons/com.cypherpunk.privacy.service.plist || true
 
 run:
-	sudo ./cypherpunkvpn-service
+	sudo ./cypherpunk-privacy-service
 

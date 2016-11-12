@@ -1,4 +1,4 @@
 #!/bin/sh
 kextload /Library/Extensions/tap.kext || true
 kextload /Library/Extensions/tun.kext || true
-launchctl load /Library/LaunchDaemons/com.cypherpunk.vpn.service.plist
+launchctl load /Library/LaunchDaemons/com.cypherpunk.privacy.service.plist

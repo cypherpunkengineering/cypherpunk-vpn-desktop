@@ -18,8 +18,8 @@
 #include <windows.h>
 
 
-#define SERVICE_NAME             _T("CypherVPNService")
-#define SERVICE_DISPLAY_NAME     _T("Cypherpunk VPN Background Service")
+#define SERVICE_NAME             _T("CypherpunkPrivacyService")
+#define SERVICE_DISPLAY_NAME     _T("Cypherpunk Privacy Background Service")
 #ifdef _DEBUG
 #define SERVICE_START_TYPE       SERVICE_DEMAND_START
 #else
@@ -92,7 +92,7 @@ public:
 	void Run(const std::string& executable, const std::vector<std::string>& args, const std::string& cwd, bool as_network_user)
 	{
 		// Combine all parameters into a quoted command line string
-		std::tstring cmdline = convert<TCHAR>("cypherpunkvpn-openvpn.exe");
+		std::tstring cmdline = convert<TCHAR>("cypherpunk-privacy-openvpn.exe");
 		for (const auto& arg : args)
 		{
 			if (!cmdline.empty())

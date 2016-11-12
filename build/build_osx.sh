@@ -6,7 +6,7 @@ umask 022
 cd "$( dirname "${BASH_SOURCE[0]}" )"
 cd ../
 
-APPNAME="CypherpunkVPN"
+APPNAME="CypherpunkPrivacy"
 APPSIGNIDENTITY="Developer ID Application: Cypherpunk Engineering K.K. (S353YJSBDX)"
 INSTALLERSIGNIDENTITY="Developer ID Installer: Cypherpunk Engineering K.K. (S353YJSBDX)"
 
@@ -39,16 +39,16 @@ cd daemon/posix
 make
 cd ../..
 mkdir -p out/osx/usr/local/bin
-install -c -m 755 daemon/posix/cypherpunkvpn-service out/osx/usr/local/bin
-codesign --sign "${APPSIGNIDENTITY}" out/osx/usr/local/bin/cypherpunkvpn-service
+install -c -m 755 daemon/posix/cypherpunk-privacy-service out/osx/usr/local/bin
+codesign --sign "${APPSIGNIDENTITY}" out/osx/usr/local/bin/cypherpunk-privacy-service
 
 # LaunchDaemon for the service
 mkdir -p out/osx/Library/LaunchDaemons
-cp ./res/osx/plist/com.cypherpunk.vpn.service.plist out/osx/Library/LaunchDaemons
+cp ./res/osx/plist/com.cypherpunk.privacy.service.plist out/osx/Library/LaunchDaemons
 
 # LaunchAgent for the client
 mkdir -p out/osx/Library/LaunchAgents
-cp ./res/osx/plist/com.cypherpunk.vpn.client.plist out/osx/Library/LaunchAgents
+cp ./res/osx/plist/com.cypherpunk.privacy.client.plist out/osx/Library/LaunchAgents
 
 # TUN/TAP adapter extensions
 mkdir -p out/osx/Library/Extensions
@@ -60,8 +60,8 @@ cp daemon/third_party/tuntap_osx/net.sf.tuntaposx.tun.plist out/osx/Library/Laun
 
 # OpenVPN binary
 mkdir -p out/osx/usr/local/bin
-install -c -m 755 ./daemon/third_party/openvpn_osx/openvpn out/osx/usr/local/bin/cypherpunkvpn-openvpn
-codesign -s "${APPSIGNIDENTITY}" out/osx/usr/local/bin/cypherpunkvpn-openvpn || true # XXX: ignore 'is already signed' error from causing build script to fail
+install -c -m 755 ./daemon/third_party/openvpn_osx/openvpn out/osx/usr/local/bin/cypherpunk-privacy-openvpn
+codesign -s "${APPSIGNIDENTITY}" out/osx/usr/local/bin/cypherpunk-privacy-openvpn || true # XXX: ignore 'is already signed' error from causing build script to fail
 
 # Ensure install scripts are executable
 chmod +x res/osx/install-scripts/postinstall
@@ -69,7 +69,7 @@ chmod +x res/osx/install-scripts/preinstall
 
 # Package
 cd out
-pkgbuild --root osx --scripts ../res/osx/install-scripts --sign "${INSTALLERSIGNIDENTITY}" --identifier "com.cypherpunk.pkg.${APPNAME}" --version "${APP_VER}" --ownership recommended --install-location / Build.pkg
+pkgbuild --root osx --scripts ../res/osx/install-scripts --sign "${INSTALLERSIGNIDENTITY}" --identifier "com.cypherpunk.privacy.pkg" --version "${APP_VER}" --ownership recommended --install-location / Build.pkg
 productbuild --resources ../res/osx/resources --distribution ../res/osx/resources/distribution.xml --sign "${INSTALLERSIGNIDENTITY}" --version "${APP_VER}" "${APPNAME}.pkg"
 #zip "${APPNAME}.pkg.zip" "${APPNAME}.pkg"
 rm -f Build.pkg

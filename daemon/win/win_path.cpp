@@ -57,7 +57,7 @@ void InitPaths(std::string argv0)
 		wchar_t cwd[MAX_PATH];
 		g_daemon_path = convert<char>(_wgetcwd(cwd, MAX_PATH));
 	}
-	g_client_executable = g_daemon_path + "\\CypherpunkVPN.exe";
+	g_client_executable = g_daemon_path + "\\CypherpunkPrivacy.exe";
 	if (!PathFileExists(convert<TCHAR>(g_client_executable).c_str()))
 	{
 #ifdef _DEBUG
@@ -77,7 +77,7 @@ std::string GetPath(PredefinedFile file)
 	{
 	case DaemonExecutable: return g_argv0;
 	case ClientExecutable: return g_client_executable;
-	case OpenVPNExecutable: return GetPath(OpenVPNDir, "cypherpunkvpn-openvpn.exe");
+	case OpenVPNExecutable: return GetPath(OpenVPNDir, "cypherpunk-privacy-openvpn.exe");
 	case SettingsFile: return GetPath(SettingsDir, "settings.json");
 	case TapInstallExecutable: return GetPath(TapDriverDir, "tapinstall.exe");
 	default:

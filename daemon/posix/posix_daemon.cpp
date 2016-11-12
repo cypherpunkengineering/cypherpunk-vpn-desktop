@@ -564,7 +564,7 @@ int main(int argc, char **argv)
 {
 	g_old_terminate_handler = std::set_terminate(terminate_handler);
 
-	InitPaths(argc > 0 ? argv[0] : "cypherpunkvpn-service");
+	InitPaths(argc > 0 ? argv[0] : "cypherpunk-privacy-service");
 
 	g_file_logger.Open(GetPath(LogDir, "daemon.log"));
 	Logger::Push(&g_file_logger);

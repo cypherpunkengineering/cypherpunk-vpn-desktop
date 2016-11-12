@@ -14,8 +14,8 @@
 #pragma comment (lib, "rpcrt4.lib")
 
 
-static wchar_t DEFAULT_FIREWALL_NAME[] = L"Cypherpunk VPN Firewall";
-static wchar_t DEFAULT_FIREWALL_DESCRIPTION[] = L"Implements the various firewall protection features of Cypherpunk VPN.";
+static wchar_t DEFAULT_FIREWALL_NAME[] = L"Cypherpunk Privacy Firewall";
+static wchar_t DEFAULT_FIREWALL_DESCRIPTION[] = L"Implements the various firewall protection features of Cypherpunk Privacy.";
 
 static FWPM_PROVIDER g_wfp_provider = {
 	// {4C60C564-E8D2-4D21-B717-C343999EFC59}

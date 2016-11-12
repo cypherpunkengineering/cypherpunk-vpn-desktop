@@ -2,7 +2,7 @@
 
 const { app } = require('electron');
 
-var appName = "CypherpunkVPN";
+var appName = "CypherpunkPrivacy";
 var execPath = app.getPath('exe');
 
 var AutoStart = {};

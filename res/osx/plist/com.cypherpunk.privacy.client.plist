@@ -3,12 +3,12 @@
 <plist version="1.0">
 <dict>
 	<key>Label</key>
-	<string>com.cypherpunk.vpn.client</string>
+	<string>com.cypherpunk.privacy.client</string>
 	<key>Program</key>
-	<string>/Applications/CypherpunkVPN.app/Contents/MacOS/Electron</string>
+	<string>/Applications/CypherpunkPrivacy.app/Contents/MacOS/Electron</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/Applications/CypherpunkVPN.app/Contents/MacOS/Electron</string>
+		<string>/Applications/CypherpunkPrivacy.app/Contents/MacOS/Electron</string>
 	</array>
   <key>RunAtLoad</key>
 	<true/>
