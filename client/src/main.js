@@ -86,12 +86,12 @@ function displayNotification(message) {
   if (os == '_osx' && main) {
     // Apparently only works in the renderer process via webkitNotifications?
     main.webContents.executeJavaScript(`
-      new Notification("Cypherpunk VPN", { body: ${JSON.stringify(message)} });
+      new Notification("Cypherpunk Privacy", { body: ${JSON.stringify(message)} });
     `);
   } else if (os == '_win' && tray) {
     tray.displayBalloon({
       icon: undefined,
-      title: "Cypherpunk VPN",
+      title: "Cypherpunk Privacy",
       content: message,
     });
   }
@@ -112,7 +112,7 @@ ipc.on('close', event => {
       // we should display a desktop notification to remind the user that the
       // application is still running, at least on Windows since that's not
       // common to all applications.
-      displayNotification("Cypherpunk VPN will keep running in the background - control it from the system tray.");
+      displayNotification("Cypherpunk Privacy will keep running in the background - control it from the system tray.");
     }
   }
 });
@@ -149,7 +149,7 @@ const preinitPromises = [
     dialog.showMessageBox({
       type: 'warning',
       buttons: [ "Exit" ], // FIXLOC
-      title: "Cypherpunk VPN", // FIXLOC
+      title: "Cypherpunk Privacy", // FIXLOC
       message: "Unable to communicate with helper service.\nPlease reinstall the application.", // FIXLOC
     });
     throw err;
@@ -216,7 +216,7 @@ function createTray() {
   }
   function getTrayIcon() { return daemon.state.state == 'CONNECTED' ? trayIconConnected : trayIconDisconnected; }
   tray = new Tray(getTrayIcon());
-  tray.setToolTip('Cypherpunk VPN');
+  tray.setToolTip('Cypherpunk Privacy');
   function refresh() {
     tray.setImage(getTrayIcon());
     tray.setContextMenu(createTrayMenu());
@@ -244,7 +244,7 @@ function showMainWindow() {
 
 function createMainWindow() {
   main = new BrowserWindow({
-    title: 'Cypherpunk VPN',
+    title: 'Cypherpunk Privacy',
     //icon: icon,
     backgroundColor: '#1560bd',
     show: false,

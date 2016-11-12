@@ -1,6 +1,6 @@
-# Cypherpunk VPN Desktop Client
+# Cypherpunk Privacy Desktop Client
 
-The Cypherpunk VPN desktop client is written in [Electron](http://electron.atom.io), with a native background service/daemon (to perform actual VPN tasks in privileged mode) written in C++11.
+The Cypherpunk Privacy desktop client is written in [Electron](http://electron.atom.io), with a native background service/daemon (to perform actual VPN tasks in privileged mode) written in C++11.
 
 ## Background Daemon
 

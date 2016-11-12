@@ -38,9 +38,9 @@ std::string GetPath(PredefinedFile file)
 	{
 	case DaemonExecutable: return g_argv0;
 #if OS_LINUX
-	case OpenVPNExecutable: return g_is_installed ? "/usr/local/bin/cypherpunkvpn-openvpn" : GetPath(BaseDir, "daemon", "third_party", "openvpn_linux", "openvpn"); // Exists in /usr/local/bin, callable anywhere
+	case OpenVPNExecutable: return g_is_installed ? "/usr/local/bin/cypherpunk-privacy-openvpn" : GetPath(BaseDir, "daemon", "third_party", "openvpn_linux", "openvpn"); // Exists in /usr/local/bin, callable anywhere
 #else
-	case OpenVPNExecutable: return g_is_installed ? "/usr/local/bin/cypherpunkvpn-openvpn" : GetPath(BaseDir, "daemon", "third_party", "openvpn_osx", "openvpn"); // Exists in /usr/local/bin, callable anywhere
+	case OpenVPNExecutable: return g_is_installed ? "/usr/local/bin/cypherpunk-privacy-openvpn" : GetPath(BaseDir, "daemon", "third_party", "openvpn_osx", "openvpn"); // Exists in /usr/local/bin, callable anywhere
 #endif
 	case SettingsFile: return GetPath(SettingsDir, "settings.json");
 	default:
@@ -54,13 +54,13 @@ std::string GetPath(PredefinedDirectory dir)
 	switch (dir)
 	{
 #if OS_LINUX
-	case BaseDir: return g_is_installed ? "/usr/local/bin/CypherpunkVPN" : (g_daemon_path + "/../..");
-	case ScriptsDir: return g_is_installed ? "/usr/local/libexec/CypherpunkVPN/scripts" : GetPath(BaseDir, "res", "osx", "openvpn-scripts");
-	case SettingsDir: return g_is_installed ? "/usr/local/etc/CypherpunkVPN" : g_daemon_path;
+	case BaseDir: return g_is_installed ? "/usr/local/bin/CypherpunkPrivacy" : (g_daemon_path + "/../..");
+	case ScriptsDir: return g_is_installed ? "/usr/local/libexec/CypherpunkPrivacy/scripts" : GetPath(BaseDir, "res", "osx", "openvpn-scripts");
+	case SettingsDir: return g_is_installed ? "/usr/local/etc/CypherpunkPrivacy" : g_daemon_path;
 #else
-	case BaseDir: return g_is_installed ? "/Applications/CypherpunkVPN.app" : (g_daemon_path + "/../..");
+	case BaseDir: return g_is_installed ? "/Applications/CypherpunkPrivacy.app" : (g_daemon_path + "/../..");
 	case ScriptsDir: return g_is_installed ? GetPath(BaseDir, "Contents/Resources/scripts") : GetPath(BaseDir, "res", "osx", "openvpn-scripts");
-	case SettingsDir: return g_is_installed ? "/Library/Application Support/CypherpunkVPN" : g_daemon_path;
+	case SettingsDir: return g_is_installed ? "/Library/Application Support/CypherpunkPrivacy" : g_daemon_path;
 #endif
 	case LogDir: return g_is_installed ? "/tmp" : g_daemon_path;
 	case ProfileDir: return g_is_installed ? "/tmp" : g_daemon_path;
