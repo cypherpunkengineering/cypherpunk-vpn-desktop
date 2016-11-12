@@ -6,6 +6,7 @@ umask 022
 cd "$( dirname "${BASH_SOURCE[0]}" )"
 cd ../
 
+APPBUNDLE="CypherpunkPrivacy.app"
 APPNAME="Cypherpunk Privacy"
 APPSIGNIDENTITY="Developer ID Application: Cypherpunk Engineering K.K. (S353YJSBDX)"
 INSTALLERSIGNIDENTITY="Developer ID Installer: Cypherpunk Engineering K.K. (S353YJSBDX)"
@@ -13,8 +14,8 @@ INSTALLERSIGNIDENTITY="Developer ID Installer: Cypherpunk Engineering K.K. (S353
 export APP_VER="$(cat client/package.json | grep version | cut -d '"' -f 4)"
 
 rm -rf out/osx
-rm -f out/"${APPNAME}".pkg
-rm -f out/"${APPNAME}".pkg.zip
+rm -f out/"${APPNAME}.pkg"
+rm -f out/"${APPNAME}.pkg.zip"
 
 # Client
 mkdir -p out/osx/Applications
@@ -24,15 +25,15 @@ npm --production run build
 ./node_modules/.bin/electron-rebuild
 ./node_modules/.bin/electron-packager ./app/ "${APPNAME}" --platform=darwin --arch=x64 --icon=../res/osx/logo2.icns --out=../out/osx/Applications
 cd ../
-mv "out/osx/Applications/${APPNAME}-darwin-x64/${APPNAME}.app" out/osx/Applications/
+mv "out/osx/Applications/${APPNAME}-darwin-x64/${APPBUNDLE}" out/osx/Applications/
 rm -rf "out/osx/Applications/${APPNAME}-darwin-x64"
 
 # Copy OpenVPN scripts
-mkdir -p "out/osx/Applications/${APPNAME}.app/Contents/Resources/scripts"
-cp -pR res/osx/openvpn-scripts/ "out/osx/Applications/${APPNAME}.app/Contents/Resources/scripts"
+mkdir -p "out/osx/Applications/${APPBUNDLE}/Contents/Resources/scripts"
+cp -pR res/osx/openvpn-scripts/ "out/osx/Applications/${APPBUNDLE}/Contents/Resources/scripts"
 
 sleep 3
-codesign --force --deep --sign "${APPSIGNIDENTITY}" "out/osx/Applications/${APPNAME}.app"
+codesign --force --deep --sign "${APPSIGNIDENTITY}" "out/osx/Applications/${APPBUNDLE}"
 
 # Service
 cd daemon/posix
