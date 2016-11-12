@@ -6,7 +6,7 @@ umask 022
 cd "$( dirname "${BASH_SOURCE[0]}" )"
 cd ../
 
-APPNAME="CypherpunkPrivacy"
+APPNAME="Cypherpunk Privacy"
 APPSIGNIDENTITY="Developer ID Application: Cypherpunk Engineering K.K. (S353YJSBDX)"
 INSTALLERSIGNIDENTITY="Developer ID Installer: Cypherpunk Engineering K.K. (S353YJSBDX)"
 

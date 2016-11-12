@@ -5,12 +5,12 @@
 	<key>Label</key>
 	<string>com.cypherpunk.privacy.client</string>
 	<key>Program</key>
-	<string>/Applications/CypherpunkPrivacy.app/Contents/MacOS/Electron</string>
+	<string>/Applications/Cypherpunk Privacy.app/Contents/MacOS/Electron</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>/Applications/CypherpunkPrivacy.app/Contents/MacOS/Electron</string>
+		<string>/Applications/Cypherpunk Privacy.app/Contents/MacOS/Electron</string>
 	</array>
-  <key>RunAtLoad</key>
+	<key>RunAtLoad</key>
 	<true/>
 </dict>
 </plist>

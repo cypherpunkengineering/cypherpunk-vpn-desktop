@@ -58,7 +58,7 @@ std::string GetPath(PredefinedDirectory dir)
 	case ScriptsDir: return g_is_installed ? "/usr/local/libexec/CypherpunkPrivacy/scripts" : GetPath(BaseDir, "res", "osx", "openvpn-scripts");
 	case SettingsDir: return g_is_installed ? "/usr/local/etc/CypherpunkPrivacy" : g_daemon_path;
 #else
-	case BaseDir: return g_is_installed ? "/Applications/CypherpunkPrivacy.app" : (g_daemon_path + "/../..");
+	case BaseDir: return g_is_installed ? "/Applications/Cypherpunk Privacy.app" : (g_daemon_path + "/../..");
 	case ScriptsDir: return g_is_installed ? GetPath(BaseDir, "Contents/Resources/scripts") : GetPath(BaseDir, "res", "osx", "openvpn-scripts");
 	case SettingsDir: return g_is_installed ? "/Library/Application Support/CypherpunkPrivacy" : g_daemon_path;
 #endif
