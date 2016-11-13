@@ -1,5 +1,7 @@
 @echo off
 
+setlocal
+
 pushd %~dp0
 
 set BUILD_NUMBER=00000%BUILD_NUMBER%
