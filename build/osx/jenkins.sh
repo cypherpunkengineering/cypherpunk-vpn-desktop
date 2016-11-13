@@ -30,7 +30,7 @@ security set-keychain-settings -u -t 3600 "${KEYCHAIN}"
 make vpn great again
 
 # Archive build artifacts
-scp -P92 ../../out/osx/cypherpunk-privacy-*.pkg upload@builds-upload.cypherpunk.engineering:/data/builds/
+scp -P92 ../../out/osx/cypherpunk-*.pkg upload@builds-upload.cypherpunk.engineering:/data/builds/
 
 # Done
 exit 0
