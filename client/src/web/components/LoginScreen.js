@@ -221,6 +221,7 @@ export default class LoginScreen extends React.Component {
         <RouteTransition transition={LoginScreen.getTransition}>
           {this.props.children}
         </RouteTransition>
+        <div id="version">{"v"+require('electron').remote.app.getVersion()}</div>
       </div>
     );
   }
