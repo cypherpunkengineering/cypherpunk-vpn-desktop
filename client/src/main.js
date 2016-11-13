@@ -183,62 +183,61 @@ timeoutPromise(Promise.all(preinitPromises), 2000).then(() => {
 });
 
 function createTrayMenu() {
-  let hasServers = typeof daemon.config.servers === 'object' && Object.keys(daemon.config.servers).length > 0;
-  let server = daemon.config.servers[daemon.settings.server];
-  let connected = daemon.state.state !== 'DISCONNECTED';
+  const hasServers = typeof daemon.config.servers === 'object' && Object.keys(daemon.config.servers).length > 0;
+  const server = daemon.config.servers[daemon.settings.server];
+  const state = daemon.state.state;
+  const connected = state !== 'DISCONNECTED';
   let items = [];
   if (loggedIn) {
-    if (!main || !main.isVisible()) {
+    /*if (!main || !main.isVisible())*/ {
       items.push(
-        { label: "Show", click: () => { showMainWindow(); }},
+        { label: "Show window", click: () => { showMainWindow(); }},
         { type: 'separator' }
       );
     }
-    if (connected) {
-      if (daemon.state.needsReconnect && daemon.state.state !== 'SWITCHING') {
-        items.push({ label: "Reconnect (apply changed settings)", click: () => { daemon.post.connect(); } });
-      } else {
-        items.push({ label: "Disconnect", click: () => { daemon.post.disconnect(); } });
-      }
-    } else {
-      items.push({ label: "Connect", click: () => { daemon.post.connect(); } });
+    let connectName;
+    switch (state) {
+      case 'CONNECTING': connectName = "Connecting to " + server.regionName + "..."; break;
+      case 'CONNECTED': if (daemon.state.needsReconnect) connectName = "Reconnect (apply changed settings)"; else connectName = "Connected to " + server.regionName; break;
+      case 'DISCONNECTING': connectName = "Disconnecting..."; break;
+      case 'DISCONNECTED': connectName = "Connect to " + server.regionName; break;
+      case 'SWITCHING': connectName = "Switching to " + server.regionName; break;
     }
-    if (hasServers || main) {
-      items.push({ type: 'separator' });
-      if (hasServers) {
-        items.push(
-          {
-            label: (server ? server.regionName : "No region selected"),
-            icon: server ? getFlag(server.country) : null,
-            submenu: Object.keys(daemon.config.servers).map(k => daemon.config.servers[k]).map(s => ({
-              label: s.regionName,
-              icon: getFlag(s.country.toLowerCase()),
-              type: 'checkbox',
-              checked: daemon.settings.server === s.id,
-              enabled: s.ovDefault && s.ovDefault != "255.255.255.255",
-              click: () => {
-                daemon.call.applySettings({ server: s.id })
-                  .then(() => {
-                    if (daemon.state.needsReconnect) {
-                      daemon.post.connect();
-                    }
-                  });
-              }
-            }))
+    items.push({
+      label: connectName,
+      enabled: state === 'DISCONNECTED' || (state === 'CONNECTED' && daemon.state.needsReconnect),
+      click: () => { daemon.post.connect(); }
+    });
+    items.push({
+      label: state === 'DISCONNECTED' ? "Connect to" : "Switch to",
+      enabled: hasServers && (state === 'CONNECTED' || state === 'DISCONNECTED'),
+      submenu:
+        Object.keys(daemon.config.servers).map(k => daemon.config.servers[k]).map(s => ({
+          label: s.regionName,
+          icon: getFlag(s.country.toLowerCase()),
+          type: 'checkbox',
+          checked: daemon.settings.server === s.id,
+          enabled: s.ovDefault && s.ovDefault != "255.255.255.255",
+          click: () => {
+            daemon.call.applySettings({ server: s.id })
+              .then(() => {
+                if (daemon.state.needsReconnect) {
+                  daemon.post.connect();
+                }
+              });
           }
-        );
-      }
-      if (main) {
-        items.push({ label: "Configuration...", click: () => { main.webContents.send('navigate', { pathname: '/configuration' }); showMainWindow(); } });
-      }
-    }
-    if (connected) {
-      // Skip status items for now
-    }
+        }))
+    });
+    items.push({
+      label: "Disconnect",
+      enabled: state == 'DISCONNECTING' || state == 'DISCONNECTED',
+      click: () => { daemon.post.disconnect(); }
+    });
+
     if (main) {
-      items.push(
-        { type: 'separator' },
-      );
+      items.push({ type: 'separator' });
+      items.push({ label: "Account...", click: () => { main.webContents.send('navigate', { pathname: '/account' }); showMainWindow(); } });
+      items.push({ label: "Configuration...", click: () => { main.webContents.send('navigate', { pathname: '/configuration' }); showMainWindow(); } });
     }
   } else {
     items.push({ label: "Sign in", click: () => { showMainWindow(); }});
