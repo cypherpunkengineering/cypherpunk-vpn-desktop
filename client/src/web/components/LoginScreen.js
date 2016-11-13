@@ -18,8 +18,11 @@ function refreshServerList() {
   return server.get('/api/v0/vpn/serverList').then(response => {
     var servers = Array.toDict(Array.flatten(Array.flatten(Object.mapToArray(response.data, (r, countries) => Object.mapToArray(countries, (c, locations) => locations.map(l => Object.assign({}, l, { country: c, region: r })))))), s => s.id);
     var regions = Object.mapValues(Array.toMultiDict(Object.values(servers), s => s.region), (r,c) => Object.mapValues(Array.toMultiDict(c, l => l.country), (c,l) => l.map(m => m.id)));
-    return daemon.call.applySettings({ regions: regions, servers: servers }).then(() => servers);
-  })
+    var result = daemon.call.applySettings({ regions: regions, servers: servers });
+    // Workaround: ensure region selection is not empty
+    if (!servers[daemon.settings.server]) result = result.then(() => daemon.call.applySettings({ server: Object.keys(servers)[0] }));
+    return result.then(() => servers);
+  });
 }
 
 // Called to refresh any updated data and take any required next steps for
