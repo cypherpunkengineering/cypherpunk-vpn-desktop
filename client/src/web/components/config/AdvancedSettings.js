@@ -118,12 +118,12 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
               </div>
               <label>Local Port</label>
             </div>
-            <div className="setting">
+            {/*<div className="setting">
               <div className="ui toggle checkbox">
                 <input type="checkbox" name="forwardPort" id="forwardPort" ref="forwardPort"/>
                 <label>Request Port Forwarding</label>
               </div>
-            </div>
+            </div>*/}
           </div>
         </div>
       </div>

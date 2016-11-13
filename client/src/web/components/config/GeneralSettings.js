@@ -44,7 +44,7 @@ export default class GeneralSettings extends DaemonAware(React.Component)  {
   render() {
     return(
       <div className="pane" data-title="Basic Settings" ref="root">
-        <div className="setting"><Link to="/configuration/privacy" tabIndex="0">Privacy Mode</Link></div>
+        {process.platform.match(/^(win32|darwin)$/)?<div className="setting"><Link to="/configuration/privacy" tabIndex="0">Privacy Mode</Link></div>:null}
         <div className="setting">
           <div className="ui toggle checkbox">
             <input type="checkbox" name="runonstartup" id="runonstartup" ref="runonstartup"/>
@@ -57,14 +57,14 @@ export default class GeneralSettings extends DaemonAware(React.Component)  {
             <label>Auto-connect on launch</label>
           </div>
         </div>
-        <div className="setting"><Link to="/configuration/trustednetworks">Auto-connect on untrusted networks</Link></div>
+        {/*<div className="setting"><Link to="/configuration/trustednetworks">Auto-connect on untrusted networks</Link></div>*/}
         <div className="setting">
           <div class="ui checkbox toggle">
             <input type="checkbox" id="desktopnotifications" name="desktopnotifications" ref="desktopnotifications"/>
             <label>Show desktop notifications</label>
           </div>
         </div>
-        <div class="setting">
+        {/*<div class="setting">
           <div class="ui selection button dropdown" ref="showinDropdown">
             <input type="hidden" id="showin" name="showin"/>
             <i class="dropdown icon"></i>
@@ -76,7 +76,7 @@ export default class GeneralSettings extends DaemonAware(React.Component)  {
             </div>
           </div>
           <label>Show app in</label>
-        </div>
+        </div>*/}
       </div>
     );
   }
