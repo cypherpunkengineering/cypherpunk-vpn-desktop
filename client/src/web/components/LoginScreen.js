@@ -6,6 +6,7 @@ import { Title } from './Titlebar.js';
 import RouteTransition from './Transition';
 import daemon from '../daemon.js';
 import server from '../server.js';
+const { session } = require('electron').remote;
 
 
 
@@ -63,6 +64,23 @@ export class Check extends React.Component {
         }
       });
     }, 0);
+  }
+  render() {
+    return (
+      <form className="cp login-check ui form">
+        <div className="ui inline active massive text loader" ref="loader"></div>
+      </form>
+    );
+  }
+}
+
+export class Logout extends React.Component {
+  componentDidMount() {
+    setTimeout(() => { // need to use setTimeout since we might modify History
+      server.post('/api/v0/account/logout', null, { refreshSessionOnForbidden: false, catchAuthFailure: false })
+        .catch(err => console.error("Error while logging out:", err))
+        .then(() => { session.defaultSession.clearStorageData({ storages: [ 'cookies' ] }, () => History.push('/login/email')); });
+    })
   }
   render() {
     return (
