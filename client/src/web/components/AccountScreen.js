@@ -20,6 +20,18 @@ export default class AccountScreen extends React.Component  {
   getPlanName() {
     return this.isPremium() ? "Premium" : "Free";
   }
+  getRenewalType() {
+    return {
+      'annually': 'annually',
+      'semiannually': 'semiannually',
+      'monthly': 'monthly',
+      '12m': 'annually',
+      '1y': 'annually',
+      '6m': 'semiannually',
+      '3m': 'quarterly',
+      '1m': 'monthly',
+    }[daemon.settings.subscription.renewal];
+  }
   getRenewalDate() {
     //var d = new Date(0);
     //d.setUTCSeconds(daemon.settings.subscription.expiration);
@@ -31,7 +43,7 @@ export default class AccountScreen extends React.Component  {
       return this.props.children
     }
     else {
-      var renewal = this.isPremium() && daemon.settings.subscription.expiration != 0 ? <div className="period">Renews on {this.getRenewalDate()}</div> : null;
+      var renewal = this.isPremium() && daemon.settings.subscription.expiration != 0 ? <div className="period">Renews {this.getRenewalType()} on {this.getRenewalDate()}</div> : null;
       return(
         <div>
         <PanelTitlebar title="Account" back="/connect"/>
