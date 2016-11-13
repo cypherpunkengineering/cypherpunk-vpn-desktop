@@ -656,13 +656,51 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& server)
 {
 	using namespace std;
 
+	std::string protocol;
+	std::string remotePort;
+	{
+		auto both = SplitToVector(g_settings.remotePort(), ':', 1);
+		protocol = std::move(both[0]);
+		if (protocol == "tcp")
+			protocol = "tcp-client";
+		else if (protocol != "udp")
+		{
+			LOG(WARNING) << "Unrecognized 'remotePort' protocol '" << protocol << "', defaulting to 'udp'";
+			protocol = "udp";
+		}
+		if (both.size() == 2)
+		{
+			remotePort = std::move(both[1]);
+			if (remotePort == "auto")
+				remotePort = "7133";
+			else
+			{
+				try
+				{
+					size_t pos;
+					unsigned long port = std::stoul(remotePort, &pos);
+					if (pos != remotePort.size())
+					{
+						LOG(WARNING) << "Failed to fully parse 'remotePort' port '" << remotePort << "', using '" << port << "'";
+						remotePort = std::to_string(port);
+					}
+				}
+				catch (...)
+				{
+					LOG(WARNING) << "Unrecognized 'remotePort' port '" << remotePort << "', defaulting to '7133'";
+					remotePort = "7133";
+				}
+			}
+		}
+	}
+
 	const int mtu = g_settings.mtu();
 
 	std::map<std::string, std::string> config = {
 		{ "client", "" },
 		//{ "nobind", "" },
 		{ "dev", "tun" },
-		{ "proto", g_settings.protocol() == "tcp" ? "tcp-client" : g_settings.protocol() },
+		{ "proto", protocol },
 		{ "tun-mtu", std::to_string(mtu) },
 		//{ "fragment", std::to_string(mtu - 100) },
 		{ "mssfix", std::to_string(mtu - 220) },
@@ -690,7 +728,7 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& server)
 	const auto& encryption = g_settings.encryption();
 	std::string ipKey = "ov" + encryption;
 	ipKey[2] = std::toupper(ipKey[2]);
-	config["remote"] = server.at(ipKey).AsString() + (g_settings.remotePort() == "auto" ? " 7133" : " " + g_settings.remotePort());
+	config["remote"] = server.at(ipKey).AsString() + " " + remotePort;
 	if (encryption == "stealth")
 	{
 		config["tls-cipher"] = "TLS-DHE-RSA-WITH-AES-128-GCM-SHA256:TLS-DHE-RSA-WITH-AES-128-CBC-SHA256";
