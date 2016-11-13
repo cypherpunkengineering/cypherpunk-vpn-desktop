@@ -14,7 +14,7 @@ cmd /c build.bat clean
 if %errorlevel% neq 0 goto error
 
 cd ..\..\out\win
-scp -scp -P 92 -i "%USERPROFILE%\.ssh\pscp.ppk" cypherpunk-privacy-*.exe "upload@10.111.52.44:/data/builds/"
+scp -scp -P 92 -i "%USERPROFILE%\.ssh\pscp.ppk" cypherpunk-*.exe "upload@10.111.52.44:/data/builds/"
 if %errorlevel% neq 0 goto error
 
 :end
