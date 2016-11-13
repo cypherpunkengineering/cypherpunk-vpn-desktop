@@ -48,8 +48,8 @@ export default class AccountScreen extends React.Component  {
           </div>
           <div className="pane" data-title="More">
             <div className="setting"><Link to="/account/share" tabIndex="0">Share Cypherpunk with a Friend</Link></div>
-            <div className="setting"><a tabIndex="0"><div>Message the Founders<small>We love interacting with our users, all messages are responded to within 12 hours.</small></div></a></div>
-            <div className="setting"><Link to="/account/help" tabIndex="0">Help</Link></div>
+            <div className="setting"><a tabIndex="0" onClick={() => { shell.openExternal('https://cypherpunk.zendesk.com/tickets/new'); }}><div>Message the Founders<small>We love interacting with our users, all messages are responded to within 12 hours.</small></div></a></div>
+            <div className="setting">{/*<Link to="/account/help" tabIndex="0">Help</Link>*/}<a tabIndex="0" onClick={() => { shell.openExternal('https://support.cypherpunk.com/hc'); }}>Help</a></div>
             <div className="setting"><Link to="/login/logout" tabIndex="0">Log Out</Link></div>
           </div>
         </div>
