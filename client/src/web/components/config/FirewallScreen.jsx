@@ -28,7 +28,7 @@ export default class FirewallScreen extends React.Component  {
     return(
       <div ref="root" class="container__comp">
         <div className="ui fluid inverted borderless icon menu cp_config_header">
-          <Link className="item" to="/configuration"><i className="angle left icon"></i></Link>
+          <Link className="nondraggable item" to="/configuration"><i className="angle left icon"></i></Link>
           <div className="header item center aligned">Firewall</div>
         </div>
         <div className="ui inverted padded grid">
