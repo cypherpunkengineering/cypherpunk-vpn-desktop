@@ -15,7 +15,7 @@ if %errorlevel% neq 0 goto error
 
 cd ..\..\out\win
 scp -scp -P 92 -i "%USERPROFILE%\.ssh\pscp.ppk" cypherpunk-*.exe "upload@builds.cypherpunk.engineering:/data/builds/"
-if %errorlevel% eq 0 goto upload_success
+if %errorlevel% equ 0 goto upload_success
 echo * Warning: failed to upload build
 :upload_success
 

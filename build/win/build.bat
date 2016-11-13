@@ -48,7 +48,7 @@ call npm --production run build
 if %errorlevel% neq 0 goto error
 
 echo * Rebuilding Electron modules...
-del node_modules\nslog\build\Release\nslog.node
+if exist node_modules\nslog\build\Release\nslog.node del /f node_modules\nslog\build\Release\nslog.node
 call node_modules\.bin\electron-rebuild.cmd --arch=ia32
 if %errorlevel% neq 0 goto error
 
