@@ -3,6 +3,7 @@
 #include "openvpn.h"
 #include "logger.h"
 #include "path.h"
+#include "version.h"
 
 #include <thread>
 #include <asio.hpp>
@@ -37,7 +38,7 @@ CypherDaemon::CypherDaemon()
 
 int CypherDaemon::Run()
 {
-	LOG(INFO) << "Running CypherDaemon built on " __TIMESTAMP__;
+	LOG(INFO) << "Running CypherDaemon version v" VERSION " built on " __TIMESTAMP__;
 
 	_ws_server.set_message_handler(std::bind(&CypherDaemon::OnReceiveMessage, this, _1, _2));
 	_ws_server.set_open_handler([this](Connection c) {
