@@ -10,7 +10,7 @@ set BUILD_NUMBER=%BUILD_NUMBER:~-5%
 git submodule update --recursive --init
 if %errorlevel% neq 0 goto error
 
-cmd /c build.bat
+cmd /c build.bat clean
 if %errorlevel% neq 0 goto error
 
 cd ..\..\out\win
