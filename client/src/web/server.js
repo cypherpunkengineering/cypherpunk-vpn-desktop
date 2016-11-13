@@ -118,7 +118,7 @@ function xhr(method, url, params, options = {}) {
 
   var originalThen = promise.then;
   promise.then = function then(mapOrCallback, cbResolved, cbRejected) {
-    if (typeof mapOrCallback === 'function') {
+    if (typeof mapOrCallback !== 'object') {
       return originalThen.apply(promise, arguments);
     }
     let handlers = {};
