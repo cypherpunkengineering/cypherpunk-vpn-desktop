@@ -8,7 +8,7 @@ export default class EmailScreen extends React.Component  {
       <div class="container__comp material">
         <div className="ui fluid inverted borderless icon menu cp_config_header titlebar">
           <Link className="nondraggable item" to="/account"><i className="angle left icon"></i></Link>
-          <div className="header item center aligned">Update Email</div>
+          <div className="header item center aligned">Share</div>
         </div>
 
         <div className="cp-panel__rows">
