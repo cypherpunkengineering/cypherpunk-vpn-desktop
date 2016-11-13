@@ -98,16 +98,19 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
 
           <div className="pane" data-title="VPN Settings">
             <div class="setting">
-              <div class="ui selection button dropdown" ref="protocol">
-                <input type="hidden" id="protocol" name="protocol"/>
+              <div class="ui selection button dropdown" ref="remotePort">
+                <input type="hidden" id="remotePort" name="remotePort" defaultValue="udp:7133"/>
                 <i class="dropdown icon"></i>
-                <div class="default text">UDP</div>
+                <div class="default text">Select...</div>
                 <div className="menu">
-                  <div class="item" data-value="udp">UDP</div>
-                  <div class="item" data-value="tcp">TCP</div>
+                  <div class="item" data-value="udp:7133">UDP 7133</div>
+                  <div class="item" data-value="udp:5060">UDP 5060</div>
+                  <div class="item" data-value="udp:53">UDP 53</div>
+                  <div class="item" data-value="tcp:7133">TCP 7133</div>
+                  <div class="item" data-value="tcp:443">TCP 443</div>
                 </div>
               </div>
-              <label>Transport Protocol</label>
+              <label>Remote Port</label>
             </div>
             <div className="setting">
               <div className="ui input">
@@ -115,23 +118,12 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
               </div>
               <label>Local Port</label>
             </div>
-            <div className="setting">
-              <div className="ui button selection dropdown" ref="remotePort">
-                <input type="hidden" name="remoteport" />
-                <i className="dropdown icon"></i>
-                <div className="default text">7133</div>
-                <div className="menu">
-                  <div className="item" data-value="7133">7133</div>
-                </div>
-              </div>
-              <label>Remote Port</label>
-            </div>
-            <div className="setting">
+            {/*<div className="setting">
               <div className="ui toggle checkbox">
                 <input type="checkbox" name="forwardPort" id="forwardPort" ref="forwardPort"/>
                 <label>Request Port Forwarding</label>
               </div>
-            </div>
+            </div>*/}
           </div>
         </div>
       </div>

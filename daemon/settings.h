@@ -54,9 +54,8 @@ public:
 	JsonValue& at(const std::string& name);
 	JsonValue& operator[](const std::string& name);
 
-	namedmember(std::string, protocol, "udp")
+	namedmember(std::string, remotePort, "udp:7133")
 	namedmember(std::string, server, "tokyodev") // FIXME: don't hardcode
-	namedmember(std::string, remotePort, "auto")
 	namedmember(int, localPort, 0)
 	namedmember(int, mtu, 1500)
 	namedmember(std::string, encryption, "default") // "none", "default", "strong" or "stealth"

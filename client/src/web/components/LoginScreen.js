@@ -6,6 +6,7 @@ import { Title } from './Titlebar.js';
 import RouteTransition from './Transition';
 import daemon from '../daemon.js';
 import server from '../server.js';
+const { session } = require('electron').remote;
 
 
 
@@ -17,8 +18,11 @@ function refreshServerList() {
   return server.get('/api/v0/vpn/serverList').then(response => {
     var servers = Array.toDict(Array.flatten(Array.flatten(Object.mapToArray(response.data, (r, countries) => Object.mapToArray(countries, (c, locations) => locations.map(l => Object.assign({}, l, { country: c, region: r })))))), s => s.id);
     var regions = Object.mapValues(Array.toMultiDict(Object.values(servers), s => s.region), (r,c) => Object.mapValues(Array.toMultiDict(c, l => l.country), (c,l) => l.map(m => m.id)));
-    return daemon.call.applySettings({ regions: regions, servers: servers }).then(() => servers);
-  })
+    var result = daemon.call.applySettings({ regions: regions, servers: servers });
+    // Workaround: ensure region selection is not empty
+    if (!servers[daemon.settings.server]) result = result.then(() => daemon.call.applySettings({ server: Object.keys(servers)[0] }));
+    return result.then(() => servers);
+  });
 }
 
 // Called to refresh any updated data and take any required next steps for
@@ -63,6 +67,23 @@ export class Check extends React.Component {
         }
       });
     }, 0);
+  }
+  render() {
+    return (
+      <form className="cp login-check ui form">
+        <div className="ui inline active massive text loader" ref="loader"></div>
+      </form>
+    );
+  }
+}
+
+export class Logout extends React.Component {
+  componentDidMount() {
+    setTimeout(() => { // need to use setTimeout since we might modify History
+      server.post('/api/v0/account/logout', null, { refreshSessionOnForbidden: false, catchAuthFailure: false })
+        .catch(err => console.error("Error while logging out:", err))
+        .then(() => { session.defaultSession.clearStorageData({ storages: [ 'cookies' ] }, () => History.push('/login/email')); });
+    })
   }
   render() {
     return (
