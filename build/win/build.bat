@@ -9,6 +9,11 @@ if exist "%ProgramFiles%\Inno Setup 5\ISCC.exe" set ISCC="%ProgramFiles%\Inno Se
 
 pushd %~dp0
 
+if not [%1] == [clean] goto skip_clean
+echo * Cleaning...
+rmdir /s /q ..\..\out\win 2>NUL
+:skip_clean
+
 cd ..
 
 cd ..\client
