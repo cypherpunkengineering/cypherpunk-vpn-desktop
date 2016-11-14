@@ -163,7 +163,7 @@ void CypherDaemon::OnClientDisconnected(Connection c)
 
 void CypherDaemon::OnLastClientDisconnected()
 {
-
+	RPC_disconnect();
 }
 
 void CypherDaemon::OnReceiveMessage(Connection connection, WebSocketServer::message_ptr msg)
