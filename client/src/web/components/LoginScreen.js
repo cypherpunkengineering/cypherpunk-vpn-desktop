@@ -42,7 +42,6 @@ function refreshAccount() {
 // Called when we have logged in to (or registered) a new account, to store
 // and refresh all relevant account data.
 function setAccount(loginData) {
-  console.dir(loginData);
   return daemon.call.setAccount({
     email: loginData.account.email,
     token: loginData.token,
@@ -82,6 +81,7 @@ export class Logout extends React.Component {
     setTimeout(() => { // need to use setTimeout since we might modify History
       server.post('/api/v0/account/logout', null, { refreshSessionOnForbidden: false, catchAuthFailure: false })
         .catch(err => console.error("Error while logging out:", err))
+        .then(() => daemon.call.setAccount({ email: daemon.account.email, token: null, secret: null }))
         .then(() => { session.defaultSession.clearStorageData({ storages: [ 'cookies' ] }, () => History.push('/login/email')); });
     })
   }
