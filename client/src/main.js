@@ -8,6 +8,8 @@ let main = null;
 let tray = null;
 let os = ({ 'win32': '_win', 'darwin': '_osx', 'linux': '_lin' })[process.platform] || '';
 let dpi = '';
+let location = {};
+let loggedIn = false;
 
 let args = {
   debug: false,
@@ -40,6 +42,15 @@ ipc.on('autostart-set', (event, enable) => {
       event.sender.send('autostart-value', null);
     })
 });
+
+ipc.on('navigate', (event, loc) => {
+  location = loc;
+  var l = loc.pathname.match(/^\/(?!login)./);
+  if (l != loggedIn) {
+    loggedIn = l;
+
+  }
+})
 
 
 function eventPromise(emitter, name) {
@@ -172,36 +183,64 @@ timeoutPromise(Promise.all(preinitPromises), 2000).then(() => {
 });
 
 function createTrayMenu() {
+  let hasServers = typeof daemon.config.servers === 'object' && Object.keys(daemon.config.servers).length > 0;
   let server = daemon.config.servers[daemon.settings.server];
   let connected = daemon.state.state !== 'DISCONNECTED';
-  let items = [
-    { label: "Show", visible: !main || !main.isVisible(), click: () => { showMainWindow(); } },
-    { type: 'separator', visible: !main || !main.isVisible() },
-    { label: "Reconnect (apply changed settings)", visible: !!(connected && daemon.state.needsReconnect) },
-    { label: "Connect", visible: !connected, click: () => { daemon.post.connect(); } },
-    { label: "Disconnect", visible: connected, click: () => { daemon.post.disconnect(); } },
+  let items = [];
+  if (loggedIn) {
+    if (!main || !main.isVisible()) {
+      items.push(
+        { label: "Show", click: () => { showMainWindow(); }},
+        { type: 'separator' }
+      );
+    }
+    if (connected) {
+      if (daemon.state.needsReconnect) {
+        items.push({ label: "Reconnect (apply changed settings)", click: () => { daemon.post.connect(); } });
+      } else {
+        items.push({ label: "Disconnect", click: () => { daemon.post.disconnect(); } });
+      }
+    } else {
+      items.push({ label: "Connect", click: () => { daemon.post.connect(); } });
+    }
+    if (hasServers || main) {
+      items.push({ type: 'separator' });
+      if (hasServers) {
+        items.push(
+          {
+            label: (server ? server.regionName : "No region selected"),
+            icon: server ? getFlag(server.country) : null,
+            submenu: !connected ? Object.keys(daemon.config.servers).map(k => daemon.config.servers[k]).map(s => ({
+              label: s.regionName,
+              icon: getFlag(s.country.toLowerCase()),
+              type: 'checkbox',
+              checked: daemon.settings.server === s.id,
+              enabled: s.ovDefault && s.ovDefault != "255.255.255.255",
+              click: () => { if (!connected) daemon.post.applySettings({ server: s.id }); }
+            })) : null,
+            enabled: !connected,
+          }
+        );
+      }
+      if (main) {
+        items.push({ label: "Configuration...", click: () => { main.webContents.send('navigate', { pathname: '/configuration' }); showMainWindow(); } });
+      }
+    }
+    if (connected) {
+      // Skip status items for now
+    }
+    if (main) {
+      items.push(
+        { type: 'separator' },
+      );
+    }
+  } else {
+    items.push({ label: "Sign in", click: () => { showMainWindow(); }});
+  }
+  items.push(
     { type: 'separator' },
-    {
-      label: (server ? server.regionName : "No region selected"),
-      icon: server ? getFlag(server.country) : null,
-      submenu: !connected ? Object.keys(daemon.config.servers).map(k => daemon.config.servers[k]).map(s => ({
-        label: s.regionName,
-        icon: getFlag(s.country.toLowerCase()),
-        type: 'checkbox',
-        checked: daemon.settings.server === s.id,
-        enabled: s.ovDefault && s.ovDefault != "255.255.255.255",
-        click: () => { if (!connected) daemon.post.applySettings({ server: s.id }); }
-      })) : null,
-      enabled: !connected,
-    },
-    { type: 'separator', visible: connected },
-    { label: "Protocol: OpenVPN", enabled: false, visible: connected },
-    { label: "IP: " + daemon.state.remoteIP, enabled: false, visible: connected }, // FIXME: not the right IP, you want the public one
-    { label: "Status: " + daemon.state.state, enabled: false, visible: connected },
-    { type: 'separator' },
-    //{ label: 'Sign out' },
-    { label: 'Quit', click: () => { app.quit(); } },
-  ];
+    { label: "Quit", click: () => { app.quit(); } }
+  );
   // Windows fix: hidden separators don't work, so manually strip out hidden items entirely
   items = items.filter(i => !i.hasOwnProperty('visible') || i.visible);
   return Menu.buildFromTemplate(items);
@@ -227,6 +266,8 @@ function createTray() {
   daemon.on('settings', settings => { if (settings.server) refresh(); });
   main.on('hide', () => { refresh(); });
   main.on('show', () => { refresh(); });
+  var lastLoggedIn = undefined;
+  ipc.on('navigate', (event, location) => { if (lastLoggedIn === undefined || loggedIn != lastLoggedIn) { lastLoggedIn = loggedIn; refresh(); }});
   if (os == '_win') {
     tray.on('click', (evt, bounds) => {
       showMainWindow();

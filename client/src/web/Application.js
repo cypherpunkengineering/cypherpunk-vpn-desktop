@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, browserHistory, hashHistory } from 'react-router';
+import { ipcRenderer } from 'electron';
 import LoginScreen, * as Login from './components/LoginScreen';
 import ConnectScreen from './components/ConnectScreen';
 import ConfigurationScreen from './components/ConfigurationScreen'
@@ -58,6 +59,15 @@ export default class Application {
     }
     History.push('/login');
   }
+  static navigate(location) {
+    Application.History.push(location);
+  }
+  static onNavigation(location, action) {
+    ipcRenderer.send('navigate', location);
+  }
+  static isLoggedIn() {
+    return Application.History.location.pathname.match(/^\/(?!login)./);
+  }
   static render() {
     return (
       <Router history={window.History}>
@@ -93,6 +103,8 @@ export default class Application {
 
 // const store = configureStore();
 window.History = Application.History = hashHistory;
+hashHistory.listen((location, action) => Application.onNavigation(location, action));
+ipcRenderer.on('navigate', (event, location) => Application.navigate(location));
 
 // Add a simple handler for uncaught errors in promises (this will almost
 // entirely only be used by XHR promises).
