@@ -88,12 +88,12 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
                 <label>Always Allow LAN Traffic</label>
               </div>
             </div>
-            <div className="setting">
+            {/*(process.platform === 'darwin') ? <div className="setting">
               <div className="ui toggle checkbox">
                 <input type="checkbox" name="exemptApple" id="exemptApple" ref="exemptApple"/>
                 <label>Exempt Apple Services from VPN</label>
               </div>
-            </div>
+            </div> : null*/}
           </div>
 
           <div className="pane" data-title="VPN Settings">
