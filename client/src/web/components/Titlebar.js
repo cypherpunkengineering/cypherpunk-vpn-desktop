@@ -3,6 +3,7 @@ import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, createMemoryH
 
 import AccountIcon from '../assets/img/icon-account-big.svg';
 import SettingsIcon from '../assets/img/icon_settings.svg';
+import LogoText from '../assets/img/header-logo-big.svg';
 
 // A little helper component to render the main title of the app.
 
@@ -13,7 +14,7 @@ export class Title extends React.Component {
   render() {
     var ActualComponent = this.props.component;
     return(
-      <ActualComponent className={"cp title " + this.props.className}><span>{this.props.left}</span><span>{this.props.right}</span></ActualComponent>
+      <ActualComponent className={"cp title " + this.props.className}><img src={LogoText} alt=""/></ActualComponent>
     );
   }
 }
@@ -30,7 +31,7 @@ export class CloseButton extends React.Component {
     $('body > #window-close').css({ display: '' });
   }
   render() {
-    return (process.platform === 'darwin') ? null : <i id="window-close" className="link icon" onClick={() => { window.close(); }}/>; 
+    return (process.platform === 'darwin') ? null : <i id="window-close" className="link icon" onClick={() => { window.close(); }}/>;
   }
 }
 
