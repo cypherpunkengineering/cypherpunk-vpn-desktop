@@ -49,13 +49,18 @@
       flex: 0 0 auto;
     }
     > .header {
+      border-top: 1px solid @cpWhite25;
       height: @itemHeight;
       padding: 0 15px;
       display: flex;
-      align-items: flex-end;
+      align-items: center;
       font-size: 12px;
       text-transform: uppercase;
       color: rgba(255,255,255,0.6);
+
+      &:first-child {
+        border-top: none;
+      }
     }
     > .region {
       font-size: 1.125rem;
@@ -117,7 +122,7 @@
         }
       }
       + .region {
-        border-top: 1px solid rgba(255,255,255,0.1);
+        // border-top: 1px solid rgba(255,255,255,0.1);
       }
     }
   }
