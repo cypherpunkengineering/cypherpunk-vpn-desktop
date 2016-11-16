@@ -19,6 +19,7 @@ var replace = require('gulp-replace');
 var through = require('through');
 var { fork, spawn, exec } = require('child_process');
 var fs = require('fs');
+var es = require('event-stream');
 var stream = require('stream');
 var webpack = require('webpack');
 
@@ -39,6 +40,19 @@ gulp.task('watch', ['build'], function() {
     'watch-web',
     'watch-app-nodemodules',
   ]);
+});
+
+gulp.task('version', function() {
+  // The package.json version number has been changed; propagate to
+  // all other locations that don't automatically pick it up.
+  var version = packageJson.version;
+  function replaceVersion(filename, ...operations) {
+    return operations.reduce((a, b) => a.pipe(b), gulp.src(filename, { base: './' })).pipe(gulp.dest('.'));
+  }
+  return es.merge(
+    replaceVersion('../daemon/version.h', replace(/^(#define VERSION ).*/m, `$1"${version}"`)),
+    replaceVersion('../build/win/setup.iss', replace(/^(#define MyAppVersion ).*/m, `$1"${version}"`), replace(/^(#define MyInstallerSuffix ).*/m, `$1"-${version.replace('+','-')}"`))
+  );
 });
 
 
