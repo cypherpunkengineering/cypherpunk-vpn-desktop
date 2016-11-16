@@ -1,2 +1,6 @@
+@echo off
+
+pushd %~dp0
 call win\jenkins.bat
-exit %errorlevel%
+popd
+exit /b %errorlevel%
