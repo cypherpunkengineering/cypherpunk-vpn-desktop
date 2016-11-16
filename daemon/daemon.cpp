@@ -857,6 +857,9 @@ bool CypherDaemon::RPC_connect()
 #if OS_WIN
 	args.push_back("--dev-node");
 	args.push_back(GetAvailableAdapter(index));
+#elif OS_OSX
+	args.push_back("--dev-node");
+	args.push_back("utun");
 #endif
 
 #if OS_OSX
