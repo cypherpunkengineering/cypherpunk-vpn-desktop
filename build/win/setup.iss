@@ -1,6 +1,7 @@
 #define MyAppID "CypherpunkPrivacy"
 #define MyAppName "Cypherpunk Privacy"
 #define MyAppVersion "0.2.0-prealpha"
+#define MyAppNumericVersion "0.2.0"
 #define MyAppPublisher "Cypherpunk Partners, slf."
 #define MyAppURL "https://www.cypherpunk.com/"
 #define MyAppExeName "CypherpunkPrivacy.exe"
@@ -36,7 +37,8 @@ DisableDirPage=yes
 ShowLanguageDialog=no
 RestartApplications=False
 CloseApplicationsFilter=*.exe,*.dll
-VersionInfoVersion={#MyAppVersion}
+VersionInfoVersion={#MyAppNumericVersion}
+VersionInfoTextVersion={#MyAppVersion}
 MinVersion=0,6.0
 
 [Languages]

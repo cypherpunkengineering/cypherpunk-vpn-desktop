@@ -51,7 +51,7 @@ gulp.task('version', function() {
   }
   return es.merge(
     replaceVersion('../daemon/version.h', replace(/^(#define VERSION ).*/m, `$1"${version}"`)),
-    replaceVersion('../build/win/setup.iss', replace(/^(#define MyAppVersion ).*/m, `$1"${version}"`), replace(/^(#define MyInstallerSuffix ).*/m, `$1"-${version.replace('+','-')}"`))
+    replaceVersion('../build/win/setup.iss', replace(/^(#define MyAppVersion ).*/m, `$1"${version}"`), replace(/^(#define MyAppNumericVersion ).*/m, `$1"${version.replace(/[-+].*/,'')}"`), replace(/^(#define MyInstallerSuffix ).*/m, `$1"-${version.replace('+','-')}"`))
   );
 });
 

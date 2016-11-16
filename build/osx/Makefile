@@ -8,7 +8,7 @@
 .SUFFIXES:
 
 #USE_EXTENSIONS := YES
-HUSH := #@
+HUSH := @
 ECHO := @echo
 QUIET := > /dev/null
 exec = $(HUSH) { $@ ; } $(QUIET)
@@ -34,9 +34,12 @@ INSTALLER_SIGN_IDENTITY = "Developer ID Installer: Cypherpunk Engineering K.K. (
 
 # BUILD_NUMBER is provided on Jenkins builds, or can be specified explicitly.
 # If BUILD_NAME is specified (e.g. for special/branch builds), it is prepended to the build number.
-BUILD_NUMBER ?= $(shell git --git-dir="$(ROOT)/.git" describe --always --match=nosuchtagpattern --dirty=-p)
+ifeq ($(BUILD_NUMBER),)
+BUILD_NUMBER := $(BUILD_NAME)-$(shell git --git-dir="$(ROOT)/.git" describe --always --match=nosuchtagpattern --dirty=-p)
+BUILD_NUMBER := $(BUILD_NUMBER:-%=%)
+endif
 ORIGINAL_APP_VER := $(shell node -e "console.log(require('$(ROOT)/client/package.json').version);")
-export APP_VER := $(shell echo "$(ORIGINAL_APP_VER)" | sed -E 's/^([^-+]*)(-[^+]*)?(\+.*)?/\1\2+$(BUILD_NAME)-$(BUILD_NUMBER)/' | sed 's/+-/+/')
+export APP_VER := $(shell echo "$(ORIGINAL_APP_VER)" | sed -E 's/^([^-+]*)(-[^+]*)?(\+.*)?/\1\2+$(BUILD_NUMBER)/')
 
 INSTALLER_PKG = cypherpunk-privacy-macos-$(subst +,-,$(APP_VER)).pkg
 
@@ -47,8 +50,6 @@ all: package
 package: $(OUT)/$(INSTALLER_PKG)
 
 clean:
-	$(ECHO) "$(APP_VER)"
-	$(ECHO) "$(INSTALLER_PKG)"
 	$(ECHO) "* Cleaning..."
 	$(HUSH) rm -rf "$(OUT)"
 
@@ -91,7 +92,7 @@ check-node-modules: $(if $(wildcard $(ROOT)/client/node_modules/.),,update-node-
 #else
 version: check-node-modules
 	$(ECHO) "* Setting version number to $(APP_VER)..."
-	$(HUSH) cd "$(ROOT)/client" && ./node_modules/.bin/json -I -f package.json -e 'this.version="$(APP_VER)"' && npm run version
+	$(HUSH) cd "$(ROOT)/client" && ./node_modules/.bin/json -I -f package.json -e 'this.version=this.version.replace(/(\+.*)?$$/,"+$(BUILD_NUMBER)")' && npm run version
 ## We'd run npm version $(APP_VER) instead but that doesn't work with build numbers
 #endif
 

@@ -7,15 +7,15 @@ if exist "%ProgramFiles%\Inno Setup 5\ISCC.exe" set ISCC="%ProgramFiles%\Inno Se
 
 pushd %~dp0
 
-cd ..\..\daemon
-echo * Building 32-bit service...
-%MSBUILD% daemon.vcxproj /nologo /v:q /p:Configuration=Release /p:Platform=Win32
-if %errorlevel% neq 0 goto error
-echo * Building 64-bit service...
-%MSBUILD% daemon.vcxproj /nologo /v:q /p:Configuration=Release /p:Platform=x64
-if %errorlevel% neq 0 goto error
+cd ..
 
 cd ..\client
+echo * Setting version...
+call node_modules\.bin\json -I -f package.json -e 'this.version=this.version.replace(/(\+.*)?$/,"+%BUILD_NUMBER%")'
+if %errorlevel% neq 0 goto error
+call npm run version
+if %errorlevel% neq 0 goto error
+
 echo * Updating Node modules...
 call npm --loglevel=silent install
 if %errorlevel% neq 0 goto error
@@ -31,6 +31,14 @@ if %errorlevel% neq 0 goto error
 
 echo * Packaging Electron app...
 call node_modules\.bin\electron-packager.cmd .\app\ CypherpunkPrivacy --overwrite --platform=win32 --arch=ia32 --icon=..\res\win\logo2.ico --out=..\out\win\client\ --prune --asar --version-string.FileDescription="Cypherpunk Privacy" --version-string.CompanyName="Cypherpunk Partners, slf." --version-string.LegalCopyright="Copyright (C) 2016 Cypherpunk Partners, slf. All rights reserved." --version-string.OriginalFilename="CypherpunkPrivacy.exe" --version-string.ProductName="Cypherpunk Privacy" --version-string.InternalName="CypherpunkPrivacy"
+if %errorlevel% neq 0 goto error
+
+cd ..\daemon
+echo * Building 32-bit service...
+%MSBUILD% daemon.vcxproj /nologo /v:q /p:Configuration=Release /p:Platform=Win32
+if %errorlevel% neq 0 goto error
+echo * Building 64-bit service...
+%MSBUILD% daemon.vcxproj /nologo /v:q /p:Configuration=Release /p:Platform=x64
 if %errorlevel% neq 0 goto error
 
 cd ..\build\win
