@@ -10,14 +10,14 @@ pushd %~dp0
 cd ..
 
 cd ..\client
+echo * Updating Node modules...
+call npm --loglevel=silent install
+if %errorlevel% neq 0 goto error
+
 echo * Setting version...
 call node_modules\.bin\json -I -f package.json -e 'this.version=this.version.replace(/(\+.*)?$/,"+%BUILD_NUMBER%")'
 if %errorlevel% neq 0 goto error
 call npm run version
-if %errorlevel% neq 0 goto error
-
-echo * Updating Node modules...
-call npm --loglevel=silent install
 if %errorlevel% neq 0 goto error
 
 echo * Building client...
