@@ -20,7 +20,7 @@ static bool g_is_installed = false;
 void InitPaths(std::string argv0)
 {
 	g_argv0 = std::move(argv0);
-	if (g_argv0.compare(0, 15, "/usr/local/bin/") == 0)
+	if (g_argv0.compare(0, 22, "/usr/local/cypherpunk/") == 0)
 		g_is_installed = true;
 	size_t last_slash = g_argv0.find_last_of(PATH_SEPARATOR);
 	if (last_slash != std::string::npos)
@@ -37,10 +37,12 @@ std::string GetPath(PredefinedFile file)
 	switch (file)
 	{
 	case DaemonExecutable: return g_argv0;
+	case OpenVPNExecutable: return g_is_installed
+		? "/usr/local/cypherpunk/bin/cypherpunk-privacy-openvpn"
 #if OS_LINUX
-	case OpenVPNExecutable: return g_is_installed ? "/usr/local/bin/cypherpunk-privacy-openvpn" : GetPath(BaseDir, "daemon", "third_party", "openvpn_linux", "openvpn"); // Exists in /usr/local/bin, callable anywhere
+		: GetPath(BaseDir, "daemon", "third_party", "openvpn_linux", "openvpn");
 #else
-	case OpenVPNExecutable: return g_is_installed ? "/usr/local/bin/cypherpunk-privacy-openvpn" : GetPath(BaseDir, "daemon", "third_party", "openvpn_osx", "openvpn"); // Exists in /usr/local/bin, callable anywhere
+		: GetPath(BaseDir, "daemon", "third_party", "openvpn_osx", "openvpn");
 #endif
 	case SettingsFile: return GetPath(SettingsDir, "settings.json");
 	default:
@@ -53,15 +55,9 @@ std::string GetPath(PredefinedDirectory dir)
 {
 	switch (dir)
 	{
-#if OS_LINUX
-	case BaseDir: return g_is_installed ? "/usr/local/bin/CypherpunkPrivacy" : (g_daemon_path + "/../..");
-	case ScriptsDir: return g_is_installed ? "/usr/local/libexec/CypherpunkPrivacy/scripts" : GetPath(BaseDir, "res", "osx", "openvpn-scripts");
-	case SettingsDir: return g_is_installed ? "/usr/local/etc/CypherpunkPrivacy" : g_daemon_path;
-#else
-	case BaseDir: return g_is_installed ? "/Applications/Cypherpunk\\ Privacy.app" : (g_daemon_path + "/../..");
-	case ScriptsDir: return g_is_installed ? GetPath(BaseDir, "Contents/Resources/scripts") : GetPath(BaseDir, "res", "osx", "openvpn-scripts");
-	case SettingsDir: return g_is_installed ? "/Library/Application Support/CypherpunkPrivacy" : g_daemon_path;
-#endif
+	case BaseDir: return g_is_installed ? "/usr/local/cypherpunk" : (g_daemon_path + "/../..");
+	case ScriptsDir: return g_is_installed ? GetPath(BaseDir, "etc/scripts") : GetPath(BaseDir, "res", "osx", "openvpn-scripts");
+	case SettingsDir: return g_is_installed ? GetPath(BaseDir, "etc") : g_daemon_path;
 	case LogDir: return g_is_installed ? "/tmp" : g_daemon_path;
 	case ProfileDir: return g_is_installed ? "/tmp" : g_daemon_path;
 	default:
