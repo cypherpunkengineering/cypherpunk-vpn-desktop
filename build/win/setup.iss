@@ -1,10 +1,12 @@
 #define MyAppID "CypherpunkPrivacy"
 #define MyAppName "Cypherpunk Privacy"
-#define MyAppVersion "0.1.2"
+#define MyAppVersion "0.2.0-prealpha"
 #define MyAppPublisher "Cypherpunk Partners, slf."
 #define MyAppURL "https://www.cypherpunk.com/"
 #define MyAppExeName "CypherpunkPrivacy.exe"
 #define MyAppCopyright "Copyright © 2016 " + MyAppPublisher
+#define MyInstallerName "cypherpunk-privacy-windows"
+#define MyInstallerSuffix "-0.2.0-prealpha"
 
 [Setup]
 AppId={#MyAppID}
@@ -18,8 +20,8 @@ DefaultDirName={pf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 PrivilegesRequired=admin
 DisableProgramGroupPage=yes
-OutputDir=..\..\out\win\setup\
-OutputBaseFilename={#MyAppID}
+OutputDir=..\..\out\win\
+OutputBaseFilename={#MyInstallerName}{#MyInstallerSuffix}
 LicenseFile=..\..\LICENSE.txt
 SetupIconFile=..\..\res\win\logo2.ico
 UninstallDisplayName={#MyAppName}
