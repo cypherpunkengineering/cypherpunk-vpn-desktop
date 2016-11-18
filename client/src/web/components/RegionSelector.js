@@ -54,10 +54,10 @@ export default class RegionSelector extends DaemonAware(React.Component) {
     }
   }
   scrollIfNeeded() {
-    if (!this.state.open) {
-      this.$list.scrollTop(0);
-    } else if (this.state.selected) {
+    if (this.state.selected) {
       this.ensureVisible(this.state.selected);
+    } else {
+      this.$list.scrollTop(0);
     }
   }
 
@@ -138,6 +138,27 @@ export default class RegionSelector extends DaemonAware(React.Component) {
     if (this.state.open != prevState.open || this.state.selected != prevState.selected) {
       this.scrollIfNeeded();
     }
+    if (this.state.open != prevState.open) {
+      this.onTransitionStart();
+    }
+  }
+
+  onTransitionStart(event) {
+    var self = this;
+    var frame = {
+      callback: function(now) { frame.id = false; self.onTransitionFrame(now); if (frame.id === false) frame.next(); },
+      next: function() { this.id = window.requestAnimationFrame(this.callback); },
+      cancel: function() { if (this.id) window.cancelAnimationFrame(this.id); delete this.id; delete self.frame; }
+    };
+    this.frame = frame;
+    this.frame.next();
+  }
+  onTransitionFrame(now) {
+    this.scrollIfNeeded();
+  }
+  onTransitionEnd(event) {
+    if (this.frame) this.frame.cancel();
+    this.scrollIfNeeded();
   }
 
   render() {
@@ -152,6 +173,7 @@ export default class RegionSelector extends DaemonAware(React.Component) {
     return(
       <div className={classes.join(' ')}
         onKeyDown={event => this.onKeyDown(event)}
+        onTransitionEnd={event => this.onTransitionEnd(event)}
         >
         <div className="bar" onClick={() => this.state.open ? this.close() : this.open()}>
           { (this.state.selected && this.state.servers[this.state.selected]) ? this.makeServer(this.state.servers[this.state.selected], false) : "Select Region" }
