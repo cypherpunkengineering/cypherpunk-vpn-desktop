@@ -62,8 +62,13 @@ export default class RegionSelector extends DaemonAware(React.Component) {
   }
 
   onServerClick(server) {
-    daemon.post.applySettings({ server: server });
-    this.setState({ selected: server })
+    daemon.call.applySettings({ server: server })
+      .then(() => {
+        if (daemon.state.needsReconnect) {
+          daemon.post.connect();
+        }
+      });
+    this.setState({ selected: server });
     this.close();
   }
   onServerFavoriteClick(server) {

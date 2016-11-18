@@ -195,7 +195,7 @@ function createTrayMenu() {
       );
     }
     if (connected) {
-      if (daemon.state.needsReconnect) {
+      if (daemon.state.needsReconnect && daemon.state.state !== 'SWITCHING') {
         items.push({ label: "Reconnect (apply changed settings)", click: () => { daemon.post.connect(); } });
       } else {
         items.push({ label: "Disconnect", click: () => { daemon.post.disconnect(); } });
@@ -210,15 +210,21 @@ function createTrayMenu() {
           {
             label: (server ? server.regionName : "No region selected"),
             icon: server ? getFlag(server.country) : null,
-            submenu: !connected ? Object.keys(daemon.config.servers).map(k => daemon.config.servers[k]).map(s => ({
+            submenu: Object.keys(daemon.config.servers).map(k => daemon.config.servers[k]).map(s => ({
               label: s.regionName,
               icon: getFlag(s.country.toLowerCase()),
               type: 'checkbox',
               checked: daemon.settings.server === s.id,
               enabled: s.ovDefault && s.ovDefault != "255.255.255.255",
-              click: () => { if (!connected) daemon.post.applySettings({ server: s.id }); }
-            })) : null,
-            enabled: !connected,
+              click: () => {
+                daemon.call.applySettings({ server: s.id })
+                  .then(() => {
+                    if (daemon.state.needsReconnect) {
+                      daemon.post.connect();
+                    }
+                  });
+              }
+            }))
           }
         );
       }
@@ -262,7 +268,7 @@ function createTray() {
   }
   refresh();
   daemon.on('config', config => { if (config.servers) refresh(); });
-  daemon.on('state', state => { if (state.state || state.remoteIP) refresh(); });
+  daemon.on('state', state => { if (state.state || state.needsReconnect) refresh(); });
   daemon.on('settings', settings => { if (settings.server) refresh(); });
   main.on('hide', () => { refresh(); });
   main.on('show', () => { refresh(); });
