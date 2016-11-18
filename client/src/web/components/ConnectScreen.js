@@ -50,6 +50,7 @@ export default class ConnectScreen extends React.Component {
       'CONNECTED': 'connected',
       'DISCONNECTING': 'disconnecting',
       'DISCONNECTED': 'disconnected',
+      'SWITCHING': 'connecting',
     }[state.state];
     if (stateString)
       newState.connectionState = stateString;
@@ -173,8 +174,6 @@ export default class ConnectScreen extends React.Component {
     switch (this.state.connectionState) {
       case 'disconnected':
         // Fake a connection state for now, as the daemon is too busy to report it back
-        daemon.state.state = 'CONNECTING';
-        this.setState({ connectionState: 'connecting' });
         daemon.call.connect().catch(() => {
           alert("Connect failed; did you select a region?");
           daemon.post.get('state');
@@ -183,8 +182,6 @@ export default class ConnectScreen extends React.Component {
       case 'connecting':
       case 'connected':
         // Fake a connection state for now, as the daemon is too busy to report it back
-        daemon.state.state = 'DISCONNECTING';
-        this.setState({ connectionState: 'disconnecting' });
         daemon.call.disconnect().catch(() => {
           daemon.post.get('state');
         });
