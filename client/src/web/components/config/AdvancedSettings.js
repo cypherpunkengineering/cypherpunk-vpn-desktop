@@ -20,6 +20,7 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
     this.daemonSettingsChanged(daemon.settings);
   }
   onChange(name, value) {
+    if (this.updatingSettings) return;
     console.log(JSON.stringify(name) + " changed to " + JSON.stringify(value));
     switch (name) {
       case 'firewall': daemon.post.applySettings({ firewall: value }); break;
@@ -34,6 +35,7 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
     }
   }
   daemonSettingsChanged(settings) {
+    this.updatingSettings = true;
     if (settings.firewall !== undefined) {
       $(this.refs.firewall).dropdown('set selected', settings.firewall);
     }
@@ -46,6 +48,7 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
     if (settings.localPort !== undefined) {
       $(this.refs.localPort).val(settings.localPort || "");
     }
+    delete this.updatingSettings;
   }
   render() {
     return(
@@ -99,7 +102,7 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
           <div className="pane" data-title="VPN Settings">
             <div class="setting">
               <div class="ui selection button dropdown" ref="remotePort">
-                <input type="hidden" id="remotePort" name="remotePort" defaultValue="udp:7133"/>
+                <input type="hidden" id="remotePort" name="remotePort"/>
                 <i class="dropdown icon"></i>
                 <div class="default text">Select...</div>
                 <div className="menu">
