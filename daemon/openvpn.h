@@ -26,6 +26,7 @@ protected:
 	std::map<std::string, std::function<void(const std::string&)>> _on_management_response;
 
 	JsonObject _connection;
+	JsonValue _connection_server;
 
 	bool _management_signaled;
 
@@ -40,12 +41,14 @@ public:
 	virtual ~OpenVPNProcess();
 
 public:
+	void SetSettings(const JsonObject& connection_settings); 
 	int StartManagementInterface();
 	void StopManagementInterface();
 	void SendManagementCommand(std::string cmd);
 	void OnManagementResponse(const std::string& prefix, std::function<void(const std::string&)> callback);
 
 	bool IsSameServer(const JsonObject& settings);
+	static bool SettingRequiresReconnect(const std::string& name);
 
 	// Request clean shutdown (first via management interface, calls Kill if that fails)
 	void Shutdown();
@@ -54,4 +57,7 @@ public:
 	virtual void Kill() = 0;
 	// Asynchronously wait for process termination
 	virtual void AsyncWait(std::function<void(const asio::error_code&)> cb) = 0;
+
+	// Flag to indicate the user should reconnect to a new server for their settings to take effect.
+	bool stale;
 };

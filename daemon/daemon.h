@@ -15,6 +15,7 @@
 #include <jsonrpc-lean/client.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <thread>
 
@@ -99,13 +100,15 @@ protected:
 	// Disconnect from the current server (or cancel a connection attempt).
 	void RPC_disconnect();
 
+	void DoConnect();
+
 	asio::io_service _io;
 	WebSocketServer _ws_server;
 	ConnectionList _connections;
 	jsonrpc::JsonFormatHandler _json_handler;
 	JsonRPCDispatcher _dispatcher;
 	JsonRPCClient _rpc_client;
-	OpenVPNProcess *_process, *_next_process;
+	std::shared_ptr<OpenVPNProcess> _process;
 	State _state;
 	std::string _localIP, _remoteIP;
 	int64_t _bytesReceived, _bytesSent;

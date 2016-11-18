@@ -9,11 +9,24 @@
 
 using namespace std::placeholders;
 
+static const std::string g_connection_setting_names[] = {
+	"remotePort",
+	"server",
+	"localPort",
+	"mtu",
+	"encryption",
+	"firewall",
+	"allowLAN",
+	"blockIPv6",
+	"runOpenVPNAsRoot",
+};
+
 OpenVPNProcess::OpenVPNProcess(asio::io_service& io)
 	: _io(io)
 	, _management_acceptor(io, asio::ip::tcp::endpoint(asio::ip::address::from_string("127.0.0.1"), 0), true)
 	, _management_socket(io)
 	, _management_signaled(false)
+	, stale(false)
 {
 
 }
@@ -21,6 +34,17 @@ OpenVPNProcess::OpenVPNProcess(asio::io_service& io)
 OpenVPNProcess::~OpenVPNProcess()
 {
 
+}
+
+void OpenVPNProcess::SetSettings(const JsonObject& connection_settings)
+{
+	for (auto name : g_connection_setting_names)
+	{
+		auto it = connection_settings.find(name);
+		if (it != connection_settings.end())
+			_connection[name] = JsonValue(it->second);
+	}
+	_connection_server = JsonValue(connection_settings.at("servers").AsStruct().at(connection_settings.at("server").AsString()));
 }
 
 int OpenVPNProcess::StartManagementInterface()
@@ -54,6 +78,7 @@ void OpenVPNProcess::StopManagementInterface()
 
 void OpenVPNProcess::SendManagementCommand(std::string cmd)
 {
+	cmd.push_back('\n');
 	_io.post([this, cmd = std::move(cmd)]() {
 		bool first = _management_write_queue.empty();
 		_management_write_queue.push_back(std::move(cmd));
@@ -133,7 +158,33 @@ void OpenVPNProcess::OnManagementInterfaceResponse(const std::string& line)
 
 bool OpenVPNProcess::IsSameServer(const jsonrpc::Value::Struct& connection)
 {
-	return connection == _connection;
+	for (auto name : g_connection_setting_names)
+	{
+		auto a = _connection.find(name);
+		auto b = connection.find(name);
+		if (a != _connection.end())
+		{
+			if (b == connection.end())
+				return false;
+			if (*a != *b)
+				return false;
+		}
+		else if (b != connection.end())
+			return false;
+	}
+	if (_connection_server != connection.at("servers").AsStruct().at(connection.at("server").AsString()))
+		return false;
+	return true;
+}
+
+bool OpenVPNProcess::SettingRequiresReconnect(const std::string& name)
+{
+	for (auto n : g_connection_setting_names)
+		if (n == name)
+			return true;
+	if (name == "servers")
+		return true;
+	return false;
 }
 
 void OpenVPNProcess::Shutdown()
