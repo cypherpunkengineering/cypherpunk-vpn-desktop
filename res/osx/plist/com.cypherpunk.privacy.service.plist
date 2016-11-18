@@ -11,6 +11,6 @@
 	<key>KeepAlive</key>
 	<true/>
 	<key>Umask</key>
-	<integer>0</integer>
+	<integer>022</integer>
 </dict>
 </plist>
