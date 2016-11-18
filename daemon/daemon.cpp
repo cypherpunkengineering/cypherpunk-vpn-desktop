@@ -29,23 +29,10 @@ using namespace std::placeholders;
 
 CypherDaemon::CypherDaemon()
 	: _rpc_client(_json_handler)
-	, _process(nullptr)
-	, _next_process(nullptr)
 	, _state(STARTING)
 	, _needsReconnect(false)
 {
-	/*
-	// FIXME: Don't hardcode
-	ServerInfo hardcoded_servers[] = {
-#define SERVER(id, name, country, lat, lon, ip_default, ip_none, ip_strong, ip_stealth) { id, name, country, lat, lon, { { "default", ip_default }, { "none", ip_none }, { "strong", ip_strong }, { "stealth", ip_stealth } } }
-		SERVER("freebsd-test.tokyo.vpn.cypherpunk.network", "Tokyo Test, Japan", "jp", 35.683333, 139.683333, "208.111.52.34", "208.111.52.35", "208.111.52.36", "208.111.52.37"),
-		SERVER("freebsd2.tokyo.vpn.cypherpunk.network", "Tokyo 2, Japan", "jp", 35.683333, 139.683333, "208.111.52.2", "208.111.52.12", "208.111.52.22", "208.111.52.32"),
-		SERVER("honolulu.vpn.cypherpunk.network", "Honolulu, HI, USA", "us", 21.3, -157.816667, "199.68.252.203", "199.68.252.203", "199.68.252.203", "199.68.252.203"),
-#undef SERVER
-	};
-	for (auto& s : hardcoded_servers)
-		_servers.emplace(std::pair<std::string, ServerInfo>(s.id, std::move(s)));
-	*/
+
 }
 
 int CypherDaemon::Run()
@@ -163,7 +150,16 @@ void CypherDaemon::OnClientDisconnected(Connection c)
 
 void CypherDaemon::OnLastClientDisconnected()
 {
-	RPC_disconnect();
+	switch (_state)
+	{
+		case CONNECTED:
+		case CONNECTING:
+		case SWITCHING:
+			_state = DISCONNECTING;
+			OnStateChanged();
+			_process->SendManagementCommand("signal SIGTERM");
+			break;
+	}
 }
 
 void CypherDaemon::OnReceiveMessage(Connection connection, WebSocketServer::message_ptr msg)
@@ -211,7 +207,7 @@ void CypherDaemon::OnReceiveMessage(Connection connection, WebSocketServer::mess
 
 void CypherDaemon::OnOpenVPNStdOut(OpenVPNProcess* process, const asio::error_code& error, std::string line)
 {
-	if (process == _process)
+	if (process == _process.get())
 	{
 		if (!error)
 		{
@@ -224,7 +220,7 @@ void CypherDaemon::OnOpenVPNStdOut(OpenVPNProcess* process, const asio::error_co
 
 void CypherDaemon::OnOpenVPNStdErr(OpenVPNProcess* process, const asio::error_code& error, std::string line)
 {
-	if (process == _process)
+	if (process == _process.get())
 	{
 		if (!error)
 		{
@@ -237,12 +233,17 @@ void CypherDaemon::OnOpenVPNStdErr(OpenVPNProcess* process, const asio::error_co
 
 void CypherDaemon::OnOpenVPNProcessExited(OpenVPNProcess* process)
 {
-	if (process == _process)
+	if (process == _process.get())
 	{
-		_process = nullptr;
-		if (_state != DISCONNECTED)
+		_process.reset();
+		if (_state == SWITCHING)
+		{
+			_io.post([this](){ DoConnect(); });
+		}
+		else if (_state != DISCONNECTED)
 		{
 			_state = DISCONNECTED;
+			_needsReconnect = false;
 			OnStateChanged();
 		}
 	}
@@ -645,6 +646,12 @@ void CypherDaemon::RPC_applySettings(const JsonObject& settings)
 		SendToAllClients(_rpc_client.BuildNotificationData("config", MakeConfigObject()));
 	if (settings.find("account") != settings.end())
 		SendToAllClients(_rpc_client.BuildNotificationData("account", MakeAccountObject()));
+
+	if (!_needsReconnect && (_state == CONNECTING || _state == CONNECTED) && !_process->IsSameServer(g_settings.map()))
+	{
+		_needsReconnect = true;
+		SendToAllClients(_rpc_client.BuildNotificationData("state", JsonObject({{ "needsReconnect", JsonValue(true) }})));
+	}
 }
 
 void CypherDaemon::RPC_setAccount(const JsonObject& account)
@@ -813,30 +820,58 @@ bool CypherDaemon::RPC_connect()
 	// FIXME: Shouldn't simply read raw profile parameters from the params
 	const JsonObject& settings = g_settings.map();
 
-	if (_state == CONNECTED)
-	{
-		// Check if we're being asked to connect to the same place
-		return _process->IsSameServer(settings);
-		// TODO: Support switching to different server
-	}
-	else if (_state != State::DISCONNECTED)
-	{
-		// Already busy with something else; reject request
-		return false;
-	}
-
 	// Access the region early, should trigger an exception if it doesn't exist (before we've done any state changes)
 	g_settings.servers().at(g_settings.server());
 
-	_bytesReceived = 0;
-	_bytesSent = 0;
-	_state = CONNECTING;
+	switch (_state)
+	{
+		case CONNECTED:
+		case CONNECTING:
+			// Reconnect only if settings have changed
+			if (!needsReconnect && _process->IsSameServer(settings))
+			{
+				LOG(INFO) << "No need to reconnect; new server is the same as old";
+				return true;
+			}
+			// fallthrough
+		case DISCONNECTING:
+			// Reconnect
+			_process->stale = true;
+			_bytesReceived = _bytesSent = 0;
+			_state = SWITCHING;
+			OnStateChanged();
+			_process->SendManagementCommand("signal SIGTERM");
+			return true;
+
+		case SWITCHING:
+			// Already switching; make sure connection is marked as stale
+			_process->stale = true;
+			return true;
+
+		case DISCONNECTED:
+			// Connect normally.
+			_bytesReceived = _bytesSent = 0;
+			_state = CONNECTING;
+			OnStateChanged();
+			_io.post([this](){ DoConnect(); });
+			return true;
+
+		default:
+			// Can't connect under other circumstances.
+			return false;
+	}
+}
+
+void CypherDaemon::DoConnect()
+{
+	static int index = 0;
+	//index++; // FIXME: Just make GetAvailablePort etc. work properly instead
+
+	_needsReconnect = false;
 	OnStateChanged();
 
-	static int index = 0;
-	index++; // FIXME: Just make GetAvailablePort etc. work properly instead
-
-	auto vpn = CreateOpenVPNProcess(_ws_server.get_io_service());
+	std::shared_ptr<OpenVPNProcess> vpn(CreateOpenVPNProcess(_ws_server.get_io_service()));
+	vpn->SetSettings(g_settings.map());
 
 	int port = vpn->StartManagementInterface();
 
@@ -902,7 +937,7 @@ bool CypherDaemon::RPC_connect()
 	args.push_back(profile_filename);
 
 	vpn->OnManagementResponse("HOLD", [=](const std::string& line) {
-		vpn->SendManagementCommand("\nhold release\n");
+		vpn->SendManagementCommand("hold release");
 	});
 	vpn->OnManagementResponse("PASSWORD", [=](const std::string& line) {
 		LOG(INFO) << line;
@@ -910,8 +945,8 @@ bool CypherDaemon::RPC_connect()
 		size_t q2 = line.find('\'', q1 + 1);
 		auto id = line.substr(q1 + 1, q2 - q1 - 1);
 		// FIXME: Obviously shouldn't be hardcoded
-		vpn->SendManagementCommand("\nusername \"" + id + "\" \"test@test.test\"\n");
-		vpn->SendManagementCommand("\npassword \"" + id + "\" \"test123\"\n");
+		vpn->SendManagementCommand("username \"" + id + "\" \"test@test.test\"");
+		vpn->SendManagementCommand("password \"" + id + "\" \"test123\"");
 	});
 	vpn->OnManagementResponse("STATE", [=](const std::string& line) {
 		try
@@ -920,11 +955,30 @@ bool CypherDaemon::RPC_connect()
 			if (params.size() >= 2)
 			{
 				const auto& s = params.at(1);
+				if (_state == SWITCHING)
+				{
+					if (s == "CONNECTED")
+					{
+						// Default handling below
+					}
+					else if (s == "EXITING")
+					{
+						if (_process->stale)
+						{
+							_process.reset();
+							DoConnect();
+							return;
+						}
+						// Default handling below
+					}
+					else
+						return;
+				}
 				if (s == "CONNECTED")
 				{
 					if (_state == DISCONNECTING)
 					{
-						_process->SendManagementCommand("\nsignal SIGTERM\n");
+						_process->SendManagementCommand("signal SIGTERM");
 						return;
 					}
 					if (params.size() >= 5)
@@ -945,8 +999,9 @@ bool CypherDaemon::RPC_connect()
 				}
 				else if (s == "EXITING")
 				{
-					_process = nullptr;
+					_process.reset();
 					_state = DISCONNECTED;
+					_needsReconnect = false;
 					OnStateChanged();
 				}
 			}
@@ -955,10 +1010,11 @@ bool CypherDaemon::RPC_connect()
 		{
 			LOG(ERROR) << e;
 			_state = DISCONNECTED;
+			_needsReconnect = false;
 			if (_process)
 			{
 				_process->Kill();
-				_process = nullptr;
+				_process.reset();
 			}
 		}
 	});
@@ -985,27 +1041,19 @@ bool CypherDaemon::RPC_connect()
 
 	vpn->Run(args);
 	vpn->AsyncWait([this, vpn](const asio::error_code& error) {
-		OnOpenVPNProcessExited(vpn);
+		OnOpenVPNProcessExited(vpn.get());
 	});
 
-	vpn->SendManagementCommand("\nstate on\nbytecount 5\nhold release\n");
-
-	//vpn->SendManagementCommand("signal SIGTERM\n");
-	//vpn->SendManagementCommand("exit\n");
-
-	//vpn->StopManagementInterface();
-	//delete vpn;
-
-	return true;
+	vpn->SendManagementCommand("state on\nbytecount 5\nhold release");
 }
 
 void CypherDaemon::RPC_disconnect()
 {
-	if (_state == CONNECTING || _state == CONNECTED)
+	if (_state == CONNECTING || _state == CONNECTED || _state == SWITCHING)
 	{
 		_state = DISCONNECTING;
 		OnStateChanged();
-		_process->SendManagementCommand("\nsignal SIGTERM\n");
+		_process->SendManagementCommand("signal SIGTERM");
 	}
 }
 
