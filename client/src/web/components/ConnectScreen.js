@@ -143,7 +143,7 @@ export default class ConnectScreen extends React.Component {
           <MainBackground/>
           <div id="connect-container" onClick={this.handleConnectClick}>
 
-            <svg viewBox="-40 40 200 240" preserveAspectRatio="xMidYMid meet" width="120px" height="140px" ref="connectButton">
+            <svg viewBox="-40 40 200 240" preserveAspectRatio="xMidYMid meet" width="160px" height="200px" ref="connectButton">
               <circle cx="60" cy="200" r="50" style={connectCircleStyle} />
               <line x1="60" y1="98" x2="60" y2="181" style={connectLineStyle} />
               <line x1="60" y1="111" x2="80" y2="111"  style={connectSmallLineStyle} />
