@@ -828,7 +828,7 @@ bool CypherDaemon::RPC_connect()
 		case CONNECTED:
 		case CONNECTING:
 			// Reconnect only if settings have changed
-			if (!needsReconnect && _process->IsSameServer(settings))
+			if (!_needsReconnect && _process->IsSameServer(settings))
 			{
 				LOG(INFO) << "No need to reconnect; new server is the same as old";
 				return true;
