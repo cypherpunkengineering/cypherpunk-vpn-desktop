@@ -41,7 +41,7 @@ endif
 ORIGINAL_APP_VER := $(shell node -e "console.log(require('$(ROOT)/client/package.json').version);")
 export APP_VER := $(shell echo "$(ORIGINAL_APP_VER)" | sed -E 's/^([^-+]*)(-[^+]*)?(\+.*)?/\1\2+$(BUILD_NUMBER)/')
 
-INSTALLER_PKG = cypherpunk-vpn-macos-$(subst +,-,$(APP_VER)).pkg
+INSTALLER_PKG = cypherpunk-privacy-macos-$(subst +,-,$(APP_VER)).pkg
 
 
 

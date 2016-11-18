@@ -6,7 +6,7 @@
 #define MyAppURL "https://www.cypherpunk.com/"
 #define MyAppExeName "CypherpunkPrivacy.exe"
 #define MyAppCopyright "Copyright © 2016 " + MyAppPublisher
-#define MyInstallerName "cypherpunk-vpn-windows"
+#define MyInstallerName "cypherpunk-privacy-windows"
 #define MyInstallerSuffix "-0.2.0-prealpha"
 
 [Setup]
