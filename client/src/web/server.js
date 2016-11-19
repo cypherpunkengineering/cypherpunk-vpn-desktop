@@ -1,5 +1,5 @@
 
-const SERVER = "https://cypherpunk.engineering";
+const SERVER = "https://cypherpunk.com";
 
 const server = {};
 
