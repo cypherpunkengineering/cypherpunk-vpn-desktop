@@ -23,6 +23,9 @@
     align-items: center;
     justify-content: center;
     font-size: 120%;
+    .region.selected {
+      background: transparent;
+    }
     .cp-fav {
       display: none;
     }
@@ -63,69 +66,74 @@
         border-top: none;
       }
     }
-    > .region {
-      font-size: 1.125rem;
-      font-weight: 200;
-      height: @itemHeight;
-      display: flex;
-      align-items: center;
-      padding: 0 15px;
+  }
+
+  .region {
+    font-size: 1.125rem;
+    font-weight: 200;
+    height: @itemHeight;
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    cursor: pointer;
+    > .flag {
+      color: #fff;
+    }
+    > span {
+      flex-grow: 1;
+    }
+    > .cp-fav {
       cursor: pointer;
-      > .flag {
-        color: #fff;
+      font-size: 120%;
+      width: auto;
+      height: auto;
+      color: rgba(255,255,255,0.5);
+      &:before {
+        content: '\f006';
       }
-      > span {
-        flex-grow: 1;
-      }
-      > .cp-fav {
-        cursor: pointer;
-        font-size: 120%;
-        width: auto;
-        height: auto;
-        color: rgba(255,255,255,0.5);
-        &:before {
-          content: '\f006';
-        }
-        &:hover {
-          color: #fff !important;
-        }
-      }
-      &.favorite > .cp-fav {
-        color: @cpYellowDark;
-        &:before {
-          content: '\f005';
-        }
-        &:hover {
-          color: @cpYellow !important;
-        }
-      }
-      &:hover, &.selected:hover {
-        background: rgba(255,255,255,0.1);
-      }
-      &.selected {
-        font-weight: 600;
-        color: @cpYellowDark;
-        background: rgba(255,255,255,0.05);
-      }
-      &.disabled {
-        > * { // Reduce opacity of children to prevent border from fading
-          opacity: 0.5;
-        }
-        cursor: default;
-        /*> .cp-fav { // uncomment if favoriting should be disabled for disabled items
-          cursor: default;
-          &:hover {
-            color: inherit !important;
-          }
-        }*/
-        &:hover {
-          background: none;
-        }
-      }
-      + .region {
-        // border-top: 1px solid rgba(255,255,255,0.1);
+      &:hover {
+        color: #fff !important;
       }
     }
+    &.favorite > .cp-fav {
+      color: @cpYellowDark;
+      &:before {
+        content: '\f005';
+      }
+      &:hover {
+        color: @cpYellow !important;
+      }
+    }
+    &:hover, &.selected:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    &.selected {
+      font-weight: 600;
+      color: @cpYellowDark;
+      background: rgba(255,255,255,0.05);
+    }
+    &.disabled {
+      > * { // Reduce opacity of children to prevent border from fading
+        opacity: 0.5;
+      }
+      cursor: default;
+      /*> .cp-fav { // uncomment if favoriting should be disabled for disabled items
+        cursor: default;
+        &:hover {
+          color: inherit !important;
+        }
+      }*/
+      &:hover {
+        background: none;
+      }
+    }
+    + .region {
+      // border-top: 1px solid rgba(255,255,255,0.1);
+    }
+  }
+
+  .flag {
+    margin-right: 10px;
   }
 
   &.open {
