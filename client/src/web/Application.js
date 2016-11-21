@@ -120,6 +120,16 @@ window.addEventListener('unhandledrejection', function (event) {
   }
 });
 
+$(window).blur(function(){
+  console.log("BLURRED");
+  $('body').removeClass('focusClass');
+});
+
+$(window).focus(function(){
+  console.log("FOCUSED");
+  $('body').addClass('focusClass');
+});
+
 daemon.ready(() => {
   daemon.once('state', state => {
     Application.init();
