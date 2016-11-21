@@ -336,10 +336,17 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   }
 
   .bits {
-    animation: slide-up 40s linear infinite;
+    animation: slide-up 90s linear infinite;
+    animation-play-state: paused;
+    opacity: 0.1;
 
     &:nth-child(odd) {
-      animation: slide-down 40s linear infinite;
+      animation: slide-down 90s linear infinite;
+      animation-play-state: paused;
+    }
+
+    .is-focused & {
+      animation-play-state: running;
     }
   }
 
@@ -407,24 +414,20 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 @keyframes slide-down {
   0% {
     transform: translate3d(0, -50%, 0);
-    opacity: 0.1;
    }
 
   100% {
     transform: translate3d(0, 0%, 0);
-    opacity: 0.1;
   }
 }
 
 @keyframes slide-up {
   0% {
     transform: translate3d(0, 0%, 0);
-    opacity: 0.1;
   }
 
   100% {
     transform: translate3d(0, -50%, 0);
-    opacity: 0.1;
   }
 }
 
