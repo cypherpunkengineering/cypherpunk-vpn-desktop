@@ -281,9 +281,9 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 
 #onezeros {
   .bodyHeight;
-  font-family: Menlo, 'Courier';
+  font-family: 'Menlo Regular', 'Courier New', monospace;
   font-size: 21px;
-  font-weight: 200;
+  font-weight: 100;
   // height: calc(~"100vh -" (@dragbarHeight + @headerHeight));
   line-height: 21px;
   letter-spacing: 0.4px;
@@ -335,97 +335,96 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     // opacity: 0.25;
   }
 
-  #bits-1,
-  #bits-5,
-  #bits-9,
-  #bits-15,
-  #bits-19 {
-    animation: slide-up 96s infinite;
-    // animation-timing-function: cubic-bezier(0.77, 0, 0.175, 1);
+  .bits {
+    animation: slide-up 40s linear infinite;
+
+    &:nth-child(odd) {
+      animation: slide-down 40s linear infinite;
+    }
   }
 
-  #bits-3,
-  #bits-11,
-  #bits-17 {
-    animation: slide-up 64s linear infinite;
-    // animation-timing-function: cubic-bezier(0.455, 0.03, 0.515, 0.955);
-  }
 
-  #bits-7,
-  #bits-13,
-  #bits-15 {
-    animation: slide-up 128s linear infinite;
-    // animation-timing-function: cubic-bezier(0.77, 0, 0.175, 1);
-  }
-
-  #bits-2,
-  #bits-10,
-  #bits-16 {
-    animation: slide-down 49s linear infinite;
-    // animation-timing-function: cubic-bezier(0.455, 0.03, 0.515, 0.955);
-  }
-
-  #bits-6,
-  #bits-12,
-  #bits-18 {
-    animation: slide-down 116s linear infinite;
-    // animation-timing-function: cubic-bezier(0.77, 0, 0.175, 1);
-  }
-
-  #bits-4,
-  #bits-8,
-  #bits-14,
-  #bits-18 {
-    animation: slide-down 168s linear infinite;
-    // animation-timing-function: cubic-bezier(0.455, 0.03, 0.515, 0.955);
-  }
-
-  #bits-4,
-  #bits-7,
-  #bits-12
-  #bits-15 {
-    animation-delay: 0.5s;
-  }
-
-  #bits-2,
-  #bits-5,
-  #bits-13 {
-    animation-delay: 0.3s;
-  }
+  // #bits-1,
+  // #bits-5,
+  // #bits-9,
+  // #bits-15,
+  // #bits-19 {
+  //   // animation: slide-up 96s infinite;
+  //   -webkit-marquee: up medium infinite scroll normal;
+  // }
+  //
+  // #bits-3,
+  // #bits-11,
+  // #bits-17 {
+  //   animation: slide-up 64s linear infinite;
+  //   // animation-timing-function: cubic-bezier(0.455, 0.03, 0.515, 0.955);
+  // }
+  //
+  // #bits-7,
+  // #bits-13,
+  // #bits-15 {
+  //   animation: slide-up 128s linear infinite;
+  //   // animation-timing-function: cubic-bezier(0.77, 0, 0.175, 1);
+  // }
+  //
+  // #bits-2,
+  // #bits-10,
+  // #bits-16 {
+  //   animation: slide-down 49s linear infinite;
+  //   // animation-timing-function: cubic-bezier(0.455, 0.03, 0.515, 0.955);
+  // }
+  //
+  // #bits-6,
+  // #bits-12,
+  // #bits-18 {
+  //   animation: slide-down 116s linear infinite;
+  //   // animation-timing-function: cubic-bezier(0.77, 0, 0.175, 1);
+  // }
+  //
+  // #bits-4,
+  // #bits-8,
+  // #bits-14,
+  // #bits-18 {
+  //   animation: slide-down 168s linear infinite;
+  //   // animation-timing-function: cubic-bezier(0.455, 0.03, 0.515, 0.955);
+  // }
+  //
+  // #bits-4,
+  // #bits-7,
+  // #bits-12
+  // #bits-15 {
+  //   animation-delay: 0.5s;
+  // }
+  //
+  // #bits-2,
+  // #bits-5,
+  // #bits-13 {
+  //   animation-delay: 0.3s;
+  // }
 }
 
 
 @keyframes slide-down {
   0% {
     transform: translate3d(0, -50%, 0);
-    opacity: 0;
+    opacity: 0.1;
    }
-  5% {
-    opacity: 0.05;
-  }
-  95% {
-    opacity: 0.05;
-  }
+
   100% {
     transform: translate3d(0, 0%, 0);
-    opacity: 0;
+    opacity: 0.1;
   }
 }
 
 @keyframes slide-up {
   0% {
     transform: translate3d(0, 0%, 0);
-    opacity: 0;
+    opacity: 0.1;
   }
-  5% {
-    opacity: 0.05;
-  }
-  95% {
-    opacity: 0.05;
-  }
+
   100% {
     transform: translate3d(0, -50%, 0);
-    opacity: 0;
+    opacity: 0.1;
   }
 }
 
