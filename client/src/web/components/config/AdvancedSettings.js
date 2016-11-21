@@ -64,7 +64,7 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
                 <div class="default text">Yes</div>
                 <div className="menu">
                   <div class="item" data-value="on">Always</div>
-                  <div class="item" data-value="auto">Yes</div>
+                  <div class="item" data-value="auto">Auto</div>
                   <div class="item" data-value="off">No</div>
                 </div>
               </div>
