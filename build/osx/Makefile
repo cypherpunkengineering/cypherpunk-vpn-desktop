@@ -112,7 +112,7 @@ $(ROOT)/daemon/posix/$(DAEMON_FILENAME): version
 
 stage: stage-client stage-daemon stage-openvpn $(if $(USE_EXTENSIONS),stage-extensions)
 
-stage-client: client $(STAGING)/Library/LaunchAgents/$(CLIENT_NS).plist | $(STAGING)/Applications
+stage-client: client | $(STAGING)/Applications
 	$(ECHO) "* Staging client..."
 	$(HUSH) rm -rf "$(OUT)/$(APP_SIG)"
 	$(HUSH) cd "$(ROOT)/client" && ./node_modules/.bin/electron-packager ./app/ "$(APP_NAME)" \
@@ -145,8 +145,6 @@ $(STAGING)/usr/local/cypherpunk/bin/$(OPENVPN_FILENAME): $(ROOT)/daemon/third_pa
 $(STAGING)/usr/local/cypherpunk/etc/scripts/%: $(ROOT)/res/osx/openvpn-scripts/% | $(STAGING)/usr/local/cypherpunk/etc/scripts
 	$(HUSH) cp -p $< $@
 $(STAGING)/Library/LaunchDaemons/$(DAEMON_NS).plist: $(ROOT)/res/osx/plist/$(DAEMON_NS).plist | $(STAGING)/Library/LaunchDaemons
-	$(HUSH) cp -p $< $@
-$(STAGING)/Library/LaunchAgents/$(CLIENT_NS).plist: $(ROOT)/res/osx/plist/$(CLIENT_NS).plist | $(STAGING)/Library/LaunchAgents
 	$(HUSH) cp -p $< $@
 $(STAGING)/Library/Extensions/%.kext: $(ROOT)/daemon/third_party/tuntap_osx/%.kext | $(STAGING)/Library/Extensions
 	$(HUSH) cp -pR $< $@
