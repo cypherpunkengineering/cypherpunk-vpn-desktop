@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { REGION_GROUP_NAMES, REGION_GROUP_ORDER } from '../util';
 import daemon, { DaemonAware } from '../daemon';
+import RegionFlags from '../assets/img/flags/';
 
 
 export default class RegionSelector extends DaemonAware(React.Component) {

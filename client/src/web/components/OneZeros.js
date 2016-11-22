@@ -1,11 +1,17 @@
 import React from 'react';
 import SpinningImage from '../assets/img/bgring3.png';
+import BgText1 from '../assets/img/bg-text-1.png';
+import BgText2 from '../assets/img/bg-text-2.png';
 
 export default class MainBackground extends React.Component {
   render() {
     return(
       <div id="onezeros">
 
+        <img src={BgText1} id="bits-one" className="bits-img" />
+        <img src={BgText2} id="bits-two" className="bits-img" />
+
+        {/*
         <div id="bits-1" class="bits">
           1 0 1 0 1 1 0 0 0 0 1 0 1 0 1 0 1 0 1 1 1 0 1 0 1 1 0 0 0 0 1 0 1 0 1 0 1 0 1 1
         </div>
@@ -70,6 +76,7 @@ export default class MainBackground extends React.Component {
         <div id="bits-20" class="bits">
           0 1 0 1 0 1 1 1 0 1 0 0 1 0 0 0 1 0 1 1 1 0 1 0 1 0 1 1 1 0 1 0 0 1 0 0 0 1 0 1 1 1
         </div>
+        */}
 
       </div>
     );
