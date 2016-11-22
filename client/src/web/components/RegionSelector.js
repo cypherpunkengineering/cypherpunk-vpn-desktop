@@ -2,7 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { REGION_GROUP_NAMES, REGION_GROUP_ORDER } from '../util';
 import daemon, { DaemonAware } from '../daemon';
-import RegionFlags from '../assets/img/flags/';
+import RegionFlagsUS from '../assets/img/flags2/US.png';
+import RegionFlagsCA from '../assets/img/flags2/CA.png';
 
 
 export default class RegionSelector extends DaemonAware(React.Component) {
@@ -104,8 +105,8 @@ export default class RegionSelector extends DaemonAware(React.Component) {
     };
     return(
       <div className={classes.join(' ')} data-value={clickable ? server.id : null} key={clickable ? server.id : null} onClick={clickable ? onclick : null}>
-        {/*<i className={server.country.toLowerCase() + " flag"}></i>*/}
-        <img className={server.country.toLowerCase() + " flag"} src={'flags2/' + server.country.toUpperCase() + '.png'}  alt=""/>
+        <i className={server.country.toLowerCase() + " flag"}></i>
+        {/* <img className={server.country.toLowerCase() + " flag"} src={'flags2/' + server.country.toUpperCase() + '.png'}  alt=""/> */}
         <span>{server.regionName}</span><i className="cp-fav icon"></i>
       </div>
     );
