@@ -96,6 +96,7 @@ Array.toMultiDict = function toMultiDict(arr, cb) {
 
 
 export const REGION_GROUP_NAMES = {
+  'DEV': "Dev Servers",
   'NA': "North America",
   'SA': "Central & South America",
   'CR': "Caribbean",
