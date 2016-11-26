@@ -98,7 +98,7 @@ export class Logout extends React.Component {
 
 export class EmailStep extends React.Component {
   onSubmit() {
-    var email = this.refs.email.value || (this.refs.email.value = "test@test.test"); // FIXME: debug value
+    var email = this.refs.email.value;
     $(this.refs.email).prop('disabled', true).parent().addClass('loading');
     server.post('/api/v0/account/identify/email', { email: email }).then({
       200: response => History.push({ pathname: '/login/password', query: { email: email }}),
@@ -126,7 +126,7 @@ export class EmailStep extends React.Component {
 
 export class PasswordStep extends React.Component {
   onSubmit() {
-    var password = this.refs.password.value || (this.refs.password.value = "test123"); // FIXME: debug value
+    var password = this.refs.password.value;
     $(this.refs.password).prop('disabled', true).parent().addClass('loading');
     server.post('/api/v0/account/authenticate/password', { /*email: this.props.location.query.email,*/ password: password }).then(response => {
       return setAccount(response.data);
