@@ -222,7 +222,7 @@ function createTrayMenu() {
           click: () => {
             daemon.call.applySettings({ location: s.id })
               .then(() => {
-                if (daemon.state.needsReconnect) {
+                if (state === 'DISCONNECTED' || daemon.state.needsReconnect) {
                   daemon.post.connect();
                 }
               });
@@ -231,7 +231,7 @@ function createTrayMenu() {
     });
     items.push({
       label: "Disconnect",
-      enabled: state == 'DISCONNECTING' || state == 'DISCONNECTED',
+      enabled: state === 'CONNECTING' || state === 'CONNECTED' || state === 'SWITCHING',
       click: () => { daemon.post.disconnect(); }
     });
 
