@@ -4,12 +4,28 @@ import BgText1 from '../assets/img/bg-text-1.png';
 import BgText2 from '../assets/img/bg-text-2.png';
 
 export default class MainBackground extends React.Component {
+  renderBgImage() {
+    if (this.connectionState == 'connected') {
+      return (
+        <span>connected!!!</span>
+      );
+    }
+    else {
+      return (
+        <span>oooh not connected?</span>
+      );
+    }
+  }
+
   render() {
     return(
       <div id="onezeros">
 
         <img src={BgText1} id="bits-one" className="bits-img" />
         <img src={BgText2} id="bits-two" className="bits-img" />
+
+        { this.renderBgImage() }
+
 
         {/*
         <div id="bits-1" class="bits">
