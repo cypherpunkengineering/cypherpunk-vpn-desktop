@@ -121,12 +121,10 @@ window.addEventListener('unhandledrejection', function (event) {
 });
 
 $(window).blur(function(){
-  console.log("BLURRED");
   $('body').removeClass('is-focused');
 });
 
 $(window).focus(function(){
-  console.log("FOCUSED");
   $('body').addClass('is-focused');
 });
 
