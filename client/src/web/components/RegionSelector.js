@@ -84,8 +84,26 @@ export default class RegionSelector extends DaemonAware(React.Component) {
 
   makeLocation(location, clickable) {
     var classes = [ 'region' ];
+    var tag = null;
     if (location.disabled) {
       classes.push('disabled');
+      tag = 'UNAVAILABLE';
+    }
+    switch (location.level) {
+      case 'free':
+        if (!location.disabled) {
+          classes.push('free');
+          tag = 'FREE';
+        }
+        break;
+      case 'premium':
+        classes.push('premium');
+        tag = 'PREMIUM';
+        break;
+      case 'developer':
+        classes.push('developer');
+        tag = 'DEV';
+        break;
     }
     if (this.state.selected === location.id) {
       classes.push('selected');
@@ -105,7 +123,7 @@ export default class RegionSelector extends DaemonAware(React.Component) {
       <div className={classes.join(' ')} data-value={clickable ? location.id : null} key={clickable ? location.id : null} onClick={clickable ? onclick : null}>
         {/* <i className={location.country.toLowerCase() + " flag"}></i> */}
         <img className={location.country.toLowerCase() + " flag"} src={'../assets/img/flags-24/' + location.country.toLowerCase() + '.png'}  alt=""/>
-        <span>{location.name}</span><i className="cp-fav icon"></i>
+        <span data-tag={tag}>{location.name}</span><i className="cp-fav icon"></i>
       </div>
     );
   }

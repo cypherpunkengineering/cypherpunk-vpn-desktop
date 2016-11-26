@@ -132,6 +132,42 @@
   .region {
     display: flex;
     align-items: center;
+
+    > span[data-tag]:after {
+      content: attr(data-tag);
+      margin-left: 10px;
+      font-size: 10px;
+    }
+    &.premium > span[data-tag]:after {
+      background: linear-gradient(329deg, @cpYellowDark, @cpYellow, @cpYellowDark);
+      border-radius: 5px 0 5px 0;
+      padding: 1px 3px;
+      color: darken(@cpYellowDark, 40%) !important;
+      font-weight: 800;
+      position: relative;
+      top: -1px;
+    }
+    &.free > span[data-tag]:after {
+      background: linear-gradient(329deg, #aaa, #fff, #aaa);
+      border-radius: 5px;
+      padding: 1px 3px;
+      color: @cpDarkBlue !important;
+      font-weight: 800;
+      position: relative;
+      top: -1px;
+      display: none; // hide for now
+    }
+    &.developer > span[data-tag]:after {
+      background: linear-gradient(329deg, #a30, #f62, #a30);
+      padding: 1px 3px;
+      color: white !important;
+      font-weight: 800;
+      position: relative;
+      top: -1px;
+    }
+    &.disabled > span[data-tag]:after {
+      color: rgba(255,255,255,0.7);
+    }
   }
 
   .flag {
