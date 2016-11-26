@@ -205,6 +205,7 @@ function createTrayMenu() {
     }
     items.push({
       label: connectName,
+      icon: state === 'DISCONNECTING' ? null : getFlag(server.country.toLowerCase()),
       enabled: state === 'DISCONNECTED' || (state === 'CONNECTED' && daemon.state.needsReconnect),
       click: () => { daemon.post.connect(); }
     });
