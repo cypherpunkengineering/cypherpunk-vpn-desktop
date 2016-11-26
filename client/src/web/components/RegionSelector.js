@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { REGION_GROUP_NAMES, REGION_GROUP_ORDER } from '../util';
+import { REGION_GROUP_NAMES, REGION_GROUP_ORDER, COUNTRY_NAMES } from '../util';
 import daemon, { DaemonAware } from '../daemon';
 
 
@@ -114,7 +114,7 @@ export default class RegionSelector extends DaemonAware(React.Component) {
     return Array.flatten(
       REGION_GROUP_ORDER.map(g => ({
         name: REGION_GROUP_NAMES[g],
-        locations: Object.mapToArray(regions[g], (country, locs) => locs.map(l => locations[l]).map(l => this.makeLocation(l, true))).filter(l => l && l.length > 0)
+        locations: Object.mapToArray(regions[g], (c,l) => [c,l]).sort((a, b) => COUNTRY_NAMES[a[0]].localeCompare(COUNTRY_NAMES[b[0]])).map(([country, locs]) => locs.map(l => locations[l]).sort((a, b) => a.name.localeCompare(b.name)).map(l => this.makeLocation(l, true))).filter(l => l && l.length > 0)
       })).filter(r => r.locations && r.locations.length > 0).map(r => [ <div key={"region-" + r.name} className="header">{r.name}</div> ].concat(r.locations))
     );
   }
