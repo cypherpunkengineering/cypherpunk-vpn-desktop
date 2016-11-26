@@ -106,7 +106,7 @@ export const REGION_GROUP_NAMES = {
   'AF': "Africa",
   'AS': "Asia & India",
 }
-export const REGION_GROUP_ORDER = [ 'NA', 'SA', 'CR', 'OP', 'EU', 'ME', 'AF', 'AS' ];
+export const REGION_GROUP_ORDER = [ 'DEV', 'NA', 'SA', 'CR', 'OP', 'EU', 'ME', 'AF', 'AS' ];
 
 export const COUNTRY_NAMES = {
   'AF': "Afghanistan",
