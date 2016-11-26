@@ -104,7 +104,7 @@ export default class RegionSelector extends DaemonAware(React.Component) {
     return(
       <div className={classes.join(' ')} data-value={clickable ? server.id : null} key={clickable ? server.id : null} onClick={clickable ? onclick : null}>
         {/* <i className={server.country.toLowerCase() + " flag"}></i> */}
-        <img className={server.country.toLowerCase() + " flag"} src={'../assets/img/flags/' + server.country.toUpperCase() + '.png'}  alt=""/>
+        <img className={server.country.toLowerCase() + " flag"} src={'../assets/img/flags-24/' + server.country.toLowerCase() + '.png'}  alt=""/>
         <span>{server.regionName}</span><i className="cp-fav icon"></i>
       </div>
     );
