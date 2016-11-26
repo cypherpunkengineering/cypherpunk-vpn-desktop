@@ -15,10 +15,17 @@ const transitionMap = {
 
 export default class AccountScreen extends React.Component  {
   isPremium() {
-    return daemon.account.subscription.type == 'premium';
+    return daemon.account.account.type !== 'free';
   }
   getPlanName() {
-    return this.isPremium() ? "Premium" : "Free";
+    return {
+      'free': "Free",
+      'premium': "Premium",
+      'family': "Family",
+      'enterprise': "Enterprise",
+      'staff': "Staff",
+      'developer': "Developer",
+    }[daemon.account.account.type];
   }
   getRenewalType() {
     return {
@@ -30,20 +37,26 @@ export default class AccountScreen extends React.Component  {
       '6m': 'semiannually',
       '3m': 'quarterly',
       '1m': 'monthly',
+      'forever': 'forever'
     }[daemon.account.subscription.renewal];
   }
-  getRenewalDate() {
-    //var d = new Date(0);
-    //d.setUTCSeconds(daemon.account.subscription.expiration);
-    var d = new Date(daemon.account.subscription.expiration);
-    return `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`;
+  getRenewalString() {
+    if (daemon.account.subscription.renewal === 'forever') {
+      return "Lifetime";
+    } else if (daemon.account.subscription.expiration != 0) { // note: !=, not !==
+      var d = new Date(daemon.account.subscription.expiration);
+      var now = new Date();
+      return `${d<=now ? "Expired" : "Renews " + this.getRenewalType()} on ${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`;
+    } else {
+      return "Renews " + this.getRenewalType();
+    }
   }
   getContent() {
     if (this.props.children) {
       return this.props.children
     }
     else {
-      var renewal = this.isPremium() && daemon.account.subscription.expiration != 0 ? <div className="period">Renews {this.getRenewalType()} on {this.getRenewalDate()}</div> : null;
+      var renewal = this.isPremium() ? <div className="period">{this.getRenewalString()}</div> : null;
       return(
         <div>
         <PanelTitlebar title="Account" back="/connect"/>
