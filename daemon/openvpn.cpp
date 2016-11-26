@@ -11,7 +11,7 @@ using namespace std::placeholders;
 
 static const std::string g_connection_setting_names[] = {
 	"remotePort",
-	"server",
+	"location",
 	"localPort",
 	"mtu",
 	"encryption",
@@ -44,7 +44,7 @@ void OpenVPNProcess::SetSettings(const JsonObject& connection_settings)
 		if (it != connection_settings.end())
 			_connection[name] = JsonValue(it->second);
 	}
-	_connection_server = JsonValue(connection_settings.at("servers").AsStruct().at(connection_settings.at("server").AsString()));
+	_connection_server = JsonValue(connection_settings.at("locations").AsStruct().at(connection_settings.at("location").AsString()));
 	const JsonObject& login = g_settings.account().at("privacy").AsStruct();
 	_username = login.at("username").AsString();
 	_password = login.at("password").AsString();
@@ -175,7 +175,7 @@ bool OpenVPNProcess::IsSameServer(const jsonrpc::Value::Struct& connection)
 		else if (b != connection.end())
 			return false;
 	}
-	if (_connection_server != connection.at("servers").AsStruct().at(connection.at("server").AsString()))
+	if (_connection_server != connection.at("locations").AsStruct().at(connection.at("location").AsString()))
 		return false;
 	return true;
 }
@@ -185,7 +185,7 @@ bool OpenVPNProcess::SettingRequiresReconnect(const std::string& name)
 	for (auto n : g_connection_setting_names)
 		if (n == name)
 			return true;
-	if (name == "servers")
+	if (name == "locations")
 		return true;
 	return false;
 }
