@@ -116,7 +116,7 @@ export class EmailStep extends React.Component {
         {/*<div className="welcome">Welcome.</div>*/}
         <div className="desc">Please input your email to begin.</div>
         <div className="ui icon input">
-          <input type="text" placeholder="Email" required autoFocus="true" ref="email" defaultValue={daemon.account.account.email} onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
+          <input type="text" placeholder="Email" required autoFocus="true" ref="email" defaultValue={daemon.account.account ? daemon.account.account.email : ""} onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
           <i className="search chevron right link icon" onClick={() => this.onSubmit()}></i>
         </div>
       </form>
