@@ -15,7 +15,7 @@ const transitionMap = {
 
 export default class AccountScreen extends React.Component  {
   isPremium() {
-    return daemon.settings.subscription.type == 'premium';
+    return daemon.account.subscription.type == 'premium';
   }
   getPlanName() {
     return this.isPremium() ? "Premium" : "Free";
@@ -30,12 +30,12 @@ export default class AccountScreen extends React.Component  {
       '6m': 'semiannually',
       '3m': 'quarterly',
       '1m': 'monthly',
-    }[daemon.settings.subscription.renewal];
+    }[daemon.account.subscription.renewal];
   }
   getRenewalDate() {
     //var d = new Date(0);
-    //d.setUTCSeconds(daemon.settings.subscription.expiration);
-    var d = new Date(daemon.settings.subscription.expiration);
+    //d.setUTCSeconds(daemon.account.subscription.expiration);
+    var d = new Date(daemon.account.subscription.expiration);
     return `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`;
   }
   getContent() {
@@ -43,19 +43,19 @@ export default class AccountScreen extends React.Component  {
       return this.props.children
     }
     else {
-      var renewal = this.isPremium() && daemon.settings.subscription.expiration != 0 ? <div className="period">Renews {this.getRenewalType()} on {this.getRenewalDate()}</div> : null;
+      var renewal = this.isPremium() && daemon.account.subscription.expiration != 0 ? <div className="period">Renews {this.getRenewalType()} on {this.getRenewalDate()}</div> : null;
       return(
         <div>
         <PanelTitlebar title="Account" back="/connect"/>
         <div className="scrollable content">
           <div className="user pane">
-            <div className="user"><img src={AccountIcon}/><span className="email">{daemon.account.email}</span></div>
+            <div className="user"><img src={AccountIcon}/><span className="email">{daemon.account.account.email}</span></div>
             <div className={this.isPremium() ? "premium plan" : "plan"}>{this.getPlanName()}</div>
             {renewal}
           </div>
           <div className="pane" data-title="Account Settings">
-            <div className="setting"><a tabIndex="0" onClick={() => { shell.openExternal('https://cypherpunk.com/account/upgrade?user=' + encodeURIComponent(daemon.account.email) + '&secret=' + encodeURIComponent(daemon.account.secret)); }}>{this.isPremium() ? "Change Plan" : "Upgrade"}</a></div>
-            <div className="setting"><Link to="/account/email" tabIndex="0"><div>Email<small>{daemon.account.email}</small></div></Link></div>
+            <div className="setting"><a tabIndex="0" onClick={() => { shell.openExternal('https://cypherpunk.com/account/upgrade?user=' + encodeURIComponent(daemon.account.account.email) + '&secret=' + encodeURIComponent(daemon.account.secret)); }}>{this.isPremium() ? "Change Plan" : "Upgrade"}</a></div>
+            <div className="setting"><Link to="/account/email" tabIndex="0"><div>Email<small>{daemon.account.account.email}</small></div></Link></div>
             <div className="setting"><Link to="/account/password" tabIndex="0">Password</Link></div>
           </div>
           <div className="pane" data-title="More">

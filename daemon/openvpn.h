@@ -14,6 +14,7 @@ class OpenVPNProcess
 {
 	OpenVPNProcess(const OpenVPNProcess&) = delete;
 	OpenVPNProcess& operator=(const OpenVPNProcess&) = delete;
+	friend class CypherDaemon;
 
 protected:
 	OpenVPNProcess(asio::io_service& io);
@@ -27,6 +28,9 @@ protected:
 
 	JsonObject _connection;
 	JsonValue _connection_server;
+
+	std::string _username;
+	std::string _password;
 
 	bool _management_signaled;
 

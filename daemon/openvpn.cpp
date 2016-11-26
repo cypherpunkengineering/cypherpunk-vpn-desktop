@@ -45,6 +45,9 @@ void OpenVPNProcess::SetSettings(const JsonObject& connection_settings)
 			_connection[name] = JsonValue(it->second);
 	}
 	_connection_server = JsonValue(connection_settings.at("servers").AsStruct().at(connection_settings.at("server").AsString()));
+	const JsonObject& login = g_settings.account().at("privacy").AsStruct();
+	_username = login.at("username").AsString();
+	_password = login.at("password").AsString();
 }
 
 int OpenVPNProcess::StartManagementInterface()

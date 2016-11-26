@@ -55,7 +55,7 @@ public:
 	JsonValue& operator[](const std::string& name);
 
 	namedmember(std::string, remotePort, "udp:7133")
-	namedmember(std::string, server, "tokyodev") // FIXME: don't hardcode
+	namedmember(std::string, location, "tokyodev") // FIXME: don't hardcode
 	namedmember(int, localPort, 0)
 	namedmember(int, mtu, 1500)
 	namedmember(std::string, encryption, "default") // "none", "default", "strong" or "stealth"
@@ -72,7 +72,11 @@ public:
 
 	// FIXME: should be a config
 	namedmember(JsonObject, regions, {})
-	namedmember(JsonObject, servers, {})
+	namedmember(JsonObject, locations, {})
+	// FIXME: should be a separate account object
+	namedmember(JsonObject, account, {})
+
+	const JsonObject& GetCurrentLocation() const { return locations().at(location()).AsStruct(); }
 };
 
 extern Settings g_settings;

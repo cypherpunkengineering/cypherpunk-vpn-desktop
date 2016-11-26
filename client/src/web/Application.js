@@ -49,10 +49,10 @@ const transitionMap = {
 export default class Application {
   static init() {
     server.refreshSession = () => {
-      if (!daemon.account.email || !daemon.account.token) {
+      if (!daemon.account.account.email || !daemon.account.account.token) {
         throw new Error("No stored account credentials found");
       }
-      return server.post('/api/v1/account/authenticate/token', { email: daemon.account.email, token: daemon.account.token }).then(data => true);
+      return server.post('/api/v1/account/authenticate/token', { email: daemon.account.account.email, token: daemon.account.account.token }).then(data => true);
     };
     server.onAuthFailure = () => {
       setTimeout(() => History.push('/login/email'), 0);

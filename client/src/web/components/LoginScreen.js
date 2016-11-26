@@ -10,43 +10,45 @@ const { session } = require('electron').remote;
 
 
 
-function refreshSubscription() {
-  return server.get('/api/v0/subscription/status').then(response => daemon.call.applySettings({ subscription: response.data }).then(() => response.data));
-}
-
-function refreshServerList() {
-  return server.get('/api/v0/vpn/serverList').then(response => {
-    var servers = Array.toDict(Array.flatten(Array.flatten(Object.mapToArray(response.data, (r, countries) => Object.mapToArray(countries, (c, locations) => locations.map(l => Object.assign({}, l, { country: c, region: r })))))), s => s.id);
-    var regions = Object.mapValues(Array.toMultiDict(Object.values(servers), s => s.region), (r,c) => Object.mapValues(Array.toMultiDict(c, l => l.country), (c,l) => l.map(m => m.id)));
-    var result = daemon.call.applySettings({ regions: regions, servers: servers });
+function refreshLocationList() {
+  return server.get('/api/v0/location/list/' + daemon.account.account.type).then(response => {
+    var locations = response.data;
+    Object.values(locations).forEach(l => {
+      if (!l.enabled || !['ovDefault', 'ovNone', 'ovStrong', 'ovStealth'].every(t => Array.isArray(l[t]) && l[t].length > 0)) {
+        l.disabled = true;
+      }
+    });
+    var regions = Object.mapValues(Array.toMultiDict(Object.values(locations), s => s.region), (r,c) => Object.mapValues(Array.toMultiDict(c, l => l.country), (c,l) => l.map(m => m.id)));
+    var result = daemon.call.applySettings({ regions: regions, locations: locations });
     // Workaround: ensure region selection is not empty
-    if (!servers[daemon.settings.server]) result = result.then(() => daemon.call.applySettings({ server: Object.keys(servers)[0] }));
-    return result.then(() => servers);
+    if (!locations[daemon.settings.location] || locations[daemon.settings.location].disabled) {
+      for (let l of Object.values(locations)) {
+        if (!l.disabled) {
+          result = result.then(() => daemon.call.applySettings({ location: l.id }));
+          break;
+        }
+      }
+    }
+    return result.then(() => locations);
   });
 }
 
-// Called to refresh any updated data and take any required next steps for
-// the current account (such as confirming your email address). 
+// Refresh the current account by querying the server
 function refreshAccount() {
-  return refreshSubscription().then(subscription => {
-    if (!subscription.confirmed) {
-      History.push({ pathname: '/login/confirm', query: { email: daemon.account.email } });
+  return server.get('/api/v0/account/status').then(response => setAccount(response.data));
+}
+
+// Updates the application state after any new account data has been received
+function setAccount(data) {
+  return daemon.call.setAccount(data).then(() => {
+    if (!data.account.confirmed) {
+      History.push({ pathname: '/login/confirm', query: { email: daemon.account.account.email } });
     } else {
-      return refreshServerList().then(servers => {
+      return refreshLocationList().then(locations => {
         History.push('/connect');
       });
     }
   });
-}
-
-// Called when we have logged in to (or registered) a new account, to store
-// and refresh all relevant account data.
-function setAccount(loginData) {
-  return daemon.call.setAccount({
-    email: loginData.account.email,
-    token: loginData.token,
-    secret: loginData.secret, // FIXME: deprecated
-  }).then(() => refreshAccount());
 }
 
 
@@ -81,7 +83,7 @@ export class Logout extends React.Component {
     setTimeout(() => { // need to use setTimeout since we might modify History
       server.post('/api/v0/account/logout', null, { refreshSessionOnForbidden: false, catchAuthFailure: false })
         .catch(err => console.error("Error while logging out:", err))
-        .then(() => daemon.call.setAccount({ email: daemon.account.email, token: null, secret: null }))
+        .then(() => daemon.call.setAccount({ account: { email: daemon.account.account.email } }))
         .then(() => { session.defaultSession.clearStorageData({ storages: [ 'cookies' ] }, () => History.push('/login/email')); });
     })
   }
@@ -114,7 +116,7 @@ export class EmailStep extends React.Component {
         {/*<div className="welcome">Welcome.</div>*/}
         <div className="desc">Please input your email to begin.</div>
         <div className="ui icon input">
-          <input type="text" placeholder="Email" required autoFocus="true" ref="email" defaultValue={daemon.account.email} onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
+          <input type="text" placeholder="Email" required autoFocus="true" ref="email" defaultValue={daemon.account.account.email} onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
           <i className="search chevron right link icon" onClick={() => this.onSubmit()}></i>
         </div>
       </form>
@@ -126,7 +128,7 @@ export class PasswordStep extends React.Component {
   onSubmit() {
     var password = this.refs.password.value || (this.refs.password.value = "test123"); // FIXME: debug value
     $(this.refs.password).prop('disabled', true).parent().addClass('loading');
-    server.post('/api/v0/account/authenticate/password', { email: this.props.location.query.email, password: password }).then(response => {
+    server.post('/api/v0/account/authenticate/password', { /*email: this.props.location.query.email,*/ password: password }).then(response => {
       return setAccount(response.data);
     }).catch(err => {
       if (!err.handled) {

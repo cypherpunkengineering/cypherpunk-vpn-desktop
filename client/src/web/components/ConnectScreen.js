@@ -29,15 +29,13 @@ export default class ConnectScreen extends React.Component {
     Object.assign(this.state, this.translateDaemonState(daemon.state));
 
     this.handleConnectClick = this.handleConnectClick.bind(this);
-    this.handleRegionSelect = this.handleRegionSelect.bind(this);
     this.handleDaemonSettingsChange = this.handleDaemonSettingsChange.bind(this);
     this.handleDaemonStateChange = this.handleDaemonStateChange.bind(this);
   }
 
   state = {
     regions: daemon.config.regions,
-    servers: daemon.config.servers,
-    selectedRegion: daemon.settings.server,
+    selectedRegion: daemon.settings.location,
     receivedBytes: 0,
     sentBytes: 0,
     connectionState: 'disconnected',
@@ -61,9 +59,9 @@ export default class ConnectScreen extends React.Component {
     return newState;
   }
   handleDaemonSettingsChange(settings) {
-    if (settings.server) {
-      this.setState({ selectedRegion: settings.server });
-      $(this.refs.regionDropdown).dropdown('set selected', settings.server);
+    if (settings.location) {
+      this.setState({ selectedRegion: settings.location });
+      $(this.refs.regionDropdown).dropdown('set selected', settings.location);
     }
   }
   handleDaemonStateChange(state) {
@@ -72,10 +70,6 @@ export default class ConnectScreen extends React.Component {
   componentDidMount() {
     daemon.on('settings', this.handleDaemonSettingsChange);
     daemon.on('state', this.handleDaemonStateChange);
-    $(this.refs.regionDropdown).dropdown({
-      direction: 'upward',
-      onChange: this.handleRegionSelect
-    });
   }
   componentWillUnmount() {
     daemon.removeListener('state', this.handleDaemonStateChange);
@@ -127,13 +121,6 @@ export default class ConnectScreen extends React.Component {
       'disconnecting': "Disconnecting...",
     }[this.state.connectionState];
 
-    var regions = Array.flatten(
-      REGION_GROUP_ORDER.map(g => ({
-        name: REGION_GROUP_NAMES[g],
-        locations: Object.mapToArray(this.state.regions[g], (country, locations) => locations.map(s => daemon.config.servers[s]).map(s => <div class={"item" + (s.ovDefault == "255.255.255.255" ? " disabled" : "")} data-value={s.id} key={s.id}><i class={s.country.toLowerCase() + " flag"}></i>{s.regionName}<i class="cp-fav icon"></i></div>)).filter(l => l && l.length > 0)
-      })).filter(r => r.locations && r.locations.length > 0).map(r => [ <div key={"region-" + r.name} class="header">{r.name}</div> ].concat(r.locations))
-    );
-
     return(
       <RouteTransition transition="reveal">
         {this.props.children || null}
@@ -153,14 +140,6 @@ export default class ConnectScreen extends React.Component {
             {/*<i id="connect" class={"ui fitted massive power link icon" + (this.state.connectionState === 'connected' ? " green" : this.state.connectionState == 'disconnected' ? " red" : " orange disabled")} ref="connectButton" onClick={this.handleConnectClick}></i>*/}
           </div>
           <div id="connect-status" ref="connectStatus">{buttonLabel}</div>
-          {/*<div id="region-select" class={"ui selection dropdown" + (this.state.connectionState === 'disconnected' ? "" : " disabled")} ref="regionDropdown">
-            <input type="hidden" name="region" value={this.state.selectedRegion}/>
-            <i class="dropdown icon"></i>
-            <div class="default text">Select Region</div>
-            <div class="menu">
-              { regions }
-            </div>
-          </div>*/}
           <div id="connection-stats" class="ui two column center aligned grid">
             <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.receivedBytes)}</div><div class="label">Received</div></div></div>
             <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.sentBytes)}</div><div class="label">Sent</div></div></div>
@@ -192,8 +171,5 @@ export default class ConnectScreen extends React.Component {
   }
   getSelectedRegion() {
     return $(this.refs.regionDropdown).dropdown('get value');
-  }
-  handleRegionSelect(server) {
-    daemon.post.applySettings({ server: server });
   }
 }

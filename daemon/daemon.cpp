@@ -427,7 +427,7 @@ static std::vector<JsonValue> GetCertificateAuthorities()
 JsonObject CypherDaemon::MakeConfigObject()
 {
 	JsonObject config;
-	config["servers"] = g_settings.servers();
+	config["locations"] = g_settings.locations();
 	config["regions"] = g_settings.regions();
 	config["certificateAuthorities"] = GetCertificateAuthorities();
 	return config;
@@ -736,7 +736,7 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& server)
 	const auto& encryption = g_settings.encryption();
 	std::string ipKey = "ov" + encryption;
 	ipKey[2] = std::toupper(ipKey[2]);
-	config["remote"] = server.at(ipKey).AsString() + " " + remotePort;
+	config["remote"] = server.at(ipKey).AsArray()[0].AsString() + " " + remotePort;
 	if (encryption == "stealth")
 	{
 		config["tls-cipher"] = "TLS-DHE-RSA-WITH-AES-128-GCM-SHA256:TLS-DHE-RSA-WITH-AES-128-CBC-SHA256";
@@ -822,7 +822,7 @@ bool CypherDaemon::RPC_connect()
 	const JsonObject& settings = g_settings.map();
 
 	// Access the region early, should trigger an exception if it doesn't exist (before we've done any state changes)
-	g_settings.servers().at(g_settings.server());
+	g_settings.locations().at(g_settings.location());
 
 	switch (_state)
 	{
@@ -932,7 +932,7 @@ void CypherDaemon::DoConnect()
 #endif
 	{
 		std::ofstream f(profile_filename.c_str());
-		WriteOpenVPNProfile(f, g_settings.servers().at(g_settings.server()).AsStruct());
+		WriteOpenVPNProfile(f, g_settings.locations().at(g_settings.location()).AsStruct());
 		f.close();
 	}
 	args.push_back(profile_filename);
@@ -946,8 +946,8 @@ void CypherDaemon::DoConnect()
 		size_t q2 = line.find('\'', q1 + 1);
 		auto id = line.substr(q1 + 1, q2 - q1 - 1);
 		// FIXME: Obviously shouldn't be hardcoded
-		vpn->SendManagementCommand("username \"" + id + "\" \"test@test.test\"");
-		vpn->SendManagementCommand("password \"" + id + "\" \"test123\"");
+		vpn->SendManagementCommand("username \"" + id + "\" \"" + vpn->_username + "\"");
+		vpn->SendManagementCommand("password \"" + id + "\" \"" + vpn->_password + "\"");
 	});
 	vpn->OnManagementResponse("STATE", [=](const std::string& line) {
 		try

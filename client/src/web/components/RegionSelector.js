@@ -7,19 +7,19 @@ import daemon, { DaemonAware } from '../daemon';
 export default class RegionSelector extends DaemonAware(React.Component) {
 
   state = {
-    servers: daemon.config.servers,
+    locations: daemon.config.locations,
     regions: daemon.config.regions,
-    selected: daemon.settings.server,
+    selected: daemon.settings.location,
     favorites: {},
     open: false,
   }
 
   daemonConfigChanged(config) {
-    if (config.servers) this.setState({ servers: config.servers });
+    if (config.locations) this.setState({ locations: config.locations });
     if (config.regions) this.setState({ regions: config.regions });
   }
   daemonSettingsChanged(settings) {
-    if (settings.hasOwnProperty('server')) this.setState({ selected: settings.server });
+    if (settings.hasOwnProperty('location')) this.setState({ selected: settings.location });
   }
 
   open() {
@@ -61,18 +61,18 @@ export default class RegionSelector extends DaemonAware(React.Component) {
     }
   }
 
-  onServerClick(server) {
-    daemon.call.applySettings({ server: server })
+  onLocationClick(location) {
+    daemon.call.applySettings({ location: location })
       .then(() => {
         if (daemon.state.needsReconnect) {
           daemon.post.connect();
         }
       });
-    this.setState({ selected: server });
+    this.setState({ selected: location });
     this.close();
   }
-  onServerFavoriteClick(server) {
-    this.setState({ favorites: Object.assign({}, this.state.favorites, { [server]: !this.state.favorites[server] }) });
+  onLocationFavoriteClick(location) {
+    this.setState({ favorites: Object.assign({}, this.state.favorites, { [location]: !this.state.favorites[location] }) });
   }
   onKeyDown(event) {
     switch (event.key) {
@@ -82,39 +82,39 @@ export default class RegionSelector extends DaemonAware(React.Component) {
     }
   }
 
-  makeServer(server, clickable) {
+  makeLocation(location, clickable) {
     var classes = [ 'region' ];
-    if (server.ovDefault == "255.255.255.255") {
+    if (location.disabled) {
       classes.push('disabled');
     }
-    if (this.state.selected === server.id) {
+    if (this.state.selected === location.id) {
       classes.push('selected');
     }
-    if (this.state.favorites[server.id]) {
+    if (this.state.favorites[location.id]) {
       classes.push('favorite');
     }
     var onclick = event => {
       var value = event.currentTarget.getAttribute('data-value');
       if (event.target.className.indexOf('cp-fav') != -1) {
-        this.onServerFavoriteClick(value);
+        this.onLocationFavoriteClick(value);
       } else if (event.currentTarget.className.indexOf('disabled') == -1) {
-        this.onServerClick(value);
+        this.onLocationClick(value);
       }
     };
     return(
-      <div className={classes.join(' ')} data-value={clickable ? server.id : null} key={clickable ? server.id : null} onClick={clickable ? onclick : null}>
-        {/* <i className={server.country.toLowerCase() + " flag"}></i> */}
-        <img className={server.country.toLowerCase() + " flag"} src={'../assets/img/flags-24/' + server.country.toLowerCase() + '.png'}  alt=""/>
-        <span>{server.regionName}</span><i className="cp-fav icon"></i>
+      <div className={classes.join(' ')} data-value={clickable ? location.id : null} key={clickable ? location.id : null} onClick={clickable ? onclick : null}>
+        {/* <i className={location.country.toLowerCase() + " flag"}></i> */}
+        <img className={location.country.toLowerCase() + " flag"} src={'../assets/img/flags-24/' + location.country.toLowerCase() + '.png'}  alt=""/>
+        <span>{location.name}</span><i className="cp-fav icon"></i>
       </div>
     );
   }
 
-  makeRegionList(regions, servers) {
+  makeRegionList(regions, locations) {
     return Array.flatten(
       REGION_GROUP_ORDER.map(g => ({
         name: REGION_GROUP_NAMES[g],
-        locations: Object.mapToArray(regions[g], (country, locations) => locations.map(s => servers[s]).map(s => this.makeServer(s, true))).filter(l => l && l.length > 0)
+        locations: Object.mapToArray(regions[g], (country, locs) => locs.map(l => locations[l]).map(l => this.makeLocation(l, true))).filter(l => l && l.length > 0)
       })).filter(r => r.locations && r.locations.length > 0).map(r => [ <div key={"region-" + r.name} className="header">{r.name}</div> ].concat(r.locations))
     );
   }
@@ -128,8 +128,8 @@ export default class RegionSelector extends DaemonAware(React.Component) {
   get $list() {
     return this.$.children('.list');
   }
-  $item(server) {
-    return this.$list.children(`[data-value="${server}"]`);
+  $item(location) {
+    return this.$list.children(`[data-value="${location}"]`);
   }
 
   componentDidMount() {
@@ -178,10 +178,10 @@ export default class RegionSelector extends DaemonAware(React.Component) {
         onTransitionEnd={event => this.onTransitionEnd(event)}
         >
         <div className="bar" onClick={() => this.state.open ? this.close() : this.open()}>
-          { (this.state.selected && this.state.servers[this.state.selected]) ? this.makeServer(this.state.servers[this.state.selected], false) : "Select Region" }
+          { (this.state.selected && this.state.locations[this.state.selected]) ? this.makeLocation(this.state.locations[this.state.selected], false) : "Select Region" }
         </div>
         <div className="list">
-          { this.makeRegionList(this.state.regions, this.state.servers) }
+          { this.makeRegionList(this.state.regions, this.state.locations) }
         </div>
       </div>
     );

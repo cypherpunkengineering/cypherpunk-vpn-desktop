@@ -183,8 +183,8 @@ timeoutPromise(Promise.all(preinitPromises), 2000).then(() => {
 });
 
 function createTrayMenu() {
-  const hasServers = typeof daemon.config.servers === 'object' && Object.keys(daemon.config.servers).length > 0;
-  const server = daemon.config.servers[daemon.settings.server];
+  const hasLocations = typeof daemon.config.locations === 'object' && Object.keys(daemon.config.locations).length > 0;
+  const location = daemon.config.locations[daemon.settings.location];
   const state = daemon.state.state;
   const connected = state !== 'DISCONNECTED';
   let items = [];
@@ -197,30 +197,30 @@ function createTrayMenu() {
     }
     let connectName;
     switch (state) {
-      case 'CONNECTING': connectName = "Connecting to " + server.regionName + "..."; break;
-      case 'CONNECTED': if (daemon.state.needsReconnect) connectName = "Reconnect (apply changed settings)"; else connectName = "Connected to " + server.regionName; break;
+      case 'CONNECTING': connectName = "Connecting to " + location.name + "..."; break;
+      case 'CONNECTED': if (daemon.state.needsReconnect) connectName = "Reconnect (apply changed settings)"; else connectName = "Connected to " + location.name; break;
       case 'DISCONNECTING': connectName = "Disconnecting..."; break;
-      case 'DISCONNECTED': connectName = "Connect to " + server.regionName; break;
-      case 'SWITCHING': connectName = "Switching to " + server.regionName; break;
+      case 'DISCONNECTED': connectName = "Connect to " + location.name; break;
+      case 'SWITCHING': connectName = "Switching to " + location.name; break;
     }
     items.push({
       label: connectName,
-      icon: state === 'DISCONNECTING' ? null : getFlag(server.country.toLowerCase()),
+      icon: state === 'DISCONNECTING' ? null : getFlag(location.country.toLowerCase()),
       enabled: state === 'DISCONNECTED' || (state === 'CONNECTED' && daemon.state.needsReconnect),
       click: () => { daemon.post.connect(); }
     });
     items.push({
       label: state === 'DISCONNECTED' ? "Connect to" : "Switch to",
-      enabled: hasServers && (state === 'CONNECTED' || state === 'DISCONNECTED'),
+      enabled: hasLocations && (state === 'CONNECTED' || state === 'DISCONNECTED'),
       submenu:
-        Object.keys(daemon.config.servers).map(k => daemon.config.servers[k]).map(s => ({
-          label: s.regionName,
+        Object.keys(daemon.config.locations).map(k => daemon.config.locations[k]).map(s => ({
+          label: s.name,
           icon: getFlag(s.country.toLowerCase()),
           type: 'checkbox',
-          checked: daemon.settings.server === s.id,
-          enabled: s.ovDefault && s.ovDefault != "255.255.255.255",
+          checked: daemon.settings.location === s.id,
+          enabled: !s.disabled,
           click: () => {
-            daemon.call.applySettings({ server: s.id })
+            daemon.call.applySettings({ location: s.id })
               .then(() => {
                 if (daemon.state.needsReconnect) {
                   daemon.post.connect();
@@ -267,9 +267,9 @@ function createTray() {
     tray.setContextMenu(createTrayMenu());
   }
   refresh();
-  daemon.on('config', config => { if (config.servers) refresh(); });
+  daemon.on('config', config => { if (config.locations) refresh(); });
   daemon.on('state', state => { if (state.state || state.needsReconnect) refresh(); });
-  daemon.on('settings', settings => { if (settings.server) refresh(); });
+  daemon.on('settings', settings => { if (settings.location) refresh(); });
   main.on('hide', () => { refresh(); });
   main.on('show', () => { refresh(); });
   var lastLoggedIn = undefined;
