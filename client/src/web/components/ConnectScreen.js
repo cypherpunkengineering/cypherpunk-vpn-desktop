@@ -98,7 +98,7 @@ export default class ConnectScreen extends React.Component {
       strokeDasharray: '314.16',
       strokeDashoffset: '78.54',
       strokeLinecap: 'round',
-      transform: 'rotate(-45deg)',
+      transform: 'rotate3d(0,0,1,-45deg)',
       transformOrigin: '50% 200px',
       fill: 'none'
     }
@@ -140,11 +140,11 @@ export default class ConnectScreen extends React.Component {
         <div id="connect-screen" key="self" class="screen">
           <MainTitlebar/>
           <OneZeros/>
-          <MainBackground/>
+          {/* <MainBackground/> */}
           <div id="connect-container" onClick={this.handleConnectClick}>
 
-            <svg viewBox="-40 40 200 240" preserveAspectRatio="xMidYMid meet" width="120px" height="140px" ref="connectButton">
-              <circle cx="60" cy="200" r="50" style={connectCircleStyle} />
+            <svg viewBox="-40 40 200 240" preserveAspectRatio="xMidYMid meet" width="160px" height="200px" ref="connectButton">
+              <circle class="ring" cx="60" cy="200" r="50" style={connectCircleStyle} />
               <line x1="60" y1="98" x2="60" y2="181" style={connectLineStyle} />
               <line x1="60" y1="111" x2="80" y2="111"  style={connectSmallLineStyle} />
               <line x1="60" y1="137" x2="80" y2="137"  style={connectSmallLineStyle} />

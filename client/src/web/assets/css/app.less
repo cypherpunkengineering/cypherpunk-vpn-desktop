@@ -281,21 +281,128 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 
 #onezeros {
   .bodyHeight;
-  font-family: Menlo;
+  font-family: 'Menlo Regular', 'Courier New', monospace;
   font-size: 21px;
+  font-weight: 100;
   // height: calc(~"100vh -" (@dragbarHeight + @headerHeight));
   line-height: 21px;
   letter-spacing: 0.4px;
   position: absolute;
   width: 100%;
   text-align: center;
-  color: rgba(255,255,255,0.07);
   top: @fullHeaderHeight;
   left: 0;
   word-wrap:break-word;
   overflow-y: hidden;
-  .blur;
+  color: #fff;
+
+  .bits {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 0;
+    left: 0;
+    word-wrap: break-word;
+    width: 16px;
+  }
+
+  #bits-2   { left: 20px; }
+  #bits-3   { left: 40px; }
+  #bits-4   { left: 60px; }
+  #bits-5   { left: 80px; }
+  #bits-6   { left: 100px; }
+  #bits-7   { left: 120px; }
+  #bits-8   { left: 140px; }
+  #bits-9   { left: 160px; }
+  #bits-10  { left: 180px; }
+  #bits-11  { left: 200px; }
+  #bits-12  { left: 220px; }
+  #bits-13  { left: 240px; }
+  #bits-14  { left: 260px; }
+  #bits-15  { left: 280px; }
+  #bits-16  { left: 300px; }
+  #bits-17  { left: 320px; }
+  #bits-18  { left: 340px; }
+  #bits-19  { left: 360px; }
+  #bits-20  { left: 380px; }
 }
+
+#onezeros {
+  svg {
+    fill: #fff;
+    font-family: 'Menlo-Regular';
+    font-size: 21px;
+    // opacity: 0.25;
+  }
+
+  .bits-img {
+    animation: slide-down 70s linear infinite;
+    animation-play-state: paused;
+    opacity: 0.1;
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    &#bits-two {
+      animation-name: slide-up;
+      // animation: slide-up 70s linear infinite;
+      // animation-play-state: paused;
+    }
+
+    .is-focused & {
+      animation-play-state: running;
+    }
+  }
+
+
+  // .bits {
+  //   animation: slide-up 90s linear infinite;
+  //   animation-play-state: paused;
+  //   opacity: 0.1;
+  //
+  //   &:nth-child(odd) {
+  //     animation: slide-down 90s linear infinite;
+  //     animation-play-state: paused;
+  //   }
+  //
+  //   .is-focused & {
+  //     animation-play-state: running;
+  //   }
+  // }
+}
+
+
+@keyframes slide-down {
+  0% {
+    transform: translate3d(0, -50%, 0);
+   }
+
+  100% {
+    transform: translate3d(0, 0%, 0);
+  }
+}
+
+@keyframes slide-up {
+  0% {
+    transform: translate3d(0, 0%, 0);
+  }
+
+  100% {
+    transform: translate3d(0, -50%, 0);
+  }
+}
+
+@keyframes spinConnect {
+  0% {
+    transform: rotate3d(0,0,1,-45deg);
+  }
+
+  100% {
+    transform: rotate3d(0,0,1,315deg);
+  }
+}
+
+
 
 @keyframes bge { from { transform: scale(0.5) rotate(0deg); } to { transform: scale(1.5) rotate(360deg); } }
 @keyframes bgo { 0% { opacity: 0 } 10% { opacity: 0.7; } 100% { opacity: 0 } }
@@ -319,13 +426,21 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     z-index: 1;
     cursor: pointer;
     // margin-top: (130px - @fullHeaderHeight);
-    height: 140px;
+    height: 120px;
     display: flex;
     align-items: center;
     justify-content: center;
+
     svg {
       pointer-events: none;
       -webkit-filter: drop-shadow(0px 0px 5px rgba(0,0,0,0.5));
+
+      .connecting & {
+        .ring {
+          // stroke: blue !important;
+          animation: spinConnect 2s linear infinite;
+        }
+      }
     }
   }
   #region-select {
@@ -617,7 +732,7 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 
 
 #connect-status {
-  margin-top: 5px;
+  margin-top: 36px;
   font-size: 24px;
   font-weight: 500;
   color: #ccc;
