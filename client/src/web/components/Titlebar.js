@@ -90,9 +90,9 @@ export class MainTitlebar extends React.Component {
   render() {
     return(
       <Titlebar>
-        <Link className="account" to="/account" data-tooltip="Account" data-inverted="" data-position="bottom left"><img src={AccountIcon}/></Link>
+        <Link className="account" to="/account" data-tooltip="My Account" data-inverted="" data-position="bottom left"><img src={AccountIcon}/></Link>
         <Title/>
-        <Link className="settings" to="/configuration" data-tooltip="Settings" data-inverted="" data-position="bottom right"><img src={SettingsIcon} /></Link>
+        <Link className="settings" to="/configuration" data-tooltip="Configuration" data-inverted="" data-position="bottom right"><img src={SettingsIcon} /></Link>
       </Titlebar>
     );
   }

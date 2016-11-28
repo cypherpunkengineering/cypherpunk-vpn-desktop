@@ -210,6 +210,12 @@ function createTrayMenu() {
       click: () => { daemon.post.connect(); }
     });
     items.push({
+      label: "Disconnect",
+      enabled: state === 'CONNECTING' || state === 'CONNECTED' || state === 'SWITCHING',
+      click: () => { daemon.post.disconnect(); }
+    });
+    items.push({ type: 'separator' });
+    items.push({
       label: state === 'DISCONNECTED' ? "Connect to" : "Switch to",
       enabled: hasLocations && (state === 'CONNECTED' || state === 'DISCONNECTED'),
       submenu:
@@ -229,23 +235,18 @@ function createTrayMenu() {
           }
         }))
     });
-    items.push({
-      label: "Disconnect",
-      enabled: state === 'CONNECTING' || state === 'CONNECTED' || state === 'SWITCHING',
-      click: () => { daemon.post.disconnect(); }
-    });
 
     if (main) {
       items.push({ type: 'separator' });
-      items.push({ label: "Account...", click: () => { main.webContents.send('navigate', { pathname: '/account' }); showMainWindow(); } });
-      items.push({ label: "Configuration...", click: () => { main.webContents.send('navigate', { pathname: '/configuration' }); showMainWindow(); } });
+      items.push({ label: "My Account", click: () => { main.webContents.send('navigate', { pathname: '/account' }); showMainWindow(); } });
+      items.push({ label: "Configuration", click: () => { main.webContents.send('navigate', { pathname: '/configuration' }); showMainWindow(); } });
     }
   } else {
     items.push({ label: "Sign in", click: () => { showMainWindow(); }});
   }
   items.push(
     { type: 'separator' },
-    { label: "Quit", click: () => { app.quit(); } }
+    { label: "Quit Cypherpunk Privacy", click: () => { app.quit(); } }
   );
   // Windows fix: hidden separators don't work, so manually strip out hidden items entirely
   items = items.filter(i => !i.hasOwnProperty('visible') || i.visible);
