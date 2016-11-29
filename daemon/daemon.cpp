@@ -792,9 +792,9 @@ void CypherDaemon::DoConnect()
 		size_t q1 = line.find('\'');
 		size_t q2 = line.find('\'', q1 + 1);
 		auto id = line.substr(q1 + 1, q2 - q1 - 1);
-		// FIXME: Obviously shouldn't be hardcoded
-		vpn->SendManagementCommand("username \"" + id + "\" \"" + vpn->_username + "\"");
-		vpn->SendManagementCommand("password \"" + id + "\" \"" + vpn->_password + "\"");
+		vpn->SendManagementCommand(
+			"username \"" + id + "\" \"" + vpn->_username + "\"\n"
+			"password \"" + id + "\" \"" + vpn->_password + "\"");
 	});
 	vpn->OnManagementResponse("STATE", [=](const std::string& line) {
 		try
