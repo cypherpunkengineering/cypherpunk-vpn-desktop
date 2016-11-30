@@ -40,7 +40,7 @@ std::string GetPath(PredefinedFile file)
 	case OpenVPNExecutable: return g_is_installed
 		? "/usr/local/cypherpunk/bin/cypherpunk-privacy-openvpn"
 #if OS_LINUX
-		: GetPath(BaseDir, "daemon", "third_party", "openvpn_linux", "openvpn");
+		: GetPath(BaseDir, "daemon", "third_party", "openvpn_linux", "64", "openvpn");
 #else
 		: GetPath(BaseDir, "daemon", "third_party", "openvpn_osx", "openvpn");
 #endif
@@ -56,7 +56,11 @@ std::string GetPath(PredefinedDirectory dir)
 	switch (dir)
 	{
 	case BaseDir: return g_is_installed ? "/usr/local/cypherpunk" : (g_daemon_path + "/../..");
+#if OS_LINUX
+	case ScriptsDir: return g_is_installed ? GetPath(BaseDir, "etc/scripts") : GetPath(BaseDir, "res", "linux", "openvpn-scripts");
+#else
 	case ScriptsDir: return g_is_installed ? GetPath(BaseDir, "etc/scripts") : GetPath(BaseDir, "res", "osx", "openvpn-scripts");
+#endif
 	case SettingsDir: return g_is_installed ? GetPath(BaseDir, "etc") : g_daemon_path;
 	case LogDir: return g_is_installed ? "/tmp" : g_daemon_path;
 	case ProfileDir: return g_is_installed ? "/tmp" : g_daemon_path;
