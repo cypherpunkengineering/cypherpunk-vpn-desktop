@@ -12,12 +12,19 @@ INCS=\
 	-I../third_party/rapidjson/include/ \
 	-I../third_party/jsonrpc-lean/include \
 
+LIBS=
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Linux)
+	LIBS += -lpthread
+endif
+
 all:
 	g++ \
 	-std=c++14 \
 	-D_DEBUG \
 	$(INCS) \
 	$(SRCS) \
+	$(LIBS) \
 	-o cypherpunk-privacy-service
 
 stop:

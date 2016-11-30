@@ -1,5 +1,10 @@
 #include "config.h"
 
+#ifdef OS_LINUX
+#include <sys/types.h>
+#include <sys/wait.h>
+#endif
+
 #include "posix.h"
 #include "daemon.h"
 #include "logger.h"
