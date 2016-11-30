@@ -7,7 +7,7 @@ import GeneralSettings from './config/GeneralSettings.js'
 import AdvancedSettings from './config/AdvancedSettings.js'
 import RouteTransition from './Transition';
 import { PanelTitlebar } from './Titlebar';
-import Modal from './modal';
+import Modal from './Modal';
 
 const transitionMap = {
   '': { '*': 'swipeLeft' },

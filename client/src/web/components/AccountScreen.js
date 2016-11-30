@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router';
 import { PanelTitlebar } from './Titlebar';
-import Modal from './modal';
+import Modal from './Modal';
 import daemon from '../daemon';
 import RouteTransition from './Transition';
 const { shell } = require('electron').remote;
