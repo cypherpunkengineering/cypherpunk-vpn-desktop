@@ -44,7 +44,7 @@ if (process.platform == 'win32') {
     return runAppleScript('get the name of every login item').then(items => (items && items.indexOf(appName) >= 0)).catch(err => false);
   };
 
-} else if (profess.platform == 'linux') {
+} else if (process.platform == 'linux') {
 
   const fs = require('fs');
 
