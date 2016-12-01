@@ -23,6 +23,18 @@
 #include <grp.h>
 
 
+void pfctl_install();
+void pfctl_uninstall();
+//std::string pfctl_enable();
+//void pfctl_disable(const std::string& token);
+void pfctl_ensure_enabled();
+void pfctl_ensure_disabled();
+void pfctl_enable_anchor(const std::string& anchor);
+void pfctl_disable_anchor(const std::string& anchor);
+bool pfctl_anchor_enabled(const std::string& anchor);
+void pfctl_set_anchor_enabled(const std::string& anchor, bool enable);
+
+
 class PosixHandle
 {
 	int _fd;
