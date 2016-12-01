@@ -157,8 +157,10 @@ void CypherDaemon::OnLastClientDisconnected()
 		case CONNECTING:
 		case SWITCHING:
 			_state = DISCONNECTING;
-			OnStateChanged();
+			OnStateChanged(STATE);
 			_process->SendManagementCommand("signal SIGTERM");
+			break;
+		default:
 			break;
 	}
 }
@@ -245,7 +247,7 @@ void CypherDaemon::OnOpenVPNProcessExited(OpenVPNProcess* process)
 		{
 			_state = DISCONNECTED;
 			_needsReconnect = false;
-			OnStateChanged();
+			OnStateChanged(STATE | NEEDSRECONNECT);
 		}
 	}
 }
@@ -445,23 +447,25 @@ JsonObject CypherDaemon::MakeAccountObject()
 	}
 }
 
-void CypherDaemon::OnStateChanged()
+void CypherDaemon::OnStateChanged(unsigned int flags)
 {
-	// TODO: Only call if firewall-related state has changed
-	ApplyFirewallSettings();
+	if (flags & STATE)
+		ApplyFirewallSettings();
 	SendToAllClients(_rpc_client.BuildNotificationData("state", MakeStateObject()));
 }
 
 void CypherDaemon::OnSettingsChanged(const std::vector<std::string>& names)
 {
 	std::map<std::string, JsonValue> changed;
+	bool firewall_changed = false;
 	for (auto& name : names)
 	{
-		if (name == "firewall")
-			ApplyFirewallSettings();
+		if (name == "firewall" || name == "allowLAN")
+			firewall_changed = true;
 		changed[name] = JsonValue(g_settings[name]);
 	}
-
+	if (firewall_changed)
+		ApplyFirewallSettings();
 	SendToAllClients(_rpc_client.BuildNotificationData("settings", changed));
 }
 
@@ -687,7 +691,7 @@ bool CypherDaemon::RPC_connect()
 			_process->stale = true;
 			_bytesReceived = _bytesSent = 0;
 			_state = SWITCHING;
-			OnStateChanged();
+			OnStateChanged(STATE | BYTECOUNT);
 			_process->SendManagementCommand("signal SIGTERM");
 			return true;
 
@@ -700,7 +704,7 @@ bool CypherDaemon::RPC_connect()
 			// Connect normally.
 			_bytesReceived = _bytesSent = 0;
 			_state = CONNECTING;
-			OnStateChanged();
+			OnStateChanged(STATE | BYTECOUNT);
 			_io.post([this](){ DoConnect(); });
 			return true;
 
@@ -716,7 +720,7 @@ void CypherDaemon::DoConnect()
 	//index++; // FIXME: Just make GetAvailablePort etc. work properly instead
 
 	_needsReconnect = false;
-	OnStateChanged();
+	OnStateChanged(NEEDSRECONNECT);
 
 	std::shared_ptr<OpenVPNProcess> vpn(CreateOpenVPNProcess(_ws_server.get_io_service()));
 	vpn->SetSettings(g_settings.map());
@@ -835,14 +839,14 @@ void CypherDaemon::DoConnect()
 						_remoteIP = params.at(4);
 					}
 					_state = CONNECTED;
-					OnStateChanged();
+					OnStateChanged(STATE | IPADDRESS);
 				}
 				else if (s == "RECONNECTING")
 				{
 					if (_state == CONNECTED)
 					{
 						_state = CONNECTING;
-						OnStateChanged();
+						OnStateChanged(STATE);
 					}
 				}
 				else if (s == "EXITING")
@@ -850,7 +854,7 @@ void CypherDaemon::DoConnect()
 					_process.reset();
 					_state = DISCONNECTED;
 					_needsReconnect = false;
-					OnStateChanged();
+					OnStateChanged(STATE | NEEDSRECONNECT);
 				}
 			}
 		}
@@ -872,7 +876,7 @@ void CypherDaemon::DoConnect()
 			auto params = SplitToVector(line, ',');
 			_bytesReceived = std::stoll(params[0]);
 			_bytesSent = std::stoll(params[1]);
-			OnStateChanged();
+			OnStateChanged(BYTECOUNT);
 		}
 		catch (const std::exception& e) { LOG(WARNING) << e; }
 	});
@@ -900,7 +904,7 @@ void CypherDaemon::RPC_disconnect()
 	if (_state == CONNECTING || _state == CONNECTED || _state == SWITCHING)
 	{
 		_state = DISCONNECTING;
-		OnStateChanged();
+		OnStateChanged(STATE);
 		_process->SendManagementCommand("signal SIGTERM");
 	}
 }

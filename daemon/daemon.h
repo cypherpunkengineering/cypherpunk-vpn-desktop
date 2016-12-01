@@ -74,6 +74,8 @@ protected:
 	typedef websocketpp::connection_hdl Connection;
 	typedef std::set<Connection, std::owner_less<Connection>> ConnectionList;
 
+	enum StateChangedFlags { STATE = 1, NEEDSRECONNECT = 2, IPADDRESS = 4, BYTECOUNT = 8 };
+
 	void SendToClient(Connection con, const std::shared_ptr<jsonrpc::FormattedData>& data);
 	void SendToAllClients(const std::shared_ptr<jsonrpc::FormattedData>& data);
 	void SendErrorToAllClients(const std::string& name, const std::string& description);
@@ -82,7 +84,7 @@ protected:
 	void OnClientDisconnected(Connection c);
 	void OnLastClientDisconnected();
 	void OnReceiveMessage(Connection con, WebSocketServer::message_ptr msg);
-	void OnStateChanged();
+	void OnStateChanged(unsigned int state_changed_flags);
 
 	JsonObject MakeStateObject();
 	JsonObject MakeConfigObject();
