@@ -470,6 +470,7 @@ public:
 		case CONNECTING:
 		case CONNECTED:
 		case DISCONNECTING:
+		case SWITCHING:
 			is_connected = true;
 			break;
 		default:
