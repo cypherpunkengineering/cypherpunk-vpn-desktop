@@ -1,0 +1,25 @@
+# Cypherpunk Privacy Internet killswitch
+
+# Exempt non-forwardable local address space (LAN)
+
+# source: https://tools.ietf.org/html/rfc6890
+
+# 1. Exempt IPv4 LAN (RFC1918)
+pass out to 10.0.0.0/8 flags any
+pass out to 172.16.0.0/12 flags any
+pass out to 192.168.0.0/16 flags any
+
+# 2. Exempt IPv4 multicast
+pass out to 224.0.0.0/4 flags any
+
+# 3. Exempt IPv4 broadcast
+pass out quick to 255.255.255.255/32 flags any
+
+# 4. Exempt IPv6 unique-local (RFC4193)
+pass out quick to fc00::/7 flags any
+
+# 5. Exempt IPv6 link-local unicast (RFC4291)
+pass out quick to fe80::/10 flags any
+
+# 6. Exempt IPv6 multicast (RFC4291)
+pass out quick to ff00::/8 flags any

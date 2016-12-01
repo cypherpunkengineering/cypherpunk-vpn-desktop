@@ -1,0 +1,28 @@
+# Cypherpunk Privacy Internet killswitch
+
+# Block outgoing non-VPN traffic
+
+# 1. Politely reject packets
+set block-policy return
+
+# 2. Block all outgoing traffic by default
+block out all
+
+# 3. Exempt loopback/localhost traffic
+set skip on lo0
+pass on lo0 flags any
+
+# 4. Exempt all Cypherpunk traffic
+pass proto { tcp, udp } group cypherpunk
+
+# 5. Exempt the tunnel interface(s) used by the VPN connection
+pass out on utun0 flags any
+pass out on utun1 flags any
+pass out on utun2 flags any
+pass out on utun3 flags any
+pass out on utun4 flags any
+pass out on utun5 flags any
+pass out on utun6 flags any
+pass out on utun7 flags any
+pass out on utun8 flags any
+pass out on utun9 flags any
