@@ -19,6 +19,7 @@ fi
 
 # Update permissions on the client executable to exempt it from the killswitch
 chgrp $GROUP "/Applications/Cypherpunk Privacy.app/Contents/MacOS/Cypherpunk Privacy"
+chmod g+s "/Applications/Cypherpunk Privacy.app/Contents/MacOS/Cypherpunk Privacy"
 
 # (The daemon does not need +setgid since it's running as root and can do it by itself)
 
