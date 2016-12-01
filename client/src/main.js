@@ -140,7 +140,7 @@ app.on('will-quit', event => {
     event.preventDefault();
     let d = daemon;
     daemon = null;
-    d.disconnect().then(() => { app.quit(); });
+    d.disconnect().then(() => { setTimeout(() => app.quit()); });
     return;
   }
   if (tray) {
