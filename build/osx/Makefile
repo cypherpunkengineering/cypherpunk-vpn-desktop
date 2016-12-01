@@ -1,13 +1,12 @@
 .PHONY: Makefile all clean version vpn great again \
 	package client daemon update-node-modules check-node-modules \
-	stage stage-client stage-daemon stage-openvpn stage-extensions \
-	install install-client install-daemon install-extensions \
+	stage stage-client stage-daemon \
+	install install-client install-daemon \
 	start-daemon stop-daemon \
-	uninstall uninstall-client uninstall-daemon uninstall-extensions
+	uninstall uninstall-client uninstall-daemon
 .DEFAULT: all
 .SUFFIXES:
 
-#USE_EXTENSIONS := YES
 HUSH := @
 ECHO := @echo
 QUIET := > /dev/null
@@ -28,6 +27,7 @@ DAEMON_NS = $(APP_NS).service
 DAEMON_FILENAME = cypherpunk-privacy-service
 OPENVPN_FILENAME = cypherpunk-privacy-openvpn
 OPENVPN_SCRIPTS = $(shell find $(ROOT)/res/osx/openvpn-scripts -type f -name '*.sh')
+PF_ANCHORS = $(shell find $(ROOT)/res/osx/pf.anchors -type f -name 'com.cypherpunk.*')
 
 APP_SIGN_IDENTITY = "Developer ID Application: Cypherpunk Engineering K.K. (S353YJSBDX)"
 INSTALLER_SIGN_IDENTITY = "Developer ID Installer: Cypherpunk Engineering K.K. (S353YJSBDX)"
@@ -65,10 +65,6 @@ define do-start-daemon
 endef
 define do-stop-daemon
 	$(HUSH) sudo launchctl unload "/Library/LaunchDaemons/$(DAEMON_NS).plist" || true
-endef
-define do-uninstall-extension
-	$(HUSH) sudo kextunload -b net.sf.tuntaposx.$1 || true
-	$(HUSH) sudo rm -rf /Library/Extensions/$1.kext
 endef
 
 start-daemon:
@@ -110,9 +106,11 @@ $(ROOT)/daemon/posix/$(DAEMON_FILENAME): version
 
 # Staging
 
-stage: stage-client stage-daemon stage-openvpn $(if $(USE_EXTENSIONS),stage-extensions)
+ECHO_STAGING=$(ECHO) "* Staging $(@:$(STAGING)%=%)..."
 
-stage-client: client | $(STAGING)/Applications
+stage: stage-client stage-daemon
+
+stage-client: client
 	$(ECHO) "* Staging client..."
 	$(HUSH) rm -rf "$(OUT)/$(APP_SIG)"
 	$(HUSH) cd "$(ROOT)/client" && ./node_modules/.bin/electron-packager ./app/ "$(APP_NAME)" \
@@ -124,31 +122,33 @@ stage-client: client | $(STAGING)/Applications
 	$(HUSH) sync; sleep 1
 	$(HUSH) codesign --force --deep --sign $(APP_SIGN_IDENTITY) "$(OUT)/$(APP_SIG)/$(APP_BUNDLE)"
 	$(HUSH) rm -rf "$(STAGING)/Applications/$(APP_BUNDLE)"
+	$(HUSH) mkdir -p $(STAGING)/Applications
 	$(HUSH) mv "$(OUT)/$(APP_SIG)/$(APP_BUNDLE)" "$(STAGING)/Applications/"
 	$(HUSH) rm -rf "$(OUT)/$(APP_SIG)"
 
-stage-daemon: $(STAGING)/usr/local/cypherpunk/bin/$(DAEMON_FILENAME) $(STAGING)/Library/LaunchDaemons/$(DAEMON_NS).plist
+stage-daemon: $(STAGING)/usr/local/cypherpunk/bin/$(DAEMON_FILENAME) $(STAGING)/Library/LaunchDaemons/$(DAEMON_NS).plist $(STAGING)/usr/local/cypherpunk/bin/$(OPENVPN_FILENAME) $(OPENVPN_SCRIPTS:$(ROOT)/res/osx/openvpn-scripts/%=$(STAGING)/usr/local/cypherpunk/etc/scripts/%) $(PF_ANCHORS:$(ROOT)/res/osx/pf.anchors/%=$(STAGING)/usr/local/cypherpunk/etc/pf.anchors/%)
 
-stage-openvpn: $(STAGING)/usr/local/cypherpunk/bin/$(OPENVPN_FILENAME) $(OPENVPN_SCRIPTS:$(ROOT)/res/osx/openvpn-scripts/%=$(STAGING)/usr/local/cypherpunk/etc/scripts/%) $(STAGING)/Library/LaunchDaemons/$(DAEMON_NS).plist
-
-$(addprefix $(STAGING),/Applications /usr/local/cypherpunk/bin /usr/local/cypherpunk/etc /usr/local/cypherpunk/etc/scripts /Library/Extensions /Library/LaunchAgents /Library/LaunchDaemons):
-	$(HUSH) mkdir -p $@
-
-$(STAGING)/usr/local/cypherpunk/bin/$(DAEMON_FILENAME): $(ROOT)/daemon/posix/$(DAEMON_FILENAME) | $(STAGING)/usr/local/cypherpunk/bin
-	$(ECHO) "* Staging daemon..."
+$(STAGING)/usr/local/cypherpunk/bin/$(DAEMON_FILENAME): $(ROOT)/daemon/posix/$(DAEMON_FILENAME)
+	$(ECHO_STAGING)
+	$(HUSH) mkdir -p $(dir $@)
 	$(HUSH) install -c -m 755 $< $@
-	$(HUSH) codesign --sign $(APP_SIGN_IDENTITY) "$(STAGING)/usr/local/cypherpunk/bin/$(DAEMON_FILENAME)"
-$(STAGING)/usr/local/cypherpunk/bin/$(OPENVPN_FILENAME): $(ROOT)/daemon/third_party/openvpn_osx/openvpn | $(STAGING)/usr/local/cypherpunk/bin
-	$(ECHO) "* Staging OpenVPN binary..."
+	$(HUSH) codesign --sign $(APP_SIGN_IDENTITY) $@
+$(STAGING)/usr/local/cypherpunk/bin/$(OPENVPN_FILENAME): $(ROOT)/daemon/third_party/openvpn_osx/openvpn
+	$(ECHO_STAGING)
+	$(HUSH) mkdir -p $(dir $@)
 	$(HUSH) install -c -m 755 $< $@
-	$(HUSH) codesign --force --sign $(APP_SIGN_IDENTITY) "$(STAGING)/usr/local/cypherpunk/bin/$(OPENVPN_FILENAME)"
-$(STAGING)/usr/local/cypherpunk/etc/scripts/%: $(ROOT)/res/osx/openvpn-scripts/% | $(STAGING)/usr/local/cypherpunk/etc/scripts
+	$(HUSH) codesign --force --sign $(APP_SIGN_IDENTITY) $@
+$(STAGING)/usr/local/cypherpunk/etc/pf.anchors/%: $(ROOT)/res/osx/pf.anchors/%
+	$(ECHO_STAGING)
+	$(HUSH) mkdir -p $(dir $@)
 	$(HUSH) cp -p $< $@
-$(STAGING)/Library/LaunchDaemons/$(DAEMON_NS).plist: $(ROOT)/res/osx/plist/$(DAEMON_NS).plist | $(STAGING)/Library/LaunchDaemons
-	$(HUSH) cp -p $< $@
-$(STAGING)/Library/Extensions/%.kext: $(ROOT)/daemon/third_party/tuntap_osx/%.kext | $(STAGING)/Library/Extensions
-	$(HUSH) cp -pR $< $@
-$(patsubst %,$(STAGING)/Library/LaunchDaemons/%.plist,tap tun): $(ROOT)/daemon/third_party/tuntap_osx/%.plist | $(STAGING)/Library/LaunchDaemons
+$(STAGING)/usr/local/cypherpunk/etc/scripts/%: $(ROOT)/res/osx/openvpn-scripts/%
+	$(ECHO_STAGING)
+	$(HUSH) mkdir -p $(dir $@)
+	$(HUSH) install -c -m 755 $< $@
+$(STAGING)/Library/LaunchDaemons/$(DAEMON_NS).plist: $(ROOT)/res/osx/plist/$(DAEMON_NS).plist
+	$(ECHO_STAGING)
+	$(HUSH) mkdir -p $(dir $@)
 	$(HUSH) cp -p $< $@
 
 
@@ -156,22 +156,23 @@ $(patsubst %,$(STAGING)/Library/LaunchDaemons/%.plist,tap tun): $(ROOT)/daemon/t
 
 install: install-daemon install-client
 
-install-client: stage-client
+install-client: stage-client uninstall-client
 	$(HUSH) sudo cp -pR "$(STAGING)/Applications/$(APP_BUNDLE)" /Applications/
+	$(HUSH) sudo chown -R root:admin "/Applications/$(APP_BUNDLE)"
+	$(HUSH) sudo chgrp cypherpunk "/Applications/$(APP_BUNDLE)/Contents/MacOS/$(APP_NAME)"
+	$(HUSH) sudo chmod g+s "/Applications/$(APP_BUNDLE)/Contents/MacOS/$(APP_NAME)"
 
-install-daemon: stage-daemon stage-openvpn $(if $(USE_EXTENSIONS),install-extensions)
+install-daemon: stage-daemon
+	$(HUSH) sudo chown -R root:admin $(STAGING)/Library
+	$(HUSH) sudo chown -R root:wheel $(STAGING)/usr
 	$(do-stop-daemon)
 	$(HUSH) sudo mkdir -p /usr/local/cypherpunk
 	$(HUSH) sudo cp -f "$(STAGING)/Library/LaunchDaemons/$(DAEMON_NS).plist" /Library/LaunchDaemons/
 	$(HUSH) sudo rm -f "/usr/local/cypherpunk/bin/$(DAEMON_FILENAME)" "/usr/local/cypherpunk/bin/$(OPENVPN_FILENAME)"
 	$(HUSH) sudo cp -R "$(STAGING)/usr/local/cypherpunk" /usr/local/
+	$(HUSH) sudo dscl . -create /Groups/cypherpunk gid 333
+	$(HUSH) sudo dseditgroup -o edit -a everyone -t group cypherpunk
 	$(do-start-daemon)
-
-install-extensions: /Library/Extensions/tap.kext /Library/Extensions/tun.kext
-
-/Library/Extensions/%.kext: $(STAGING)/Library/Extensions/%.kext
-	$(HUSH) sudo cp -pR "$(STAGING)/Library/Extensions/$*.kext" /Library/Extensions/
-	$(HUSH) sudo kextload /Library/Extensions/$*.kext
 
 
 # Uninstalling from local machine
@@ -183,14 +184,9 @@ uninstall-client:
 	$(HUSH) sudo rm -rf "/Applications/$(APP_BUNDLE)"
 #TODO: Kill app
 
-uninstall-daemon: $(if $(USE_EXTENSIONS),uninstall-extensions)
+uninstall-daemon:
 	$(do-stop-daemon)
 	$(HUSH) sudo rm -f "/Library/LaunchDaemons/$(DAEMON_NS).plist"
-
-uninstall-extensions:
-	$(ECHO) "* Uninstalling kernel extensions..."
-	$(call do-uninstall-extension,tap)
-	$(call do-uninstall-extension,tun)
 
 
 # Final packages
