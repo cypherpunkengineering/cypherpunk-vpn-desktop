@@ -1,13 +1,22 @@
-#!/bin/sh
+#!/bin/bash
+
+# $1: Full Path to Package
+# $2: Full Path to target installation directory: /Applications
+# $3: Mountpoint of installation disk: / or /Volumes/External_Drive
+# $4: Root directory of currently booted system
 
 ### temp old uninstall stuff
-kill -2 $(ps aux | grep CypherpunkVPN.app | awk '{print $2}') || true
-osascript -e 'tell application "CypherpunkVPN" to quit' || true
-kill -2 $(ps aux | grep 'CypherpunkVPN.app' | awk '{print $2}') || true
-kill -9 $(ps aux | grep 'CypherpunkVPN.app' | awk '{print $2}') || true
 
+pkill -x 'CypherpunkVPN' && sleep 1 && \
+pkill -9 -x 'Cypherpunk VPN' || true
+kill $(ps Ao pid,comm | grep -F '/CypherpunkVPN.app/' | awk '{print $1}') && sleep 1 && \
+kill -9 $(ps Ao pid,comm | grep -F '/CypherpunkVPN.app/' | awk '{print $1}') && sleep 1 || true
+
+launchctl unload /Library/LaunchAgents/com.cypherpunk.privacy.client.plist || true
 launchctl unload /Library/LaunchAgents/com.cypherpunk.vpn.client.plist || true
 launchctl unload /Library/LaunchDaemons/com.cypherpunk.vpn.service.plist || true
+kextunload -b net.sf.tuntaposx.tap || true
+kextunload -b net.sf.tuntaposx.tun || true
 rm -rf /Library/Extensions/tun.kext
 rm -rf /Library/Extensions/tap.kext
 rm -rf /Library/LaunchDaemons/net.sf.tuntaposx.tap.plist
@@ -17,15 +26,32 @@ rm -rf /Library/LaunchAgents/com.cypherpunk.vpn.client.plist
 rm -rf /usr/local/bin/cypherpunkvpn-openvpn
 rm -rf /usr/local/bin/cypherpunkvpn-service
 rm -rf /Applications/CypherpunkVPN.app
+
 ###
 
-kextunload -b net.sf.tuntaposx.tap || true
-kextunload -b net.sf.tuntaposx.tun || true
+function wait_pgrep { for (( i=0; i<$1*2; i++ )); do pgrep -x $2 && sleep 0.5 || break; done; }
+function wait_ps    { for (( i=0; i<$1*2; i++ )); do ps "${@:2}" && sleep 0.5 || break; done; }
 
-osascript -e 'tell application "Cypherpunk Privacy" to quit' || true
-kill -2 $(ps aux | grep 'Cypherpunk Privacy.app' | awk '{print $2}') || true
-sleep 2
-kill -9 $(ps aux | grep 'Cypherpunk Privacy.app' | awk '{print $2}') || true
+function pkill_wait { pkill -x $2 && wait_pgrep $1 $2 || true; pkill -9 -x $2 && wait_pgrep 2 $2 || true; }
 
-launchctl unload /Library/LaunchAgents/com.cypherpunk.privacy.client.plist || true
-launchctl unload /Library/LaunchDaemons/com.cypherpunk.privacy.service.plist || true
+# Send basic kill signal
+pkill -x 'Cypherpunk Privacy' || true
+
+# Sleep for up to five seconds to give app a chance to quit cleanly
+wait_pgrep 5 'Cypherpunk Privacy'
+
+# If anything in our app directory is still running, kill it hard (should hopefully not happen)
+if PIDS=$(ps Ao pid,comm | grep -F '/Cypherpunk Privacy.app/'); then
+	kill $(PIDS) || true
+	wait_ps 2 $(PIDS)
+	# If any processes _still_ exist, it's kill -9 time
+	if PIDS=$(ps Ao pid,comm | grep -F '/Cypherpunk Privacy.app/'); then
+		kill -9 $(PIDS) || true
+		wait_ps 2 $(PIDS)
+	fi
+fi
+
+# Unload the daemon
+launchctl unload /Library/LaunchDaemons/com.cypherpunk.privacy.service.plist || true; wait_pgrep 2 'cypherpunk-privacy-service'
+pkill -x 'cypherpunk-privacy-service' && wait_pgrep 2 'cypherpunk-privacy-service' || true
+pkill -9 -x 'cypherpunk-privacy-service' && wait_pgrep 2 'cypherpunk-privacy-service' || true
