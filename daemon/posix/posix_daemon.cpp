@@ -509,6 +509,8 @@ public:
 	{
 		// Register signal listeners
 		_signals.async_wait(THIS_CALLBACK(OnSignal));
+
+		pfctl_install();
 	}
 	virtual OpenVPNProcess* CreateOpenVPNProcess(asio::io_service& io) override
 	{
@@ -528,6 +530,36 @@ public:
 	virtual std::string GetAvailableAdapter(int index) override
 	{
 		throw "not implemented";
+	}
+	virtual void ApplyFirewallSettings() override
+	{
+		bool is_connected;
+		switch (_state)
+		{
+		case CONNECTING:
+		case CONNECTED:
+		case DISCONNECTING:
+		case SWITCHING:
+			is_connected = true;
+			break;
+		default:
+			is_connected = false;
+			break;
+		}
+
+		auto mode = g_settings.firewall();
+		if (mode == "on" || (is_connected && mode == "auto"))
+		{
+			pfctl_set_anchor_enabled("100.killswitch", true);
+			pfctl_set_anchor_enabled("200.exemptLAN", g_settings.allowLAN());
+			pfctl_ensure_enabled();
+		}
+		else
+		{
+			pfctl_ensure_disabled();
+			pfctl_set_anchor_enabled("100.killswitch", false);
+			pfctl_set_anchor_enabled("200.exemptLAN", false);
+		}
 	}
 	void OnSignal(const asio::error_code& error, int signal)
 	{
