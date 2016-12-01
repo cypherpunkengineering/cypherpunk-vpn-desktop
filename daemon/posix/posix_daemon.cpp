@@ -17,6 +17,10 @@
 #include <stdexcept>
 #include <cxxabi.h>
 #include <unistd.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <pwd.h>
+#include <grp.h>
 
 
 class PosixHandle
@@ -308,11 +312,15 @@ private:
 				// Close unused read end of status pipe.
 				status_pipe.read.Close();
 
+				// TODO: Maybe drop root privileges (initgroups+setgid+setuid), if possible?
+				// Probably root is required for the up/down scripts though, so can't be done
+				// until that is refactored to be actually handled by parent process.
+
 				if (env)
 					POSIX_CHECK(execve, (executable, const_cast<char* const*>(args), const_cast<char* const*>(env)));
 				else
 					POSIX_CHECK(execv, (executable, const_cast<char* const*>(args)));
-				
+
 				// The exec function only returns on error, so the check above should already
 				// catch any problem, but put a catchall here anyway.
 				THROW_POSIXEXCEPTION(errno, exec);
@@ -567,6 +575,26 @@ static FileLogger g_file_logger;
 
 int main(int argc, char **argv)
 {
+	// First, make sure we're running as root:cypherpunk
+	if (geteuid() != 0)
+	{
+		int uid = geteuid();
+		struct passwd* pw = getpwuid(uid);
+		fprintf(stderr, "Error: running as user %s (%d), must be root.\n", pw && pw->pw_name ? pw->pw_name : "<unknown uid>", uid);
+		return 1;
+	}
+	struct group* gr = getgrnam("cypherpunk");
+	if (!gr)
+	{
+		fprintf(stderr, "Error: group cypherpunk does not exist\n");
+		return 2;
+	}
+	if (setegid(gr->gr_gid) == -1 || setgid(gr->gr_gid) == -1)
+	{
+		fprintf(stderr, "Error: failed to set group id to %d with error %d\n", gr->gr_gid, errno);
+		return 3;
+	}
+
 	g_old_terminate_handler = std::set_terminate(terminate_handler);
 
 	InitPaths(argc > 0 ? argv[0] : "cypherpunk-privacy-service");
