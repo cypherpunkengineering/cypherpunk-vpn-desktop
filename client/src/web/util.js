@@ -100,13 +100,23 @@ export const REGION_GROUP_NAMES = {
   'NA': "North America",
   'SA': "Central & South America",
   'CR': "Caribbean",
-  'OP': "Oceania & Pacific",
   'EU': "Europe",
   'ME': "Middle East",
   'AF': "Africa",
   'AS': "Asia & India",
+  'OP': "Oceania & Pacific",
 }
-export const REGION_GROUP_ORDER = [ 'DEV', 'NA', 'SA', 'CR', 'OP', 'EU', 'ME', 'AF', 'AS' ];
+export const REGION_GROUP_ORDER = [
+	'DEV',
+	'NA',
+	'SA',
+	'CR',
+	'EU',
+	'ME',
+	'AF',
+	'AS',
+	'OP'
+];
 
 export const COUNTRY_NAMES = {
   'AF': "Afghanistan",
