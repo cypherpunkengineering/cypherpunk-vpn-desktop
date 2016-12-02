@@ -172,10 +172,6 @@ timeoutPromise(Promise.all(preinitPromises), 2000).then(() => {
   dpi = electron.screen.getPrimaryDisplay().scaleFactor >= 2 ? '@2x' : '';
   createMainWindow();
   createTray();
-  if (daemon.settings.autoConnect) {
-    // FIXME: This should actually be in response to establishing a user login session
-    daemon.post.connect();
-  }
 }).catch(err => {
   // FIXME: Message box with initialization error
   console.error(err);

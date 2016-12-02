@@ -45,7 +45,11 @@ function setAccount(data) {
       History.push({ pathname: '/login/confirm', query: { email: daemon.account.account.email } });
     } else {
       return refreshLocationList().then(locations => {
+        // TODO: Move to Application.onLoginSessionEstablished()
         History.push('/connect');
+        if (daemon.settings.autoConnect) {
+          daemon.post.connect();
+        }
       });
     }
   });
