@@ -68,7 +68,7 @@ end;
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
-Name: "{group}\{#MyAppName} (Semantic)"; Filename: "{app}\{#MyAppExeName}"; Parameters: "semantic"
+;Name: "{group}\{#MyAppName} (Semantic)"; Filename: "{app}\{#MyAppExeName}"; Parameters: "semantic"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 ;Name: "{commonstartup}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Parameters: "--background"
 ;Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
