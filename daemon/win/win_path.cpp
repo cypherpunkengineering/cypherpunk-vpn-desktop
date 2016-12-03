@@ -57,11 +57,12 @@ void InitPaths(std::string argv0)
 		wchar_t cwd[MAX_PATH];
 		g_daemon_path = convert<char>(_wgetcwd(cwd, MAX_PATH));
 	}
+	// TODO: Whitelist the client executable by having each connecting client provide their path instead
 	g_client_executable = g_daemon_path + "\\CypherpunkPrivacy.exe";
 	if (!PathFileExists(convert<TCHAR>(g_client_executable).c_str()))
 	{
 #ifdef _DEBUG
-		g_client_executable = SimplifyPath(g_daemon_path + "\\..\\..\\..\\..\\..\\client\\node_modules\\electron-prebuilt\\dist\\electron.exe");
+		g_client_executable = SimplifyPath(g_daemon_path + "\\..\\..\\..\\..\\..\\client\\node_modules\\electron\\dist\\electron.exe");
 		if (!PathFileExists(convert<TCHAR>(g_client_executable).c_str()))
 #endif
 		{
