@@ -25,7 +25,7 @@ export default class PrivacyScreen extends React.Component  {
   onDaemonSettingsChanged() {
     this.updatingSettings = true;
     $(this.refs.root).find('#encryption-' + daemon.settings.encryption).parent().checkbox('set checked');
-    this.updatingSettings = false;
+    delete this.updatingSettings;
   }
   render() {
     return(

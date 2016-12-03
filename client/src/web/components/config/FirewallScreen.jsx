@@ -19,7 +19,7 @@ export default class FirewallScreen extends DaemonAware(React.Component)  {
   onDaemonSettingsChanged() {
     this.updatingSettings = true;
     $(this.refs.root).find('#firewall-' + daemon.settings.firewall).parent().checkbox('set checked');
-    this.updatingSettings = false;
+    delete this.updatingSettings;
   }
   render() {
     return(

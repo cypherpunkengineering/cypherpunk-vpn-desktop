@@ -39,7 +39,7 @@ export default class GeneralSettings extends DaemonAware(React.Component)  {
     this.updatingSettings = true;
     if (settings.hasOwnProperty('autoConnect')) { $(this.refs.autoconnect).parent().checkbox('set ' + (settings.autoConnect ? 'checked' : 'unchecked')); }
     if (settings.hasOwnProperty('showNotifications')) { $(this.refs.desktopnotifications).parent().checkbox('set ' + (settings.showNotifications ? 'checked' : 'unchecked'))};
-    this.updatingSettings = false;
+    delete this.updatingSettings;
   }
   onAutoStartSettingChanged(enabled) {
     $(this.refs.runonstartup).parent().checkbox('set ' + (enabled ? 'checked' : enabled === null ? 'indeterminate' : 'unchecked'));

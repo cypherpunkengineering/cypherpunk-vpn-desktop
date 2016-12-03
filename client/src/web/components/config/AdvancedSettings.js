@@ -27,18 +27,18 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
       case 'protocol': daemon.post.applySettings({ protocol: value }); break;
       case 'remotePort': daemon.post.applySettings({ remotePort: value }); break;
       case 'localPort': daemon.post.applySettings({ localPort: parseInt(value, 10) }); break;
-      case 'blockIPv6': break;
-      case 'blockDNS': break;
-      case 'allowLAN': break;
+      case 'blockIPv6': daemon.post.applySettings({ blockIPv6: value }); break;
+      case 'blockDNS': daemon.post.applySettings({ blockDNS: value }); break;
+      case 'allowLAN': daemon.post.applySettings({ allowLAN: value }); break;
       case 'exemptApple': break;
       case 'forwardPort': break;
     }
   }
   daemonSettingsChanged(settings) {
     this.updatingSettings = true;
-    if (settings.firewall !== undefined) {
+    /*if (settings.firewall !== undefined) {
       $(this.refs.firewall).dropdown('set selected', settings.firewall);
-    }
+    }*/
     if (settings.protocol !== undefined) {
       $(this.refs.protocol).dropdown('set selected', settings.protocol);
     }
@@ -47,6 +47,15 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
     }
     if (settings.localPort !== undefined) {
       $(this.refs.localPort).val(settings.localPort || "");
+    }
+    if (settings.blockIPv6 !== undefined) {
+      $(this.refs.blockIPv6).parent().checkbox('set ' + (settings.blockIPv6 ? 'checked' : 'unchecked'));
+    }
+    if (settings.blockDNS !== undefined) {
+      $(this.refs.blockDNS).parent().checkbox('set ' + (settings.blockDNS ? 'checked' : 'unchecked'));
+    }
+    if (settings.allowLAN !== undefined) {
+      $(this.refs.allowLAN).parent().checkbox('set ' + (settings.allowLAN ? 'checked' : 'unchecked'));
     }
     delete this.updatingSettings;
   }
@@ -85,9 +94,11 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
                 <label>Use Only Cypherpunk DNS</label>
               </div>
             </div>
+            {/*
           </div>
 
           <div className="pane" data-title="Compatibility">
+            */}
             <div className="setting">
               <div className="ui toggle checkbox">
                 <input type="checkbox" name="allowLAN" id="allowLAN" ref="allowLAN"/>
