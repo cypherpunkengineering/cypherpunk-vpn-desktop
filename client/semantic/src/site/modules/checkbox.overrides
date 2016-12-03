@@ -49,33 +49,71 @@
     width: 100%;
     padding: 1rem;
     cursor: pointer;
-    .box, label {
-      padding: 0 4rem 0 0 !important;
-      &:before {
-        left: auto !important;
-        right: 0;
-        top: 50%;
-        transform: translateY(-50%);
+    &.left {
+      .box, label {
+        &:before {
+          top: 2px;
+        }
+        &:after {
+          top: 2px;
+        }
       }
-      &:after {
-        left: auto !important;
-        right: @checkboxCheckLeft;
-        top: 50%;
-        transform: translateY(-50%);
+    }
+    &.right, &:not(.left) {
+      .box, label {
+        padding: 0 4rem 0 0 !important;
+        &:before {
+          left: auto !important;
+          right: 0;
+        }
+        &:after {
+          left: auto !important;
+          right: @checkboxCheckLeft;
+        }
+      }
+    }
+    &.centered, &:not(.top) {
+      .box, label {
+        &:before {
+          top: 50%;
+          transform: translateY(-50%);
+        }
+        &:after {
+          top: 50%;
+          transform: translateY(-50%);
+        }
       }
     }
   }
   .ui.toggle.checkbox {
-    .box, label {
-      &:before {
-        right: 0;
+    &.right, &:not(.left) {
+      .box, label {
+        &:before {
+          right: 0;
+        }
+        &:after {
+          right: @toggleOffOffsetRight;
+        }
       }
-      &:after {
-        right: @toggleOffOffsetRight;
+      input:checked ~ label:after {
+        right: @toggleOnOffsetRight;
       }
     }
-    input:checked ~ label:after {
-      right: @toggleOnOffsetRight;
+  }
+  .ui.radio.checkbox {
+    &.checked {
+      background-color: rgba(255,255,255,0.1);
+    }
+    &.checked input, input:checked {
+      ~ .box, ~ label {
+        &:before {
+          background: none !important;
+          border: none !important;
+          box-shadow: 0 0 10px rgba(255,255,255,0.6);
+        }
+        &:after {
+        }
+      }
     }
   }
 }
