@@ -27,6 +27,7 @@ export default class GeneralSettings extends DaemonAware(React.Component)  {
     ipc.removeListener('autostart-value', this.listeners.autostart);
   }
   onChange(name, value) {
+    if (this.updatingSettings) return;
     console.log(JSON.stringify(name) + " changed to " + JSON.stringify(value));
     switch (name) {
       case 'runonstartup': ipc.send('autostart-set', value); break;
@@ -35,8 +36,10 @@ export default class GeneralSettings extends DaemonAware(React.Component)  {
     }
   }
   daemonSettingsChanged(settings) {
+    this.updatingSettings = true;
     if (settings.hasOwnProperty('autoConnect')) { $(this.refs.autoconnect).parent().checkbox('set ' + (settings.autoConnect ? 'checked' : 'unchecked')); }
     if (settings.hasOwnProperty('showNotifications')) { $(this.refs.desktopnotifications).parent().checkbox('set ' + (settings.showNotifications ? 'checked' : 'unchecked'))};
+    this.updatingSettings = false;
   }
   onAutoStartSettingChanged(enabled) {
     $(this.refs.runonstartup).parent().checkbox('set ' + (enabled ? 'checked' : enabled === null ? 'indeterminate' : 'unchecked'));

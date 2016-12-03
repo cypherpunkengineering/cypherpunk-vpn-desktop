@@ -17,11 +17,15 @@ export default class PrivacyScreen extends React.Component  {
     daemon.removeListener('settings', this.onDaemonSettingsChanged);
   }
   onChanged() {
+    if (this.updatingSettings) return;
     var value = $(this.refs.root).find('input[name=encryption]:checked').val();
     daemon.post.applySettings({ 'encryption': value });
+    History.push('/configuration');
   }
   onDaemonSettingsChanged() {
+    this.updatingSettings = true;
     $(this.refs.root).find('#encryption-' + daemon.settings.encryption).parent().checkbox('set checked');
+    this.updatingSettings = false;
   }
   render() {
     return(
