@@ -8,6 +8,7 @@
 #include <accctrl.h>
 #include <aclapi.h>
 #include <rpc.h>
+#include <VersionHelpers.h>
 
 #pragma comment (lib, "fwpuclnt.lib")
 #pragma comment (lib, "advapi32.lib")
@@ -39,11 +40,12 @@ static FWPM_SUBLAYER g_wfp_sublayer = {
 
 FWFilter::FWFilter()
 {
+	static const DWORD default_flags = FWPM_FILTER_FLAG_PERSISTENT | (IsWindows8OrGreater() ? FWPM_FILTER_FLAG_INDEXED : 0);
 	memset(this, 0, sizeof(FWPM_FILTER));
 	UuidCreate(&filterKey);
 	displayData.name = DEFAULT_FIREWALL_NAME;
 	displayData.description = DEFAULT_FIREWALL_DESCRIPTION;
-	flags |= FWPM_FILTER_FLAG_PERSISTENT | FWPM_FILTER_FLAG_INDEXED;
+	flags |= default_flags;
 	providerKey = &g_wfp_provider.providerKey;
 	subLayerKey = g_wfp_sublayer.subLayerKey;
 	weight.type = FWP_UINT8;
