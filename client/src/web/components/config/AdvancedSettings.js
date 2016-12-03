@@ -58,6 +58,7 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
 
           <div className="pane" data-title="Privacy Firewall">
             <div class="setting">
+              {/*
               <div class="ui selection button dropdown" ref="firewall">
                 <input type="hidden" id="firewall" name="firewall"/>
                 <i class="dropdown icon"></i>
@@ -69,6 +70,8 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
                 </div>
               </div>
               <label>Block Non-VPN Traffic</label>
+              */}
+              <Link to="/configuration/firewall" tabIndex="0">Internet Killswitch</Link>
             </div>
             <div className="setting">
               <div className="ui toggle checkbox">
