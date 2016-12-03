@@ -63,6 +63,7 @@ public:
 	namedmember(std::string, firewall, "off")
 	namedmember(bool, allowLAN, true)
 	namedmember(bool, blockIPv6, true)
+	namedmember(bool, blockDNS, true)
 
 	namedmember(bool, runOpenVPNAsRoot, true)
 
