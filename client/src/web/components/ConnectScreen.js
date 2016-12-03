@@ -4,7 +4,7 @@ import { MainTitlebar } from './Titlebar';
 import MainBackground from './MainBackground';
 import OneZeros from './OneZeros';
 import { Dragbar } from './Titlebar';
-import daemon from '../daemon';
+import daemon, { DaemonAware } from '../daemon';
 import { REGION_GROUP_NAMES, REGION_GROUP_ORDER } from '../util';
 import RouteTransition from './Transition';
 import RegionSelector from './RegionSelector';
@@ -20,6 +20,41 @@ function humanReadableSize(count) {
     return parseFloat(Math.round(count * 10 / 1024) / 10).toFixed(1) + "K";
   } else {
     return parseFloat(count).toFixed(0);
+  }
+}
+
+class FirewallWarning extends DaemonAware(React.Component) {
+  constructor() {
+    super();
+    this.onChange();
+  }
+  state = {
+    visible: false,
+  }
+  daemonSettingsChanged(settings) {
+    if (settings.firewall) this.onChange();
+  }
+  daemonStateChanged(state) {
+    if (state.state) this.onChange();
+  }
+  onChange() {
+    var visible = daemon.settings.firewall === 'on' && daemon.state.state === 'DISCONNECTED';
+    if (visible != this.state.visible) this.setState({ visible: visible });
+  }
+  disableFirewall() {
+    // TODO: Maybe take the user to the firewall menu instead
+    daemon.post.applySettings({ firewall: 'auto' });
+  }
+  render() {
+    return(
+      <div id="firewall-warning"
+        className={this.state.visible?"visible":""}
+        data-tooltip="The Internet Killswitch is active, and is preventing you from accessing the internet. Click here to recover connectivity."
+        data-inverted="" data-position="bottom right"
+        onClick={() => this.disableFirewall()}>
+        <i className="warning sign icon"></i><span>Killswitch active</span>
+      </div>
+    );
   }
 }
 
@@ -144,6 +179,7 @@ export default class ConnectScreen extends React.Component {
             <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.receivedBytes)}</div><div class="label">Received</div></div></div>
             <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.sentBytes)}</div><div class="label">Sent</div></div></div>
           </div>
+          <FirewallWarning/>
           <RegionSelector/>
         </div>
       </RouteTransition>
