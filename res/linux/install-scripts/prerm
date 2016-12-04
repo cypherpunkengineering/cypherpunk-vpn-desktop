@@ -1,0 +1,7 @@
+killall CypherpunkPrivacy 2>/dev/null
+killall cypherpunk-privacy-service 2>/dev/null
+killall cypherpunk-privacy-openvpn 2>/dev/null
+sleep 1
+killall -9 CypherpunkPrivacy 2>/dev/null
+killall -9 cypherpunk-privacy-service 2>/dev/null
+killall -9 cypherpunk-privacy-openvpn 2>/dev/null
