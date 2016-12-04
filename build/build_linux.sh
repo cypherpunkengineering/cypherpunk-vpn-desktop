@@ -124,6 +124,8 @@ install -c -m 755 "../../res/${PLATFORM}/launcher_linux_512.png" "./${APP_PATH_R
 # add package scripts
 install -c -m 755 "../../res/${PLATFORM}/install-scripts/preinst" "./${OS}/"
 install -c -m 755 "../../res/${PLATFORM}/install-scripts/postinst" "./${OS}/"
+install -c -m 755 "../../res/${PLATFORM}/install-scripts/prerm" "./${OS}/"
+install -c -m 755 "../../res/${PLATFORM}/install-scripts/postrm" "./${OS}/"
 
 # write debian package control file
 cat > "./${OS}/control" << _EOF_

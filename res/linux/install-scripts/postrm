@@ -1,0 +1,5 @@
+#!/bin/bash
+systemctl daemon-reload
+rm -f /etc/rc2.d/S04cypherpunk
+rm -f /etc/rc3.d/S04cypherpunk
+rm -f /etc/rc5.d/S04cypherpunk
