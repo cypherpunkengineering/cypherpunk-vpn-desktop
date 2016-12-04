@@ -9,13 +9,11 @@ fi
 # Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: <Enter a short description of the software>
-# Description:       <Enter a long description of the software>
-#                    <...>
-#                    <...>
+# Short-Description: Cypherpunk Privacy
+# Description:       Cypherpunk Privacy background daemon
 ### END INIT INFO
 
 # Author: Cypherpunk Privacy <support@cypherpunk.com>
 
-DESC="Cypherpunk Privacy background service"
+DESC="Cypherpunk Privacy"
 DAEMON=/usr/local/cypherpunk/bin/cypherpunk-privacy-service
