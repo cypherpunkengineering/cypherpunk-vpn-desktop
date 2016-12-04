@@ -9,17 +9,17 @@ cd "$( dirname "${BASH_SOURCE[0]}" )"
 cd ../
 
 # get app version, and git hash or build number
-APP_VERSION_FULL="$(grep version client/package.json|head -1|cut -d \" -f4)"
+APP_VERSION_SHORT="$(grep version client/package.json|head -1|cut -d \" -f4)"
 if [ -z "${BUILD_NUMBER}" ];then
 	GIT_HASH=$(git --git-dir="./.git" describe --always --match=nosuchtagpattern --dirty=-p)
 	BUILD_NUMBER="${BUILD_NAME}-${GIT_HASH}"
-	APP_VERSION_FULL=$(echo "${APP_VERSION_FULL}" | sed -E "s/^([^-+]*)(-[^+]*)?(\+.*)?/\1\2${BUILD_NUMBER}/")
+	APP_VERSION=$(echo "${APP_VERSION_SHORT}" | sed -E "s/^([^-+]*)(-[^+]*)?(\+.*)?/\1\2${BUILD_NUMBER}/")
 else
-	APP_VERSION_FULL=$(echo "${APP_VERSION_FULL}" | sed -E "s/^([^-+]*)(-[^+]*)?(\+.*)?/\1\2+${BUILD_NUMBER}/")
+	APP_VERSION=$(echo "${APP_VERSION_SHORT}" | sed -E "s/^([^-+]*)(-[^+]*)?(\+.*)?/\1\2+${BUILD_NUMBER}/")
 fi
 
 # export app version so electron can build it into app UI
-export APP_VERSION_FULL
+export APP_VERSION
 
 # build vars
 NODE_VER=v6.9.1
@@ -35,7 +35,7 @@ APP_NAME="Cypherpunk Privacy"
 APP_NS="com.cypherpunk.privacy"
 APP_PATH="./usr/local/cypherpunk"
 OUT_PATH="./out/${PKG_NAME}"
-PKG_STR="${PKG_NAME}_${APP_VERSION_FULL}"
+PKG_STR="${PKG_NAME}_${APP_VERSION}"
 PKG_FILE="${PKG_STR}.deb"
 PKG_PATH="out/${PKG_FILE}"
 ELECTRON_NAME="${APP_NAME}-${PLATFORM}-${ARCH}"
