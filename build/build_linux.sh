@@ -95,6 +95,7 @@ mkdir -p "./${APP_PATH_RELATIVE}/etc/"
 mkdir -p "./${APP_PATH_RELATIVE}/etc/settings/"
 mkdir -p "./${APP_PATH_RELATIVE}/bin/"
 mkdir -p "./${APP_PATH_RELATIVE}/scripts/"
+mkdir -p "./usr/share/applications/"
 
 # get app bundle
 mv "${ELECTRON_NAME}"/* "./${APP_PATH_RELATIVE}/"
