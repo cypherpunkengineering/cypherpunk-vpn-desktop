@@ -1,0 +1,7 @@
+Package: cypherpunk-privacy
+Description: Cypherpunk Privacy
+Version: 0.3.0
+Architecture: amd64
+Maintainer: Cypherpunk Privacy <support@cypherpunk.com>
+Installed-Size: 9
+Homepage: https://cypherpunk.com
