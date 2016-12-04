@@ -15,7 +15,7 @@ export PATH=$PATH:/usr/local/bin
 ../build_linux.sh
 
 # Archive build artifacts
-scp -P92 ../../out/linux/cypherpunk-*.deb upload@builds-upload.cypherpunk.engineering:/data/builds/ || echo "* Warning: failed to upload build"
+scp -P92 ../../out/cypherpunk-*.deb upload@builds-upload.cypherpunk.engineering:/data/builds/ || echo "* Warning: failed to upload build"
 
 # Done
 exit 0
