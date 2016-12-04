@@ -8,6 +8,36 @@ umask 022
 cd "$( dirname "${BASH_SOURCE[0]}" )"
 cd ../
 
+# load nvm
+export NVM_DIR="$HOME/.nvm"
+source "$NVM_DIR/nvm.sh" "${NODE_VER}"
+
+# set node version
+nvm install "${NODE_VER}"
+nvm alias default "${NODE_VER}"
+nvm use "${NODE_VER}"
+
+# enable debug prints
+set -x
+
+# app vars
+APP_NAME="Cypherpunk Privacy"
+APP_NAME_NOSPACE="CypherpunkPrivacy"
+APP_DESC="Cypherpunk Privacy is your guardian of online privacy and freedom."
+APP_HOMEPAGE="https://cypherpunk.com/"
+APP_NS="com.cypherpunk.privacy"
+APP_PATH_ABSOLUTE="/usr/local/cypherpunk"
+APP_PATH_RELATIVE="./usr/local/cypherpunk"
+APP_SIZE_KB=150000
+
+# build vars
+NODE_VER=v6.9.1
+PLATFORM=linux
+OS=DEBIAN # must be caps
+ARCH=x64
+LINUX_ARCH=amd64
+BITS=64
+
 # get app version, and git hash or build number
 APP_VERSION_SHORT="$(grep version client/package.json|head -1|cut -d \" -f4)"
 if [ -z "${BUILD_NUMBER}" ];then
@@ -21,23 +51,15 @@ fi
 # export app version so electron can build it into app UI
 export APP_VERSION
 
-# build vars
-NODE_VER=v6.9.1
-PLATFORM=linux
-OS=DEBIAN # must be caps
-ARCH=x64
-LINUX_ARCH=amd64
-BITS=64
-
-# app vars
+# pkg vars
 PKG_NAME="cypherpunk-privacy-${PLATFORM}-${ARCH}"
-APP_NAME="Cypherpunk Privacy"
-APP_NS="com.cypherpunk.privacy"
-APP_PATH="./usr/local/cypherpunk"
-OUT_PATH="./out/${PKG_NAME}"
+PKG_MAINTAINER="Cypherpunk Privacy <debian-maintainer@cypherpunk.com>"
 PKG_STR="${PKG_NAME}_${APP_VERSION}"
 PKG_FILE="${PKG_STR}.deb"
 PKG_PATH="out/${PKG_FILE}"
+
+# script vars
+OUT_PATH="./out/${PKG_NAME}"
 ELECTRON_NAME="${APP_NAME}-${PLATFORM}-${ARCH}"
 
 # clean workspace
@@ -46,18 +68,6 @@ rm -f "${PKG_PATH}"
 
 # init workspace
 mkdir -p "${OUT_PATH}"
-
-# load nvm
-export NVM_DIR="$HOME/.nvm"
-source "$NVM_DIR/nvm.sh" "${NODE_VER}"
-
-# set node version
-nvm install "${NODE_VER}"
-nvm alias default "${NODE_VER}"
-nvm use "${NODE_VER}"
-
-# enable debug prints
-set -x
 
 # build client app
 cd client
@@ -83,44 +93,61 @@ make
 
 # prepare dirs
 cd "../../${OUT_PATH}/"
-mkdir -p "./${APP_PATH}/"
-mkdir -p "./${APP_PATH}/bin/"
-mkdir -p "./${APP_PATH}/scripts/"
+mkdir -p "./${APP_PATH_RELATIVE}/"
+mkdir -p "./${APP_PATH_RELATIVE}/etc/"
+mkdir -p "./${APP_PATH_RELATIVE}/etc/settings/"
+mkdir -p "./${APP_PATH_RELATIVE}/bin/"
+mkdir -p "./${APP_PATH_RELATIVE}/scripts/"
 
 # get app bundle
-mv "${ELECTRON_NAME}"/* "./${APP_PATH}/"
+mv "${ELECTRON_NAME}"/* "./${APP_PATH_RELATIVE}/"
 rm -r "./${ELECTRON_NAME}"
 
 # Copy OpenVPN scripts to app bundle
-#cp -pR "../../res/${PLATFORM}/openvpn-scripts/*" "${APP_PATH}/scripts/"
+#cp -pR "../../res/${PLATFORM}/openvpn-scripts/*" "${APP_PATH_RELATIVE}/scripts/"
 
-# move bin
-mv "${APP_PATH}/${APP_NAME}" "${APP_PATH}/bin/"
+# rename app binary to remove space
+mv "${APP_PATH_RELATIVE}/${APP_NAME}" "${APP_PATH_RELATIVE}/${APP_NAME_NOSPACE}"
 # install daemon
-install -c -m 755 "../../daemon/posix/cypherpunk-privacy-service" "${APP_PATH}/bin/cypherpunk-privacy-service"
+install -c -m 755 "../../daemon/posix/cypherpunk-privacy-service" "${APP_PATH_RELATIVE}/bin/cypherpunk-privacy-service"
 # install OpenVPN binary
-install -c -m 755 "../../daemon/third_party/openvpn_${PLATFORM}/${BITS}/openvpn" "${APP_PATH}/bin/cypherpunk-privacy-openvpn"
+install -c -m 755 "../../daemon/third_party/openvpn_${PLATFORM}/${BITS}/openvpn" "${APP_PATH_RELATIVE}/bin/cypherpunk-privacy-openvpn"
 
 # make dirs
 mkdir -p "./${OS}/"
 mkdir -p "./etc/init.d/"
 
-# install daemon init script
+# add daemon init script
 install -c -m 755 "../../res/${PLATFORM}/install-scripts/cypherpunk" "./etc/init.d/"
 
-# install package scripts
+# add launcher icon
+install -c -m 755 "../../res/${PLATFORM}/launcher_linux_512.png" "./${APP_PATH_RELATIVE}/"
+
+# add package scripts
 install -c -m 755 "../../res/${PLATFORM}/install-scripts/preinst" "./${OS}/"
 install -c -m 755 "../../res/${PLATFORM}/install-scripts/postinst" "./${OS}/"
 
 # write debian package control file
 cat > "./${OS}/control" << _EOF_
 Package: ${PKG_NAME}
-Description: Cypherpunk Privacy linux vpn client app
-Version: ${APP_VERSION}
+Description: ${APP_DESC}
+Version: ${APP_VERSION_SHORT}
 Architecture: ${LINUX_ARCH}
-Maintainer: Cypherpunk Privacy <debian-maintainer@cypherpunk.com>
-Installed-Size: 150000
-Homepage: https://cypherpunk.com
+Maintainer: ${PKG_MAINTAINER}
+Installed-Size: ${APP_SIZE_KB}
+Homepage: ${APP_HOMEPAGE}
+_EOF_
+
+cat > "./usr/share/applications/${APP_NS}.desktop" << _EOF_
+[Desktop Entry]
+Version=${APP_VERSION_SHORT}
+Name=${APP_NAME}
+Comment=${APP_DESC}
+Exec=${APP_PATH_ABSOLUTE}/${APP_NAME_NOSPACE}
+Icon=${APP_PATH_ABSOLUTE}/launcher_linux_512.png
+Terminal=false
+Type=Application
+Categories=Utility;Application;
 _EOF_
 
 # can be used to make new package in the future
@@ -130,9 +157,10 @@ _EOF_
 #dpkg-buildpackage -us -uc -b
 #debuild
 
-# create debian package
+# remove any LICENSE* files, and create debian package
 cd ..
-dpkg -b "${PKG_NAME}" "${PKG_FILE}"
+find "${PKG_NAME}" -name LICENSE\* -exec rm {} \;
+fakeroot dpkg -b "${PKG_NAME}" "${PKG_FILE}"
 
 # cleanup
 rm -rf "${PKG_NAME}"

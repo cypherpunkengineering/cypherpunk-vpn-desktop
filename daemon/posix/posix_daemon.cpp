@@ -627,6 +627,7 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Error: running as user %s (%d), must be root.\n", pw && pw->pw_name ? pw->pw_name : "<unknown uid>", uid);
 		return 1;
 	}
+#ifdef OS_OSX
 	struct group* gr = getgrnam("cypherpunk");
 	if (!gr)
 	{
@@ -638,6 +639,7 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Error: failed to set group id to %d with error %d\n", gr->gr_gid, errno);
 		return 3;
 	}
+#endif
 
 	g_old_terminate_handler = std::set_terminate(terminate_handler);
 
