@@ -26,6 +26,7 @@ NODE_VER=v6.9.1
 PLATFORM=linux
 OS=DEBIAN # must be caps
 ARCH=x64
+LINUX_ARCH=amd64
 BITS=64
 
 # app vars
@@ -116,7 +117,7 @@ cat > "./${OS}/control" << _EOF_
 Package: ${PKG_NAME}
 Description: Cypherpunk Privacy linux vpn client app
 Version: ${APP_VERSION}
-Architecture: ${ARCH}
+Architecture: ${LINUX_ARCH}
 Maintainer: Cypherpunk Privacy <debian-maintainer@cypherpunk.com>
 Installed-Size: 150000
 Homepage: https://cypherpunk.com
