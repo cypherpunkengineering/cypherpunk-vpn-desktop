@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 set -e
 
 # set umask to prevent weird permission bugs
@@ -7,18 +7,6 @@ umask 022
 # change pwd to folder containing this file
 cd "$( dirname "${BASH_SOURCE[0]}" )"
 cd ../
-
-# load nvm
-export NVM_DIR="$HOME/.nvm"
-source "$NVM_DIR/nvm.sh" "${NODE_VER}"
-
-# set node version
-nvm install "${NODE_VER}"
-nvm alias default "${NODE_VER}"
-nvm use "${NODE_VER}"
-
-# enable debug prints
-set -x
 
 # app vars
 APP_NAME="Cypherpunk Privacy"
@@ -37,6 +25,15 @@ OS=DEBIAN # must be caps
 ARCH=x64
 LINUX_ARCH=amd64
 BITS=64
+
+# load nvm, set node version
+set +x
+export NVM_DIR="$HOME/.nvm"
+source "$NVM_DIR/nvm.sh" "${NODE_VER}"
+nvm install "${NODE_VER}"
+nvm alias default "${NODE_VER}"
+nvm use "${NODE_VER}"
+set -x
 
 # get app version, and git hash or build number
 APP_VERSION_SHORT="$(grep version client/package.json|head -1|cut -d \" -f4)"
