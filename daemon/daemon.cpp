@@ -575,7 +575,7 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& server)
 		{ "ping-exit", "60" },
 		{ "resolv-retry", "infinite" },
 		//{ "cipher", g_settings.cipher() },
-		{ "tls-cipher", "TLS-DHE-RSA-WITH-AES-256-GCM-SHA384:TLS-DHE-RSA-WITH-AES-256-CBC-SHA256"},
+		{ "tls-cipher", "TLS-DHE-RSA-WITH-AES-256-GCM-SHA384:TLS-DHE-RSA-WITH-AES-256-CBC-SHA256:TLS-DHE-RSA-WITH-AES-128-GCM-SHA256:TLS-DHE-RSA-WITH-AES-128-CBC-SHA256"},
 		{ "auth", "SHA256" },
 		{ "redirect-gateway", "def1" },
 		{ "route-delay", "0" },
