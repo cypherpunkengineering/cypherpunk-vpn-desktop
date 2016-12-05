@@ -1,13 +1,13 @@
 #define MyAppID "CypherpunkPrivacy"
 #define MyAppName "Cypherpunk Privacy"
-#define MyAppVersion "0.2.0-prealpha"
-#define MyAppNumericVersion "0.2.0"
+#define MyAppVersion "0.3.0-alpha"
+#define MyAppNumericVersion "0.3.0"
 #define MyAppPublisher "Cypherpunk Partners, slf."
 #define MyAppURL "https://cypherpunk.com/"
 #define MyAppExeName "CypherpunkPrivacy.exe"
 #define MyAppCopyright "Copyright © 2016 " + MyAppPublisher
 #define MyInstallerName "cypherpunk-privacy-windows"
-#define MyInstallerSuffix "-0.2.0-prealpha"
+#define MyInstallerSuffix "-0.3.0-alpha"
 
 [Setup]
 AppId={#MyAppID}
