@@ -64,7 +64,7 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
       <div className="collapsible" ref="root">
         <div className="collapsible-title">Advanced Settings</div>
         <div className="collapsible-content">
-
+        {process.platform.match(/^(win32|darwin)$/)?
           <div className="pane" data-title="Privacy Firewall">
             <div class="setting">
               {/*
@@ -112,7 +112,7 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
               </div>
             </div> : null*/}
           </div>
-
+        : null}
           <div className="pane" data-title="VPN Settings">
             <div class="setting">
               <div class="ui selection button dropdown" ref="remotePort">

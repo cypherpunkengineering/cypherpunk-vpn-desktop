@@ -47,7 +47,7 @@ export default class GeneralSettings extends DaemonAware(React.Component)  {
   render() {
     return(
       <div className="pane" data-title="Basic Settings" ref="root">
-        {process.platform.match(/^(win32|darwin)$/)?<div className="setting"><Link to="/configuration/privacy" tabIndex="0">Privacy Mode</Link></div>:null}
+        <div className="setting"><Link to="/configuration/privacy" tabIndex="0">Privacy Mode</Link></div>
         <div className="setting">
           <div className="ui toggle checkbox">
             <input type="checkbox" name="runonstartup" id="runonstartup" ref="runonstartup"/>
