@@ -600,26 +600,22 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& server)
 	{
 		config["tls-cipher"] = "TLS-DHE-RSA-WITH-AES-128-GCM-SHA256:TLS-DHE-RSA-WITH-AES-128-CBC-SHA256";
 		config["cipher"] = "AES-128-CBC";
-		config["auth"] = "SHA256";
 		config["scramble"] = "obfuscate cypherpunk-xor-key";
 	}
 	else if (encryption == "strong")
 	{
 		config["tls-cipher"] = "TLS-DHE-RSA-WITH-AES-256-GCM-SHA384:TLS-DHE-RSA-WITH-AES-256-CBC-SHA256";
 		config["cipher"] = "AES-256-CBC";
-		config["auth"] = "SHA512";
 	}
 	else if (encryption == "none")
 	{
 		config["tls-cipher"] = "TLS-DHE-RSA-WITH-AES-128-GCM-SHA256:TLS-DHE-RSA-WITH-AES-128-CBC-SHA256";
 		config["cipher"] = "none";
-		config["auth"] = "SHA1";
 	}
 	else // encryption == "default"
 	{
 		config["tls-cipher"] = "TLS-DHE-RSA-WITH-AES-128-GCM-SHA256:TLS-DHE-RSA-WITH-AES-128-CBC-SHA256";
 		config["cipher"] = "AES-128-CBC";
-		config["auth"] = "SHA256";
 	}
 
 	// FIXME: Manually translate other settings to OpenVPN parameters
