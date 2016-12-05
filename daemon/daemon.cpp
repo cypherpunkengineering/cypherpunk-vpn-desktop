@@ -575,7 +575,7 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& server)
 		{ "ping-exit", "60" },
 		{ "resolv-retry", "infinite" },
 		//{ "cipher", g_settings.cipher() },
-		//{ "tls-cipher", "TLS-DHE-RSA-WITH-AES-128-GCM-SHA256:TLS-DHE-RSA-WITH-AES-128-CBC-SHA256" },
+		{ "tls-cipher", "TLS-DHE-RSA-WITH-AES-256-GCM-SHA384:TLS-DHE-RSA-WITH-AES-256-CBC-SHA256"},
 		{ "auth", "SHA256" },
 		{ "redirect-gateway", "def1" },
 		{ "route-delay", "0" },
@@ -598,24 +598,21 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& server)
 	config["remote"] = server.at(ipKey).AsArray()[0].AsString() + " " + remotePort;
 	if (encryption == "stealth")
 	{
-		config["tls-cipher"] = "TLS-DHE-RSA-WITH-AES-128-GCM-SHA256:TLS-DHE-RSA-WITH-AES-128-CBC-SHA256";
-		config["cipher"] = "AES-128-CBC";
+		config["ncp-ciphers"] = "AES-128-GCM:AES-128-CBC";
 		config["scramble"] = "obfuscate cypherpunk-xor-key";
 	}
 	else if (encryption == "strong")
 	{
-		config["tls-cipher"] = "TLS-DHE-RSA-WITH-AES-256-GCM-SHA384:TLS-DHE-RSA-WITH-AES-256-CBC-SHA256";
-		config["cipher"] = "AES-256-CBC";
+		config["ncp-ciphers"] = "AES-256-GCM:AES-256-CBC";
 	}
 	else if (encryption == "none")
 	{
-		config["tls-cipher"] = "TLS-DHE-RSA-WITH-AES-128-GCM-SHA256:TLS-DHE-RSA-WITH-AES-128-CBC-SHA256";
 		config["cipher"] = "none";
+		config["ncp-disable"] = "";
 	}
 	else // encryption == "default"
 	{
-		config["tls-cipher"] = "TLS-DHE-RSA-WITH-AES-128-GCM-SHA256:TLS-DHE-RSA-WITH-AES-128-CBC-SHA256";
-		config["cipher"] = "AES-128-CBC";
+		config["ncp-ciphers"] = "AES-128-GCM:AES-128-CBC";
 	}
 
 	// FIXME: Manually translate other settings to OpenVPN parameters
