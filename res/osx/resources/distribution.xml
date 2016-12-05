@@ -4,7 +4,7 @@
     <organization>com.cypherpunk</organization>
     <domains enable_localSystem="true"/>
     <options customize="never" require-scripts="true" rootVolumeOnly="true"/>
-    <!--<background file="diagram.tiff" alignment="bottomleft" scaling="none"/>-->
+    <background file="background.jpg"/>
     <welcome file="welcome.html" mime-type="text/html"/>
     <license file="license.txt"/>
     <pkg-ref id="com.cypherpunk.privacy.pkg" version="0.1.0"
