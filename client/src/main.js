@@ -94,17 +94,17 @@ function getFlag(country) {
 function displayNotification(message) {
   if (daemon && !daemon.settings.showNotifications)
     return;
-  if (os == '_osx' && main) {
+  if (os == '_win' && tray) {
+    tray.displayBalloon({
+      icon: undefined, // FIXME
+      title: "Cypherpunk Privacy",
+      content: message,
+    });
+  } else if (main) {
     // Apparently only works in the renderer process via webkitNotifications?
     main.webContents.executeJavaScript(`
       new Notification("Cypherpunk Privacy", { body: ${JSON.stringify(message)} });
     `);
-  } else if (os == '_win' && tray) {
-    tray.displayBalloon({
-      icon: undefined,
-      title: "Cypherpunk Privacy",
-      content: message,
-    });
   }
 }
 
