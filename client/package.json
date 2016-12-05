@@ -40,9 +40,15 @@
     "dosis": "https://fonts.googleapis.com/css?family=Dosis:200,300,400,500,600,700,800&subset=latin-ext"
   },
   "dependencies": {
-    "applescript": "^1.0.0",
-    "winreg": "^1.2.2",
     "ws": "^1.1.1"
+  },
+  "platformDependencies": {
+    "darwin": {
+      "applescript": "^1.0.0"
+    },
+    "win32": {
+      "winreg": "^1.2.2"
+    }
   },
   "devDependencies": {
     "babel": "^6.5.2",

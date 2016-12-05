@@ -86,6 +86,9 @@ gulp.task('build-app-packagejson', function() {
       var result = {};
       Object.assign(result, data);
       ['scripts', 'engines', 'devDependencies'].forEach(e => delete result[e]);
+      if (result['platformDependencies'])
+        result['dependencies'] = Object.assign({}, result['dependencies'], result['platformDependencies'][process.platform]);
+      delete result['platformDependencies'];
       return result;
     }))
     .pipe(gulp.dest('app'));
