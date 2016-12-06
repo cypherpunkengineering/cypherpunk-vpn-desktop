@@ -59,7 +59,7 @@ if (process.platform == 'win32') {
                 Version=${app.getVersion()}
                 Name=${appName}
                 Comment=${appName} launch script
-                Exec=${execPath} --hidden
+                Exec=${execPath} --background
                 StartupNotify=false
                 Terminal=false`.replace(/^ +/m, '');
     ensureDirExists(path.split('/').slice(0,-2).join('/'));
