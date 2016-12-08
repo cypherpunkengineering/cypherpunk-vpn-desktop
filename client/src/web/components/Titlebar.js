@@ -106,7 +106,7 @@ export class SecondaryTitlebar extends React.Component {
     return(
       <Titlebar>
         <Link className="back" to={this.props.back}><i className="angle left icon"></i></Link>
-        {this.props.title}
+        <span>{this.props.title}</span>
         <a style={{ visibility: 'hidden' }}/>
       </Titlebar>
     );
@@ -120,7 +120,7 @@ export class PanelTitlebar extends React.Component {
   render() {
     return(
       <Titlebar>
-        {this.props.title}
+        <span>{this.props.title}</span>
       </Titlebar>
     )
   }

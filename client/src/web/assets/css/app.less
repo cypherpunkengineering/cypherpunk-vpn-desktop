@@ -178,19 +178,19 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     text-align: center;
   }
 
-  * {
-    flex-grow: 1;
+  span {
+    flex: 0 1 100%;
   }
 
   a {
     .nondraggable;
-    flex-grow: 0;
+    flex: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 2.5em;
-    height: 2em;
-    margin: 0 1em;
+    width: 3em;
+    height: 2.7em;
+    align-self: flex-end;
     cursor: pointer;
     opacity: 0.6;
     transition: opacity 0.1s ease-in;
@@ -204,6 +204,17 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
       width: 3em;
       margin: 0;
       height: auto;
+    }
+    &[data-tooltip] {
+      &:before, &:after { top: 85% !important; }
+    }
+    &[data-position~="left"][data-tooltip] {
+      &:before { left: 1.7em; }
+      &:after { left: 0.7em; }
+    }
+    &[data-position~="right"][data-tooltip] {
+      &:before { right: 1.7em; }
+      &:after { right: 0.7em; }
     }
   }
 
