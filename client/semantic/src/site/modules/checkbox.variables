@@ -3,7 +3,7 @@
 *******************************/
 @checkboxSize: @20px;
 @checkboxColor: #ffffff;
-@labelColor: #ffffff;
+@labelColor: rgba(255,255,255,0.75);
 
 @labelFontSize: @relative16px;
 
