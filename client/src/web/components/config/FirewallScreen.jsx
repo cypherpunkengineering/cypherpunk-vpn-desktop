@@ -53,8 +53,8 @@ export default class FirewallScreen extends DaemonAware(React.Component)  {
                 <input type="radio" name="firewall" value="on" id="firewall-on"/>
                 <label>Always On
                 <small>Only allow internet access through the Cypherpunk Privacy Network.</small>
-                <small style={{ marginTop: '15px' }}><i class="warning sign icon"></i>WARNING:</small>
-                <small style={{ marginTop: '5px' }}>You will not be able to access the internet while disconnected!</small>
+                <small style={{ marginTop: '20px', /*borderTop: '1px solid rgba(255,255,255,0.25)', paddingTop: '10px',*/ marginBottom: '5px' }}><i class="warning sign icon"></i>WARNING:</small>
+                <small>You will not be able to access the internet while disconnected!</small>
                 </label>
               </div>
             </div>
