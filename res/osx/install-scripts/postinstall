@@ -7,7 +7,7 @@
 
 # Set up a 'cypherpunk' group on the machine, which will be used to exempt Cypherpunk's own traffic from the killswitch
 GROUP=cypherpunk
-if ! dscl . read /Groups/$GROUP ; then
+if ! dscl . -read /Groups/$GROUP ; then
 	# Find an available group id
 	GID=$(dscl . -list /Groups PrimaryGroupID | awk '{g[$2]=1}END{for(i=333;i<500;i++)if(!g[i]){print i;exit 0}exit 1}')
 	# Create group
