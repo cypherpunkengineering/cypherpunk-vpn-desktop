@@ -1,7 +1,8 @@
 const electron = require('electron');
 const { app, dialog, BrowserWindow, Tray, Menu, nativeImage: NativeImage, ipcMain: ipc } = electron;
 const fs = require('fs');
-let daemon = require('./daemon.js');
+import { eventPromise, timeoutPromise } from './util.js';
+let daemon = null;
 
 let exiting = false;
 let main = null;
@@ -53,18 +54,6 @@ ipc.on('navigate', (event, loc) => {
 })
 
 
-function eventPromise(emitter, name) {
-  return new Promise((resolve, reject) => {
-    emitter.once(name, resolve);
-  });
-}
-
-function timeoutPromise(promise, delay, timeoutIsSuccess = false) {
-  return new Promise((resolve, reject) => {
-    var timeout = setTimeout(() => { if (timeoutIsSuccess) resolve(); else reject(); }, delay);
-    promise.then(val => { clearTimeout(timeout); resolve(val); }, reject);
-  });
-}
 
 function connectToDaemon(port) {
   return new Promise((resolve, reject) => {
@@ -148,6 +137,34 @@ app.on('will-quit', event => {
   }
 });
 
+
+eventPromise(app, 'ready').then(() => {
+  dpi = electron.screen.getPrimaryDisplay().scaleFactor >= 2 ? '@2x' : '';
+  //return require('./install.js').checkInstalled();
+  return 'installed';
+}).then(status => {
+  if (status === 'installed') {
+    daemon = require('./daemon.js');
+    var next = timeoutPromise(Promise.all(['up', 'config', 'account', 'settings', 'state'].map(e => eventPromise(daemon, e))), 2000);
+    return next;
+  } else {
+    console.log("Installation status: " + status);
+    app.exit(0);
+    throw null; // dirty way to halt rest of promise chain
+  }
+}).then(() => {
+  createMainWindow();
+  createTray();
+}).catch(err => {
+  if (err) {
+    dialog.showErrorBox("Initialization Error", "An unexpected error happened while launching Cypherpunk Privacy:\n\n" + err);
+    app.exit(1);
+  } else {
+    app.exit(0);
+  }
+});
+
+/*
 const preinitPromises = [
   eventPromise(app, 'ready'),
   eventPromise(daemon, 'up'),
@@ -155,28 +172,22 @@ const preinitPromises = [
   eventPromise(daemon, 'account'),
   eventPromise(daemon, 'settings'),
   eventPromise(daemon, 'state'),
-  /*
-  connectToDaemon(9337).catch(err => {
-    dialog.showMessageBox({
-      type: 'warning',
-      buttons: [ "Exit" ], // FIXLOC
-      title: "Cypherpunk Privacy", // FIXLOC
-      message: "Unable to communicate with helper service.\nPlease reinstall the application.", // FIXLOC
-    });
-    throw err;
-  })
-  */
 ];
 
 timeoutPromise(Promise.all(preinitPromises), 2000).then(() => {
   dpi = electron.screen.getPrimaryDisplay().scaleFactor >= 2 ? '@2x' : '';
-  createMainWindow();
-  createTray();
+  return require('./install.js').checkInstalled();
+}).then(status => {
+  if (status === 'installed') {
+    createMainWindow();
+    createTray();
+  }
 }).catch(err => {
   // FIXME: Message box with initialization error
   console.error(err);
   app.quit();
 });
+*/
 
 function createTrayMenu() {
   const hasLocations = typeof daemon.config.locations === 'object' && Object.keys(daemon.config.locations).length > 0;
