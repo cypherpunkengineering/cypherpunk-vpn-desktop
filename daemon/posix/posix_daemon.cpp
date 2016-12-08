@@ -548,7 +548,7 @@ public:
 		}
 
 		auto mode = g_settings.firewall();
-		if (mode == "on" || (is_connected && mode == "auto"))
+		if (!_connections.empty() && (mode == "on" || (is_connected && mode == "auto")))
 		{
 			pfctl_set_anchor_enabled("100.killswitch", true);
 			pfctl_set_anchor_enabled("200.exemptLAN", g_settings.allowLAN());

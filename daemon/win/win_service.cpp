@@ -481,7 +481,7 @@ public:
 		auto adapters = win_get_tap_adapters();
 
 		auto mode = g_settings.firewall();
-		if (mode == "on" || is_connected && mode == "auto")
+		if (!_connections.empty() && (mode == "on" || (is_connected && mode == "auto")))
 		{
 			try
 			{

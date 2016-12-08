@@ -133,7 +133,9 @@ void CypherDaemon::SendErrorToAllClients(const std::string& name, const std::str
 
 void CypherDaemon::OnFirstClientConnected()
 {
-
+	// If the kill-switch is set to always on, trigger it when the first client connects
+	if (g_settings.firewall() == "on")
+		ApplyFirewallSettings();
 }
 
 void CypherDaemon::OnClientConnected(Connection c)
@@ -161,6 +163,10 @@ void CypherDaemon::OnLastClientDisconnected()
 			_process->SendManagementCommand("signal SIGTERM");
 			break;
 		default:
+			// If the kill-switch is set to always on, trigger it here so it can be disabled when
+			// the last client disconnects (this also happens above inside OnStateChanged(STATE))
+			if (g_settings.firewall() == "on")
+				ApplyFirewallSettings();
 			break;
 	}
 }
