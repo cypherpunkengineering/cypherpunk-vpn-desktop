@@ -1,20 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router';
-import daemon from '../../daemon.js';
+import daemon, { DaemonAware } from '../../daemon.js';
+import { SecondaryTitlebar } from '../Titlebar';
 
 
-export default class PrivacyScreen extends React.Component  {
-  constructor() {
-    super();
-    this.onDaemonSettingsChanged = this.onDaemonSettingsChanged.bind(this);
-  }
+export default class PrivacyScreen extends DaemonAware(React.Component)  {
   componentDidMount() {
+    super.componentDidMount();
     $(this.refs.root).find('.ui.checkbox').checkbox({ onChange: this.onChanged.bind(this) });
     this.onDaemonSettingsChanged();
-    daemon.on('settings', this.onDaemonSettingsChanged);
-  }
-  componentWillUnmount() {
-    daemon.removeListener('settings', this.onDaemonSettingsChanged);
   }
   onChanged() {
     if (this.updatingSettings) return;
@@ -29,54 +23,45 @@ export default class PrivacyScreen extends React.Component  {
   }
   render() {
     return(
-      <div ref="root" class="container__comp">
-        <div className="ui fluid inverted borderless icon menu cp_config_header">
-          <Link className="nondraggable item" to="/configuration"><i className="angle left icon"></i></Link>
-          <div className="header item center aligned">Privacy Mode</div>
-        </div>
-        <div className="ui inverted padded grid">
-          <div className="row">
-            <div className="olive column">
-              <div className="ui radio checkbox">
-                <input id="encryption-default" type="radio" name="encryption" value="default" />
-                <label for="encryption-default">Automatic
-                <small>
-                  Good combination of speed and security.
-                </small>
+      <div className="panel" ref="root" id="settings-privacy-panel">
+        <SecondaryTitlebar title="Privacy Mode" back="/configuration"/>
+        <div className="scrollable content">
+          <div className="pane">
+            <div className="setting">
+              <div className="ui left top radio checkbox">
+                <input type="radio" name="encryption" value="default" id="encryption-default"/>
+                <label>Recommended Default
+                <small>Good balance of speed and privacy.</small>
+                <div className="encryption-details"><span data-title="Cipher">AES-128-CBC</span><span data-title="Auth">SHA-256</span><span data-title="Key">RSA-4096</span></div>
                 </label>
               </div>
             </div>
-          </div>
-          <div className="row">
-            <div className="olive column">
-            <div className="ui radio checkbox">
-              <input id="encryption-none" type="radio" name="encryption" value="none" />
-              <label for="encryption-none">None
-              <small>
-                Fastest speed but lower security.
-              </small>
-              </label>
+            <div className="setting">
+              <div className="ui left top radio checkbox">
+                <input type="radio" name="encryption" value="none" id="encryption-none"/>
+                <label>Max Speed
+                <small>Fastest speed by using no additional encryption.</small>
+                <div className="encryption-details"><span data-title="Cipher">NONE</span><span data-title="Auth">SHA-1</span><span data-title="Key">RSA-4096</span></div>
+                </label>
+              </div>
             </div>
+            <div className="setting">
+              <div className="ui left top radio checkbox">
+                <input type="radio" name="encryption" value="strong" id="encryption-strong"/>
+                <label>Max Privacy
+                <small>Higher security by using stronger encryption.</small>
+                <div className="encryption-details"><span data-title="Cipher">AES-256-CBC</span><span data-title="Auth">SHA-512</span><span data-title="Key">RSA-4096</span></div>
+                </label>
+              </div>
             </div>
-          </div>
-          <div className="row">
-            <div className="olive column">
-            <div className="ui radio checkbox">
-              <input id="encryption-strong" type="radio" name="encryption" value="strong" />
-              <label for="encryption-strong">Strong
-              <small>Higher security but slower speed.</small>
-              </label>
-            </div>
-            </div>
-          </div>
-          <div className="row">
-            <div className="olive column">
-            <div className="ui radio checkbox">
-              <input id="encryption-stealth" type="radio" name="encryption" value="stealth" />
-              <label for="encryption-stealth">Stealth
-              <small>Suitable for restrictive network environments.</small>
-              </label>
-            </div>
+            <div className="setting">
+              <div className="ui left top radio checkbox">
+                <input type="radio" name="encryption" value="stealth" id="encryption-stealth"/>
+                <label>Max Stealth
+                <small>Anti-censorship stealth encryption.</small>
+                <div className="encryption-details"><span data-title="Cipher">AES-128-CBC</span><span data-title="Auth">SHA-256</span><span data-title="Key">RSA-4096</span></div>
+                </label>
+              </div>
             </div>
           </div>
         </div>

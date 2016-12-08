@@ -1542,6 +1542,28 @@ small {
           color: @cpYellowDark;
         }
 
+        .encryption-details {
+          display: flex;
+          font-size: 13px;
+          margin-top: 10px;
+          margin-bottom: -3px;
+          justify-content: space-between;
+          span {
+            flex: 0 1 100%;
+            white-space: nowrap;
+            &[data-title]:before {
+              content: attr(data-title);
+              font-size: 10px;
+              color: rgba(255,255,255,0.33);
+              display: block;
+              line-height: 8px;
+            }
+          }
+          span:first-child {
+            flex-basis: 150%;
+          }
+        }
+
         + .setting {
           background-image: linear-gradient(to bottom, rgba(255,255,255,0.3) 1px, transparent 1px);
         }
