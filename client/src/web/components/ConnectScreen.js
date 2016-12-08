@@ -26,7 +26,7 @@ function humanReadableSize(count) {
 class FirewallWarning extends DaemonAware(React.Component) {
   constructor() {
     super();
-    this.onChange();
+    this.state.visible = this.shouldDisplay();
   }
   state = {
     visible: false,
@@ -37,8 +37,11 @@ class FirewallWarning extends DaemonAware(React.Component) {
   daemonStateChanged(state) {
     if (state.state) this.onChange();
   }
+  shouldDisplay() {
+    return daemon.settings.firewall === 'on' && daemon.state.state === 'DISCONNECTED';
+  }
   onChange() {
-    var visible = daemon.settings.firewall === 'on' && daemon.state.state === 'DISCONNECTED';
+    var visible = this.shouldDisplay();
     if (visible != this.state.visible) this.setState({ visible: visible });
   }
   disableFirewall() {
