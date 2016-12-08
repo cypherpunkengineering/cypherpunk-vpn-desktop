@@ -331,13 +331,17 @@ function createMainWindow() {
       clearTimeout(showTimeout);
       showTimeout = null;
     };
-    main.on('ready-to-show', show);
+    main.once('ready-to-show', show);
     showTimeout = setTimeout(show, 500);
   }
   main.maximizedPrev = null;
 
   main.loadURL(`file://${__dirname}/web/index.html`);
   if (args.debug) {
+    main.webContents.on('devtools-opened', () => {
+      main.show();
+      main.focus();
+    });
     main.webContents.openDevTools({ mode: 'detach' });
   }
 };
