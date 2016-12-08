@@ -59,7 +59,7 @@ export default class AccountScreen extends React.Component  {
       var renewal = this.isPremium() ? <div className="period">{this.getRenewalString()}</div> : null;
       return(
         <div>
-        <PanelTitlebar title="Account" back="/connect"/>
+        <PanelTitlebar title="My Account" back="/connect"/>
         <div className="scrollable content">
           <div className="user pane">
             <div className="user"><img src={AccountIcon}/><span className="email">{daemon.account.account.email}</span></div>
