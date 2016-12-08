@@ -66,6 +66,7 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
         <div className="collapsible-content">
         {process.platform.match(/^(win32|darwin)$/)?
           <div className="pane" data-title="Privacy Firewall">
+            { process.platform.match(/^(win32|darwin)$/) ?
             <div class="setting">
               {/*
               <div class="ui selection button dropdown" ref="firewall">
@@ -82,6 +83,7 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
               */}
               <Link to="/configuration/firewall" tabIndex="0">Internet Killswitch</Link>
             </div>
+            : null }
             {/* // comment out until feature works correctly
             <div className="setting">
               <div className="ui toggle checkbox">
