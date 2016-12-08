@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import { Link } from 'react-router';
 import { ipcRenderer as ipc } from 'electron';
 import daemon, { DaemonAware } from '../../daemon.js';
@@ -37,6 +38,7 @@ export default class GeneralSettings extends DaemonAware(React.Component)  {
   }
   daemonSettingsChanged(settings) {
     this.updatingSettings = true;
+    if (settings.hasOwnProperty('encryption')) { $(ReactDOM.findDOMNode(this.refs.encryption)).attr('data-value', ({ 'default': "Recommended", 'none': "Max Speed", 'strong': "Max Privacy", 'stealth': "Max Stealth" })[settings.encryption]); };
     if (settings.hasOwnProperty('autoConnect')) { $(this.refs.autoconnect).parent().checkbox('set ' + (settings.autoConnect ? 'checked' : 'unchecked')); }
     if (settings.hasOwnProperty('showNotifications')) { $(this.refs.desktopnotifications).parent().checkbox('set ' + (settings.showNotifications ? 'checked' : 'unchecked'))};
     delete this.updatingSettings;
@@ -47,7 +49,7 @@ export default class GeneralSettings extends DaemonAware(React.Component)  {
   render() {
     return(
       <div className="pane" data-title="Basic Settings" ref="root">
-        <div className="setting"><Link to="/configuration/privacy" tabIndex="0">Privacy Mode</Link></div>
+        <div className="setting"><Link to="/configuration/privacy" tabIndex="0" ref="encryption">Privacy Mode</Link></div>
         <div className="setting">
           <div className="ui toggle checkbox">
             <input type="checkbox" name="runonstartup" id="runonstartup" ref="runonstartup"/>

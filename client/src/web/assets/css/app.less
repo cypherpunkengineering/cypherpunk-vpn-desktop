@@ -1465,9 +1465,20 @@ small {
             font-family: 'Icons';
             content: "\f105";
             flex-grow: 0;
+            order: 2;
             font-size: 22px;
             color: rgba(255,255,255,0.75);
             margin-left: 10px;
+          }
+          &[data-value]:before {
+            content: attr(data-value);
+            flex-grow: 1;
+            order: 1;
+            color: rgba(255,255,255,0.6);
+            text-align: right;
+            text-transform: uppercase;
+            font-size: 90%;
+            margin-right: 5px;
           }
           &:hover, &:focus {
             color: #fff;

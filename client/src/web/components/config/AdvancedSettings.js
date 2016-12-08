@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import { Link } from 'react-router';
 import { ipcRenderer as ipc } from 'electron';
 import daemon, { DaemonAware } from '../../daemon.js';
@@ -57,6 +58,9 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
     if (settings.allowLAN !== undefined) {
       $(this.refs.allowLAN).parent().checkbox('set ' + (settings.allowLAN ? 'checked' : 'unchecked'));
     }
+    if (settings.firewall !== undefined) {
+      $(ReactDOM.findDOMNode(this.refs.firewall)).attr('data-value', ({ 'on': "Always On", 'auto' : "Auto", 'off': "Off" })[settings.firewall]);
+    }
     delete this.updatingSettings;
   }
   render() {
@@ -81,7 +85,7 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
               </div>
               <label>Block Non-VPN Traffic</label>
               */}
-              <Link to="/configuration/firewall" tabIndex="0">Internet Killswitch</Link>
+              <Link to="/configuration/firewall" tabIndex="0" ref="firewall">Internet Killswitch</Link>
             </div>
             : null }
             {/* // comment out until feature works correctly
