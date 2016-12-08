@@ -82,6 +82,7 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
               */}
               <Link to="/configuration/firewall" tabIndex="0">Internet Killswitch</Link>
             </div>
+            {/* // comment out until feature works correctly
             <div className="setting">
               <div className="ui toggle checkbox">
                 <input type="checkbox" name="blockIPv6" id="blockIPv6" ref="blockIPv6"/>
@@ -94,6 +95,7 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
                 <label>Use Only Cypherpunk DNS</label>
               </div>
             </div>
+            */}
             {/*
           </div>
 
