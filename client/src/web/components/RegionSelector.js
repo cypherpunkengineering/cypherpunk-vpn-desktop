@@ -97,8 +97,10 @@ export default class RegionSelector extends DaemonAware(React.Component) {
         }
         break;
       case 'premium':
-        classes.push('premium');
-        tag = 'PREMIUM';
+        if (!location.authorized || !location.disabled) {
+          classes.push('premium');
+          tag = 'PREMIUM';
+        }
         break;
       case 'developer':
         classes.push('developer');

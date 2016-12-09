@@ -14,7 +14,7 @@ function refreshLocationList() {
   return server.get('/api/v0/location/list/' + daemon.account.account.type).then(response => {
     var locations = response.data;
     Object.values(locations).forEach(l => {
-      if (!l.enabled || !['ovDefault', 'ovNone', 'ovStrong', 'ovStealth'].every(t => Array.isArray(l[t]) && l[t].length > 0)) {
+      if (!l.authorized || !['ovDefault', 'ovNone', 'ovStrong', 'ovStealth'].every(t => Array.isArray(l[t]) && l[t].length > 0)) {
         l.disabled = true;
       }
     });
