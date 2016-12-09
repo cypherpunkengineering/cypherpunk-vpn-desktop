@@ -58,20 +58,34 @@ function setAccount(data) {
 
 
 export class Check extends React.Component {
+  static run() {
+    // Use setTimeout to avoid changing history in the same callstack
+    setTimeout(() => {
+      if (daemon.account.account && daemon.account.account.confirmed && daemon.account.privacy && daemon.config.locations) {
+        // Go straight to main screen and run the check in the background; if it
+        // fails, we'll go back to the login screen.
+        History.push('/connect');
+        refreshAccount().catch(err => {
+          // ignore errors; 403 will still take us back to the login screen
+        });
+      } else {
+        // Need to login and/or fetch necessary data to continue
+        refreshAccount().catch(err => {
+          console.warn(err);
+          if (!err.handled) {
+            alert(err.message);
+            History.push('/login/email');
+          }
+        });
+      }
+    }, 0);
+  }
   componentDidMount() {
     // Not the nicest pattern, but check if we're logged in here. A successful
     // refresh automatically takes us to the main screen, whereas an authentication
     // error will take us to the login screen (with err.handled = true). Other errors
     // are unexpected and we show an alert for those.
-    setTimeout(() => { // need to use setTimeout since we might modify History
-      refreshAccount().catch(err => {
-        console.warn(err);
-        if (!err.handled) {
-          alert(err.message);
-          History.push('/login/email');
-        }
-      });
-    }, 0);
+    Check.run();
   }
   render() {
     return (
