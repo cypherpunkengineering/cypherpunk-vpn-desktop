@@ -1,12 +1,13 @@
 #define MyAppID "CypherpunkPrivacy"
 #define MyAppName "Cypherpunk Privacy"
-#define MyAppVersion "0.3.0-alpha"
-#define MyAppNumericVersion "0.3.0"
 #define MyAppPublisher "Cypherpunk Partners, slf."
 #define MyAppURL "https://cypherpunk.com/"
 #define MyAppExeName "CypherpunkPrivacy.exe"
 #define MyAppCopyright "Copyright © 2016 " + MyAppPublisher
 #define MyInstallerName "cypherpunk-privacy-windows"
+
+#define MyAppVersion "0.3.0-alpha"
+#define MyAppNumericVersion "0.3.0"
 #define MyInstallerSuffix "-0.3.0-alpha"
 
 [Setup]
@@ -40,6 +41,10 @@ CloseApplicationsFilter=*.exe,*.dll
 VersionInfoVersion={#MyAppNumericVersion}
 VersionInfoTextVersion={#MyAppVersion}
 MinVersion=0,6.0
+#ifdef ENABLE_SIGNING
+SignTool=standard
+SignedUninstaller=yes
+#endif
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -49,12 +54,20 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
 Source: "..\..\out\win\client\CypherpunkPrivacy-win32-ia32\*"; DestDir: "{app}"; Flags: 32bit createallsubdirs overwritereadonly recursesubdirs
-Source: "..\..\out\win\daemon\Release\32\cypherpunk-privacy-service.exe"; DestDir: "{app}"; DestName: "cypherpunk-privacy-service.exe"; Flags: ignoreversion overwritereadonly; Check: not Is64BitInstallMode; BeforeInstall: StopService
-Source: "..\..\out\win\daemon\Release\64\cypherpunk-privacy-service.exe"; DestDir: "{app}"; DestName: "cypherpunk-privacy-service.exe"; Flags: ignoreversion overwritereadonly; Check: Is64BitInstallMode; BeforeInstall: StopService
+Source: "..\..\out\win\daemon\Release\32\cypherpunk-privacy-service.exe"; DestDir: "{app}"; DestName: "cypherpunk-privacy-service.exe"; Flags: ignoreversion overwritereadonly sign; Check: not Is64BitInstallMode; BeforeInstall: StopService
+Source: "..\..\out\win\daemon\Release\64\cypherpunk-privacy-service.exe"; DestDir: "{app}"; DestName: "cypherpunk-privacy-service.exe"; Flags: ignoreversion overwritereadonly sign; Check: Is64BitInstallMode; BeforeInstall: StopService
 Source: "..\..\out\win\daemon\Release\32\openvpn\*"; DestDir: "{app}\openvpn"; Flags: ignoreversion recursesubdirs createallsubdirs overwritereadonly; Check: not Is64BitInstallMode
 Source: "..\..\out\win\daemon\Release\64\openvpn\*"; DestDir: "{app}\openvpn"; Flags: ignoreversion recursesubdirs createallsubdirs overwritereadonly; Check: Is64BitInstallMode
 Source: "..\..\out\win\daemon\Release\32\tap\*"; DestDir: "{app}\tap"; Flags: ignoreversion recursesubdirs createallsubdirs overwritereadonly; Check: not Is64BitInstallMode
 Source: "..\..\out\win\daemon\Release\64\tap\*"; DestDir: "{app}\tap"; Flags: ignoreversion recursesubdirs createallsubdirs overwritereadonly; Check: Is64BitInstallMode
+Source: "..\..\out\win\client\CypherpunkPrivacy-win32-ia32\*.exe"; DestDir: "{app}"; Flags: ignoreversion overwritereadonly sign
+Source: "..\..\out\win\client\CypherpunkPrivacy-win32-ia32\*.dll"; DestDir: "{app}"; Flags: ignoreversion overwritereadonly sign
+Source: "..\..\out\win\daemon\Release\32\openvpn\*.exe"; DestDir: "{app}\openvpn"; Flags: ignoreversion overwritereadonly sign; Check: not Is64BitInstallMode
+Source: "..\..\out\win\daemon\Release\32\openvpn\*.dll"; DestDir: "{app}\openvpn"; Flags: ignoreversion overwritereadonly sign; Check: not Is64BitInstallMode
+Source: "..\..\out\win\daemon\Release\64\openvpn\*.exe"; DestDir: "{app}\openvpn"; Flags: ignoreversion overwritereadonly sign; Check: Is64BitInstallMode
+Source: "..\..\out\win\daemon\Release\64\openvpn\*.dll"; DestDir: "{app}\openvpn"; Flags: ignoreversion overwritereadonly sign; Check: Is64BitInstallMode
+Source: "..\..\out\win\daemon\Release\32\tap\*.exe"; DestDir: "{app}\tap"; Flags: ignoreversion overwritereadonly sign; Check: not Is64BitInstallMode
+Source: "..\..\out\win\daemon\Release\64\tap\*.exe"; DestDir: "{app}\tap"; Flags: ignoreversion overwritereadonly sign; Check: Is64BitInstallMode
 
 [PreCompile]
 ;Name: "build.bat"; Flags: abortonerror cmdprompt

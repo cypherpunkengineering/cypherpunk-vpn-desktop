@@ -7,6 +7,18 @@ if exist "%ProgramFiles%\MSBuild\14.0\bin\MSBuild.exe" set MSBUILD="%ProgramFile
 if exist "%ProgramFiles(x86)%\Inno Setup 5\ISCC.exe" set ISCC="%ProgramFiles(x86)%\Inno Setup 5\ISCC.exe"
 if exist "%ProgramFiles%\Inno Setup 5\ISCC.exe" set ISCC="%ProgramFiles%\Inno Setup 5\ISCC.exe"
 
+set SIGNTOOL="%ProgramFiles(x86)%\Windows Kits\10\bin\x64\signtool.exe"
+
+rem Allow user to locally specify parameters in an optional batch file
+call config.bat 2> NUL
+set errorlevel=0
+
+set ENABLE_SIGNING=
+if NOT [%SIGNTOOL%] == [] if exist %SIGNTOOL% if NOT [%CODESIGNCERT%] == [] if NOT [%CODESIGNPW%] == [] if exist %CODESIGNCERT% set ENABLE_SIGNING=1
+if [%ENABLE_SIGNING%] == [] echo * No certificate specified (or signtool not found); building unsigned package...
+if NOT [%ENABLE_SIGNING%] == [] echo * Using %CODESIGNCERT:"=% for signing...
+
+
 pushd %~dp0
 
 if not [%1] == [clean] goto skip_clean
@@ -66,7 +78,11 @@ if %errorlevel% neq 0 goto error
 
 cd ..\build\win
 echo * Creating installer...
-%ISCC% /Q setup.iss
+if [%ENABLE_SIGNING%] == [] (
+  %ISCC% /Q setup.iss
+) else (
+  %ISCC% /Q /DENABLE_SIGNING=1 /Sstandard="%SIGNTOOL:"=$q% sign /f %CODESIGNCERT:"=$q% /p %CODESIGNPW:"=$q% $f" setup.iss
+)
 if %errorlevel% neq 0 goto error
 
 echo.
@@ -74,6 +90,7 @@ echo Build successful!
 
 :end
 popd
+endlocal
 exit /b %errorlevel%
 
 :error
