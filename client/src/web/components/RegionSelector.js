@@ -64,7 +64,7 @@ export default class RegionSelector extends DaemonAware(React.Component) {
   onLocationClick(location) {
     daemon.call.applySettings({ location: location })
       .then(() => {
-        if (daemon.state.needsReconnect) {
+        if (daemon.state.state === 'DISCONNECTED' || daemon.state.needsReconnect) {
           daemon.post.connect();
         }
       });
