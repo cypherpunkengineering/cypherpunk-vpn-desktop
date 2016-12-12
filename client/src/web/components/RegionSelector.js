@@ -3,6 +3,14 @@ import ReactDOM from 'react-dom';
 import { REGION_GROUP_NAMES, REGION_GROUP_ORDER, COUNTRY_NAMES } from '../util';
 import daemon, { DaemonAware } from '../daemon';
 
+// Always use this stub to import standard React addons, as we will either use
+// their node module (development) or dig them out of react.min.js (production).
+function reactAddon(module, name) {
+  return module.addons ? module.addons[name] : module;
+}
+
+const ReactCSSTransitionGroup = reactAddon(require('react-addons-css-transition-group'), 'CSSTransitionGroup');
+
 
 export default class RegionSelector extends DaemonAware(React.Component) {
 
@@ -225,9 +233,9 @@ export default class RegionSelector extends DaemonAware(React.Component) {
         <div className="bar" onClick={() => this.state.open ? this.close() : this.open()}>
           { (this.state.selected && this.state.locations[this.state.selected]) ? this.makeLocation(this.state.locations[this.state.selected], false) : "Select Region" }
         </div>
-        <div className="list">
+        <ReactCSSTransitionGroup component="div" className="list" transitionName="fadeIn" transitionEnterTimeout={350} transitionLeaveTimeout={350}>
           { this.makeRegionList(this.state.regions, this.state.locations) }
-        </div>
+        </ReactCSSTransitionGroup>
       </div>
     );
   }
