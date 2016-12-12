@@ -77,6 +77,9 @@ public:
 	// FIXME: should be a separate account object
 	namedmember(JsonObject, account, {})
 
+	namedmember(JsonArray, favorites, {});
+	namedmember(JsonArray, recent, {});	// TODO: turn into persistent state
+
 	const JsonObject& GetCurrentLocation() const { return locations().at(location()).AsStruct(); }
 };
 

@@ -10,7 +10,8 @@ export default class RegionSelector extends DaemonAware(React.Component) {
     locations: daemon.config.locations,
     regions: daemon.config.regions,
     selected: daemon.settings.location,
-    favorites: {},
+    favorites: Array.toDict(daemon.settings.favorites, f => f, f => true),
+    recent: daemon.settings.recent,
     open: false,
   }
 
@@ -20,6 +21,8 @@ export default class RegionSelector extends DaemonAware(React.Component) {
   }
   daemonSettingsChanged(settings) {
     if (settings.hasOwnProperty('location')) this.setState({ selected: settings.location });
+    if (settings.hasOwnProperty('favorites')) this.setState({ favorites: Array.toDict(settings.favorites, f => f, f => true) });
+    if (settings.hasOwnProperty('recent')) this.setState({ recent: settings.recent });
   }
 
   open() {
@@ -72,7 +75,14 @@ export default class RegionSelector extends DaemonAware(React.Component) {
     this.close();
   }
   onLocationFavoriteClick(location) {
-    this.setState({ favorites: Object.assign({}, this.state.favorites, { [location]: !this.state.favorites[location] }) });
+    var favorites = Object.assign({}, this.state.favorites);
+    if (this.state.favorites[location]) {
+      delete favorites[location];
+    } else {
+      favorites[location] = true;
+    }
+    this.setState({ favorites: favorites });
+    daemon.post.applySettings({ favorites: Object.keys(favorites).filter(f => favorites[f]) });
   }
   onKeyDown(event) {
     switch (event.key) {
@@ -82,7 +92,11 @@ export default class RegionSelector extends DaemonAware(React.Component) {
     }
   }
 
-  makeLocation(location, clickable) {
+  makeLocationHeader(id, name) {
+    return <div key={id} className="header">{name}</div>;
+  }
+  makeLocation(location, type = 'location') {
+    const clickable = type !== 'header';
     var classes = [ 'region' ];
     var tag = null;
     if (location.disabled) {
@@ -122,7 +136,7 @@ export default class RegionSelector extends DaemonAware(React.Component) {
       }
     };
     return(
-      <div className={classes.join(' ')} data-value={clickable ? location.id : null} key={clickable ? location.id : null} onClick={clickable ? onclick : null}>
+      <div className={classes.join(' ')} data-value={clickable ? location.id : null} key={type + '-' + location.id} onClick={clickable ? onclick : null}>
         {/* <i className={location.country.toLowerCase() + " flag"}></i> */}
         <img className={location.country.toLowerCase() + " flag"} src={'../assets/img/flags-24/' + location.country.toLowerCase() + '.png'}  alt=""/>
         <span data-tag={tag}>{location.name}</span><i className="cp-fav icon"></i>
@@ -131,12 +145,23 @@ export default class RegionSelector extends DaemonAware(React.Component) {
   }
 
   makeRegionList(regions, locations) {
-    return Array.flatten(
+    var items = Array.flatten(
       REGION_GROUP_ORDER.map(g => ({
+        id: g,
         name: REGION_GROUP_NAMES[g],
-        locations: Object.mapToArray(regions[g], (c,l) => [c,l]).sort((a, b) => COUNTRY_NAMES[a[0]].localeCompare(COUNTRY_NAMES[b[0]])).map(([country, locs]) => locs.map(l => locations[l]).sort((a, b) => a.name.localeCompare(b.name)).map(l => this.makeLocation(l, true))).filter(l => l && l.length > 0)
-      })).filter(r => r.locations && r.locations.length > 0).map(r => [ <div key={"region-" + r.name} className="header">{r.name}</div> ].concat(r.locations))
+        locations: Array.flatten(Object.mapToArray(regions[g], (c,l) => [c,l]).sort((a, b) => COUNTRY_NAMES[a[0]].localeCompare(COUNTRY_NAMES[b[0]])).map(([country, locs]) => locs.map(l => locations[l]).sort((a, b) => a.name.localeCompare(b.name)).map(l => this.makeLocation(l, 'location'))).filter(l => l && l.length > 0))
+      })).filter(r => r.locations && r.locations.length > 0).map(r => [ this.makeLocationHeader('region-' + r.id.toLowerCase(), r.name) ].concat(r.locations))
     );
+    var favorites = Object.keys(this.state.favorites).filter(f => this.state.favorites[f]);
+    if (favorites.length > 0) {
+      // Prepend favorites list
+      items = [ this.makeLocationHeader('favorites', "Favorites") ].concat(favorites.sort((a, b) => locations[a].name.localeCompare(locations[b].name)).map(l => this.makeLocation(locations[l], 'favorite')), items);
+    }
+    if (this.state.recent.length > 0) {
+      // Prepend recent list
+      items = [ this.makeLocationHeader('recent', "Recent") ].concat(this.state.recent.map(l => this.makeLocation(locations[l], 'recent')), items);
+    }
+    return items;
   }
 
   get dom() {
