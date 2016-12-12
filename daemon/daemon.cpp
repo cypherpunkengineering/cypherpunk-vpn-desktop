@@ -674,6 +674,17 @@ bool CypherDaemon::RPC_connect()
 	// Access the region early, should trigger an exception if it doesn't exist (before we've done any state changes)
 	g_settings.locations().at(g_settings.location());
 
+	{
+		static const int MAX_RECENT_ITEMS = 3;
+		auto recent = g_settings.recent();
+		recent.erase(std::remove(recent.begin(), recent.end(), g_settings.location()), recent.end());
+		recent.insert(recent.begin(), g_settings.location());
+		if (recent.size() > MAX_RECENT_ITEMS)
+			recent.resize(MAX_RECENT_ITEMS);
+		g_settings.recent(recent);
+		g_settings.OnChanged({ "recent" });
+	}
+
 	switch (_state)
 	{
 		case CONNECTED:
