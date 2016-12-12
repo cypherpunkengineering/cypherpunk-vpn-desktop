@@ -72,24 +72,24 @@ Array.flatten = function flatten(arr) {
   return Array.prototype.concat.apply([], arr);
 };
 // Turn an array into a dictionary by extracting a unique key from each item.
-Array.toDict = function toDict(arr, cb) {
+Array.toDict = function toDict(arr, getKey, getValue) {
   if (!arr) return {};
   var result = {};
   for (var i = 0; i < arr.length; i++) {
-    result[cb(arr[i], i)] = arr[i];
+    result[getKey(arr[i], i)] = getValue ? getValue(arr[i], i) : arr[i];
   }
   return result;
 };
 // Turn an array into a dictionary of arrays by extracting a grouping identifier from each item.
-Array.toMultiDict = function toMultiDict(arr, cb) {
+Array.toMultiDict = function toMultiDict(arr, getKey, getValue) {
   if (!arr) return {};
   var result = {};
   for (var i = 0; i < arr.length; i++) {
-    var key = cb(arr[i], i);
+    var key = getKey(arr[i], i);
     if (result.hasOwnProperty(key))
-      result[key].push(arr[i]);
+      result[key].push(getValue ? getValue(arr[i], i) : arr[i]);
     else
-      result[key] = [ arr[i] ];
+      result[key] = [ getValue ? getValue(arr[i], i) : arr[i] ];
   }
   return result;
 };
