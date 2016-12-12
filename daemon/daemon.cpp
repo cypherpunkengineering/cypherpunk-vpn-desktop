@@ -508,7 +508,7 @@ void CypherDaemon::RPC_applySettings(const JsonObject& settings)
 		g_settings.OnChanged(changed);
 
 	// FIXME: Temporary workaround, these should be configs instead
-	if (settings.find("servers") != settings.end() || settings.find("regions") != settings.end())
+	if (settings.find("locations") != settings.end() || settings.find("regions") != settings.end())
 		SendToAllClients(_rpc_client.BuildNotificationData("config", MakeConfigObject()));
 	if (settings.find("account") != settings.end())
 		SendToAllClients(_rpc_client.BuildNotificationData("account", MakeAccountObject()));
