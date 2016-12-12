@@ -69,7 +69,7 @@
     > .region {
       font-weight: 200;
       height: @itemHeight;
-      padding: 0 15px;
+      padding-left: 15px;
       cursor: pointer;
       > .flag {
         color: #fff;
@@ -80,8 +80,11 @@
       > .cp-fav {
         cursor: pointer;
         font-size: 120%;
-        width: auto;
+        width: 40px;
         height: auto;
+        padding-right: 6px;
+        line-height: @itemHeight;
+        align-self: stretch;
         color: rgba(255,255,255,0.5);
         &:before {
           content: '\f006';
