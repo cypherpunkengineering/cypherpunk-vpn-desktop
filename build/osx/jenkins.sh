@@ -13,10 +13,10 @@ export PATH=$PATH:/usr/local/bin
 
 # Use nvm to set nodejs version
 export NVM_DIR="$HOME/.nvm"
-source "$(brew --prefix nvm)/nvm.sh" v6.8.0
-nvm install v6.8.0
-nvm alias default v6.8.0
-nvm use v6.8.0
+source "$(brew --prefix nvm)/nvm.sh" v6.9.2
+nvm install v6.9.2
+nvm alias default v6.9.2
+nvm use v6.9.2
 
 # select and unlock keychain for signing
 KEYCHAIN="cypherpunk.keychain-db"

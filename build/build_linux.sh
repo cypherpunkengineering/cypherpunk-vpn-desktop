@@ -19,7 +19,7 @@ APP_PATH_RELATIVE="./usr/local/cypherpunk"
 APP_SIZE_KB=150000
 
 # build vars
-NODE_VER=v6.9.1
+NODE_VER=v6.9.2
 PLATFORM=linux
 OS=DEBIAN # must be caps
 ARCH=x64
