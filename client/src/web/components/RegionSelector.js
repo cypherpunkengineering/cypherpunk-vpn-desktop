@@ -160,15 +160,15 @@ export default class RegionSelector extends DaemonAware(React.Component) {
         locations: Array.flatten(Object.mapToArray(regions[g], (c,l) => [c,l]).sort((a, b) => COUNTRY_NAMES[a[0]].localeCompare(COUNTRY_NAMES[b[0]])).map(([country, locs]) => locs.map(l => locations[l]).sort((a, b) => a.name.localeCompare(b.name)).map(l => this.makeLocation(l, 'location'))).filter(l => l && l.length > 0))
       })).filter(r => r.locations && r.locations.length > 0).map(r => [ this.makeLocationHeader('region-' + r.id.toLowerCase(), r.name) ].concat(r.locations))
     );
-    var favorites = Object.keys(this.state.favorites).filter(f => this.state.favorites[f]);
-    if (favorites.length > 0) {
-      // Prepend favorites list
-      items = [ this.makeLocationHeader('favorites', "Favorites") ].concat(favorites.sort((a, b) => locations[a].name.localeCompare(locations[b].name)).map(l => this.makeLocation(locations[l], 'favorite')), items);
-    }
     var recent = this.state.recent.filter(r => !this.state.favorites[r]);
     if (recent.length > 0) {
       // Prepend recent list
       items = [ this.makeLocationHeader('recent', "Recent") ].concat(recent.map(l => this.makeLocation(locations[l], 'recent')), items);
+    }
+    var favorites = Object.keys(this.state.favorites).filter(f => this.state.favorites[f]);
+    if (favorites.length > 0) {
+      // Prepend favorites list
+      items = [ this.makeLocationHeader('favorites', "Favorites") ].concat(favorites.sort((a, b) => locations[a].name.localeCompare(locations[b].name)).map(l => this.makeLocation(locations[l], 'favorite')), items);
     }
     return items;
   }
