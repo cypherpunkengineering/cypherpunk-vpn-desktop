@@ -1589,11 +1589,44 @@ small {
       }
     }
     .collapsible {
+      position: relative;
       > .collapsible-title {
-        font-size: 18px;
-        padding: 10px 15px;
+        font-size: 16px;
+        padding: 0 @rightPadding 0 15px;
+        min-height: 44px;
+        line-height: 44px;
+        cursor: pointer;
+        color: rgba(255,255,255,0.75);
+        &:after {
+          font-family: 'Icons';
+          content: '\f078';
+          float: right;
+        }
+        &:hover {
+          background: rgba(255,255,255,0.05);
+          color: white;
+        }
       }
       > .collapsible-content {
+        transition: transform 0.3s ease-out, opacity 0.3s;
+        transform: scaleY(0);
+        opacity: 0;
+        height: 0px;
+        transform-origin: right top;
+      }
+      &.open {
+        > .collapsible-title {
+          &:after {
+            content: '\f077';
+          }
+        }
+        > .collapsible-content {
+          height: auto;
+          transform: scaleY(1);
+          opacity: 1;
+        }
+      }
+    }
 
     .footer {
       flex: 1 0 auto;

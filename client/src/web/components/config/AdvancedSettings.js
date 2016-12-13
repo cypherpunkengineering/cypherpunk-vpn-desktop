@@ -5,8 +5,8 @@ import { ipcRenderer as ipc } from 'electron';
 import daemon, { DaemonAware } from '../../daemon.js';
 
 export default class AdvancedSettings extends DaemonAware(React.Component)  {
-  constructor(props) {
-    super(props);
+  state = {
+    advanced: !!daemon.settings.showAdvancedSettings
   }
   componentDidMount() {
     super.componentDidMount();
@@ -61,12 +61,20 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
     if (settings.firewall !== undefined) {
       $(ReactDOM.findDOMNode(this.refs.firewall)).attr('data-value', ({ 'on': "Always On", 'auto' : "Auto", 'off': "Off" })[settings.firewall]);
     }
+    if (settings.showAdvancedSettings !== undefined) {
+      this.setState({ advanced: settings.showAdvancedSettings });
+    }
     delete this.updatingSettings;
+  }
+  onAdvancedClick() {
+    var advanced = !this.state.advanced;
+    this.setState({ advanced: advanced });
+    daemon.post.applySettings({ showAdvancedSettings: advanced });
   }
   render() {
     return(
-      <div className="collapsible" ref="root">
-        <div className="collapsible-title">Advanced Settings</div>
+      <div className={"collapsible" + (this.state.advanced ? " open" : "")} ref="root">
+        <div className="collapsible-title" onClick={e => this.onAdvancedClick(e)}>Advanced Settings</div>
         <div className="collapsible-content">
         {process.platform.match(/^(win32|darwin)$/)?
           <div className="pane" data-title="Privacy Firewall">
