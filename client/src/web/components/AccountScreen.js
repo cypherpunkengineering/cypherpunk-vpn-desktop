@@ -29,15 +29,15 @@ export default class AccountScreen extends React.Component  {
   }
   getRenewalType() {
     return {
-      'annually': 'annually',
-      'semiannually': 'semiannually',
-      'monthly': 'monthly',
-      '12m': 'annually',
-      '1y': 'annually',
-      '6m': 'semiannually',
-      '3m': 'quarterly',
-      '1m': 'monthly',
-      'forever': 'forever'
+      'annually': "annually",
+      'semiannually': "semiannually",
+      'monthly': "monthly",
+      '12m': "annually",
+      '1y': "annually",
+      '6m': "semiannually",
+      '3m': "quarterly",
+      '1m': "monthly",
+      'forever': "forever"
     }[daemon.account.subscription.renewal];
   }
   getRenewalString() {
@@ -57,6 +57,27 @@ export default class AccountScreen extends React.Component  {
     }
     else {
       var renewal = this.isPremium() ? <div className="period">{this.getRenewalString()}</div> : null;
+      var upgradeString = "Manage Account";
+      var upgradeURL = '/account';
+      switch (daemon.account.account.type) {
+        case 'free':
+          upgradeString = "Upgrade to Premium";
+          upgradeURL = '/account/upgrade';
+          break;
+        case 'premium':
+        case 'family':
+          switch (daemon.account.subscription.renewal) {
+            case 'annually':
+            case 'forever':
+            case '12m':
+              break;
+            default:
+              upgradeString = "Change Subscription"
+              upgradeURL = '/account/upgrade';
+              break;
+          }
+          break;
+      }
       return(
         <div>
         <PanelTitlebar title="My Account" back="/connect"/>
@@ -67,7 +88,7 @@ export default class AccountScreen extends React.Component  {
             {renewal}
           </div>
           <div className="pane" data-title="Account Settings">
-            <div className="setting"><a tabIndex="0" onClick={() => { shell.openExternal('https://cypherpunk.com/account/upgrade?user=' + encodeURIComponent(daemon.account.account.email) + '&secret=' + encodeURIComponent(daemon.account.secret)); }}>{this.isPremium() ? "Change Plan" : "Upgrade"}</a></div>
+            <div className="setting"><a tabIndex="0" onClick={() => { shell.openExternal('https://cypherpunk.com' + upgradeURL + '?user=' + encodeURIComponent(daemon.account.account.email) + '&secret=' + encodeURIComponent(daemon.account.secret)); }}>{upgradeString}</a></div>
             <div className="setting"><Link to="/account/email" tabIndex="0"><div>Email<small>{daemon.account.account.email}</small></div></Link></div>
             <div className="setting"><Link to="/account/password" tabIndex="0">Password</Link></div>
           </div>
