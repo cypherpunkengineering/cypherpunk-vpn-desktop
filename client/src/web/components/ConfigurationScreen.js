@@ -26,6 +26,9 @@ export default class ConfigurationScreen extends React.Component  {
           <div className="scrollable content">
             <GeneralSettings/>
             <AdvancedSettings/>
+            <div className="version footer">
+              <div><i className="tag icon"/>{"v"+require('electron').remote.app.getVersion()}</div>
+            </div>
           </div>
         </div>
       );

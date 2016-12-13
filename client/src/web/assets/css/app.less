@@ -1415,6 +1415,8 @@ small {
   .content {
     width: 100%;
     height: calc(~"100vh - " @fullHeaderHeight);
+    display: flex;
+    flex-direction: column;
     &.scrollable {
       overflow-x: hidden;
       overflow-y: overlay;
@@ -1593,6 +1595,17 @@ small {
       }
       > .collapsible-content {
 
+    .footer {
+      flex: 1 0 auto;
+      min-height: 44px;
+      line-height: 44px;
+      display: flex;
+      justify-content: flex-end;
+      padding: 0 @rightPadding 0 15px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      &.version {
+        align-items: flex-end;
       }
     }
   }

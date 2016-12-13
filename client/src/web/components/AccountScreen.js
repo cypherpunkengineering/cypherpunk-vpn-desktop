@@ -98,6 +98,7 @@ export default class AccountScreen extends React.Component  {
             <div className="setting">{/*<Link to="/account/help" tabIndex="0">Help</Link>*/}<a tabIndex="0" onClick={() => { shell.openExternal('https://support.cypherpunk.com/hc'); }}>Help</a></div>
             <div className="setting"><Link to="/login/logout" tabIndex="0">Log Out</Link></div>
           </div>
+          <div className="footer"></div>
         </div>
         </div>
       );
