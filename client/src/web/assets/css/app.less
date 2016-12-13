@@ -1417,8 +1417,12 @@ small {
     height: calc(~"100vh - " @fullHeaderHeight);
     &.scrollable {
       overflow-x: hidden;
-      overflow-y: auto;
+      overflow-y: overlay;
     }
+
+    @leftPadding: 15px;
+    @rightPadding: 21px;
+
     .pane {
       background: rgba(255,255,255,0.16);
 
@@ -1459,7 +1463,7 @@ small {
           align-items: center;
           justify-content: space-between;
           flex-grow: 1;
-          padding: 8px 15px 9px;
+          padding: 8px @rightPadding 9px 15px;
           color: inherit;
           &:after {
             font-family: 'Icons';
@@ -1496,13 +1500,14 @@ small {
 
         // See also: semantic/src/site/modules/checkbox.overrides
         > .ui.checkbox {
+          padding-right: @rightPadding;
         }
 
         > .ui.dropdown {
           order: 10;
           width: auto;
           font-size: 15px;
-          margin-right: 15px;
+          margin-right: @rightPadding;
           margin-top: 1px;
           background: rgba(0,0,0,0.08) !important;
           white-space: nowrap;
@@ -1530,7 +1535,7 @@ small {
         > .ui.input {
           order: 10;
           width: auto;
-          margin-right: 15px;
+          margin-right: @rightPadding;
           > input {
             padding: 4px 8px;
             border: 1px solid rgba(255,255,255,0.16);
