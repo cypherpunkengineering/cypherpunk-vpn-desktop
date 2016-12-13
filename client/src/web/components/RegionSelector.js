@@ -165,9 +165,10 @@ export default class RegionSelector extends DaemonAware(React.Component) {
       // Prepend favorites list
       items = [ this.makeLocationHeader('favorites', "Favorites") ].concat(favorites.sort((a, b) => locations[a].name.localeCompare(locations[b].name)).map(l => this.makeLocation(locations[l], 'favorite')), items);
     }
-    if (this.state.recent.length > 0) {
+    var recent = this.state.recent.filter(r => !this.state.favorites[r]);
+    if (recent.length > 0) {
       // Prepend recent list
-      items = [ this.makeLocationHeader('recent', "Recent") ].concat(this.state.recent.map(l => this.makeLocation(locations[l], 'recent')), items);
+      items = [ this.makeLocationHeader('recent', "Recent") ].concat(recent.map(l => this.makeLocation(locations[l], 'recent')), items);
     }
     return items;
   }
