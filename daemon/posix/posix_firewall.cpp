@@ -93,7 +93,7 @@ void pfctl_disable(const std::string& token)
 
 void pfctl_ensure_enabled()
 {
-	logged_system("test -f /usr/local/cypherpunk/etc/pf.anchors/pf.token || pfctl -a com.cypherpunk.privacy -E 2>&1 | grep -F 'Token : ' | cut -c9- > /usr/local/cypherpunk/etc/pf.anchors/pf.token");
+	logged_system("test -f /usr/local/cypherpunk/etc/pf.anchors/pf.token && pfctl -q -s References | grep -qFf /usr/local/cypherpunk/etc/pf.anchors/pf.token || pfctl -a com.cypherpunk.privacy -E 2>&1 | grep -F 'Token : ' | cut -c9- > /usr/local/cypherpunk/etc/pf.anchors/pf.token");
 }
 
 void pfctl_ensure_disabled()
