@@ -80,18 +80,18 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
       <div className={"collapsible" + (this.state.advanced ? " open" : "")} ref="root">
         <div className="collapsible-title" onClick={e => this.onAdvancedClick(e)}>Advanced Settings</div>
         <div className="collapsible-content">
-          <div className="pane" data-title="Privacy Firewall" style={process.platform == 'linux' ? {display:'none'} : {}}>
+          <div className={"pane" + (process.platform == 'linux' ? " hidden" : "")} data-title="Privacy Firewall">
             <div class="setting">
               <Link to="/configuration/firewall" tabIndex="0" ref="firewall">Internet Killswitch</Link>
             </div>
             {/* hide until feature works correctly */}
-            <div className="setting" style={{display:'none'}}>
+            <div className="setting hidden">
               <div className="ui toggle checkbox">
                 <input type="checkbox" name="blockIPv6" id="blockIPv6" ref="blockIPv6"/>
                 <label>Block IPv6 Traffic</label>
               </div>
             </div>
-            <div className="setting" style={{display:'none'}}>
+            <div className="setting hidden">
               <div className="ui toggle checkbox">
                 <input type="checkbox" name="blockDNS" id="blockDNS" ref="blockDNS"/>
                 <label>Use Only Cypherpunk DNS</label>
@@ -117,7 +117,7 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
           </div>
 
           <div className="pane" data-title="VPN Settings">
-            <div className="setting" style={ daemon.account.account.type === 'developer' ? {} : {display:'none'} }>
+            <div className={"setting" + (daemon.account.account.type === 'developer' ? "" : " hidden")}>
               <div className="ui toggle checkbox">
                 <input type="checkbox" name="routeDefault" id="routeDefault" ref="routeDefault"/>
                 <label>Route Internet Traffic via VPN</label>

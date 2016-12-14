@@ -1425,6 +1425,10 @@ small {
     @leftPadding: 15px;
     @rightPadding: 21px;
 
+    .hidden {
+      display: none !important;
+    }
+
     .pane {
       background: rgba(255,255,255,0.16);
 
@@ -1577,14 +1581,14 @@ small {
           }
         }
 
-        + .setting {
+        &:not(.hidden) ~ .setting {
           background-image: linear-gradient(to bottom, rgba(255,255,255,0.3) 1px, transparent 1px);
+          &:hover {
+            background-image: linear-gradient(to bottom, rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(to left, rgba(255,255,255,0.1), transparent);
+          }
         }
         &:hover {
           background: linear-gradient(to left, rgba(255,255,255,0.1), transparent);
-        }
-        + .setting:hover {
-          background-image: linear-gradient(to bottom, rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(to left, rgba(255,255,255,0.1), transparent);
         }
       }
     }
