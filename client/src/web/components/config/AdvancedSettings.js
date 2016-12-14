@@ -80,40 +80,23 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
       <div className={"collapsible" + (this.state.advanced ? " open" : "")} ref="root">
         <div className="collapsible-title" onClick={e => this.onAdvancedClick(e)}>Advanced Settings</div>
         <div className="collapsible-content">
-        {process.platform.match(/^(win32|darwin)$/)?
-          <div className="pane" data-title="Privacy Firewall">
-            { process.platform.match(/^(win32|darwin)$/) ?
+          <div className="pane" data-title="Privacy Firewall" style={process.platform == 'linux' ? {display:'none'} : {}}>
             <div class="setting">
-              {/*
-              <div class="ui selection button dropdown" ref="firewall">
-                <input type="hidden" id="firewall" name="firewall"/>
-                <i class="dropdown icon"></i>
-                <div class="default text">Yes</div>
-                <div className="menu">
-                  <div class="item" data-value="on">Always</div>
-                  <div class="item" data-value="auto">Auto</div>
-                  <div class="item" data-value="off">No</div>
-                </div>
-              </div>
-              <label>Block Non-VPN Traffic</label>
-              */}
               <Link to="/configuration/firewall" tabIndex="0" ref="firewall">Internet Killswitch</Link>
             </div>
-            : null }
-            {/* // comment out until feature works correctly
-            <div className="setting">
+            {/* hide until feature works correctly */}
+            <div className="setting" style={{display:'none'}}>
               <div className="ui toggle checkbox">
                 <input type="checkbox" name="blockIPv6" id="blockIPv6" ref="blockIPv6"/>
                 <label>Block IPv6 Traffic</label>
               </div>
             </div>
-            <div className="setting">
+            <div className="setting" style={{display:'none'}}>
               <div className="ui toggle checkbox">
                 <input type="checkbox" name="blockDNS" id="blockDNS" ref="blockDNS"/>
                 <label>Use Only Cypherpunk DNS</label>
               </div>
             </div>
-            */}
             {/*
           </div>
 
@@ -132,7 +115,7 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
               </div>
             </div> : null*/}
           </div>
-        : null}
+
           <div className="pane" data-title="VPN Settings">
             <div className="setting" style={ daemon.account.account.type === 'developer' ? {} : {display:'none'} }>
               <div className="ui toggle checkbox">
