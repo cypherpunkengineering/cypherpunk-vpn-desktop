@@ -41,6 +41,10 @@ function refreshAccount() {
 // Updates the application state after any new account data has been received
 function setAccount(data) {
   return daemon.call.setAccount(data).then(() => {
+    if (data.account.type !== 'developer') {
+      // switch off non-developer settings
+      daemon.post.applySettings({ routeDefault: true });
+    }
     if (!data.account.confirmed) {
       History.push({ pathname: '/login/confirm', query: { email: daemon.account.account.email } });
     } else {

@@ -31,6 +31,7 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
       case 'blockIPv6': daemon.post.applySettings({ blockIPv6: value }); break;
       case 'blockDNS': daemon.post.applySettings({ blockDNS: value }); break;
       case 'allowLAN': daemon.post.applySettings({ allowLAN: value }); break;
+      case 'routeDefault': daemon.post.applySettings({ routeDefault: value }); break;
       case 'exemptApple': break;
       case 'forwardPort': break;
     }
@@ -60,6 +61,9 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
     }
     if (settings.firewall !== undefined) {
       $(ReactDOM.findDOMNode(this.refs.firewall)).attr('data-value', ({ 'on': "Always On", 'auto' : "Auto", 'off': "Off" })[settings.firewall]);
+    }
+    if (settings.routeDefault !== undefined) {
+      $(this.refs.routeDefault).parent().checkbox('set ' + (settings.routeDefault ? 'checked' : 'unchecked'));
     }
     if (settings.showAdvancedSettings !== undefined) {
       this.setState({ advanced: settings.showAdvancedSettings });
@@ -130,6 +134,12 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
           </div>
         : null}
           <div className="pane" data-title="VPN Settings">
+            <div className="setting" style={ daemon.account.account.type === 'developer' ? {} : {display:'none'} }>
+              <div className="ui toggle checkbox">
+                <input type="checkbox" name="routeDefault" id="routeDefault" ref="routeDefault"/>
+                <label>Route Internet Traffic via VPN</label>
+              </div>
+            </div>
             <div class="setting">
               <div class="ui selection button dropdown" ref="remotePort">
                 <input type="hidden" id="remotePort" name="remotePort"/>

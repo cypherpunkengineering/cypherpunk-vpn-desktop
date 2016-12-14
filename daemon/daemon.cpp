@@ -583,7 +583,6 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& server)
 		//{ "cipher", g_settings.cipher() },
 		{ "tls-cipher", "TLS-DHE-RSA-WITH-AES-256-GCM-SHA384:TLS-DHE-RSA-WITH-AES-256-CBC-SHA256:TLS-DHE-RSA-WITH-AES-128-GCM-SHA256:TLS-DHE-RSA-WITH-AES-128-CBC-SHA256"},
 		{ "auth", "SHA256" },
-		{ "redirect-gateway", "def1" },
 		{ "route-delay", "0" },
 		{ "tls-version-min", "1.2" },
 		//{ "remote-cert-tls", "server" },
@@ -592,6 +591,9 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& server)
 		{ "persist-tun", "" },
 		{ "auth-user-pass", "" },
 	};
+
+	if (g_settings.routeDefault())
+		config["redirect-gateway"] = "def1";
 
 	if (g_settings.localPort() == 0)
 		config["nobind"] = "";
