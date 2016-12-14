@@ -105,6 +105,7 @@ export class Check extends React.Component {
 export class Logout extends React.Component {
   componentDidMount() {
     setTimeout(() => { // need to use setTimeout since we might modify History
+      daemon.post.disconnect(); // make sure we don't stay connected
       server.post('/api/v0/account/logout', null, { refreshSessionOnForbidden: false, catchAuthFailure: false })
         .catch(err => console.error("Error while logging out:", err))
         .then(() => daemon.call.setAccount({ account: { email: daemon.account.account.email } }))
