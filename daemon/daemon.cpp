@@ -579,7 +579,7 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& server)
 		{ "mssfix", std::to_string(mtu - 220) },
 		{ "ping", "10" },
 		{ "ping-exit", "60" },
-		{ "resolv-retry", "infinite" },
+		//{ "resolv-retry", "infinite" },
 		//{ "cipher", g_settings.cipher() },
 		{ "tls-cipher", "TLS-DHE-RSA-WITH-AES-256-GCM-SHA384:TLS-DHE-RSA-WITH-AES-256-CBC-SHA256:TLS-DHE-RSA-WITH-AES-128-GCM-SHA256:TLS-DHE-RSA-WITH-AES-128-CBC-SHA256"},
 		{ "auth", "SHA256" },
@@ -588,7 +588,7 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& server)
 		//{ "remote-cert-tls", "server" },
 		{ "remote-cert-eku", "\"TLS Web Server Authentication\"" },
 		{ "verify-x509-name", server.at("ovHostname").AsString() + " name" },
-		{ "persist-tun", "" },
+		//{ "persist-tun", "" },
 		{ "auth-user-pass", "" },
 	};
 
