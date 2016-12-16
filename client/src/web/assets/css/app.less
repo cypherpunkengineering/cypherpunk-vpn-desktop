@@ -1534,7 +1534,29 @@ small {
             }
           }
           + label {
-            margin-left: 15px;
+            margin-left: @leftPadding;
+          }
+        }
+        > select {
+          order: 10;
+          width: auto;
+          font-size: 15px;
+          margin-right: @rightPadding;
+          background: rgba(0,0,0,0.08) !important;
+          border-color: rgba(255,255,255,0.16);
+          color: rgba(255,255,255,0.75);
+          white-space: nowrap;
+          height: 29px;
+          cursor: pointer;
+          &:hover {
+            border-color: rgba(255,255,255,0.5);
+          }
+          &:focus {
+            border-color: rgba(255,255,255,0.75) !important;
+            color: #fff !important;
+          }
+          + label {
+            margin-left: @leftPadding;
           }
         }
 
@@ -1546,12 +1568,17 @@ small {
             padding: 4px 8px;
             border: 1px solid rgba(255,255,255,0.16);
             border-radius: 5px;
+            color: rgba(255,255,255,0.75);
+            &:hover {
+              border-color: rgba(255,255,255,0.5);
+            }
             &:focus {
-              border-color: #fff;
+              border-color: rgba(255,255,255,0.75) !important;
+              color: #fff !important;
             }
           }
           + label {
-            margin-left: 15px;
+            margin-left: @leftPadding;
           }
         }
 
