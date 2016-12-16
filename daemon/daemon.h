@@ -65,10 +65,11 @@ public:
 	// the daemon or from another thread.
 	virtual void RequestShutdown();
 
-	void OnOpenVPNStdOut(OpenVPNProcess* process, const asio::error_code& error, std::string line);
-	void OnOpenVPNStdErr(OpenVPNProcess* process, const asio::error_code& error, std::string line);
-	void OnOpenVPNProcessExited(OpenVPNProcess* process);
-	void OnSettingsChanged(const std::vector<std::string>& names);
+	virtual void OnOpenVPNStdOut(OpenVPNProcess* process, const asio::error_code& error, std::string line);
+	virtual void OnOpenVPNStdErr(OpenVPNProcess* process, const asio::error_code& error, std::string line);
+	virtual void OnOpenVPNCallback(OpenVPNProcess* process, std::string args);
+	virtual void OnOpenVPNProcessExited(OpenVPNProcess* process);
+	virtual void OnSettingsChanged(const std::vector<std::string>& names);
 
 protected:
 	typedef websocketpp::connection_hdl Connection;

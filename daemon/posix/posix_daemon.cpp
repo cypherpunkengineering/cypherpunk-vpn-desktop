@@ -1,10 +1,5 @@
 #include "config.h"
 
-#ifdef OS_LINUX
-#include <sys/types.h>
-#include <sys/wait.h>
-#endif
-
 #include "posix.h"
 #include "daemon.h"
 #include "logger.h"
@@ -12,15 +7,23 @@
 #include "openvpn.h"
 #include "path.h"
 
-#include <signal.h>
+#include <algorithm>
+#include <cctype>
 #include <exception>
 #include <stdexcept>
+
 #include <cxxabi.h>
-#include <unistd.h>
+#include <grp.h>
+#include <pwd.h>
+#include <signal.h>
 #include <stdio.h>
 #include <sys/types.h>
-#include <pwd.h>
-#include <grp.h>
+#include <unistd.h>
+
+#ifdef OS_LINUX
+#include <sys/types.h>
+#include <sys/wait.h>
+#endif
 
 
 void pfctl_install();
@@ -584,6 +587,85 @@ public:
 				}
 			}
 			_signals.async_wait(THIS_CALLBACK(OnSignal));
+		}
+	}
+	bool OnOpenVPNCallback_Up(OpenVPNProcess* process, const std::deque<std::string>& argv)
+	{
+		return true;
+	}
+	bool OnOpenVPNCallback_Down(OpenVPNProcess* process, const std::deque<std::string>& argv)
+	{
+		return true;
+	}
+	bool OnOpenVPNCallback_RoutePreDown(OpenVPNProcess* process, const std::deque<std::string>& argv)
+	{
+		return true;
+	}
+	bool OnOpenVPNCallback_TLSVerify(OpenVPNProcess* process, const std::deque<std::string>& argv)
+	{
+		return true;
+	}
+	bool OnOpenVPNCallback_IPChange(OpenVPNProcess* process, const std::deque<std::string>& argv)
+	{
+		return true;
+	}
+	bool OnOpenVPNCallback_RouteUp(OpenVPNProcess* process, const std::deque<std::string>& argv)
+	{
+		return true;
+	}
+	void OnOpenVPNCallback(OpenVPNProcess* process, std::string args) override
+	{
+		CypherDaemon::OnOpenVPNCallback(process, args);
+		std::deque<std::string> argv = SplitToDeque(args, ' ');
+		if (argv.size() < 2)
+		{
+			LOG(ERROR) << "Malformed OpenVPN callback";
+		}
+		else
+		{
+			try
+			{
+				int pid = std::stoi(argv.at(0));
+				std::string cmd = std::move(argv.at(1));
+				std::transform(cmd.begin(), cmd.end(), cmd.begin(), [](unsigned char c) { return std::tolower(c); });
+				argv.pop_front();
+				argv.pop_front();
+				bool success;
+				try
+				{
+					if (cmd == "up")
+						success = OnOpenVPNCallback_Up(process, argv);
+					else if (cmd == "down")
+						success = OnOpenVPNCallback_Down(process, argv);
+					else if (cmd == "route-pre-down")
+						success = OnOpenVPNCallback_RoutePreDown(process, argv);
+					else if (cmd == "tls-verify")
+						success = OnOpenVPNCallback_TLSVerify(process, argv);
+					else if (cmd == "ipchange")
+						success = OnOpenVPNCallback_IPChange(process, argv);
+					else if (cmd == "route-up")
+						success = OnOpenVPNCallback_RouteUp(process, argv);
+					else
+					{
+						LOG(ERROR) << "Unrecognized OpenVPN callback: " << cmd;
+						success = false;
+					}
+				}
+				catch (...)
+				{
+					LOG(ERROR) << "Exception during OpenVPN callback";
+					success = false;
+				}
+				// Send result back to OpenVPN by killing placeholder script
+				if (success)
+					kill(pid, SIGTERM);
+				else
+					kill(pid, SIGINT);
+			}
+			catch (...)
+			{
+				LOG(ERROR) << "Malformed OpenVPN callback";
+			}
 		}
 	}
 };

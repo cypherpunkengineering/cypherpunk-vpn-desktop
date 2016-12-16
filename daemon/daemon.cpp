@@ -216,11 +216,19 @@ void CypherDaemon::OnReceiveMessage(Connection connection, WebSocketServer::mess
 
 void CypherDaemon::OnOpenVPNStdOut(OpenVPNProcess* process, const asio::error_code& error, std::string line)
 {
-	if (process == _process.get())
+	//if (process == _process.get())
 	{
 		if (!error)
 		{
-			LOG_EX(LogLevel::VERBOSE, true, Location("OpenVPN:STDOUT")) << line;
+			if (line.compare(0, 14, "****** DAEMON ") == 0)
+			{
+				line.erase(0, 14);
+				OnOpenVPNCallback(process, std::move(line));
+			}
+			else
+			{
+				LOG_EX(LogLevel::VERBOSE, true, Location("OpenVPN:STDOUT")) << line;
+			}
 		}
 		else
 			LOG(WARNING) << "OpenVPN:STDOUT error: " << error;
@@ -229,7 +237,7 @@ void CypherDaemon::OnOpenVPNStdOut(OpenVPNProcess* process, const asio::error_co
 
 void CypherDaemon::OnOpenVPNStdErr(OpenVPNProcess* process, const asio::error_code& error, std::string line)
 {
-	if (process == _process.get())
+	//if (process == _process.get())
 	{
 		if (!error)
 		{
@@ -238,6 +246,11 @@ void CypherDaemon::OnOpenVPNStdErr(OpenVPNProcess* process, const asio::error_co
 		else
 			LOG(WARNING) << "OpenVPN:STDERR error: " << error;
 	}
+}
+
+void CypherDaemon::OnOpenVPNCallback(OpenVPNProcess* process, std::string args)
+{
+	LOG(INFO) << "DAEMON CALLBACK: " << args;
 }
 
 void CypherDaemon::OnOpenVPNProcessExited(OpenVPNProcess* process)
@@ -772,6 +785,7 @@ void CypherDaemon::DoConnect()
 	args.push_back("--script-security");
 	args.push_back("2");
 
+#if 1
 	args.push_back("--up");
 	args.push_back(GetPath(ScriptsDir, "up.sh") + " -9 -d -f -m -w -pradsgnwADSGNW");
 	args.push_back("--down");
@@ -784,6 +798,14 @@ void CypherDaemon::DoConnect()
 	args.push_back(GetPath(ScriptsDir, "ipchange.sh"));
 	args.push_back("--route-up");
 	args.push_back(GetPath(ScriptsDir, "route-up.sh"));
+#else
+	static const char* scripts[] = { "up", "down", "route-pre-down", "tls-verify", "ipchange", "route-up" };
+	for (auto& script : scripts)
+	{
+		args.push_back(std::string("--") + script);
+		args.push_back(GetPath(ScriptsDir, "daemon.sh") + " " + script);
+	}
+#endif
 #else
 	args.push_back("--script-security");
 	args.push_back("1");
