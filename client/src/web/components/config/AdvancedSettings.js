@@ -32,7 +32,7 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
       case 'blockDNS': daemon.post.applySettings({ blockDNS: value }); break;
       case 'allowLAN': daemon.post.applySettings({ allowLAN: value }); break;
       case 'routeDefault': daemon.post.applySettings({ routeDefault: value }); break;
-      case 'exemptApple': break;
+      case 'exemptApple': daemon.post.applySettings({ exemptApple: value }); break;
       case 'forwardPort': break;
     }
   }
@@ -62,6 +62,9 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
     if (settings.firewall !== undefined) {
       $(ReactDOM.findDOMNode(this.refs.firewall)).attr('data-value', ({ 'on': "Always On", 'auto' : "Auto", 'off': "Off" })[settings.firewall]);
     }
+    if (settings.exemptApple !== undefined) {
+      $(this.refs.exemptApple).parent().checkbox('set ' + (settings.exemptApple ? 'checked' : 'unchecked'));
+    }
     if (settings.routeDefault !== undefined) {
       $(this.refs.routeDefault).parent().checkbox('set ' + (settings.routeDefault ? 'checked' : 'unchecked'));
     }
@@ -80,9 +83,15 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
       <div className={"collapsible" + (this.state.advanced ? " open" : "")} ref="root">
         <div className="collapsible-title" onClick={e => this.onAdvancedClick(e)}>Advanced Settings</div>
         <div className="collapsible-content">
-          <div className={"pane" + (process.platform == 'linux' ? " hidden" : "")} data-title="Privacy Firewall">
+          <div className={"pane" + (process.platform == 'linux' ? " hidden" : "")} data-title="Privacy Settings">
             <div class="setting">
               <Link to="/configuration/firewall" tabIndex="0" ref="firewall">Internet Killswitch</Link>
+            </div>
+            <div className="setting">
+              <div className="ui toggle checkbox">
+                <input type="checkbox" name="allowLAN" id="allowLAN" ref="allowLAN"/>
+                <label>Always Allow LAN Traffic</label>
+              </div>
             </div>
             {/* hide until feature works correctly */}
             <div className="setting hidden">
@@ -94,7 +103,7 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
             <div className="setting hidden">
               <div className="ui toggle checkbox">
                 <input type="checkbox" name="blockDNS" id="blockDNS" ref="blockDNS"/>
-                <label>Use Only Cypherpunk DNS</label>
+                <label>Use Cypherpunk DNS</label>
               </div>
             </div>
             {/*
@@ -102,27 +111,26 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
 
           <div className="pane" data-title="Compatibility">
             */}
-            <div className="setting">
-              <div className="ui toggle checkbox">
-                <input type="checkbox" name="allowLAN" id="allowLAN" ref="allowLAN"/>
-                <label>Always Allow LAN Traffic</label>
-              </div>
-            </div>
-            {/*(process.platform === 'darwin') ? <div className="setting">
-              <div className="ui toggle checkbox">
-                <input type="checkbox" name="exemptApple" id="exemptApple" ref="exemptApple"/>
-                <label>Exempt Apple Services from VPN</label>
-              </div>
-            </div> : null*/}
           </div>
 
-          <div className="pane" data-title="VPN Settings">
-            <div className={"setting" + (daemon.account.account.type === 'developer' ? "" : " hidden")}>
+          <div className="pane" data-title="Routing Settings">
+            <div className="setting">
               <div className="ui toggle checkbox">
                 <input type="checkbox" name="routeDefault" id="routeDefault" ref="routeDefault"/>
                 <label>Route Internet Traffic via VPN</label>
               </div>
             </div>
+            { (process.platform === 'darwin') ?
+            <div className="setting">
+              <div className="ui toggle checkbox">
+                <input type="checkbox" name="exemptApple" id="exemptApple" ref="exemptApple"/>
+                <label>Exempt Apple Services</label>
+              </div>
+            </div>
+            : null }
+          </div>
+
+          <div className="pane" data-title="Connection Settings">
             <div class="setting">
               <div class="ui selection button dropdown" ref="remotePort">
                 <input type="hidden" id="remotePort" name="remotePort"/>

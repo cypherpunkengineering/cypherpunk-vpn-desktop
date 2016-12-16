@@ -623,6 +623,13 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& server)
 		config["ncp-ciphers"] = "AES-128-GCM:AES-128-CBC";
 	}
 
+#if OS_OSX
+	if (g_settings.exemptApple())
+	{
+		config["route"] = "17.0.0.0 255.0.0.0 net_gateway";
+	}
+#endif
+
 	// FIXME: Manually translate other settings to OpenVPN parameters
 	/*
 	for (const auto& e : settings)

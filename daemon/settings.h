@@ -65,6 +65,9 @@ public:
 	namedmember(bool, blockIPv6, true)
 	namedmember(bool, blockDNS, true)
 	namedmember(bool, routeDefault, true) // add a default (or 0/1+1/1) route to the VPN interface
+#if OS_OSX
+	namedmember(bool, exemptApple, true)
+#endif
 
 	namedmember(bool, runOpenVPNAsRoot, true)
 
