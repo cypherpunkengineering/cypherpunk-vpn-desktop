@@ -114,7 +114,7 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
           </div>
 
           <div className="pane" data-title="Routing Settings">
-            <div className="setting">
+            <div className={"setting" + (daemon.account.account.type === 'developer' ? "" : " hidden")}>
               <div className="ui toggle checkbox">
                 <input type="checkbox" name="routeDefault" id="routeDefault" ref="routeDefault"/>
                 <label>Route Internet Traffic via VPN</label>
