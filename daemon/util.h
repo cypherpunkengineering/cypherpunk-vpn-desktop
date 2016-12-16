@@ -3,6 +3,7 @@
 #include "config.h"
 #include "debug.h"
 
+#include <deque>
 #include <functional>
 #include <ostream>
 #include <sstream>
@@ -135,7 +136,7 @@ static inline size_t SplitToIterators(const std::string& text, char sep, const C
 template<typename CB>
 static inline size_t SplitToStrings(const std::string& text, char sep, int max_splits, const CB& cb)
 {
-	return SplitToIterators(text, sep, [&](const std::string::const_iterator& b, const std::string::const_iterator& e) { return std::string(b, e); });
+	return SplitToIterators(text, sep, [&](const std::string::const_iterator& b, const std::string::const_iterator& e) { cb(std::string(b, e)); });
 }
 template<typename CB>
 static inline size_t SplitToStrings(const std::string& text, char sep, const CB& cb)
@@ -146,6 +147,12 @@ static inline size_t SplitToStrings(const std::string& text, char sep, const CB&
 static inline std::vector<std::string> SplitToVector(const std::string& text, char sep, int max_splits = -1)
 {
 	std::vector<std::string> result;
+	SplitToIterators(text, sep, max_splits, [&](const std::string::const_iterator& b, const std::string::const_iterator& e) { result.emplace_back(b, e); });
+	return result;
+}
+static inline std::deque<std::string> SplitToDeque(const std::string& text, char sep, int max_splits = -1)
+{
+	std::deque<std::string> result;
 	SplitToIterators(text, sep, max_splits, [&](const std::string::const_iterator& b, const std::string::const_iterator& e) { result.emplace_back(b, e); });
 	return result;
 }
