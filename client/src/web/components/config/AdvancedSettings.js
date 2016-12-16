@@ -106,28 +106,21 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
                 <label>Use Cypherpunk DNS</label>
               </div>
             </div>
-            {/*
           </div>
 
-          <div className="pane" data-title="Compatibility">
-            */}
-          </div>
-
-          <div className="pane" data-title="Routing Settings">
+          <div className={"pane" + ((daemon.account.account.type === 'developer' || process.platform === 'darwin') ? "" : " hidden")} data-title="Routing Settings">
             <div className={"setting" + (daemon.account.account.type === 'developer' ? "" : " hidden")}>
               <div className="ui toggle checkbox">
                 <input type="checkbox" name="routeDefault" id="routeDefault" ref="routeDefault"/>
                 <label>Route Internet Traffic via VPN</label>
               </div>
             </div>
-            { (process.platform === 'darwin') ?
-            <div className="setting">
+            <div className={"setting" + (process.platform === 'darwin' ? "" : " hidden")}>
               <div className="ui toggle checkbox">
                 <input type="checkbox" name="exemptApple" id="exemptApple" ref="exemptApple"/>
                 <label>Exempt Apple Services</label>
               </div>
             </div>
-            : null }
           </div>
 
           <div className="pane" data-title="Connection Settings">
