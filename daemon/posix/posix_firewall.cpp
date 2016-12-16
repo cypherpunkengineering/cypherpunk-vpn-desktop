@@ -26,7 +26,7 @@ void pfctl_install()
 		fclose(f);
 		// Reload root pf.conf file
 		LOG(INFO) << "Reloading PF root configuration";
-		logged_system("pfctl -f /etc/pf.conf");
+		logged_system("pfctl -q -f /etc/pf.conf");
 	}
 }
 
@@ -36,7 +36,7 @@ void pfctl_uninstall()
 	{
 		// Strip out added lines and reload
 		LOG(INFO) << "Uninstalling PF anchors";
-		logged_system("sed -i '' '/com\\.cypherpunk\\.privacy/d' /etc/pf.conf && pfctl -f /etc/pf.conf");
+		logged_system("sed -i '' '/com\\.cypherpunk\\.privacy/d' /etc/pf.conf && pfctl -q -f /etc/pf.conf");
 	}
 }
 
@@ -98,22 +98,22 @@ void pfctl_ensure_enabled()
 
 void pfctl_ensure_disabled()
 {
-	logged_system("test -f /usr/local/cypherpunk/etc/pf.anchors/pf.token && pfctl -a com.cypherpunk.privacy -X `cat /usr/local/cypherpunk/etc/pf.anchors/pf.token` && rm /usr/local/cypherpunk/etc/pf.anchors/pf.token");
+	logged_system("test -f /usr/local/cypherpunk/etc/pf.anchors/pf.token && pfctl -q -a com.cypherpunk.privacy -X `cat /usr/local/cypherpunk/etc/pf.anchors/pf.token` && rm /usr/local/cypherpunk/etc/pf.anchors/pf.token");
 }
 
 void pfctl_enable_anchor(const std::string& anchor)
 {
-	logged_system("pfctl -a com.cypherpunk.privacy/" + anchor + " -f /usr/local/cypherpunk/etc/pf.anchors/com.cypherpunk.privacy." + anchor);
+	logged_system("pfctl -q -a com.cypherpunk.privacy/" + anchor + " -f /usr/local/cypherpunk/etc/pf.anchors/com.cypherpunk.privacy." + anchor);
 }
 
 void pfctl_disable_anchor(const std::string& anchor)
 {
-	logged_system("pfctl -a com.cypherpunk.privacy/" + anchor + " -F rules");
+	logged_system("pfctl -q -a com.cypherpunk.privacy/" + anchor + " -F rules");
 }
 
 bool pfctl_anchor_enabled(const std::string& anchor)
 {
-	return 0 == logged_system("pfctl -a com.cypherpunk.privacy/" + anchor + " -s rules -q | grep . > /dev/null");
+	return 0 == logged_system("pfctl -q -a com.cypherpunk.privacy/" + anchor + " -s rules 2>/dev/null | grep -q .");
 }
 
 void pfctl_set_anchor_enabled(const std::string& anchor, bool enable)
