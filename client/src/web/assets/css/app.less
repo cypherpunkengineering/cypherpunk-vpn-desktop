@@ -198,10 +198,14 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     &:hover, &:focus, &:active {
       color: #fff;
       opacity: 1;
+      &.back {
+        text-shadow: 0 0 15px rgba(255,255,255,0.6);
+      }
     }
     &.back {
       align-self: stretch;
-      width: 3em;
+      font-size: 28px;
+      width: 2em;
       margin: 0;
       height: auto;
     }
