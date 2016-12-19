@@ -232,7 +232,7 @@ export default class RegionSelector extends DaemonAware(React.Component) {
         onTransitionEnd={event => this.onTransitionEnd(event)}
         >
         <div className="bar" onClick={() => this.state.open ? this.close() : this.open()}>
-          { (this.state.selected && this.state.locations[this.state.selected]) ? this.makeLocation(this.state.locations[this.state.selected], false) : "Select Region" }
+          { (this.state.selected && this.state.locations[this.state.selected]) ? this.makeLocation(this.state.locations[this.state.selected], 'header') : "Select Region" }
         </div>
         <ReactCSSTransitionGroup component="div" className="list" transitionName="fadeIn" transitionEnterTimeout={350} transitionLeaveTimeout={350}>
           { this.makeRegionList(this.state.regions, this.state.locations) }
