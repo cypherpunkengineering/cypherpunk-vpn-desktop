@@ -76,7 +76,7 @@ function getResource(name) {
 }
 
 function getFlag(country) {
-  return getResource(`assets/img/flags/${country.toLowerCase()}.png`);
+  return getResource(`assets/img/flags/16/${country.toLowerCase()}.png`);
 }
 
 
