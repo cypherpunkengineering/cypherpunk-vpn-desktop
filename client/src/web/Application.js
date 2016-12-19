@@ -4,15 +4,16 @@ import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, browserHistor
 import { ipcRenderer } from 'electron';
 import LoginScreen, * as Login from './components/LoginScreen';
 import ConnectScreen from './components/ConnectScreen';
-import ConfigurationScreen from './components/ConfigurationScreen'
-import EmailScreen from './components/account/EmailScreen'
-import ShareScreen from './components/account/ShareScreen'
-import PrivacyScreen from './components/config/PrivacyScreen'
-import TrustedNetworksScreen from './components/config/TrustedNetworks'
-import FirewallScreen from './components/config/FirewallScreen'
-import HelpScreen from './components/account/HelpScreen'
-import PasswordScreen from './components/account/PasswordScreen'
-import AccountScreen from './components/AccountScreen'
+import ConfigurationScreen from './components/ConfigurationScreen';
+import EmailScreen from './components/account/EmailScreen';
+import ShareScreen from './components/account/ShareScreen';
+import PrivacyScreen from './components/config/PrivacyScreen';
+import TrustedNetworksScreen from './components/config/TrustedNetworks';
+import RemotePortScreen from './components/config/RemotePortScreen';
+import FirewallScreen from './components/config/FirewallScreen';
+import HelpScreen from './components/account/HelpScreen';
+import PasswordScreen from './components/account/PasswordScreen';
+import AccountScreen from './components/AccountScreen';
 import './assets/css/app.less';
 
 // import { configureStore } from './store/configureStore';
@@ -87,6 +88,7 @@ export default class Application {
               <Route path="privacy" component={PrivacyScreen}/>
               <Route path="firewall" component={FirewallScreen}/>
               <Route path="trustednetworks" component={TrustedNetworksScreen}/>
+              <Route path="remoteport" component={RemotePortScreen}/>
             </Route>
             <Route path="/account" component={AccountScreen}>
               <Route path="email" component={EmailScreen}/>

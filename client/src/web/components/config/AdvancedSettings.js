@@ -11,13 +11,8 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
   componentDidMount() {
     super.componentDidMount();
     var self = this;
-    $(this.refs.root).find('.ui.dropdown').dropdown({ onChange: function(value) { self.onChange(this.children[0].name, value); } });
     $(this.refs.root).find('.ui.checkbox').checkbox({ onChange: function() { self.onChange(this.name, this.checked); } });
     $(this.refs.root).find('.ui.input').change(event => self.onChange(event.target.name, event.target.value)).parent().click(event => event.currentTarget.children[0].children[0].focus());
-    //$(this.refs.firewall).dropdown({ onChange: value => { daemon.post.applySettings({ firewall: value }); }});
-    //$(this.refs.protocol).dropdown({ onChange: value => { daemon.post.applySettings({ protocol: value }); }});
-    //$(this.refs.remotePort).dropdown({ onChange: value => { daemon.post.applySettings({ remotePort: value }); }});
-    //$(this.refs.localPort).val(daemon.settings.localPort || "");
     this.daemonSettingsChanged(daemon.settings);
   }
   onChange(name, value) {
@@ -38,14 +33,11 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
   }
   daemonSettingsChanged(settings) {
     this.updatingSettings = true;
-    /*if (settings.firewall !== undefined) {
-      $(this.refs.firewall).dropdown('set selected', settings.firewall);
-    }*/
     if (settings.protocol !== undefined) {
       $(this.refs.protocol).dropdown('set selected', settings.protocol);
     }
     if (settings.remotePort !== undefined) {
-      $(this.refs.remotePort).dropdown('set selected', settings.remotePort);
+      $(ReactDOM.findDOMNode(this.refs.remotePort)).attr('data-value', settings.remotePort.replace(':', ' ').toUpperCase());
     }
     if (settings.localPort !== undefined) {
       $(this.refs.localPort).val(settings.localPort || "");
@@ -125,19 +117,7 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
 
           <div className="pane" data-title="Connection Settings">
             <div class="setting">
-              <div class="ui selection button dropdown" ref="remotePort">
-                <input type="hidden" id="remotePort" name="remotePort"/>
-                <i class="dropdown icon"></i>
-                <div class="default text">Select...</div>
-                <div className="menu">
-                  <div class="item" data-value="udp:7133">UDP 7133</div>
-                  <div class="item" data-value="udp:5060">UDP 5060</div>
-                  <div class="item" data-value="udp:53">UDP 53</div>
-                  <div class="item" data-value="tcp:7133">TCP 7133</div>
-                  <div class="item" data-value="tcp:443">TCP 443</div>
-                </div>
-              </div>
-              <label>Remote Port</label>
+              <Link to="/configuration/remoteport" tabIndex="0" ref="remotePort">Remote Port</Link>
             </div>
             <div className="setting">
               <div className="ui input">
