@@ -96,16 +96,13 @@ cd "../../${OUT_PATH}/"
 mkdir -p "./${APP_PATH_RELATIVE}/"
 mkdir -p "./${APP_PATH_RELATIVE}/etc/"
 mkdir -p "./${APP_PATH_RELATIVE}/etc/settings/"
+mkdir -p "./${APP_PATH_RELATIVE}/etc/scripts/"
 mkdir -p "./${APP_PATH_RELATIVE}/bin/"
-mkdir -p "./${APP_PATH_RELATIVE}/scripts/"
 mkdir -p "./usr/share/applications/"
 
 # get app bundle
 mv "${ELECTRON_NAME}"/* "./${APP_PATH_RELATIVE}/"
 rm -r "./${ELECTRON_NAME}"
-
-# Copy OpenVPN scripts to app bundle
-#cp -pR "../../res/${PLATFORM}/openvpn-scripts/*" "${APP_PATH_RELATIVE}/scripts/"
 
 # rename app binary to remove space
 mv "${APP_PATH_RELATIVE}/${APP_NAME}" "${APP_PATH_RELATIVE}/${APP_NAME_NOSPACE}"
@@ -129,6 +126,9 @@ install -c -m 755 "../../res/${PLATFORM}/install-scripts/preinst" "./${OS}/"
 install -c -m 755 "../../res/${PLATFORM}/install-scripts/postinst" "./${OS}/"
 install -c -m 755 "../../res/${PLATFORM}/install-scripts/prerm" "./${OS}/"
 install -c -m 755 "../../res/${PLATFORM}/install-scripts/postrm" "./${OS}/"
+
+# Copy OpenVPN scripts to app bundle
+install -c -m 755 "../../res/${PLATFORM}/openvpn-scripts/updown.sh" "${APP_PATH_RELATIVE}/etc/scripts/"
 
 # write debian package control file
 cat > "./${OS}/control" << _EOF_

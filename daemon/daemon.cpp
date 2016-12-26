@@ -785,7 +785,6 @@ void CypherDaemon::DoConnect()
 	args.push_back("--script-security");
 	args.push_back("2");
 
-#if 1
 	args.push_back("--up");
 	args.push_back(GetPath(ScriptsDir, "up.sh") + " -9 -d -f -m -w -pradsgnwADSGNW");
 	args.push_back("--down");
@@ -798,14 +797,17 @@ void CypherDaemon::DoConnect()
 	args.push_back(GetPath(ScriptsDir, "ipchange.sh"));
 	args.push_back("--route-up");
 	args.push_back(GetPath(ScriptsDir, "route-up.sh"));
-#else
-	static const char* scripts[] = { "up", "down", "route-pre-down", "tls-verify", "ipchange", "route-up" };
-	for (auto& script : scripts)
-	{
-		args.push_back(std::string("--") + script);
-		args.push_back(GetPath(ScriptsDir, "daemon.sh") + " " + script);
-	}
-#endif
+#elif OS_LINUX
+	args.push_back("--script-security");
+	args.push_back("2");
+
+	args.push_back("--up");
+	args.push_back(GetPath(ScriptsDir, "updown.sh"));
+	args.push_back("--down");
+	args.push_back(GetPath(ScriptsDir, "updown.sh"));
+#elif OS_WIN
+	args.push_back("--script-security");
+	args.push_back("1");
 #else
 	args.push_back("--script-security");
 	args.push_back("1");
