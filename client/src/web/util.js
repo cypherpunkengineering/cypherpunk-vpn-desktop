@@ -95,6 +95,62 @@ Array.toMultiDict = function toMultiDict(arr, getKey, getValue) {
 };
 
 
+export function splitVersion(v) {
+  var major = 0, minor = 0, patch = 0, prerelease = [], build = '', i;
+  if ((i = v.indexOf('+')) >= 0) {
+    build = v.slice(i+1);
+    v = v.slice(0,i);
+  }
+  if ((i = v.indexOf('-')) >= 0) {
+    prerelease = v.slice(i+1).split('.');
+    v = v.slice(0,i);
+  }
+  [major, minor, patch] = v.split('.');
+  return [major, minor, patch, prerelease, build];
+}
+
+export function compareVersions(a, b) {
+  a = splitVersion(a);
+  b = splitVersion(b);
+  a = a.slice(0,3).concat(a[3]);
+  b = b.slice(0,3).concat(b[3]);
+  for (var i = 0; i < a.length; i++) {
+    if (i >= b.length) {
+      if (b.length == 3)
+        return -(b.length+1);
+      else
+        return +(b.length+1);
+    }
+    if (!isNaN(+a[i])) {
+      if (!isNaN(+b[i])) {
+        if (+a[i] < +b[i])
+          return -(i+1);
+        else if (+a[i] > +b[i])
+          return +(i+1);
+      } else {
+        return -(i+1);
+      }
+    } else {
+      if (!isNaN(+b[i])) {
+        return +(i+1);
+      } else {
+        if (a[i] < b[i])
+          return -(i+1);
+        else if (a[i] > b[i])
+          return +(i+1);
+      }
+    }
+  }
+  if (a.length < b.length) {
+    if (a.length == 3)
+      return +(a.length+1);
+    else
+      return -(a.length+1);
+  }
+  return 0;
+}
+
+
 export const REGION_GROUP_NAMES = {
   'DEV': "Dev Servers",
   'NA': "North America",
