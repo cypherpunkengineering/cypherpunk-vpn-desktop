@@ -65,7 +65,6 @@ public:
 	namedmember(bool, blockIPv6, true)
 	namedmember(bool, overrideDNS, true)
 	namedmember(bool, blockAds, false) // only usable when overrideDNS == true
-	namedmember(bool, blockTrackers, false) // only usable when overrideDNS == true
 	namedmember(bool, blockMalware, true) // only usable when overrideDNS == true
 	namedmember(bool, routeDefault, true) // add a default (or 0/1+1/1) route to the VPN interface
 #if OS_OSX

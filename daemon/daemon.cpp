@@ -648,8 +648,7 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& server)
 	{
 		int dns_index = 10
 			+ (g_settings.blockAds() ? 1 : 0)
-			+ (g_settings.blockTrackers() ? 2 : 0)
-			+ (g_settings.blockMalware() ? 4 : 0);
+			+ (g_settings.blockMalware() ? 2 : 0);
 		std::string dns_ip = "10.10.10." + std::to_string(dns_index);
 		config["dhcp-option DNS"] = dns_ip;
 #if OS_WIN

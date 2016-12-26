@@ -26,7 +26,6 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
       case 'blockIPv6': daemon.post.applySettings({ blockIPv6: value }); break;
       case 'overrideDNS': daemon.post.applySettings({ overrideDNS: value }); break;
       case 'blockAds': daemon.post.applySettings({ blockAds: value }); break;
-      case 'blockTrackers': daemon.post.applySettings({ blockTrackers: value }); break;
       case 'blockMalware': daemon.post.applySettings({ blockMalware: value }); break;
       case 'allowLAN': daemon.post.applySettings({ allowLAN: value }); break;
       case 'routeDefault': daemon.post.applySettings({ routeDefault: value }); break;
@@ -53,9 +52,6 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
     }
     if (settings.blockAds !== undefined) {
       $(this.refs.blockAds).parent().checkbox('set ' + (settings.blockAds ? 'checked' : 'unchecked'));
-    }
-    if (settings.blockTrackers !== undefined) {
-      $(this.refs.blockTrackers).parent().checkbox('set ' + (settings.blockTrackers ? 'checked' : 'unchecked'));
     }
     if (settings.blockMalware !== undefined) {
       $(this.refs.blockMalware).parent().checkbox('set ' + (settings.blockMalware ? 'checked' : 'unchecked'));
@@ -98,12 +94,6 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
               <div className="ui toggle checkbox">
                 <input type="checkbox" name="blockAds" id="blockAds" ref="blockAds"/>
                 <label>Block Ads</label>
-              </div>
-            </div>
-            <div className="setting indented">
-              <div className="ui toggle checkbox">
-                <input type="checkbox" name="blockTrackers" id="blockTrackers" ref="blockTrackers"/>
-                <label>Block Trackers</label>
               </div>
             </div>
             <div className="setting indented">
