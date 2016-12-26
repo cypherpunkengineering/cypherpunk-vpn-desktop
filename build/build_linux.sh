@@ -71,7 +71,7 @@ mkdir -p "${OUT_PATH}"
 # build client app
 cd client
 npm install
-./node_modules/.bin/json -I -f package.json -e 'this.version=this.version.replace(/(\+.*)?$$/,"+$(BUILD_NUMBER)")' && npm run version
+./node_modules/.bin/json -I -f package.json -e 'this.version=this.version.replace(/(\+.*)?$$/,"+${BUILD_NUMBER}")' && npm run version
 npm --production run build
 
 # rebuild electron stuff in case outdated cached stuff from before
