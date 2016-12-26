@@ -734,12 +734,6 @@ int main(int argc, char **argv)
 	// Instantiate the posix version of the daemon
 	g_daemon = new PosixCypherDaemon();
 
-#ifdef OS_LINUX
-	// fork into the background for linux
-	if (fork() != 0)
-		return 0;
-#endif
-
 	// Run the daemon synchronously
 	int result = g_daemon->Run();
 
