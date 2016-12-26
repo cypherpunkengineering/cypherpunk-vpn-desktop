@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, browserHistory, hashHistory } from 'react-router';
-import { ipcRenderer } from 'electron';
+import { ipcRenderer, remote } from 'electron';
 import LoginScreen, * as Login from './components/LoginScreen';
 import ConnectScreen from './components/ConnectScreen';
 import ConfigurationScreen from './components/ConfigurationScreen';
@@ -20,6 +20,7 @@ import './assets/css/app.less';
 import RouteTransition from './components/Transition';
 import daemon from './daemon.js';
 import server from './server.js';
+import { compareVersions } from './util.js';
 
 const transitionMap = {
     'login': {
@@ -59,6 +60,75 @@ export default class Application {
       setTimeout(() => History.push('/login/email'), 0);
     }
     History.push('/login');
+    // TODO: Later we'll probably want to run this at a different timing
+    Application.checkForUpdates();
+  }
+  static checkForUpdates() {
+    server.get('/api/v0/app/versions').then(response => {
+      var version = response.data[({ 'darwin':'macos', 'win32':'windows', 'linux':'debian' })[process.platform]];
+      if (version !== undefined) {
+        function downloadAndInstall() {
+          return new Promise((resolve, reject) => {
+            if (false && version.url) { // TODO: Download to temporary directory and run installer
+
+            } else {
+              remote.shell.openExternal('https://cypherpunk.com/download');
+            }
+            resolve();
+          });
+        }
+        var current = remote.app.getVersion();
+        if (compareVersions(version.required, current) > 0) {
+          Application.showMessageBox({
+            type: 'warning',
+            title: "Update required",
+            message: "In order to keep using Cypherpunk Privacy, a software update is required.\n\n" + current + " -> " + version.latest,
+            buttons: [ version.url ? "Download and install" : "Go to download page", "Quit" ],
+            defaultId : 0,
+            cancelId: 1,
+          }, button => {
+            if (button == 0) {
+              downloadAndInstall().then(() => {
+                remote.app.quit();
+              });
+            } else {
+              remote.app.quit();
+            }
+          });
+        } else {
+          let diff = compareVersions(version.latest, current), title, message;
+          if (diff > 0) {
+            let strings = {
+              '1': ["Install important update?", "A major update is available; would you like to install it?"],
+              '2': ["Install recommended update?", "A recommended update is available; would you like to install it?"],
+              '3': ["Install update?", "An update is available; would you like to install it?"],
+            };
+            let [title, message] = strings[diff] || strings[3];
+            Application.showMessageBox({
+              type: 'info',
+              title,
+              message,
+              buttons: [ version.url ? "Download and install" : "Go to download page", "Ignore" ],
+              defaultId: 0,
+              cancelId: 1,
+            }, button => {
+              if (button == 0) {
+                downloadAndInstall();
+              }
+            })
+          }
+        }
+      }
+    });
+  }
+  static showMessageBox(options, callback) {
+    if (process.platform === 'darwin') {
+      // On macOS what would normally be the title should instead be the message, and the message should be the detail
+      options.detail = options.message;
+      options.message = options.title;
+      delete options.title;
+    }
+    return remote.dialog.showMessageBox(remote.getCurrentWindow(), options, callback);
   }
   static navigate(location) {
     Application.History.push(location);
