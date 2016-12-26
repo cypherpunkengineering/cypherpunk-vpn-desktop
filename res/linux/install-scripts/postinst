@@ -1,6 +1,4 @@
 #!/bin/bash
 systemctl daemon-reload
-(cd /etc/rc2.d && ln -fs ../init.d/cypherpunk S04cypherpunk)
-(cd /etc/rc3.d && ln -fs ../init.d/cypherpunk S04cypherpunk)
-(cd /etc/rc5.d && ln -fs ../init.d/cypherpunk S04cypherpunk)
+update-rc.d cypherpunk defaults
 /etc/init.d/cypherpunk start
