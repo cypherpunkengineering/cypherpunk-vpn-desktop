@@ -24,7 +24,10 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
       case 'remotePort': daemon.post.applySettings({ remotePort: value }); break;
       case 'localPort': daemon.post.applySettings({ localPort: parseInt(value, 10) }); break;
       case 'blockIPv6': daemon.post.applySettings({ blockIPv6: value }); break;
-      case 'blockDNS': daemon.post.applySettings({ blockDNS: value }); break;
+      case 'overrideDNS': daemon.post.applySettings({ overrideDNS: value }); break;
+      case 'blockAds': daemon.post.applySettings({ blockAds: value }); break;
+      case 'blockTrackers': daemon.post.applySettings({ blockTrackers: value }); break;
+      case 'blockMalware': daemon.post.applySettings({ blockMalware: value }); break;
       case 'allowLAN': daemon.post.applySettings({ allowLAN: value }); break;
       case 'routeDefault': daemon.post.applySettings({ routeDefault: value }); break;
       case 'exemptApple': daemon.post.applySettings({ exemptApple: value }); break;
@@ -45,8 +48,17 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
     if (settings.blockIPv6 !== undefined) {
       $(this.refs.blockIPv6).parent().checkbox('set ' + (settings.blockIPv6 ? 'checked' : 'unchecked'));
     }
-    if (settings.blockDNS !== undefined) {
-      $(this.refs.blockDNS).parent().checkbox('set ' + (settings.blockDNS ? 'checked' : 'unchecked'));
+    if (settings.overrideDNS !== undefined) {
+      $(this.refs.overrideDNS).parent().checkbox('set ' + (settings.overrideDNS ? 'checked' : 'unchecked'));
+    }
+    if (settings.blockAds !== undefined) {
+      $(this.refs.blockAds).parent().checkbox('set ' + (settings.blockAds ? 'checked' : 'unchecked'));
+    }
+    if (settings.blockTrackers !== undefined) {
+      $(this.refs.blockTrackers).parent().checkbox('set ' + (settings.blockTrackers ? 'checked' : 'unchecked'));
+    }
+    if (settings.blockMalware !== undefined) {
+      $(this.refs.blockMalware).parent().checkbox('set ' + (settings.blockMalware ? 'checked' : 'unchecked'));
     }
     if (settings.allowLAN !== undefined) {
       $(this.refs.allowLAN).parent().checkbox('set ' + (settings.allowLAN ? 'checked' : 'unchecked'));
@@ -76,38 +88,56 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
         <div className="collapsible-title" onClick={e => this.onAdvancedClick(e)}>Advanced Settings</div>
         <div className="collapsible-content">
           <div className={"pane" + (process.platform == 'linux' ? " hidden" : "")} data-title="Privacy Settings">
+            <div className="setting">
+              <div className="ui toggle checkbox">
+                <input type="checkbox" name="overrideDNS" id="overrideDNS" ref="overrideDNS"/>
+                <label>Use Cypherpunk DNS</label>
+              </div>
+            </div>
+            <div className="setting indented">
+              <div className="ui toggle checkbox">
+                <input type="checkbox" name="blockAds" id="blockAds" ref="blockAds"/>
+                <label>Block Ads</label>
+              </div>
+            </div>
+            <div className="setting indented">
+              <div className="ui toggle checkbox">
+                <input type="checkbox" name="blockTrackers" id="blockTrackers" ref="blockTrackers"/>
+                <label>Block Trackers</label>
+              </div>
+            </div>
+            <div className="setting indented">
+              <div className="ui toggle checkbox">
+                <input type="checkbox" name="blockMalware" id="blockMalware" ref="blockMalware"/>
+                <label>Block Malware</label>
+              </div>
+            </div>
             <div class="setting">
               <Link to="/configuration/firewall" tabIndex="0" ref="firewall">Internet Killswitch</Link>
             </div>
-            <div className="setting">
+            <div className="setting indented">
               <div className="ui toggle checkbox">
                 <input type="checkbox" name="allowLAN" id="allowLAN" ref="allowLAN"/>
                 <label>Always Allow LAN Traffic</label>
               </div>
             </div>
             {/* hide until feature works correctly */}
-            <div className="setting hidden">
+            <div className="setting hidden indented">
               <div className="ui toggle checkbox">
                 <input type="checkbox" name="blockIPv6" id="blockIPv6" ref="blockIPv6"/>
                 <label>Block IPv6 Traffic</label>
               </div>
             </div>
-            <div className="setting hidden">
-              <div className="ui toggle checkbox">
-                <input type="checkbox" name="blockDNS" id="blockDNS" ref="blockDNS"/>
-                <label>Use Cypherpunk DNS</label>
-              </div>
-            </div>
           </div>
 
-          <div className={"pane" + ((daemon.account.account.type === 'developer' || process.platform === 'darwin') ? "" : " hidden")} data-title="Routing Settings">
-            <div className={"setting" + (daemon.account.account.type === 'developer' ? "" : " hidden")}>
+          <div className={"pane" + ((true || daemon.account.account.type === 'developer' || process.platform === 'darwin') ? "" : " hidden")} data-title="Routing Settings">
+            <div className={"setting" + (true || daemon.account.account.type === 'developer' ? "" : " hidden")}>
               <div className="ui toggle checkbox">
                 <input type="checkbox" name="routeDefault" id="routeDefault" ref="routeDefault"/>
                 <label>Route Internet Traffic via VPN</label>
               </div>
             </div>
-            <div className={"setting" + (process.platform === 'darwin' ? "" : " hidden")}>
+            <div className={"setting indented" + (process.platform === 'darwin' ? "" : " hidden")}>
               <div className="ui toggle checkbox">
                 <input type="checkbox" name="exemptApple" id="exemptApple" ref="exemptApple"/>
                 <label>Exempt Apple Services</label>

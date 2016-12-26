@@ -643,6 +643,21 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& server)
 	}
 #endif
 
+	config["pull-filter ignore \"dhcp-option DNS\""] = "";
+	if (g_settings.overrideDNS())
+	{
+		int dns_index = 10
+			+ (g_settings.blockAds() ? 1 : 0)
+			+ (g_settings.blockTrackers() ? 2 : 0)
+			+ (g_settings.blockMalware() ? 4 : 0);
+		std::string dns_ip = "10.10.10." + std::to_string(dns_index);
+		config["dhcp-option DNS"] = dns_ip;
+#if OS_WIN
+		config["register-dns"] = "";
+		config["block-outside-dns"] = "";
+#endif
+	}
+
 	// FIXME: Manually translate other settings to OpenVPN parameters
 	/*
 	for (const auto& e : settings)
