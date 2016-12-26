@@ -42,8 +42,6 @@ if [ -z "${BUILD_NUMBER}" ];then
 	BUILD_NUMBER="${BUILD_NAME}-${GIT_HASH}"
 	APP_VERSION=$(echo "${APP_VERSION_SHORT}" | sed -E "s/^([^-+]*)(-[^+]*)?(\+.*)?/\1\2${BUILD_NUMBER}/")
 else
-	# Pad the build number to five digits
-	export BUILD_NUMBER="$(printf '%05d' "${BUILD_NUMBER}")"
 	APP_VERSION=$(echo "${APP_VERSION_SHORT}" | sed -E "s/^([^-+]*)(-[^+]*)?(\+.*)?/\1\2+${BUILD_NUMBER}/")
 fi
 
