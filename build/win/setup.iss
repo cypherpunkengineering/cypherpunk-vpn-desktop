@@ -6,9 +6,9 @@
 #define MyAppCopyright "Copyright © 2016 " + MyAppPublisher
 #define MyInstallerName "cypherpunk-privacy-windows"
 
-#define MyAppVersion "0.3.0-alpha"
-#define MyAppNumericVersion "0.3.0"
-#define MyInstallerSuffix "-0.3.0-alpha"
+#define MyAppVersion "0.4.0-beta"
+#define MyAppNumericVersion "0.4.0"
+#define MyInstallerSuffix "-0.4.0-beta"
 
 [Setup]
 AppId={#MyAppID}
