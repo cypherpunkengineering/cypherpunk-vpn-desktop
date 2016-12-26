@@ -43,6 +43,7 @@ var options = {
   ],
   module: {
     loaders: [
+      { test: /./, include: path.resolve(__dirname, 'src/assets'), loader: 'file-loader?emitFile=false&name=../[path][name].[ext]&context=src' },
       { test: /\.jsx?$/, exclude: /(node_modules|[\/]~[\/]|semantic[\/]|webpack\-dev\-server|socket\.io\-client|\.min\.js$)/, loader: 'babel' },
       { test: /\.css$/, loader: cssLoader('style' + devMap, 'css' + devMap) },
       { test: /\.less$/, loader: cssLoader('style' + devMap, 'css' + devMap + '!less' + devMap) },
