@@ -42,6 +42,8 @@ if [ -z "${BUILD_NUMBER}" ];then
 	BUILD_NUMBER="${BUILD_NAME}-${GIT_HASH}"
 	APP_VERSION=$(echo "${APP_VERSION_SHORT}" | sed -E "s/^([^-+]*)(-[^+]*)?(\+.*)?/\1\2${BUILD_NUMBER}/")
 else
+	# Pad the build number to five digits
+	export BUILD_NUMBER="$(printf '%05d' "${BUILD_NUMBER}")"
 	APP_VERSION=$(echo "${APP_VERSION_SHORT}" | sed -E "s/^([^-+]*)(-[^+]*)?(\+.*)?/\1\2+${BUILD_NUMBER}/")
 fi
 
@@ -69,6 +71,7 @@ mkdir -p "${OUT_PATH}"
 # build client app
 cd client
 npm install
+./node_modules/.bin/json -I -f package.json -e 'this.version=this.version.replace(/(\+.*)?$$/,"+$(BUILD_NUMBER)")' && npm run version
 npm --production run build
 
 # rebuild electron stuff in case outdated cached stuff from before
