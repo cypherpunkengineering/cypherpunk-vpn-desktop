@@ -1,4 +1,4 @@
 #!/bin/bash
 systemctl daemon-reload
 update-rc.d cypherpunk defaults
-/etc/init.d/cypherpunk start
+service cypherpunk force-reload
