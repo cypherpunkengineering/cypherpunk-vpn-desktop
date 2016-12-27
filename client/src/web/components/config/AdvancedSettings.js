@@ -83,7 +83,7 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
       <div className={"collapsible" + (this.state.advanced ? " open" : "")} ref="root">
         <div className="collapsible-title" onClick={e => this.onAdvancedClick(e)}>Advanced Settings</div>
         <div className="collapsible-content">
-          <div className={"pane" + (process.platform == 'linux' ? " hidden" : "")} data-title="Privacy Settings">
+          <div className="pane" data-title="Privacy Settings">
             <div className="setting">
               <div className="ui toggle checkbox">
                 <input type="checkbox" name="overrideDNS" id="overrideDNS" ref="overrideDNS"/>
@@ -102,10 +102,10 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
                 <label>Block Malware</label>
               </div>
             </div>
-            <div class="setting">
+            <div class={"setting " + (process.platform == 'linux' ? " hidden" : "")}>
               <Link to="/configuration/firewall" tabIndex="0" ref="firewall">Internet Killswitch</Link>
             </div>
-            <div className="setting indented">
+            <div className={"setting indented" + (process.platform == 'linux' ? " hidden" : "")}>
               <div className="ui toggle checkbox">
                 <input type="checkbox" name="allowLAN" id="allowLAN" ref="allowLAN"/>
                 <label>Always Allow LAN Traffic</label>
