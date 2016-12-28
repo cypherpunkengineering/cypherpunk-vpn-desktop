@@ -65,8 +65,8 @@ function setAccount(data) {
 
 export class Check extends React.Component {
   static run() {
-    // Use setTimeout to avoid changing history in the same callstack
-    setTimeout(() => {
+    // Use setImmediate to avoid changing history in the same callstack
+    setImmediate(() => {
       if (daemon.account.account && daemon.account.account.confirmed && daemon.account.privacy && daemon.config.locations) {
         // Go straight to main screen and run the check in the background; if it
         // fails, we'll go back to the login screen.
@@ -84,7 +84,7 @@ export class Check extends React.Component {
           }
         });
       }
-    }, 0);
+    });
   }
   componentDidMount() {
     // Not the nicest pattern, but check if we're logged in here. A successful
@@ -104,7 +104,7 @@ export class Check extends React.Component {
 
 export class Logout extends React.Component {
   componentDidMount() {
-    setTimeout(() => { // need to use setTimeout since we might modify History
+    setImmediate(() => { // need to use setImmediate since we might modify History
       daemon.post.disconnect(); // make sure we don't stay connected
       server.post('/api/v0/account/logout', null, { refreshSessionOnForbidden: false, catchAuthFailure: false })
         .catch(err => console.error("Error while logging out:", err))

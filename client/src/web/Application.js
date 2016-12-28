@@ -57,7 +57,7 @@ export default class Application {
       return server.post('/api/v1/account/authenticate/token', { email: daemon.account.account.email, token: daemon.account.account.token }).then(data => true);
     };
     server.onAuthFailure = () => {
-      setTimeout(() => History.push('/login/email'), 0);
+      setImmediate(() => History.push('/login/email'));
     }
     History.push('/login');
     // TODO: Later we'll probably want to run this at a different timing
@@ -119,7 +119,7 @@ export default class Application {
           }
         }
       }
-    });
+    }).catch(err => console.warn("Update check failed:", err));
   }
   static showMessageBox(options, callback) {
     if (process.platform === 'darwin') {
