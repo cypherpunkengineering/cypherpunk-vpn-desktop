@@ -4,7 +4,6 @@ const { RPC, WebSocketImpl, ERROR_METHOD_NOT_FOUND } = require('./rpc.js');
 const WebSocket = require('ws');
 //const WebSocket = require('websocket').client;
 
-var mainWindow = null;
 var callbacks = {};
 var handlers = {};
 var ws, rpc, daemon;
@@ -51,13 +50,8 @@ class Daemon extends EventEmitter {
   unregisterMethod(method) {
     delete handlers[method];
   }
-  setMainWindow(w) {
-    if (w !== mainWindow) {
-      mainWindow = w;
-      if (mainWindow) {
-        mainWindow.webContents.send(isopen ? 'daemon-up' : 'daemon-down', buildStatusReply());
-      }
-    }
+  notifyWindowCreated() {
+    if (window) window.webContents.send(isopen ? 'daemon-up' : 'daemon-down', buildStatusReply());
   }
   disconnect() {
     return ws.disconnect();
@@ -95,24 +89,20 @@ ipcMain.on('daemon-open', (event) => {
 function onopen() {
   isopen = true;
   daemon.emit('up');
-  if (mainWindow) {
-    mainWindow.webContents.send('daemon-up', buildStatusReply());
-  }
+  if (window) window.webContents.send('daemon-up', buildStatusReply());
 }
 
 function onerror() {
   isopen = false;
   daemon.emit('down');
-  if (mainWindow) {
-    mainWindow.webContents.send('daemon-down', buildStatusReply());
-  }
+  if (window) window.webContents.send('daemon-down', buildStatusReply());
   return true;
 }
 
 function oncall(method, params, id) {
   if (handlers[method]) {
     return handlers[method].apply(daemon, params);
-  } else if (mainWindow) {
+  } else if (window) {
     return new Promise((resolve, reject) => {
       callbacks[id] = function(result, error) {
         if (error) {
@@ -121,7 +111,7 @@ function oncall(method, params, id) {
           resolve(result);
         }
       };
-      mainWindow.webContents.send('daemon-call', method, params, id);
+      window.webContents.send('daemon-call', method, params, id);
     });
   } else {
     throw ERROR_METHOD_NOT_FOUND;
@@ -129,9 +119,7 @@ function oncall(method, params, id) {
 }
 
 function onpost(method, params) {
-  if (mainWindow) {
-    mainWindow.webContents.send('daemon-post', method, params);
-  }
+  if (window) window.webContents.send('daemon-post', method, params);
   switch (method) {
     case 'account':
     case 'config':
