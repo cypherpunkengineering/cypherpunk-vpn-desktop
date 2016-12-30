@@ -101,10 +101,10 @@ class Tray {
     const state = this.state.state.state;
     const connected = state !== 'DISCONNECTED';
     let items = [];
-    if (loggedIn) {
+    if (this.state.loggedIn) {
       /*if (!window || !window.isVisible())*/ {
         items.push(
-          { label: "Show window", click: () => { showMainWindow(); }},
+          { label: "Show window", click: () => { if (window) window.show(); }},
           { type: 'separator' }
         );
       }
@@ -151,11 +151,11 @@ class Tray {
 
       if (window) {
         items.push({ type: 'separator' });
-        items.push({ label: "My Account", click: () => { window.webContents.send('navigate', { pathname: '/account' }); showMainWindow(); } });
-        items.push({ label: "Configuration", click: () => { window.webContents.send('navigate', { pathname: '/configuration' }); showMainWindow(); } });
+        items.push({ label: "My Account", click: () => { if (window) { window.webContents.send('navigate', { pathname: '/account' }); window.show(); } }});
+        items.push({ label: "Configuration", click: () => { if (window) { window.webContents.send('navigate', { pathname: '/configuration' }); window.show(); } }});
       }
     } else {
-      items.push({ label: "Sign in", click: () => { showMainWindow(); }});
+      items.push({ label: "Sign in", click: () => { if (window) window.show(); }});
     }
     items.push(
       { type: 'separator' },
