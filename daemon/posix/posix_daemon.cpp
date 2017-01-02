@@ -536,6 +536,7 @@ public:
 	}
 	virtual void ApplyFirewallSettings() override
 	{
+#if OS_OSX
 		bool is_connected;
 		switch (_state)
 		{
@@ -563,6 +564,9 @@ public:
 			pfctl_set_anchor_enabled("100.killswitch", false);
 			pfctl_set_anchor_enabled("200.exemptLAN", false);
 		}
+#elif OS_LINUX
+
+#endif
 	}
 	void OnSignal(const asio::error_code& error, int signal)
 	{
