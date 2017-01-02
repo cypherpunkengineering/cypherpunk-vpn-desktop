@@ -805,17 +805,11 @@ void CypherDaemon::DoConnect()
 	args.push_back("2");
 
 	args.push_back("--up");
-	args.push_back(GetPath(ScriptsDir, "up.sh") + " -9 -d -f -m -w -pradsgnwADSGNW");
+	args.push_back(GetPath(ScriptsDir, "up.sh"));
 	args.push_back("--down");
-	args.push_back(GetPath(ScriptsDir, "down.sh") + " -9 -d -f -m -w -pradsgnwADSGNW");
+	args.push_back(GetPath(ScriptsDir, "down.sh"));
 	args.push_back("--route-pre-down");
 	args.push_back(GetPath(ScriptsDir, "route-pre-down.sh"));
-	args.push_back("--tls-verify");
-	args.push_back(GetPath(ScriptsDir, "tls-verify.sh"));
-	args.push_back("--ipchange");
-	args.push_back(GetPath(ScriptsDir, "ipchange.sh"));
-	args.push_back("--route-up");
-	args.push_back(GetPath(ScriptsDir, "route-up.sh"));
 #elif OS_LINUX
 	args.push_back("--script-security");
 	args.push_back("2");
