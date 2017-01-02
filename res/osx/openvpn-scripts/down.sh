@@ -63,7 +63,7 @@ else
     scutil <<- EOF
         open
         get State:/Network/OpenVPN/OldDNS
-        set State:/Network/Service/${PSID}/DNS
+        set Setup:/Network/Service/${PSID}/DNS
         quit
 EOF
 fi
@@ -78,7 +78,7 @@ else
     scutil <<- EOF
         open
         get State:/Network/OpenVPN/OldSMB
-        set State:/Network/Service/${PSID}/SMB
+        set Setup:/Network/Service/${PSID}/SMB
         quit
 EOF
 fi
