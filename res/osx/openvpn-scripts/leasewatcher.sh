@@ -32,7 +32,7 @@ PSID="$(echo "${CYPHERPUNK_CONFIG}" | grep -i '^[[:space:]]*Service :' | sed -e 
 if (( M=${PROCESS:-0} )) ; then
     # This is what scutil returns for a non-existant key
     SCUTIL_NO_SUCH_KEY="  No such key"
-    # This is what client.up.tunnelblick.up stores into State:/Network/OpenVPN/OldDNS and State:/Network/OpenVPN/OldSMB for a non-existant key
+    # This is what up.sh stores into State:/Network/OpenVPN/OldDNS and State:/Network/OpenVPN/OldSMB for a non-existant key
     # DON'T CHANGE the indenting of the 2nd and 3rd lines; they are part of the string:
     CP_NO_SUCH_KEY="<dictionary> {
   CypherpunkNoSuchKey : true

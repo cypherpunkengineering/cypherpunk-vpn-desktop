@@ -7,9 +7,9 @@ export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin"
 CP_APP_PATH=`osascript -e 'POSIX path of (path to application id "com.cypherpunk.privacy.app")'`
 
 CP_RESOURCES_PATH="${ARG_CP_PATH}/Contents/Resources"
-LEASEWATCHER_PLIST_PATH="/Library/Application Support/Cypherpunk Privacy/LeaseWatch3.plist"
-LEASEWATCHER_TEMPLATE_PATH="${CP_RESOURCES_PATH}/LeaseWatch3.plist"
-REMOVE_LEASEWATCHER_PLIST="true"
+LEASEWATCHER_PLIST_PATH="/Library/LaunchDaemons/com.cypherpunk.privacy.leasewatcher.plist"
+#LEASEWATCHER_TEMPLATE_PATH="${CP_RESOURCES_PATH}/LeaseWatch3.plist"
+REMOVE_LEASEWATCHER_PLIST="false"
 
 nOptionIndex=1
 nNameServerIndex=1
