@@ -650,13 +650,13 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& server)
 			+ (g_settings.blockAds() ? 1 : 0)
 			+ (g_settings.blockMalware() ? 2 : 0);
 		std::string dns_ip = "10.10.10." + std::to_string(dns_index);
-		config["dhcp-option DNS"] = dns_ip;
+		config["dhcp-option   DNS"] = dns_ip;
 #ifdef OS_LINUX
 		// XXX: temp hack workaround to force all 3 nameservers to 10.10.10.10 to prevent leaking
 		std::string dns_ip1 = "10.10.11." + std::to_string(dns_index);
 		config["dhcp-option  DNS"] = dns_ip1;
 		std::string dns_ip2 = "10.10.12." + std::to_string(dns_index);
-		config["dhcp-option   DNS"] = dns_ip2;
+		config["dhcp-option DNS"] = dns_ip2;
 #endif
 #if OS_WIN
 		config["register-dns"] = "";
