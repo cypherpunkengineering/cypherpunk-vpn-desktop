@@ -157,7 +157,7 @@ scutil <<- EOF
 	# which means that we will have to aggregate configurations of statically-configured
 	# nameservers
 	d.init
-	${AGG_DNS}d.add ServerAddresses * ${ALL_DNS}
+	get State:/Network/Global/DNS
 	set State:/Network/OpenVPN/DNS
 
 	# We're done

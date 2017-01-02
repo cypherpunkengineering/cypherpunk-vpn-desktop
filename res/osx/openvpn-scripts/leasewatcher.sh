@@ -18,7 +18,7 @@ EOF)"
 
 ARG_RESTORE_ON_DNS_RESET="$(echo "${CYPHERPUNK_CONFIG}" | grep -i '^[[:space:]]*RestoreOnDNSReset :' | sed -e 's/^.*: //g')"
 ARG_RESTORE_ON_WINS_RESET="$(echo "${CYPHERPUNK_CONFIG}" | grep -i '^[[:space:]]*RestoreOnWINSReset :' | sed -e 's/^.*: //g')"
-SCRIPT_LOG_FILE="$(echo "${CYPHERPUNK_CONFIG}" | grep -i '^[[:space:]]*ScriptLogFile :' | sed -e 's/^.*: //g')"
+SCRIPT_LOG_FILE="/tmp/leasewatcher.log"
 PROCESS="$(echo "${CYPHERPUNK_CONFIG}" | grep -i '^[[:space:]]*PID :' | sed -e 's/^.*: //g')"
 PSID="$(echo "${CYPHERPUNK_CONFIG}" | grep -i '^[[:space:]]*Service :' | sed -e 's/^.*: //g')"
 # Don't need: ARG_MONITOR_NETWORK_CONFIGURATION="$(echo "${CYPHERPUNK_CONFIG}" | grep -i '^[[:space:]]*MonitorNetwork :' | sed -e 's/^.*: //g')"
