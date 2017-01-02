@@ -37,16 +37,13 @@ unset vDNS
 unset vOptions
 
 # what's the rush?
-sleep 2
+#sleep 2
 
 while vForOptions=foreign_option_$nOptionIndex; [ -n "${!vForOptions}" ]; do
 	{
 	vOptions[nOptionIndex-1]=${!vForOptions}
 	case ${vOptions[nOptionIndex-1]} in
-		*DOMAIN* )
-			domain="$(trim "${vOptions[nOptionIndex-1]//dhcp-option DOMAIN /}")"
-			;;
-		*DNS*    )
+		*DNS*)
 			vDNS[nNameServerIndex-1]="$(trim "${vOptions[nOptionIndex-1]//dhcp-option DNS /}")"
 			let nNameServerIndex++
 			;;
@@ -54,11 +51,6 @@ while vForOptions=foreign_option_$nOptionIndex; [ -n "${!vForOptions}" ]; do
 	let nOptionIndex++
 	}
 done
-
-# set domain to a default value when no domain is being transmitted
-if [ "$domain" == "" ]; then
-	domain="local"
-fi
 
 PSID=$( (scutil | grep PrimaryService | sed -e 's/.*PrimaryService : //')<<- EOF
 	open
@@ -115,36 +107,8 @@ else
 fi
 readonly DYN_DNS ALL_DNS
 
-# We double-check that our search domain isn't already on the list
-SEARCH_DOMAIN="${domain}"
-case "${OSVER}" in
-	10.6 | 10.7 )
-		# Do nothing - in 10.6 we don't aggregate our configurations, apparently
-		if [ -n "${STATIC_SEARCH}" ] ; then
-			ALL_SEARCH="${STATIC_SEARCH}"
-			SEARCH_DOMAIN=""
-		else
-			ALL_SEARCH="${SEARCH_DOMAIN}"
-		fi
-		;;
-	10.4 | 10.5 )
-		if echo "${STATIC_SEARCH}" | tr ' ' '\n' | grep -q "${SEARCH_DOMAIN}" ; then
-			SEARCH_DOMAIN=""
-		fi
-		if [ -z "${SEARCH_DOMAIN}" ] ; then
-			ALL_SEARCH="${STATIC_SEARCH}"
-		else
-			ALL_SEARCH="$(trim "${STATIC_SEARCH}" "${SEARCH_DOMAIN}")"
-		fi
-		;;
-esac
-readonly SEARCH_DOMAIN ALL_SEARCH
-
 if ! ${DYN_DNS} ; then
 	NO_DNS="#"
-fi
-if [ -z "${SEARCH_DOMAIN}" ] ; then
-	NO_SEARCH="#"
 fi
 if [ -z "${STATIC_WORKGROUP}" ] ; then
 	NO_WG="#"
@@ -161,40 +125,39 @@ scutil <<- EOF
 	d.init
 	d.add PID # ${PPID}
 	d.add Service ${PSID}
-    d.add LeaseWatcherPlistPath "${LEASEWATCHER_PLIST_PATH}"
-    d.add RemoveLeaseWatcherPlist "${REMOVE_LEASEWATCHER_PLIST}"
-    d.add MonitorNetwork "${ARG_MONITOR_NETWORK_CONFIGURATION}"
-    d.add RestoreOnDNSReset   "${ARG_RESTORE_ON_DNS_RESET}"
+	d.add LeaseWatcherPlistPath "${LEASEWATCHER_PLIST_PATH}"
+	d.add RemoveLeaseWatcherPlist "${REMOVE_LEASEWATCHER_PLIST}"
+	d.add MonitorNetwork "${ARG_MONITOR_NETWORK_CONFIGURATION}"
+	d.add RestoreOnDNSReset   "${ARG_RESTORE_ON_DNS_RESET}"
 	set State:/Network/OpenVPN
 
 	# First, back up the device's current DNS configurations
-    # Indicate 'no such key' by a dictionary with a single entry: "CypherpunkNoSuchKey : true"
-    d.init
-    d.add CypherpunkNoSuchKey true
-    get State:/Network/Service/${PSID}/DNS
+	# Indicate 'no such key' by a dictionary with a single entry: "CypherpunkNoSuchKey : true"
+	d.init
+	d.add CypherpunkNoSuchKey true
+	get State:/Network/Service/${PSID}/DNS
 	set State:/Network/OpenVPN/OldDNS
 
-    d.init
-    d.add CypherpunkNoSuchKey true
-    get State:/Network/Service/${PSID}/SMB
+	d.init
+	d.add CypherpunkNoSuchKey true
+	get State:/Network/Service/${PSID}/SMB
 	set State:/Network/OpenVPN/OldSMB
 
 	# Second, initialize the new DNS map
 	d.init
-	${HIDE_SNOW_LEOPARD}d.add DomainName ${domain}
 	${NO_DNS}d.add ServerAddresses * ${vDNS[*]}
-	${NO_SEARCH}d.add SearchDomains * ${SEARCH_DOMAIN}
-	${HIDE_LEOPARD}d.add DomainName ${domain}
 	set State:/Network/Service/${PSID}/DNS
+
+	# set the Setup: as well
+	d.init
+	${NO_DNS}d.add ServerAddresses * ${vDNS[*]}
+	set Setup:/Network/Service/${PSID}/DNS
 
 	# Now, initialize the maps that will be compared against the system-generated map
 	# which means that we will have to aggregate configurations of statically-configured
-	# nameservers, and statically-configured search domains
+	# nameservers
 	d.init
-	${HIDE_SNOW_LEOPARD}d.add DomainName ${domain}
 	${AGG_DNS}d.add ServerAddresses * ${ALL_DNS}
-	${AGG_SEARCH}d.add SearchDomains * ${ALL_SEARCH}
-	${HIDE_LEOPARD}d.add DomainName ${domain}
 	set State:/Network/OpenVPN/DNS
 
 	# We're done
@@ -202,7 +165,7 @@ scutil <<- EOF
 EOF
 
 if ${ARG_MONITOR_NETWORK_CONFIGURATION} ; then
-    launchctl load "${LEASEWATCHER_PLIST_PATH}"
+	launchctl load "${LEASEWATCHER_PLIST_PATH}"
 fi
 
 exit 0
