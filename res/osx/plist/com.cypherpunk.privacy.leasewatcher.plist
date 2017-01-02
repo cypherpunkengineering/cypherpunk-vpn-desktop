@@ -3,10 +3,10 @@
 <plist version="1.0">
 	<dict>
 		<key>Label</key>
-		<string>com.cypherpunk.privacy.leasewatch</string>
+		<string>com.cypherpunk.privacy.leasewatcher</string>
 		<key>ProgramArguments</key>
 		<array>
-			<string>/Applications/Cypherpunk\ Privacy.app.app/Contents/Resources/leasewatch</string>
+			<string>/usr/local/cypherpunk/etc/scripts/leasewatcher.sh</string>
 		</array>
 		<key>WatchPaths</key>
 		<array>

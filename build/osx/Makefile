@@ -23,6 +23,7 @@ APP_SIG = $(APP_NAME)-$(APP_PLATFORM)-$(APP_ARCH)
 APP_BUNDLE = $(APP_NAME).app
 APP_NS = com.cypherpunk.privacy
 CLIENT_NS = $(APP_NS).client
+LEASEWATCHER_NS = $(APP_NS).leasewatcher
 DAEMON_NS = $(APP_NS).service
 DAEMON_FILENAME = cypherpunk-privacy-service
 OPENVPN_FILENAME = cypherpunk-privacy-openvpn
@@ -66,6 +67,9 @@ endef
 define do-stop-daemon
 	$(HUSH) sudo launchctl unload "/Library/LaunchDaemons/$(DAEMON_NS).plist" || true
 endef
+define do-stop-leasewatcher
+	$(HUSH) sudo launchctl unload "/Library/LaunchDaemons/$(LEASEWATCHER_NS).plist" || true
+endef
 
 start-daemon:
 	$(do-start-daemon)
@@ -73,6 +77,8 @@ start-daemon:
 stop-daemon:
 	$(do-stop-daemon)
 
+stop-leasewatcher:
+	$(do-stop-leasewatcher)
 
 # Source building
 
@@ -150,6 +156,10 @@ $(STAGING)/Library/LaunchDaemons/$(DAEMON_NS).plist: $(ROOT)/res/osx/plist/$(DAE
 	$(ECHO_STAGING)
 	$(HUSH) mkdir -p $(dir $@)
 	$(HUSH) cp -p $< $@
+$(STAGING)/Library/LaunchDaemons/$(LEASEWATCHER_NS).plist: $(ROOT)/res/osx/plist/$(LEASEWATCHER_NS).plist
+	$(ECHO_STAGING)
+	$(HUSH) mkdir -p $(dir $@)
+	$(HUSH) cp -p $< $@
 
 
 # Installing to local machine
@@ -174,6 +184,8 @@ install-daemon: stage-daemon
 	$(HUSH) sudo dseditgroup -o edit -a everyone -t group cypherpunk
 	$(do-start-daemon)
 
+install-leasewatcher:
+	$(HUSH) sudo cp -f "$(STAGING)/Library/LaunchDaemons/$(LEASEWATCHER_NS).plist" /Library/LaunchDaemons/
 
 # Uninstalling from local machine
 
@@ -188,6 +200,9 @@ uninstall-daemon:
 	$(do-stop-daemon)
 	$(HUSH) sudo rm -f "/Library/LaunchDaemons/$(DAEMON_NS).plist"
 
+uninstall-leasewatcher:
+	$(do-stop-leasewatcher)
+	$(HUSH) sudo rm -f "/Library/LaunchDaemons/$(LEASEWATCHER_NS).plist"
 
 # Final packages
 
