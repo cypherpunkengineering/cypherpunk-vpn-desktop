@@ -114,7 +114,7 @@ $(ROOT)/daemon/posix/$(DAEMON_FILENAME): version
 
 ECHO_STAGING=$(ECHO) "* Staging $(@:$(STAGING)%=%)..."
 
-stage: stage-client stage-daemon
+stage: stage-client stage-daemon stage-leasewatcher
 
 stage-client: client
 	$(ECHO) "* Staging client..."
@@ -133,6 +133,8 @@ stage-client: client
 	$(HUSH) rm -rf "$(OUT)/$(APP_SIG)"
 
 stage-daemon: $(STAGING)/usr/local/cypherpunk/bin/$(DAEMON_FILENAME) $(STAGING)/Library/LaunchDaemons/$(DAEMON_NS).plist $(STAGING)/usr/local/cypherpunk/bin/$(OPENVPN_FILENAME) $(OPENVPN_SCRIPTS:$(ROOT)/res/osx/openvpn-scripts/%=$(STAGING)/usr/local/cypherpunk/etc/scripts/%) $(PF_ANCHORS:$(ROOT)/res/osx/pf.anchors/%=$(STAGING)/usr/local/cypherpunk/etc/pf.anchors/%)
+
+stage-leasewatcher: $(STAGING)/Library/LaunchDaemons/$(LEASEWATCHER_NS).plist
 
 $(STAGING)/usr/local/cypherpunk/bin/$(DAEMON_FILENAME): $(ROOT)/daemon/posix/$(DAEMON_FILENAME)
 	$(ECHO_STAGING)
@@ -164,7 +166,7 @@ $(STAGING)/Library/LaunchDaemons/$(LEASEWATCHER_NS).plist: $(ROOT)/res/osx/plist
 
 # Installing to local machine
 
-install: install-daemon install-client
+install: install-daemon install-client install-leasewatcher
 
 install-client: stage-client uninstall-client
 	$(HUSH) sudo cp -pR "$(STAGING)/Applications/$(APP_BUNDLE)" /Applications/
@@ -184,12 +186,12 @@ install-daemon: stage-daemon
 	$(HUSH) sudo dseditgroup -o edit -a everyone -t group cypherpunk
 	$(do-start-daemon)
 
-install-leasewatcher:
+install-leasewatcher: stage-leasewatcher
 	$(HUSH) sudo cp -f "$(STAGING)/Library/LaunchDaemons/$(LEASEWATCHER_NS).plist" /Library/LaunchDaemons/
 
 # Uninstalling from local machine
 
-uninstall: uninstall-client uninstall-daemon
+uninstall: uninstall-client uninstall-daemon uninstall-leasewatcher
 
 uninstall-client:
 	$(do-stop-client)
