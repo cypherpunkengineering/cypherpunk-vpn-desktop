@@ -542,6 +542,7 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& server)
 {
 	using namespace std;
 
+	// Parse out protocol and remote port from remotePort setting
 	std::string protocol;
 	std::string remotePort;
 	{
@@ -580,128 +581,124 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& server)
 		}
 	}
 
+	// Basic settings
+	out << "client" << endl;
+	out << "dev tun" << endl;
+	out << "proto " << protocol << endl;
+
+	// MTU settings
 	const int mtu = g_settings.mtu();
+	out << "tun-mtu " << mtu << endl;
+	//out << "fragment" << (mtu - 100) << endl;
+	out << "mssfix " << (mtu - 220) << endl;
 
-	std::map<std::string, std::string> config = {
-		{ "client", "" },
-		//{ "nobind", "" },
-		{ "dev", "tun" },
-		{ "proto", protocol },
-		{ "tun-mtu", std::to_string(mtu) },
-		//{ "fragment", std::to_string(mtu - 100) },
-		{ "mssfix", std::to_string(mtu - 220) },
-		{ "ping", "10" },
-		{ "ping-exit", "60" },
-		//{ "resolv-retry", "infinite" },
-		//{ "cipher", g_settings.cipher() },
-		{ "tls-cipher", "TLS-DHE-RSA-WITH-AES-256-GCM-SHA384:TLS-DHE-RSA-WITH-AES-256-CBC-SHA256:TLS-DHE-RSA-WITH-AES-128-GCM-SHA256:TLS-DHE-RSA-WITH-AES-128-CBC-SHA256"},
-		{ "auth", "SHA256" },
-		{ "route-delay", "0" },
-		{ "tls-version-min", "1.2" },
-		//{ "remote-cert-tls", "server" },
-		{ "remote-cert-eku", "\"TLS Web Server Authentication\"" },
-		{ "verify-x509-name", server.at("ovHostname").AsString() + " name" },
-		//{ "persist-tun", "" },
-		{ "auth-user-pass", "" },
-	};
+	// Default connection settings
+	out << "ping 10" << endl;
+	out << "ping-exit 60" << endl;
+	out << "resolv-retry 0" << endl;
+	out << "persist-remote-ip" << endl;
+	//out << "persist-tun" << endl;
+	out << "route-delay 0" << endl;
 
+	// Default security settings
+	out << "tls-cipher TLS-DHE-RSA-WITH-AES-256-GCM-SHA384:TLS-DHE-RSA-WITH-AES-256-CBC-SHA256:TLS-DHE-RSA-WITH-AES-128-GCM-SHA256:TLS-DHE-RSA-WITH-AES-128-CBC-SHA256" << endl;
+	out << "auth SHA256" << endl;
+	out << "tls-version-min 1.2" << endl;
+	out << "remote-cert-eku \"TLS Web Server Authentication\"" << endl;
+	out << "verify-x509-name " << server.at("ovHostname").AsString() << " name" << endl;
+	out << "auth-user-pass" << endl;
+
+	// Default route setting
 	if (g_settings.routeDefault())
-		config["redirect-gateway"] = "def1";
+	{
+		out << "redirect-gateway def1 bypass-dhcp";
+		if (!g_settings.overrideDNS())
+			out << " bypass-dns";
+		// TODO: one day, redirect ipv6 traffic as well
+		// out << " ipv6";
+		out << endl;
+	}
 
+	// Local port setting
 	if (g_settings.localPort() == 0)
-		config["nobind"] = "";
+		out << "nobind" << endl;
 	else
-		config["lport"] = std::to_string(g_settings.localPort());
+		out << "lport " << g_settings.localPort() << endl;
 
+	// Overridden encryption settings
 	const auto& encryption = g_settings.encryption();
-	std::string ipKey = "ov" + encryption;
-	ipKey[2] = std::toupper(ipKey[2]);
-	config["remote"] = server.at(ipKey).AsArray()[0].AsString() + " " + remotePort;
 	if (encryption == "stealth")
 	{
-		config["ncp-ciphers"] = "AES-128-GCM:AES-128-CBC";
-		config["scramble"] = "obfuscate cypherpunk-xor-key";
+		out << "ncp-ciphers AES-128-GCM:AES-128-CBC" << endl;
+		out << "scramble obfuscate cypherpunk-xor-key" << endl;
 	}
 	else if (encryption == "strong")
 	{
-		config["ncp-ciphers"] = "AES-256-GCM:AES-256-CBC";
+		out << "ncp-ciphers AES-256-GCM:AES-256-CBC" << endl;
 	}
 	else if (encryption == "none")
 	{
-		config["cipher"] = "none";
-		config["ncp-disable"] = "";
+		out << "cipher none" << endl;
+		out << "ncp-disable" << endl;
 	}
 	else // encryption == "default"
 	{
-		config["ncp-ciphers"] = "AES-128-GCM:AES-128-CBC";
+		out << "ncp-ciphers AES-128-GCM:AES-128-CBC" << endl;
 	}
 
+	// Always try to send the server a courtesy exit notification
+	out << "explicit-exit-notify" << endl;
+
+	// Wait 15s before giving up on a connection and trying the next one
+	out << "server-poll-timeout 15s" << endl;
+
+
+	// Connection remotes; must come after generic connection settings
+	std::string ipKey = "ov" + encryption;
+	ipKey[2] = std::toupper(ipKey[2]);
+	const auto& serverIPs = server.at(ipKey).AsArray();
+	for (const auto& ip : serverIPs)
+	{
+		out << "<connection>" << endl;
+		out << "  remote " << ip.AsString() << ' ' << remotePort << endl;
+		out << "</connection>" << endl;
+	}
+
+	// Extra routes; currently only used by the "exempt Apple services" setting
 #if OS_OSX
 	if (g_settings.exemptApple())
 	{
-		config["route"] = "17.0.0.0 255.0.0.0 net_gateway";
+		out << "route 17.0.0.0 255.0.0.0 net_gateway" << endl;
 	}
 #endif
 
-	config["pull-filter ignore \"dhcp-option DNS\""] = "";
+	// Output DNS settings; these are done via dhcp-option switches,
+	// and depend on the "Use Cypherpunk DNS" and related settings.
+
+	// Tell OpenVPN to always ignore the pushed DNS (10.10.10.10),
+	// which is simply there as a sensible default for dumb clients.
+	out << "pull-filter ignore \"dhcp-option DNS\"" << endl;
+
 	if (g_settings.overrideDNS())
 	{
 		int dns_index = 10
 			+ (g_settings.blockAds() ? 1 : 0)
 			+ (g_settings.blockMalware() ? 2 : 0);
-		std::string dns_ip = "10.10.10." + std::to_string(dns_index);
-		config["dhcp-option   DNS"] = dns_ip;
-#ifdef OS_LINUX
-		// XXX: temp hack workaround to force all 3 nameservers to 10.10.10.10 to prevent leaking
-		std::string dns_ip1 = "10.10.11." + std::to_string(dns_index);
-		config["dhcp-option  DNS"] = dns_ip1;
-		std::string dns_ip2 = "10.10.12." + std::to_string(dns_index);
-		config["dhcp-option DNS"] = dns_ip2;
+		std::string dns_string = std::to_string(dns_index);
+		out << "dhcp-option DNS 10.10.10." << dns_string << endl;
+#if OS_LINUX
+		// On Linux, simulate secondary/tertiary DNS servers in order to push any prior DNS out of the list
+		out << "dhcp-option DNS 10.10.11." << dns_string << endl;
+		out << "dhcp-option DNS 10.10.12." << dns_string << endl;
+#elif OS_WIN
+		// On Windows, add some additional convenience/robustness switches
+		out << "register-dns" << endl;
+		if (g_settings.routeDefault())
+			out << "block-outside-dns" << endl;
 #endif
-#if OS_WIN
-		config["register-dns"] = "";
-		config["block-outside-dns"] = "";
-#endif
 	}
 
-	// FIXME: Manually translate other settings to OpenVPN parameters
-	/*
-	for (const auto& e : settings)
-	{
-		switch (e.second.GetType())
-		{
-		case jsonrpc::Value::Type::BOOLEAN:
-			config[e.first] = e.second.AsBoolean() ? "true" : "false";
-			break;
-		case jsonrpc::Value::Type::DOUBLE:
-			config[e.first] = std::to_string(e.second.AsDouble());
-			break;
-		case jsonrpc::Value::Type::INTEGER_32:
-			config[e.first] = std::to_string(e.second.AsInteger32());
-			break;
-		case jsonrpc::Value::Type::INTEGER_64:
-			config[e.first] = std::to_string(e.second.AsInteger64());
-			break;
-		case jsonrpc::Value::Type::NIL:
-			config[e.first] = "";
-			break;
-		case jsonrpc::Value::Type::STRING:
-			config[e.first] = e.second.AsString();
-			break;
-		default:
-			break;
-		}
-	}
-	*/
-
-	for (const auto& e : config)
-	{
-		out << e.first;
-		if (!e.second.empty())
-			out << ' ' << e.second;
-		out << endl;
-	}
-
+	// Include hardcoded certificate authority
 	out << "<ca>" << endl;
 	for (auto& ca : g_certificate_authorities)
 		for (auto& line : ca)
