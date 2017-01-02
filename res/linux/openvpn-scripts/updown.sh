@@ -1,45 +1,57 @@
 #!/bin/bash
+#
+# Parses DHCP options from openvpn to update resolv.conf
+# To use set as 'up' and 'down' script in your openvpn *.conf:
+# up /etc/openvpn/update-resolv-conf
+# down /etc/openvpn/update-resolv-conf
+#
+# Used snippets of resolvconf script by Thomas Hood and Chris Hanson.
+# Licensed under the GNU GPL.  See /usr/share/common-licenses/GPL.
+#
+# Example envs set from openvpn:
+#
+#     foreign_option_1='dhcp-option DNS 193.43.27.132'
+#     foreign_option_2='dhcp-option DNS 193.43.27.133'
+#     foreign_option_3='dhcp-option DOMAIN be.bnc.ch'
+#
 
-RESOLVCONF=$(type -p resolvconf)
+[ -x /sbin/resolvconf ] || exit 0
+[ "$script_type" ] || exit 0
+[ "$dev" ] || exit 0
 
-case $script_type in
+split_into_parts()
+{
+	part1="$1"
+	part2="$2"
+	part3="$3"
+}
 
-up)
-	for optionname in ${!foreign_option_*} ; do
-		option="${!optionname}"
-		echo $option
-		part1=$(echo "$option" | cut -d " " -f 1)
-		if [ "$part1" == "dhcp-option" ] ; then
-			part2=$(echo "$option" | cut -d " " -f 2)
-			part3=$(echo "$option" | cut -d " " -f 3)
-			if [ "$part2" == "DNS" ] ; then
-				IF_DNS_NAMESERVERS="$IF_DNS_NAMESERVERS $part3"
-			fi
-			if [[ "$part2" == "DOMAIN" || "$part2" == "DOMAIN-SEARCH" ]] ; then
-				IF_DNS_SEARCH="$IF_DNS_SEARCH $part3"
+case "$script_type" in
+  up)
+	NMSRVRS=""
+	SRCHS=""
+	for optionvarname in ${!foreign_option_*} ; do
+		option="${!optionvarname}"
+		echo "$option"
+		split_into_parts $option
+		if [ "$part1" = "dhcp-option" ] ; then
+			if [ "$part2" = "DNS" ] ; then
+				NMSRVRS="${NMSRVRS:+$NMSRVRS }$part3"
+			elif [ "$part2" = "DOMAIN" ] ; then
+				SRCHS="${SRCHS:+$SRCHS }$part3"
 			fi
 		fi
 	done
 	R=""
-	if [ "$IF_DNS_SEARCH" ]; then
-		R="search "
-		for DS in $IF_DNS_SEARCH ; do
-			R="${R} $DS"
-		done
-	R="${R}
+	[ "$SRCHS" ] && R="search $SRCHS
 "
-	fi
-
-	for NS in $IF_DNS_NAMESERVERS ; do
-		R="${R}nameserver $NS
+	for NS in $NMSRVRS ; do
+        	R="${R}nameserver $NS
 "
 	done
-	#echo -n "$R" | $RESOLVCONF -x -p -a "${dev}"
-	echo -n "$R" | $RESOLVCONF -x -a "${dev}.inet"
+	echo -n "$R" | /sbin/resolvconf -a "${dev}.openvpn"
 	;;
-down)
-	$RESOLVCONF -d "${dev}.inet"
+  down)
+	/sbin/resolvconf -d "${dev}.openvpn"
 	;;
 esac
-
-exit 0
