@@ -26,16 +26,16 @@
 #endif
 
 
-void pfctl_install();
-void pfctl_uninstall();
-//std::string pfctl_enable();
-//void pfctl_disable(const std::string& token);
-void pfctl_ensure_enabled();
-void pfctl_ensure_disabled();
-void pfctl_enable_anchor(const std::string& anchor);
-void pfctl_disable_anchor(const std::string& anchor);
-bool pfctl_anchor_enabled(const std::string& anchor);
-void pfctl_set_anchor_enabled(const std::string& anchor, bool enable);
+void firewall_install();
+void firewall_uninstall();
+//std::string firewall_enable();
+//void firewall_disable(const std::string& token);
+void firewall_ensure_enabled();
+void firewall_ensure_disabled();
+void firewall_enable_anchor(const std::string& anchor);
+void firewall_disable_anchor(const std::string& anchor);
+bool firewall_anchor_enabled(const std::string& anchor);
+void firewall_set_anchor_enabled(const std::string& anchor, bool enable);
 
 
 class PosixHandle
@@ -513,7 +513,7 @@ public:
 		// Register signal listeners
 		_signals.async_wait(THIS_CALLBACK(OnSignal));
 
-		pfctl_install();
+		firewall_install();
 	}
 	virtual OpenVPNProcess* CreateOpenVPNProcess(asio::io_service& io) override
 	{
@@ -554,15 +554,15 @@ public:
 		auto mode = g_settings.firewall();
 		if (!_connections.empty() && (mode == "on" || (is_connected && mode == "auto")))
 		{
-			pfctl_set_anchor_enabled("100.killswitch", true);
-			pfctl_set_anchor_enabled("200.exemptLAN", g_settings.allowLAN());
-			pfctl_ensure_enabled();
+			firewall_set_anchor_enabled("100.killswitch", true);
+			firewall_set_anchor_enabled("200.exemptLAN", g_settings.allowLAN());
+			firewall_ensure_enabled();
 		}
 		else
 		{
-			pfctl_ensure_disabled();
-			pfctl_set_anchor_enabled("100.killswitch", false);
-			pfctl_set_anchor_enabled("200.exemptLAN", false);
+			firewall_ensure_disabled();
+			firewall_set_anchor_enabled("100.killswitch", false);
+			firewall_set_anchor_enabled("200.exemptLAN", false);
 		}
 #elif OS_LINUX
 
@@ -713,7 +713,6 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Error: running as user %s (%d), must be root.\n", pw && pw->pw_name ? pw->pw_name : "<unknown uid>", uid);
 		return 1;
 	}
-#ifdef OS_OSX
 	struct group* gr = getgrnam("cypherpunk");
 	if (!gr)
 	{
@@ -725,7 +724,6 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Error: failed to set group id to %d with error %d\n", gr->gr_gid, errno);
 		return 3;
 	}
-#endif
 
 	g_old_terminate_handler = std::set_terminate(terminate_handler);
 
