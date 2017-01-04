@@ -102,10 +102,10 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
                 <label>Block Malware</label>
               </div>
             </div>
-            <div class={"setting " + (process.platform == 'linux' ? " hidden" : "")}>
+            <div class="setting">
               <Link to="/configuration/firewall" tabIndex="0" ref="firewall">Internet Killswitch</Link>
             </div>
-            <div className={"setting indented" + (process.platform == 'linux' ? " hidden" : "")}>
+            <div className="setting indented">
               <div className="ui toggle checkbox">
                 <input type="checkbox" name="allowLAN" id="allowLAN" ref="allowLAN"/>
                 <label>Always Allow LAN Traffic</label>
