@@ -1438,19 +1438,28 @@ small {
         button {
           margin: 15px;
           width: auto;
-          border-radius: 30px;
-          border: 1px solid #5fbbc4;
-          color: rgba(255,255,255,0.75);
+          border: none;
           background: rgba(0,0,0,0.25);
+          color: rgba(255,255,255,0.75);
           font-size: 18px;
           line-height: 40px;
           transition: background-color 0.3s, box-shadow 0.3s, color 0.2s, border-color 0.2s;
           &:hover {
             background-color: rgba(0,0,0,0.35);
-            box-shadow: inset 0 0 50px -10px #5fbbc4;
-            border-color: white;
             color: white;
           }
+          .themed({
+            border-radius: 30px;
+            border: 1px solid #5fbbc4;
+            color: rgba(255,255,255,0.75);
+            background: rgba(0,0,0,0.25);
+            &:hover {
+              background-color: rgba(0,0,0,0.35);
+              box-shadow: inset 0 0 50px -10px #5fbbc4;
+              border-color: white;
+              color: white;
+            }
+          });
         }
       }
     }
