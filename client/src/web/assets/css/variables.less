@@ -13,6 +13,8 @@
 @cpOrange:    #ffc933;
 @cpOrangeDark:#d19e12;
 
+@themeWindowBackground: @cpBlue;
+
 @dragbarHeight:  36px;
 @headerHeight:   50px;
 @fullHeaderHeight:   (@dragbarHeight + @headerHeight);
@@ -21,3 +23,13 @@
 @loaderActiveColor: rgba(255,255,255,0.8);
 
 @border-light: rgba(255,255,255,0.25);
+
+.theme(darkpurple) {
+  @themeWindowBackground: rgb(14,0,63);
+}
+
+.theme(darkteal) {
+  @themeWindowBackground: rgb(12,35,40);
+}
+
+@themes: darkpurple, darkteal;

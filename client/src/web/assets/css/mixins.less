@@ -1,0 +1,25 @@
+@import 'variables.less';
+
+// Theming mixin: takes a ruleset and evaluates it in a context where variables
+// have been replaced with the current body.selected theme.
+.themed(@rules) {
+  // First include the rules as-is, to implement the default theme
+  @rules();
+  // Then iterate over all themes and add specialized rules for each
+  .mixin-theme(1, @rules);
+  .mixin-theme(@index, @rules) when (@index <= length(@themes)) {
+    @theme: extract(@themes, @index);
+    body.@{theme} & {
+      .theme(@theme);
+      content: @theme;
+      @rules();
+    }
+    .mixin-theme((@index + 1), @rules);
+  }
+}
+
+
+.retina-background(@url) {
+  background-image+: ~`"-webkit-image-set(url(@{url}) 1x, url('" + @{url}.replace(/(\.[^.]*)$/, '@2x$1') + "') 2x)"`;
+}
+
