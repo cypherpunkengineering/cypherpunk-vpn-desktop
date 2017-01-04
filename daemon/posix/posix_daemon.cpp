@@ -536,7 +536,6 @@ public:
 	}
 	virtual void ApplyFirewallSettings() override
 	{
-#if OS_OSX
 		bool is_connected;
 		switch (_state)
 		{
@@ -554,19 +553,26 @@ public:
 		auto mode = g_settings.firewall();
 		if (!_connections.empty() && (mode == "on" || (is_connected && mode == "auto")))
 		{
+#if OS_OSX
 			firewall_set_anchor_enabled("100.killswitch", true);
 			firewall_set_anchor_enabled("200.exemptLAN", g_settings.allowLAN());
+#elif OS_LINUX
+			firewall_set_anchor_enabled("100.exemptLAN", g_settings.allowLAN());
+			firewall_set_anchor_enabled("500.killswitch", true);
+#endif
 			firewall_ensure_enabled();
 		}
 		else
 		{
 			firewall_ensure_disabled();
+#if OS_OSX
 			firewall_set_anchor_enabled("100.killswitch", false);
 			firewall_set_anchor_enabled("200.exemptLAN", false);
-		}
 #elif OS_LINUX
-
+			firewall_set_anchor_enabled("100.exemptLAN", false);
+			firewall_set_anchor_enabled("500.killswitch", false);
 #endif
+		}
 	}
 	void OnSignal(const asio::error_code& error, int signal)
 	{
