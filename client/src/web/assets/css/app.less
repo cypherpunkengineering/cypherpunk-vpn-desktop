@@ -1443,10 +1443,15 @@ small {
           color: rgba(255,255,255,0.75);
           font-size: 18px;
           line-height: 40px;
+          padding: 1px;
           transition: background-color 0.3s, box-shadow 0.3s, color 0.2s, border-color 0.2s;
           &:hover {
             background-color: rgba(0,0,0,0.35);
             color: white;
+          }
+          &:active {
+            padding: 2px 0 0 2px;
+            box-shadow: inset 1px 1px 5px rgba(0,0,0,0.15);
           }
           .themed({
             border-radius: 30px;
