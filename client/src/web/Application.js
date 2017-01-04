@@ -14,7 +14,18 @@ import FirewallScreen from './components/config/FirewallScreen';
 import HelpScreen from './components/account/HelpScreen';
 import PasswordScreen from './components/account/PasswordScreen';
 import AccountScreen from './components/AccountScreen';
-import './assets/css/app.less';
+
+import 'semantic/components/button';
+import 'semantic/components/checkbox';
+import 'semantic/components/dimmer';
+import 'semantic/components/dropdown';
+import 'semantic/components/flag';
+import 'semantic/components/icon';
+import 'semantic/components/input';
+import 'semantic/components/loader';
+import 'semantic/components/popup';
+
+import './assets/css/main.less';
 
 // import { configureStore } from './store/configureStore';
 import RouteTransition from './components/Transition';
