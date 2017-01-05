@@ -9,6 +9,7 @@
 #include <sstream>
 #include <string>
 #include <system_error>
+#include <type_traits>
 #include <vector>
 
 #if OS_LINUX
@@ -157,15 +158,28 @@ static inline std::deque<std::string> SplitToDeque(const std::string& text, char
 	return result;
 }
 
+template<typename C>
+static inline std::enable_if_t<std::is_base_of<std::enable_shared_from_this<C>, C>::value, std::shared_ptr<C>>
+shared_if_available(C* instance) { return instance->shared_from_this(); }
+template<typename C>
+static inline std::enable_if_t<std::is_base_of<std::enable_shared_from_this<C>, C>::value, std::shared_ptr<const C>>
+shared_if_available(const C* instance) { return instance->shared_from_this(); }
+template<typename C>
+static inline std::enable_if_t<!std::is_base_of<std::enable_shared_from_this<C>, C>::value, C*>
+shared_if_available(C* instance) { return instance; }
+template<typename C>
+static inline std::enable_if_t<!std::is_base_of<std::enable_shared_from_this<C>, C>::value, const C*>
+shared_if_available(const C* instance) { return instance; }
+
 template<typename C, typename R, typename... Args>
 static inline std::function<R(Args...)> bind_this(R (C::*fn)(Args...), C* instance)
 {
-	return [instance, fn](Args&&... args) { return (instance->*fn)(std::forward<Args>(args)...); };
+	return [instance = shared_if_available(instance), fn](Args&&... args) { return ((*instance).*fn)(std::forward<Args>(args)...); };
 }
 template<typename C, typename... Args>
 static inline std::function<void(Args...)> bind_this(void (C::*fn)(Args...), C* instance)
 {
-	return [instance, fn](Args&&... args) { (instance->*fn)(std::forward<Args>(args)...); };
+	return [instance = shared_if_available(instance), fn](Args&&... args) { ((*instance).*fn)(std::forward<Args>(args)...); };
 }
 
 #define THIS_CALLBACK(name) ::bind_this(&std::decay_t<decltype(*this)>::name, this)

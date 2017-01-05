@@ -20,6 +20,7 @@ export default class RegionSelector extends DaemonAware(React.Component) {
     selected: daemon.settings.location,
     favorites: Array.toDict(daemon.settings.favorites, f => f, f => true),
     recent: daemon.settings.recent,
+    pingStats: daemon.state.pingStats,
     open: false,
   }
 
@@ -31,6 +32,9 @@ export default class RegionSelector extends DaemonAware(React.Component) {
     if (settings.hasOwnProperty('location')) this.setState({ selected: settings.location });
     if (settings.hasOwnProperty('favorites')) this.setState({ favorites: Array.toDict(settings.favorites, f => f, f => true) });
     if (settings.hasOwnProperty('recent')) this.setState({ recent: settings.recent });
+  }
+  daemonStateChanged(state) {
+    if (state.hasOwnProperty('pingStats')) this.setState({ pingStats: daemon.state.pingStats });
   }
 
   open() {
@@ -148,7 +152,9 @@ export default class RegionSelector extends DaemonAware(React.Component) {
       <div className={classes.join(' ')} data-value={clickable ? location.id : null} key={type + '-' + location.id} onClick={clickable ? onclick : null}>
         {/* <i className={location.country.toLowerCase() + " flag"}></i> */}
         <img className="flag" src={flag()} srcSet={`${flag()} 1x, ${flag('@2x')} 2x`} alt=""/>
-        <span data-tag={tag}>{location.name}</span><i className="cp-fav icon"></i>
+        <span data-tag={tag}>{location.name}</span>
+        {(type !== 'header') ? <span className="ping-time">{this.state.pingStats && this.state.pingStats[location.id] && this.state.pingStats[location.id].replies > 0 ? (this.state.pingStats[location.id].average * 1000).toPrecision(3) + "ms" : null}</span> : null}
+        <i className="cp-fav icon"></i>
       </div>
     );
   }

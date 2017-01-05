@@ -12,8 +12,9 @@ static int logged_system(const std::string& cmd)
 	return system(cmd.c_str());
 }
 
-void pfctl_install()
+void firewall_install()
 {
+#ifdef OS_OSX
 	if (0 != logged_system("grep -F com.cypherpunk.privacy /etc/pf.conf"))
 	{
 		LOG(INFO) << "Installing PF anchors";
@@ -28,21 +29,64 @@ void pfctl_install()
 		LOG(INFO) << "Reloading PF root configuration";
 		logged_system("pfctl -q -f /etc/pf.conf");
 	}
+#elif OS_LINUX
+	// install exemptions first
+
+	// ipv4 exemptions
+	logged_system("iptables --new-chain cypherpunk.100.exemptLAN");
+	logged_system("iptables -F cypherpunk.100.exemptLAN");
+	logged_system("iptables -A cypherpunk.100.exemptLAN -d 10.0.0.0/8 -j ACCEPT");
+	logged_system("iptables -A cypherpunk.100.exemptLAN -d 172.16.0.0/12 -j ACCEPT");
+	logged_system("iptables -A cypherpunk.100.exemptLAN -d 192.168.0.0/16 -j ACCEPT");
+	logged_system("iptables -A cypherpunk.100.exemptLAN -d 224.0.0.0/4 -j ACCEPT");
+	logged_system("iptables -A cypherpunk.100.exemptLAN -d 255.255.255.255/32 -j ACCEPT");
+
+	// ipv6 exemptions
+	logged_system("ip6tables --new-chain cypherpunk.100.exemptLAN");
+	logged_system("ip6tables -F cypherpunk.100.exemptLAN");
+	logged_system("ip6tables -A cypherpunk.100.exemptLAN -d fc00::/7 -j ACCEPT");
+	logged_system("ip6tables -A cypherpunk.100.exemptLAN -d fe80::/10 -j ACCEPT");
+	logged_system("ip6tables -A cypherpunk.100.exemptLAN -d ff00::/8 -j ACCEPT");
+
+	// install killswitch last
+
+	// ipv4 killswitch
+	logged_system("iptables --new-chain cypherpunk.500.killswitch");
+	logged_system("iptables -F cypherpunk.500.killswitch");
+	logged_system("iptables -A cypherpunk.500.killswitch -o lo+ -j ACCEPT");
+	logged_system("iptables -A cypherpunk.500.killswitch -m owner --gid-owner cypherpunk -j ACCEPT");
+	logged_system("iptables -A cypherpunk.500.killswitch ! -o tun+ -j DROP");
+
+	// ipv6 killswitch
+	logged_system("ip6tables --new-chain cypherpunk.500.killswitch");
+	logged_system("ip6tables -F cypherpunk.500.killswitch");
+	logged_system("ip6tables -A cypherpunk.500.killswitch -o lo+ -j ACCEPT");
+	logged_system("ip6tables -A cypherpunk.500.killswitch -m owner --gid-owner cypherpunk -j ACCEPT");
+	logged_system("ip6tables -A cypherpunk.500.killswitch ! -o tun+ -j DROP");
+#endif
 }
 
-void pfctl_uninstall()
+void firewall_uninstall()
 {
+#ifdef OS_OSX
 	if (0 == logged_system("grep -F com.cypherpunk.privacy /etc/pf.conf"))
 	{
 		// Strip out added lines and reload
 		LOG(INFO) << "Uninstalling PF anchors";
 		logged_system("sed -i '' '/com\\.cypherpunk\\.privacy/d' /etc/pf.conf && pfctl -q -f /etc/pf.conf");
 	}
+#elif OS_LINUX
+	logged_system("iptables --delete-chain cypherpunk.100.exemptLAN");
+	logged_system("ip6tables --delete-chain cypherpunk.100.exemptLAN");
+	logged_system("iptables --delete-chain cypherpunk.500.killswitch");
+	logged_system("ip6tables --delete-chain cypherpunk.500.killswitch");
+#endif
 }
 
 /*
-std::string pfctl_enable()
+std::string firewall_enable()
 {
+#ifdef OS_OSX
 	std::string token;
 	bool successful;
 	FILE* p = POSIX_CHECK_IF_NULL(popen("pfctl -a com.cypherpunk.privacy -E 2>&1", "r"));
@@ -67,10 +111,13 @@ std::string pfctl_enable()
 	if (!token.empty() && successful)
 		return token;
 	THROW_POSIXEXCEPTION(EPERM, pfctl);
+#elif OS_LINUX
+#endif
 }
 
-void pfctl_disable(const std::string& token)
+void firewall_disable(const std::string& token)
 {
+#ifdef OS_OSX
 	bool successful = false;
 	FILE* p = POSIX_CHECK_IF_NULL(popen(("pfctl -a com.cypherpunk.privacy -X " + token + " 2>&1").c_str(), "r"));
 	char* line = NULL;
@@ -88,42 +135,67 @@ void pfctl_disable(const std::string& token)
 	pclose(p);
 	if (!successful)
 		THROW_POSIXEXCEPTION(EINVAL, pfctl);
+#elif OS_LINUX
+#endif
 }
 */
 
-void pfctl_ensure_enabled()
+void firewall_ensure_enabled()
 {
+#ifdef OS_OSX
 	logged_system("test -f /usr/local/cypherpunk/etc/pf.anchors/pf.token && pfctl -q -s References | grep -qFf /usr/local/cypherpunk/etc/pf.anchors/pf.token || pfctl -a com.cypherpunk.privacy -E 2>&1 | grep -F 'Token : ' | cut -c9- > /usr/local/cypherpunk/etc/pf.anchors/pf.token");
+#elif OS_LINUX
+#endif
 }
 
-void pfctl_ensure_disabled()
+void firewall_ensure_disabled()
 {
+#ifdef OS_OSX
 	logged_system("test -f /usr/local/cypherpunk/etc/pf.anchors/pf.token && pfctl -q -a com.cypherpunk.privacy -X `cat /usr/local/cypherpunk/etc/pf.anchors/pf.token` && rm /usr/local/cypherpunk/etc/pf.anchors/pf.token");
+#elif OS_LINUX
+#endif
 }
 
-void pfctl_enable_anchor(const std::string& anchor)
+void firewall_enable_anchor(const std::string& anchor)
 {
+#ifdef OS_OSX
 	logged_system("pfctl -q -a com.cypherpunk.privacy/" + anchor + " -f /usr/local/cypherpunk/etc/pf.anchors/com.cypherpunk.privacy." + anchor);
+#elif OS_LINUX
+	logged_system("iptables -A OUTPUT -j cypherpunk." + anchor);
+	logged_system("ip6tables -A OUTPUT -j cypherpunk." + anchor);
+#endif
 }
 
-void pfctl_disable_anchor(const std::string& anchor)
+void firewall_disable_anchor(const std::string& anchor)
 {
+#ifdef OS_OSX
 	logged_system("pfctl -q -a com.cypherpunk.privacy/" + anchor + " -F rules");
+#elif OS_LINUX
+	logged_system("iptables -D OUTPUT -j cypherpunk." + anchor);
+	logged_system("ip6tables -D OUTPUT -j cypherpunk." + anchor);
+#endif
 }
 
-bool pfctl_anchor_enabled(const std::string& anchor)
+bool firewall_anchor_enabled(const std::string& anchor)
 {
+#ifdef OS_OSX
 	return 0 == logged_system("pfctl -q -a com.cypherpunk.privacy/" + anchor + " -s rules 2>/dev/null | grep -q .");
+#elif OS_LINUX
+	return (
+		0 == logged_system("iptables -L OUTPUT 2>/dev/null | grep -q cypherpunk." + anchor) &&
+		0 == logged_system("ip6tables -L OUTPUT 2>/dev/null | grep -q cypherpunk." + anchor)
+	);
+#endif
 }
 
-void pfctl_set_anchor_enabled(const std::string& anchor, bool enable)
+void firewall_set_anchor_enabled(const std::string& anchor, bool enable)
 {
-	bool currently_enabled = pfctl_anchor_enabled(anchor);
+	bool currently_enabled = firewall_anchor_enabled(anchor);
 	if (!enable != !currently_enabled)
 	{
 		if (enable)
-			pfctl_enable_anchor(anchor);
+			firewall_enable_anchor(anchor);
 		else
-			pfctl_disable_anchor(anchor);
+			firewall_disable_anchor(anchor);
 	}
 }

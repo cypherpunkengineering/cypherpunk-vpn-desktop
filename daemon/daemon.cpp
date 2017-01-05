@@ -5,6 +5,7 @@
 #include "path.h"
 #include "version.h"
 
+#include <chrono>
 #include <thread>
 #include <asio.hpp>
 #include <jsonrpc-lean/server.h>
@@ -330,6 +331,7 @@ JsonObject CypherDaemon::MakeStateObject()
 		state["bytesReceived"] = _bytesReceived;
 		state["bytesSent"] = _bytesSent;
 	}
+	state["pingStats"] = _ping_stats;
 	return state;
 }
 
@@ -530,6 +532,52 @@ void CypherDaemon::RPC_applySettings(const JsonObject& settings)
 	{
 		_needsReconnect = true;
 		SendToAllClients(_rpc_client.BuildNotificationData("state", JsonObject({{ "needsReconnect", JsonValue(true) }})));
+	}
+
+	if (settings.find("locations") != settings.end())
+	{
+		auto now = std::chrono::steady_clock::now();
+		LOG(INFO) << "Now: " << now.time_since_epoch().count();
+		std::chrono::duration<double> cutoff = (now - std::chrono::hours(1)).time_since_epoch();
+		LOG(INFO) << "Cutoff: " << cutoff.count();
+		for (auto it = _ping_stats.begin(); it != _ping_stats.end(); )
+		{
+			try
+			{
+				if (it->second.AsStruct().at("lastChecked").AsDouble() < cutoff.count())
+				{
+					_ping_stats.erase(it++);
+					continue;
+				}
+			}
+			catch (...) {}
+			++it;
+		}
+		std::vector<std::pair<std::string, std::string>> request;
+		for (const auto& p : g_settings.locations())
+		{
+			try
+			{
+				request.push_back(std::make_pair(p.first, p.second.AsStruct().at("ovDefault").AsArray().at(0).AsString()));
+			}
+			catch (...) {}
+		}
+		PingServers(std::move(request), 5, [this](std::vector<PingResult> results) {
+			std::chrono::duration<double> now = std::chrono::steady_clock::now().time_since_epoch();
+			for (auto& r : results)
+			{
+				LOG(INFO) << "Ping " << r.id << ": avg=" << (r.average*1000) << " min=" << (r.minimum*1000) << " max=" << (r.maximum*1000) << " replies=" << r.replies << " timeouts=" << r.timeouts;
+				JsonObject obj;
+				obj.emplace("lastChecked", now.count());
+				obj.emplace("average", r.average);
+				obj.emplace("minimum", r.minimum);
+				obj.emplace("maximum", r.maximum);
+				obj.emplace("replies", (signed)r.replies);
+				obj.emplace("timeouts", (signed)r.timeouts);
+				_ping_stats[r.id] = std::move(obj);
+			}
+			OnStateChanged(PING_STATS);
+		});
 	}
 }
 
