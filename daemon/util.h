@@ -5,12 +5,14 @@
 
 #include <deque>
 #include <functional>
+#include <memory>
 #include <ostream>
 #include <sstream>
 #include <string>
 #include <system_error>
 #include <type_traits>
 #include <vector>
+#include <utility>
 
 #if OS_LINUX
 #include <algorithm>
