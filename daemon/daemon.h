@@ -57,6 +57,14 @@ public:
 		EXITED,
 	};
 
+	struct PingResult
+	{
+		std::string id;
+		double average, minimum, maximum;
+		size_t replies, timeouts;
+	};
+	typedef void PingCallback(std::vector<PingResult> results);
+
 public:
 	// The main entrypoint of the daemon; should block for the duration of the daemon.
 	virtual int Run();
@@ -75,7 +83,7 @@ protected:
 	typedef websocketpp::connection_hdl Connection;
 	typedef std::set<Connection, std::owner_less<Connection>> ConnectionList;
 
-	enum StateChangedFlags { STATE = 1, NEEDSRECONNECT = 2, IPADDRESS = 4, BYTECOUNT = 8 };
+	enum StateChangedFlags { STATE = 1, NEEDSRECONNECT = 2, IPADDRESS = 4, BYTECOUNT = 8, PING_STATS = 16 };
 
 	void SendToClient(Connection con, const std::shared_ptr<jsonrpc::FormattedData>& data);
 	void SendToAllClients(const std::shared_ptr<jsonrpc::FormattedData>& data);
@@ -116,6 +124,7 @@ protected:
 	std::string _localIP, _remoteIP;
 	int64_t _bytesReceived, _bytesSent;
 	bool _needsReconnect;
+	JsonObject _ping_stats;
 	//std::map<std::string, ServerInfo> _servers;
 
 protected:
@@ -128,5 +137,7 @@ protected:
 	virtual std::string GetAvailableAdapter(int index) = 0;
 	// Apply the firewall/killswitch mode to the system.
 	virtual void ApplyFirewallSettings() {}
+	// Ping the servers in g_settings.locations().
+	virtual void PingServers(std::vector<std::pair<std::string, std::string>> servers, double timeout, std::function<PingCallback> callback) = 0;
 };
 
