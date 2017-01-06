@@ -104,6 +104,15 @@ export default class RegionSelector extends DaemonAware(React.Component) {
     }
   }
 
+  formatPingTime(id) {
+    if (!this.state.pingStats) return null;
+    var s = this.state.pingStats[id];
+    if (!s) return null;
+    if (!s.replies) return null;
+    s = (s.average * 1000).toFixed(0);
+    return (s === "0") ? "<1ms" : (s + "ms");
+  }
+
   makeLocationHeader(id, name) {
     return <div key={id} className="header">{name}</div>;
   }
@@ -153,7 +162,7 @@ export default class RegionSelector extends DaemonAware(React.Component) {
         {/* <i className={location.country.toLowerCase() + " flag"}></i> */}
         <img className="flag" src={flag()} srcSet={`${flag()} 1x, ${flag('@2x')} 2x`} alt=""/>
         <span data-tag={tag}>{location.name}</span>
-        {(type !== 'header') ? <span className="ping-time">{this.state.pingStats && this.state.pingStats[location.id] && this.state.pingStats[location.id].replies > 0 ? (this.state.pingStats[location.id].average * 1000).toPrecision(3) + "ms" : null}</span> : null}
+        {(type !== 'header') ? <span className="ping-time">{this.formatPingTime(location.id)}</span> : null}
         <i className="cp-fav icon"></i>
       </div>
     );
