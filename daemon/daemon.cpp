@@ -1043,7 +1043,8 @@ void CypherDaemon::PingServers()
 		{
 			LOG(INFO) << "Ping " << r.id << ": avg=" << (r.average * 1000) << " min=" << (r.minimum * 1000) << " max=" << (r.maximum * 1000) << " replies=" << r.replies << " timeouts=" << r.timeouts;
 			JsonObject obj;
-			obj.emplace("lastChecked", now.count());
+			if (r.replies > 0 || r.timeouts > 0)
+				obj.emplace("lastChecked", now.count());
 			obj.emplace("average", r.average);
 			obj.emplace("minimum", r.minimum);
 			obj.emplace("maximum", r.maximum);
