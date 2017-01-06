@@ -156,7 +156,7 @@ private:
     req.header.type = 8;
     req.header.code = 0;
     req.header.checksum = 0;
-    req.header.identifier = htons(getpid());
+    req.header.identifier = htons(GetIdentifier());
     req.header.sequence_number = htons(dest.sequence_number);
     memcpy(req.payload, "abcdefghijklmnopqrstuvwabcdefghi", 32);
     unsigned int checksum = 0;
@@ -225,7 +225,7 @@ private:
             is.ignore(total_length - sizeof(ipv4) - options_length - sizeof(header));
 
             //LOG(VERBOSE) << "Received ICMP type=" << (unsigned)header.type << " code=" << (unsigned)header.code << " id=" << ntohs(header.identifier) << " seq=" << ntohs(header.sequence_number);
-            if (header.type == 0 && header.code == 0 && header.identifier == htons(getpid()))
+            if (header.type == 0 && header.code == 0 && header.identifier == htons(GetIdentifier()))
             {
               auto it = _wait_map.find(ntohs(header.sequence_number));
               if (it != _wait_map.end())
@@ -331,5 +331,17 @@ private:
       }
       _callback(std::move(result));
     }
+  }
+
+  static unsigned short GetIdentifier()
+  {
+    static unsigned short id =
+#if OS_WIN
+      (unsigned short)::GetProcessId(NULL)
+#else
+      (unsigned short)::getpid()
+#endif
+		  ;
+	  return id;
   }
 };
