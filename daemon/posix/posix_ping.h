@@ -64,7 +64,7 @@ class PosixServerPingerThinger : public std::enable_shared_from_this<PosixServer
 
 public:
   PosixServerPingerThinger(asio::io_service& io)
-    : _io(io), _resolver(io), _socket(io, asio::ip::icmp::v4()), _global_timeout_timer(io), _callback_called(false)
+    : _io(io), _resolver(io), _socket(io, asio::ip::icmp::endpoint(asio::ip::icmp::v4(), 0)), _global_timeout_timer(io), _callback_called(false)
 	{
   }
   ~PosixServerPingerThinger()
