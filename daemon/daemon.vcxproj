@@ -136,6 +136,7 @@
     <ClInclude Include="logger.h" />
     <ClInclude Include="openvpn.h" />
     <ClInclude Include="path.h" />
+    <ClInclude Include="ping.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="settings.h" />
     <ClInclude Include="websocketpp.h" />

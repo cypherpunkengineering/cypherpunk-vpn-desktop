@@ -6,7 +6,6 @@
 #include "logger_file.h"
 #include "openvpn.h"
 #include "path.h"
-#include "posix_ping.h"
 
 #include <algorithm>
 #include <cctype>

@@ -6,6 +6,7 @@
 
 #include "config.h"
 #include "openvpn.h"
+#include "ping.h"
 #include "settings.h"
 #include "websocketpp.h"
 
