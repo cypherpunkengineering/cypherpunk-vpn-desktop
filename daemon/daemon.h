@@ -99,6 +99,7 @@ protected:
 	void OnStateChanged(unsigned int state_changed_flags);
 
 	void PingServers();
+	void WriteOpenVPNProfile(std::ostream& out, const JsonObject& server, OpenVPNProcess* process);
 
 	JsonObject MakeStateObject();
 	JsonObject MakeConfigObject();

@@ -64,4 +64,6 @@ public:
 
 	// Flag to indicate the user should reconnect to a new server for their settings to take effect.
 	bool stale;
+	// Number of reconnection to tolerate before we should treat as disconnected. Initally set to the number of <connection> entries
+	size_t connection_retries_left;
 };

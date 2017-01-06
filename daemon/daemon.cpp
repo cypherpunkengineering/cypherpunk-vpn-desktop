@@ -546,7 +546,7 @@ void CypherDaemon::RPC_setAccount(const JsonObject& account)
 	RPC_applySettings({{ "account", account }});
 }
 
-void WriteOpenVPNProfile(std::ostream& out, const JsonObject& server)
+void CypherDaemon::WriteOpenVPNProfile(std::ostream& out, const JsonObject& server, OpenVPNProcess* process)
 {
 	using namespace std;
 
@@ -658,7 +658,7 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& server)
 	out << "explicit-exit-notify" << endl;
 
 	// Wait 15s before giving up on a connection and trying the next one
-	out << "server-poll-timeout 15s" << endl;
+	out << "server-poll-timeout 10s" << endl;
 
 
 	// Connection remotes; must come after generic connection settings
@@ -671,6 +671,7 @@ void WriteOpenVPNProfile(std::ostream& out, const JsonObject& server)
 		out << "  remote " << ip.AsString() << ' ' << remotePort << endl;
 		out << "</connection>" << endl;
 	}
+	process->connection_retries_left = serverIPs.size() - 1;
 
 	// Extra routes; currently only used by the "exempt Apple services" setting
 #if OS_OSX
@@ -852,7 +853,7 @@ void CypherDaemon::DoConnect()
 #endif
 	{
 		std::ofstream f(profile_filename.c_str());
-		WriteOpenVPNProfile(f, g_settings.locations().at(g_settings.location()).AsStruct());
+		WriteOpenVPNProfile(f, g_settings.locations().at(g_settings.location()).AsStruct(), vpn.get());
 		f.close();
 	}
 	args.push_back(profile_filename);
@@ -878,7 +879,7 @@ void CypherDaemon::DoConnect()
 				const auto& s = params.at(1);
 				if (_state == SWITCHING)
 				{
-					if (s == "CONNECTED")
+					if (s == "CONNECTED" || s == "RECONNECTING")
 					{
 						// Default handling below
 					}
@@ -897,6 +898,7 @@ void CypherDaemon::DoConnect()
 				}
 				if (s == "CONNECTED")
 				{
+					_process->connection_retries_left = 1;
 					if (_state == DISCONNECTING)
 					{
 						_process->SendManagementCommand("signal SIGTERM");
@@ -916,6 +918,12 @@ void CypherDaemon::DoConnect()
 					{
 						_state = CONNECTING;
 						OnStateChanged(STATE);
+					}
+					else if (_state == CONNECTING && (_process->connection_retries_left == 0 || --_process->connection_retries_left == 0))
+					{
+						_process->SendManagementCommand("signal SIGTERM");
+						// TODO: Send an error message to the client
+						// TODO: Implement a way to send error messages to the client
 					}
 				}
 				else if (s == "EXITING")
