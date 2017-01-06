@@ -2,6 +2,7 @@
 #include "daemon.h"
 #include "openvpn.h"
 #include "logger.h"
+#include "ping.h"
 #include "path.h"
 #include "version.h"
 
@@ -25,6 +26,8 @@
 
 
 CypherDaemon* g_daemon = nullptr;
+
+unsigned short ServerPingerThinger::_global_sequence_number = 0;
 
 using namespace std::placeholders;
 
@@ -535,50 +538,7 @@ void CypherDaemon::RPC_applySettings(const JsonObject& settings)
 	}
 
 	if (settings.find("locations") != settings.end())
-	{
-		auto now = std::chrono::steady_clock::now();
-		LOG(INFO) << "Now: " << now.time_since_epoch().count();
-		std::chrono::duration<double> cutoff = (now - std::chrono::hours(1)).time_since_epoch();
-		LOG(INFO) << "Cutoff: " << cutoff.count();
-		for (auto it = _ping_stats.begin(); it != _ping_stats.end(); )
-		{
-			try
-			{
-				if (it->second.AsStruct().at("lastChecked").AsDouble() < cutoff.count())
-				{
-					_ping_stats.erase(it++);
-					continue;
-				}
-			}
-			catch (...) {}
-			++it;
-		}
-		std::vector<std::pair<std::string, std::string>> request;
-		for (const auto& p : g_settings.locations())
-		{
-			try
-			{
-				request.push_back(std::make_pair(p.first, p.second.AsStruct().at("ovDefault").AsArray().at(0).AsString()));
-			}
-			catch (...) {}
-		}
-		PingServers(std::move(request), 5, [this](std::vector<PingResult> results) {
-			std::chrono::duration<double> now = std::chrono::steady_clock::now().time_since_epoch();
-			for (auto& r : results)
-			{
-				LOG(INFO) << "Ping " << r.id << ": avg=" << (r.average*1000) << " min=" << (r.minimum*1000) << " max=" << (r.maximum*1000) << " replies=" << r.replies << " timeouts=" << r.timeouts;
-				JsonObject obj;
-				obj.emplace("lastChecked", now.count());
-				obj.emplace("average", r.average);
-				obj.emplace("minimum", r.minimum);
-				obj.emplace("maximum", r.maximum);
-				obj.emplace("replies", (signed)r.replies);
-				obj.emplace("timeouts", (signed)r.timeouts);
-				_ping_stats[r.id] = std::move(obj);
-			}
-			OnStateChanged(PING_STATS);
-		});
-	}
+		PingServers();
 }
 
 void CypherDaemon::RPC_setAccount(const JsonObject& account)
@@ -1049,3 +1009,40 @@ bool CypherDaemon::RPC_setFirewall(const jsonrpc::Value::Struct& params)
 	return true;
 }
 */
+
+void CypherDaemon::PingServers()
+{
+	auto now = std::chrono::steady_clock::now();
+	std::chrono::duration<double> cutoff = (now - std::chrono::minutes(60)).time_since_epoch();
+	auto pinger = std::make_shared<ServerPingerThinger>(_io);
+	for (const auto& p : g_settings.locations())
+	{
+		try
+		{
+			try
+			{
+				if (_ping_stats.at(p.first).AsStruct().at("lastChecked").AsDouble() >= cutoff.count())
+					continue;
+			}
+			catch (...) {}
+			pinger->Add(p.first, p.second.AsStruct().at("ovDefault").AsArray().at(0).AsString());
+		}
+		catch (...) {}
+	}
+	pinger->Start(5, [this](std::vector<ServerPingerThinger::Result> results) {
+		std::chrono::duration<double> now = std::chrono::steady_clock::now().time_since_epoch();
+		for (auto& r : results)
+		{
+			LOG(INFO) << "Ping " << r.id << ": avg=" << (r.average * 1000) << " min=" << (r.minimum * 1000) << " max=" << (r.maximum * 1000) << " replies=" << r.replies << " timeouts=" << r.timeouts;
+			JsonObject obj;
+			obj.emplace("lastChecked", now.count());
+			obj.emplace("average", r.average);
+			obj.emplace("minimum", r.minimum);
+			obj.emplace("maximum", r.maximum);
+			obj.emplace("replies", (signed)r.replies);
+			obj.emplace("timeouts", (signed)r.timeouts);
+			_ping_stats[r.id] = std::move(obj);
+		}
+		OnStateChanged(PING_STATS);
+	});
+}

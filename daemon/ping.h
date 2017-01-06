@@ -2,6 +2,7 @@
 
 #include "config.h"
 #include "daemon.h"
+#include "logger.h"
 #include "util.h"
 #include <chrono>
 #include <functional>
@@ -15,27 +16,26 @@
 #define MINIMUM_PING_INTERVAL_MS 1000
 #define MAXIMUM_PING_COUNT 5
 
-class PosixServerPingerThinger : public std::enable_shared_from_this<PosixServerPingerThinger>
+// Implemented by platform
+extern unsigned short GetPingIdentifier();
+
+class ServerPingerThinger : public std::enable_shared_from_this<ServerPingerThinger>
 {
 	typedef std::chrono::high_resolution_clock clock;
 	typedef clock::time_point time_point;
 	typedef clock::duration duration;
 	typedef asio::basic_waitable_timer<clock> timer;
-	typedef CypherDaemon::PingResult PingResult;
 
-	asio::io_service& _io;
-	asio::ip::icmp::resolver _resolver;
-	asio::ip::icmp::socket _socket;
-	static unsigned short _global_sequence_number;
-	timer _global_timeout_timer;
-	asio::streambuf _reply_buffer;
+public:
+	struct Result
+	{
+		std::string id;
+		double average, minimum, maximum;
+		size_t replies, timeouts;
+	};
+	typedef void Callback(std::vector<Result> results);
 
-	std::string _id;
-	std::function<CypherDaemon::PingCallback> _callback;
-	bool _callback_called;
-
-	size_t _reply_count, _timeout_count;
-
+private:
 	struct destination_t
 	{
 		destination_t(asio::io_service& io, std::string id, std::string ip) noexcept
@@ -53,21 +53,32 @@ class PosixServerPingerThinger : public std::enable_shared_from_this<PosixServer
 		timer timeout_timer;
 		time_point send_time;
 		unsigned short sequence_number;
-		PingResult stats;
+		Result stats;
 	};
+
+private:
+	asio::io_service& _io;
+	asio::ip::icmp::resolver _resolver;
+	asio::ip::icmp::socket _socket;
+	static unsigned short _global_sequence_number;
+	timer _global_timeout_timer;
+	asio::streambuf _reply_buffer;
+
+	std::string _id;
+	std::function<Callback> _callback;
+	bool _callback_called;
+
+	size_t _reply_count, _timeout_count;
+
 	std::list<destination_t> _destinations;
 	std::queue<destination_t*> _write_queue;
 	std::unordered_map<unsigned short, destination_t*> _wait_map;
 	std::list<destination_t>::iterator _resolve_iterator;
 
 public:
-	PosixServerPingerThinger(asio::io_service& io)
+	ServerPingerThinger(asio::io_service& io)
 		: _io(io), _resolver(io), _socket(io, asio::ip::icmp::endpoint(asio::ip::icmp::v4(), 0)), _global_timeout_timer(io), _callback_called(false)
 	{
-	}
-	~PosixServerPingerThinger()
-	{
-		LOG(INFO) << "~PosixServerPingerThinger()";
 	}
 
 	void Add(std::string id, std::string ip)
@@ -75,7 +86,7 @@ public:
 		_destinations.emplace_back(_io, std::move(id), std::move(ip));
 	}
 
-	void Start(double timeout, std::function<CypherDaemon::PingCallback> callback)
+	void Start(double timeout, std::function<Callback> callback)
 	{
 		_callback = std::move(callback);
 		if (_destinations.size() > 0)
@@ -154,7 +165,7 @@ private:
 		req.header.type = 8;
 		req.header.code = 0;
 		req.header.checksum = 0;
-		req.header.identifier = htons(GetIdentifier());
+		req.header.identifier = htons(GetPingIdentifier());
 		req.header.sequence_number = htons(dest.sequence_number);
 		memcpy(req.payload, "abcdefghijklmnopqrstuvwabcdefghi", 32);
 		unsigned int checksum = 0;
@@ -174,7 +185,7 @@ private:
 		_wait_map[dest.sequence_number] = &dest;
 
 		dest.timeout_timer.expires_at(dest.send_time + std::chrono::seconds(1));
-		dest.timeout_timer.async_wait(std::bind(&PosixServerPingerThinger::HandleTimeout, shared_from_this(), std::placeholders::_1, &dest, dest.sequence_number));
+		dest.timeout_timer.async_wait(std::bind(&ServerPingerThinger::HandleTimeout, shared_from_this(), std::placeholders::_1, &dest, dest.sequence_number));
 	}
 	void HandleWrite(const asio::error_code& error, size_t bytes_transferred)
 	{
@@ -223,7 +234,7 @@ private:
 						is.ignore(total_length - sizeof(ipv4) - options_length - sizeof(header));
 
 						//LOG(VERBOSE) << "Received ICMP type=" << (unsigned)header.type << " code=" << (unsigned)header.code << " id=" << ntohs(header.identifier) << " seq=" << ntohs(header.sequence_number);
-						if (header.type == 0 && header.code == 0 && header.identifier == htons(GetIdentifier()))
+						if (header.type == 0 && header.code == 0 && header.identifier == htons(GetPingIdentifier()))
 						{
 							auto it = _wait_map.find(ntohs(header.sequence_number));
 							if (it != _wait_map.end())
@@ -253,7 +264,7 @@ private:
 									if (MINIMUM_PING_INTERVAL_MS > 0)
 									{
 										dest.timeout_timer.expires_at(dest.send_time + std::chrono::milliseconds(MINIMUM_PING_INTERVAL_MS));
-										dest.timeout_timer.async_wait(std::bind(&PosixServerPingerThinger::QueueSend, shared_from_this(), &dest));
+										dest.timeout_timer.async_wait(std::bind(THIS_CALLBACK(QueueSend), &dest));
 									}
 									else
 										QueueSend(&dest);
@@ -294,7 +305,7 @@ private:
 					if (MINIMUM_PING_INTERVAL_MS > 0)
 					{
 						dest.timeout_timer.expires_at(dest.send_time + std::chrono::milliseconds(MINIMUM_PING_INTERVAL_MS));
-						dest.timeout_timer.async_wait(std::bind(&PosixServerPingerThinger::QueueSend, shared_from_this(), &dest));
+						dest.timeout_timer.async_wait(std::bind(THIS_CALLBACK(QueueSend), &dest));
 					}
 					else
 						QueueSend(&dest);
@@ -320,7 +331,7 @@ private:
 		if (!_callback_called)
 		{
 			_callback_called = true;
-			std::vector<PingResult> result;
+			std::vector<Result> result;
 			for (auto& dest : _destinations)
 			{
 				if (dest.stats.replies > 0)
@@ -329,17 +340,5 @@ private:
 			}
 			_callback(std::move(result));
 		}
-	}
-
-	static unsigned short GetIdentifier()
-	{
-		static unsigned short id =
-#if OS_WIN
-			(unsigned short)::GetProcessId(NULL)
-#else
-			(unsigned short)::getpid()
-#endif
-			;
-		return id;
 	}
 };

@@ -679,14 +679,13 @@ public:
 			}
 		}
 	}
-	virtual void PingServers(std::vector<std::pair<std::string, std::string>> servers, double timeout, std::function<PingCallback> callback) override
-	{
-		auto pinger = std::make_shared<PosixServerPingerThinger>(_io);
-		for (const auto& p : servers)
-			pinger->Add(p.first, p.second);
-		pinger->Start(timeout, std::move(callback));
-	}
 };
+
+unsigned short GetPingIdentifier()
+{
+	return (unsigned short)::getpid();
+}
+
 
 static void (*g_old_terminate_handler)() = nullptr;
 
