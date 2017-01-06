@@ -25,6 +25,7 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
       case 'localPort': daemon.post.applySettings({ localPort: parseInt(value, 10) }); break;
       case 'blockIPv6': daemon.post.applySettings({ blockIPv6: value }); break;
       case 'overrideDNS': daemon.post.applySettings({ overrideDNS: value }); break;
+      case 'optimizeDNS': daemon.post.applySettings({ optimizeDNS: value }); break;
       case 'blockAds': daemon.post.applySettings({ blockAds: value }); break;
       case 'blockMalware': daemon.post.applySettings({ blockMalware: value }); break;
       case 'allowLAN': daemon.post.applySettings({ allowLAN: value }); break;
@@ -49,6 +50,9 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
     }
     if (settings.overrideDNS !== undefined) {
       $(this.refs.overrideDNS).parent().checkbox('set ' + (settings.overrideDNS ? 'checked' : 'unchecked'));
+    }
+    if (settings.optimizeDNS !== undefined) {
+      $(this.refs.optimizeDNS).parent().checkbox('set ' + (settings.optimizeDNS ? 'checked' : 'unchecked'));
     }
     if (settings.blockAds !== undefined) {
       $(this.refs.blockAds).parent().checkbox('set ' + (settings.blockAds ? 'checked' : 'unchecked'));
@@ -88,6 +92,12 @@ export default class AdvancedSettings extends DaemonAware(React.Component)  {
               <div className="ui toggle checkbox">
                 <input type="checkbox" name="overrideDNS" id="overrideDNS" ref="overrideDNS"/>
                 <label>Use Cypherpunk DNS</label>
+              </div>
+            </div>
+            <div className={"setting indented" + (daemon.account.account.type === 'developer' ? "" : " hidden")}>
+              <div className="ui toggle checkbox">
+                <input type="checkbox" name="optimizeDNS" id="optimizeDNS" ref="optimizeDNS"/>
+                <label>Optimized Routing</label>
               </div>
             </div>
             <div className="setting indented">

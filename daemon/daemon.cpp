@@ -692,7 +692,8 @@ void CypherDaemon::WriteOpenVPNProfile(std::ostream& out, const JsonObject& serv
 	{
 		int dns_index = 10
 			+ (g_settings.blockAds() ? 1 : 0)
-			+ (g_settings.blockMalware() ? 2 : 0);
+			+ (g_settings.blockMalware() ? 2 : 0)
+			+ (g_settings.optimizeDNS() ? 8 : 0);
 		std::string dns_string = std::to_string(dns_index);
 		out << "dhcp-option DNS 10.10.10." << dns_string << endl;
 #if OS_LINUX
@@ -876,7 +877,7 @@ void CypherDaemon::DoConnect()
 			auto params = SplitToVector(line, ',');
 			if (params.size() >= 2)
 			{
-				const auto& s = params.at(1);
+				const auto& s = params[1];
 				if (_state == SWITCHING)
 				{
 					if (s == "CONNECTED" || s == "RECONNECTING")
