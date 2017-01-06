@@ -37,8 +37,6 @@ void firewall_disable_anchor(const std::string& anchor);
 bool firewall_anchor_enabled(const std::string& anchor);
 void firewall_set_anchor_enabled(const std::string& anchor, bool enable);
 
-unsigned short PosixServerPingerThinger::_global_sequence_number = 0;
-
 class PosixHandle
 {
 	int _fd;
