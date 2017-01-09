@@ -6,7 +6,6 @@
 #include "logger_file.h"
 #include "openvpn.h"
 #include "path.h"
-#include "posix_ping.h"
 
 #include <algorithm>
 #include <cctype>
@@ -37,8 +36,6 @@ void firewall_enable_anchor(const std::string& anchor);
 void firewall_disable_anchor(const std::string& anchor);
 bool firewall_anchor_enabled(const std::string& anchor);
 void firewall_set_anchor_enabled(const std::string& anchor, bool enable);
-
-unsigned short PosixServerPingerThinger::_global_sequence_number = 0;
 
 class PosixHandle
 {
@@ -680,14 +677,13 @@ public:
 			}
 		}
 	}
-	virtual void PingServers(std::vector<std::pair<std::string, std::string>> servers, double timeout, std::function<PingCallback> callback) override
-	{
-		auto pinger = std::make_shared<PosixServerPingerThinger>(_io);
-		for (const auto& p : servers)
-			pinger->Add(p.first, p.second);
-		pinger->Start(timeout, std::move(callback));
-	}
 };
+
+unsigned short GetPingIdentifier()
+{
+	return (unsigned short)::getpid();
+}
+
 
 static void (*g_old_terminate_handler)() = nullptr;
 

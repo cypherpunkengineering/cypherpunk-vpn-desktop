@@ -26,6 +26,9 @@ typedef jsonrpc::Server JsonRPCServer;
 typedef jsonrpc::Client JsonRPCClient;
 typedef jsonrpc::Dispatcher JsonRPCDispatcher;
 
+// Implemented by platform
+extern unsigned short GetPingIdentifier();
+
 
 /*struct ServerInfo
 {
@@ -95,6 +98,9 @@ protected:
 	void OnReceiveMessage(Connection con, WebSocketServer::message_ptr msg);
 	void OnStateChanged(unsigned int state_changed_flags);
 
+	void PingServers();
+	void WriteOpenVPNProfile(std::ostream& out, const JsonObject& server, OpenVPNProcess* process);
+
 	JsonObject MakeStateObject();
 	JsonObject MakeConfigObject();
 	JsonObject MakeAccountObject();
@@ -137,7 +143,5 @@ protected:
 	virtual std::string GetAvailableAdapter(int index) = 0;
 	// Apply the firewall/killswitch mode to the system.
 	virtual void ApplyFirewallSettings() {}
-	// Ping the servers in g_settings.locations().
-	virtual void PingServers(std::vector<std::pair<std::string, std::string>> servers, double timeout, std::function<PingCallback> callback) = 0;
 };
 

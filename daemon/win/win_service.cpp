@@ -562,14 +562,12 @@ public:
 			});
 		}
 	}
-
-	virtual void PingServers(std::vector<std::pair<std::string, std::string>> servers, double timeout, std::function<PingCallback> callback) override
-	{
-		_io.post(std::bind(callback, std::vector<PingResult>()));
-	}
 };
 
-
+unsigned short GetPingIdentifier()
+{
+	return (unsigned short)::GetProcessId(NULL);
+}
 
 
 
