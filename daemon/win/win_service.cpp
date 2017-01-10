@@ -259,7 +259,7 @@ public:
 
 	virtual void Run(const std::vector<std::string>& params) override
 	{
-		WinSubprocess::Run(GetPath(OpenVPNExecutable), params, GetPath(OpenVPNDir), !g_settings.runOpenVPNAsRoot());
+		WinSubprocess::Run(GetFile(OpenVPNExecutable), params, GetPath(OpenVPNDir), !g_settings.runOpenVPNAsRoot());
 
 		_stdout_read_thread = std::thread(THIS_CALLBACK(ReadThread), std::move(stdout_handle), [this](const asio::error_code& error, std::string line) {
 			g_daemon->OnOpenVPNStdOut(this, error, std::move(line));
@@ -521,9 +521,9 @@ public:
 					success++;
 				}
 
-				TURN_ON(allow_client,         AllowAppFilter<Outgoing, IPv4>(GetPath(ClientExecutable)));
-				TURN_ON(allow_daemon,         AllowAppFilter<Outgoing, IPv4>(GetPath(DaemonExecutable)));
-				TURN_ON(allow_openvpn,        AllowAppFilter<Outgoing, IPv4>(GetPath(OpenVPNExecutable)));
+				TURN_ON(allow_client,         AllowAppFilter<Outgoing, IPv4>(GetFile(ClientExecutable)));
+				TURN_ON(allow_daemon,         AllowAppFilter<Outgoing, IPv4>(GetFile(DaemonExecutable)));
+				TURN_ON(allow_openvpn,        AllowAppFilter<Outgoing, IPv4>(GetFile(OpenVPNExecutable)));
 				TURN_ON(allow_localhost_ipv4, AllowLocalHostFilter<Outgoing, IPv4>());
 				TURN_ON(allow_localhost_ipv6, AllowLocalHostFilter<Outgoing, IPv6>());
 				TURN_ON(allow_dhcp_ipv4,      AllowDHCPFilter<IPv4>());

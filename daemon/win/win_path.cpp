@@ -5,6 +5,8 @@
 #include <tchar.h>
 #include <shlwapi.h>
 
+#include <windows.h>
+
 #pragma comment (lib, "shlwapi.lib")
 
 const char PATH_SEPARATOR = '\\';
@@ -105,7 +107,7 @@ std::string GetPredefinedDirectory(PredefinedDirectory dir)
 
 void RecursivelyCreateDirectory(std::tstring& path, size_t end)
 {
-	if (!CreateDirectory(path.c_str()))
+	if (!CreateDirectory(path.c_str(), NULL))
 	{
 		DWORD error = GetLastError();
 		if (error == ERROR_PATH_NOT_FOUND && end > 0)
@@ -118,7 +120,7 @@ void RecursivelyCreateDirectory(std::tstring& path, size_t end)
 					FINALLY({ path[p] = PATH_SEPARATOR; });
 					RecursivelyCreateDirectory(path, p);
 				}
-				WIN_CHECK_IF_FALSE(CreateDirectory, (path.c_str()));
+				WIN_CHECK_IF_FALSE(CreateDirectory, (path.c_str(), NULL));
 				return;
 			}
 		}
