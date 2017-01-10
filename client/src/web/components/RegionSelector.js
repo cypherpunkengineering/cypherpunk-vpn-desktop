@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { REGION_GROUP_NAMES, REGION_GROUP_ORDER, COUNTRY_NAMES } from '../util';
+import '../util';
 import daemon, { DaemonAware } from '../daemon';
 
 // Always use this stub to import standard React addons, as we will either use
@@ -17,6 +17,9 @@ export default class RegionSelector extends DaemonAware(React.Component) {
   state = {
     locations: daemon.config.locations,
     regions: daemon.config.regions,
+    countryNames: daemon.config.countryNames,
+    regionNames: daemon.config.regionNames,
+    regionOrder: daemon.config.regionOrder,
     selected: daemon.settings.location,
     favorites: Array.toDict(daemon.settings.favorites, f => f, f => true),
     recent: daemon.settings.recent,
@@ -27,6 +30,9 @@ export default class RegionSelector extends DaemonAware(React.Component) {
   daemonConfigChanged(config) {
     if (config.locations) this.setState({ locations: config.locations });
     if (config.regions) this.setState({ regions: config.regions });
+    if (config.countryNames) this.setState({ countryNames: config.countryNames });
+    if (config.regionNames) this.setState({ regionNames: config.regionNames });
+    if (config.regionOrder) this.setState({ regionOrder: config.regionOrder });
   }
   daemonSettingsChanged(settings) {
     if (settings.hasOwnProperty('location')) this.setState({ selected: settings.location });
@@ -170,10 +176,10 @@ export default class RegionSelector extends DaemonAware(React.Component) {
 
   makeRegionList(regions, locations) {
     var items = Array.flatten(
-      REGION_GROUP_ORDER.map(g => ({
+      this.state.regionOrder.map(g => ({
         id: g,
-        name: REGION_GROUP_NAMES[g],
-        locations: Array.flatten(Object.mapToArray(regions[g], (c,l) => [c,l]).sort((a, b) => COUNTRY_NAMES[a[0]].localeCompare(COUNTRY_NAMES[b[0]])).map(([country, locs]) => locs.map(l => locations[l]).sort((a, b) => a.name.localeCompare(b.name)).map(l => this.makeLocation(l, 'location'))).filter(l => l && l.length > 0))
+        name: this.state.regionNames[g],
+        locations: Array.flatten(Object.mapToArray(regions[g], (c,l) => [c,l]).sort((a, b) => this.state.countryNames[a[0]].localeCompare(this.state.countryNames[b[0]])).map(([country, locs]) => locs.map(l => locations[l]).sort((a, b) => a.name.localeCompare(b.name)).map(l => this.makeLocation(l, 'location'))).filter(l => l && l.length > 0))
       })).filter(r => r.locations && r.locations.length > 0).map(r => [ this.makeLocationHeader('region-' + r.id.toLowerCase(), r.name) ].concat(r.locations))
     );
     var recent = this.state.recent.filter(r => !this.state.favorites[r] && locations[r]);

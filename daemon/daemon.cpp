@@ -456,6 +456,9 @@ JsonObject CypherDaemon::MakeConfigObject()
 	config["locations"] = g_settings.locations();
 	config["regions"] = g_settings.regions();
 	config["certificateAuthorities"] = GetCertificateAuthorities();
+	config["countryNames"] = g_settings.countryNames();
+	config["regionNames"] = g_settings.regionNames();
+	config["regionOrder"] = g_settings.regionOrder();
 	return config;
 }
 
@@ -526,7 +529,7 @@ void CypherDaemon::RPC_applySettings(const JsonObject& settings)
 		g_settings.OnChanged(changed);
 
 	// FIXME: Temporary workaround, these should be configs instead
-	if (settings.find("locations") != settings.end() || settings.find("regions") != settings.end())
+	if (settings.find("locations") != settings.end() || settings.find("regions") != settings.end() || settings.find("countryNames") != settings.end() || settings.find("regionNames") != settings.end() || settings.find("regionOrder") != settings.end())
 		SendToAllClients(_rpc_client.BuildNotificationData("config", MakeConfigObject()));
 	if (settings.find("account") != settings.end())
 		SendToAllClients(_rpc_client.BuildNotificationData("account", MakeAccountObject()));

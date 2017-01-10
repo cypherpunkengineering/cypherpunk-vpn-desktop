@@ -79,10 +79,13 @@ public:
 	namedmember(bool, showNotifications, true)
 
 	// FIXME: should be a config
-	namedmember(JsonObject, regions, {})
-	namedmember(JsonObject, locations, {})
+	namedmember(JsonObject, regions, {});
+	namedmember(JsonObject, locations, {});
+	namedmember(JsonObject, countryNames, {});
+	namedmember(JsonObject, regionNames, {});
+	namedmember(JsonArray, regionOrder, {});
 	// FIXME: should be a separate account object
-	namedmember(JsonObject, account, {})
+	namedmember(JsonObject, account, {});
 
 	namedmember(JsonArray, favorites, {});
 	namedmember(JsonArray, recent, {});	// TODO: turn into persistent state
