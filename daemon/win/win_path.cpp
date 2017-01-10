@@ -124,7 +124,7 @@ void RecursivelyCreateDirectory(std::tstring& path, size_t end)
 				return;
 			}
 		}
-		if (error != ERROR_ALREADY_EXIST)
+		if (error != ERROR_ALREADY_EXISTS)
 			THROW_WIN32EXCEPTION(error, CreateDirectory);
 	}
 }

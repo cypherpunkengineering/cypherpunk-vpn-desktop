@@ -94,7 +94,7 @@ std::vector<win_tap_adapter> win_get_tap_adapters()
 static BOOL win_tap_install(LPTSTR cmdline)
 {
 	std::tstring tap_path = convert<TCHAR>(GetPath(TapDriverDir));
-	std::tstring tap_install = convert<TCHAR>(GetPath(TapInstallExecutable));
+	std::tstring tap_install = convert<TCHAR>(GetFile(TapInstallExecutable));
 
 	STARTUPINFO si = { sizeof(si), 0 };
 	PROCESS_INFORMATION pi;
