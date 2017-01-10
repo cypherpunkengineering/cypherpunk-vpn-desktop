@@ -15,7 +15,7 @@ static int logged_system(const std::string& cmd)
 void firewall_install()
 {
 #ifdef OS_OSX
-	if (0 != logged_system("grep -F com.cypherpunk.privacy /etc/pf.conf"))
+	if (0 != logged_system("grep -qF com.cypherpunk.privacy /etc/pf.conf"))
 	{
 		LOG(INFO) << "Installing PF anchors";
 		// Need to install anchors
@@ -69,7 +69,7 @@ void firewall_install()
 void firewall_uninstall()
 {
 #ifdef OS_OSX
-	if (0 == logged_system("grep -F com.cypherpunk.privacy /etc/pf.conf"))
+	if (0 == logged_system("grep -qF com.cypherpunk.privacy /etc/pf.conf"))
 	{
 		// Strip out added lines and reload
 		LOG(INFO) << "Uninstalling PF anchors";
