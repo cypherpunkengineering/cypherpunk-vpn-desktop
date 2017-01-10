@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <system_error>
 #include <fcntl.h>
+#include <sys/stat.h>
 
 const char PATH_SEPARATOR = '/';
 std::string g_argv0;
@@ -32,7 +33,7 @@ void InitPaths(std::string argv0)
 	}
 }
 
-std::string GetPath(PredefinedFile file)
+std::string GetPredefinedFile(PredefinedFile file, EnsureExistsTag ensure_path_exists)
 {
 	switch (file)
 	{
@@ -44,22 +45,22 @@ std::string GetPath(PredefinedFile file)
 #else
 		: GetPath(BaseDir, "daemon", "third_party", "openvpn_osx", "openvpn");
 #endif
-	case SettingsFile: return GetPath(SettingsDir, "settings.json");
+	case SettingsFile: return GetPath(SettingsDir, ensure_path_exists, "settings.json");
 	default:
 		LOG(ERROR) << "Unknown file";
 		return std::string();
 	}
 }
 
-std::string GetPath(PredefinedDirectory dir)
+std::string GetPredefinedDirectory(PredefinedDirectory dir)
 {
 	switch (dir)
 	{
 	case BaseDir: return g_is_installed ? "/usr/local/cypherpunk" : (g_daemon_path + "/../..");
 #if OS_LINUX
-	case ScriptsDir: return g_is_installed ? GetPath(BaseDir, "etc/scripts") : GetPath(BaseDir, "res", "linux", "openvpn-scripts");
+	case ScriptsDir: return g_is_installed ? GetPath(BaseDir, "etc", "scripts") : GetPath(BaseDir, "res", "linux", "openvpn-scripts");
 #else
-	case ScriptsDir: return g_is_installed ? GetPath(BaseDir, "etc/scripts") : GetPath(BaseDir, "res", "osx", "openvpn-scripts");
+	case ScriptsDir: return g_is_installed ? GetPath(BaseDir, "etc", "scripts") : GetPath(BaseDir, "res", "osx", "openvpn-scripts");
 #endif
 	case SettingsDir: return g_is_installed ? GetPath(BaseDir, "etc") : g_daemon_path;
 	case LogDir: return g_is_installed ? "/tmp" : g_daemon_path;
@@ -68,6 +69,36 @@ std::string GetPath(PredefinedDirectory dir)
 		LOG(ERROR) << "Unknown path";
 		return std::string();
 	}
+}
+
+void RecursivelyCreateDirectory(std::string& path, size_t end)
+{
+	if (-1 == mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH))
+	{
+		int error = errno;
+		if (error == ENOENT && end > 0)
+		{
+			size_t p = path.rfind(PATH_SEPARATOR, end - 1);
+			if (p != path.npos)
+			{
+				{
+					path[p] = 0;
+					FINALLY({ path[p] = PATH_SEPARATOR; });
+					RecursivelyCreateDirectory(path, p);
+				}
+				POSIX_CHECK(mkdir, (path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH));
+				return;
+			}
+		}
+		if (error != EEXIST)
+			THROW_POSIXEXCEPTION(error, mkdir);
+	}
+}
+
+std::string& EnsurePathExists(std::string& path)
+{
+	RecursivelyCreateDirectory(path, path.size());
+	return path;
 }
 
 std::string ReadFile(const std::string& path)

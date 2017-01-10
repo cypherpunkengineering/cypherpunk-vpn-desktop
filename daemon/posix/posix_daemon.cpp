@@ -459,7 +459,7 @@ public:
 
 	virtual void Run(const std::vector<std::string>& params) override
 	{
-		std::string openvpn = GetPath(OpenVPNExecutable);
+		std::string openvpn = GetFile(OpenVPNExecutable);
 		PosixSubprocess::Run(openvpn, params);
 
 		_stdout_reader.Begin();
@@ -740,7 +740,7 @@ int main(int argc, char **argv)
 
 	InitPaths(argc > 0 ? argv[0] : "cypherpunk-privacy-service");
 
-	g_file_logger.Open(GetPath(LogDir, "daemon.log"));
+	g_file_logger.Open(GetFile(LogDir, EnsureExists, "daemon.log"));
 	Logger::Push(&g_file_logger);
 	Logger::Push(&g_stderr_logger);
 
