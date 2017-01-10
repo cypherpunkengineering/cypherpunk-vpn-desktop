@@ -1,5 +1,13 @@
 const electron = require('electron');
 const { app, dialog, BrowserWindow, Tray, Menu, nativeImage: NativeImage, ipcMain: ipc } = electron;
+
+if (app.makeSingleInstance((argv, cwd) => {
+  console.log("Attempted to start second instance: ", argv, cwd);
+  if (window) window.show();
+})) {
+  app.exit(0);
+}
+
 const fs = require('fs');
 import { eventPromise, timeoutPromise } from './util.js';
 import Notification from './notification.js';
