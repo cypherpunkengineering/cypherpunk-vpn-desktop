@@ -1070,8 +1070,7 @@ int _tmain(int argc, TCHAR *argv[])
 {
 	InitPaths(argc > 0 ? convert<char>(argv[0]) : "./daemon.exe");
 
-	_tmkdir(convert<TCHAR>(GetPath(LogDir)).c_str());
-	g_file_logger.Open(GetPath(LogDir, "daemon.log"));
+	g_file_logger.Open(GetFile(LogDir, EnsureExists, "daemon.log"));
 	Logger::Push(&g_file_logger);
 
 	SERVICE_TABLE_ENTRY table[] =

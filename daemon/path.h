@@ -5,7 +5,7 @@
 
 enum PredefinedDirectory
 {
-	BaseDir,		// Base directory of config files etc. (e.g. C:\Program Files\Cypherpunk Privacy\ on Windows)
+	BaseDir,		// Base directory of config files etc. (e.g. C:\Program Files\Cypherpunk Privacy\ on Windows, /usr/local/cypherpunk on macOS/Linux)
 	LogDir,			// Directory where to write log file(s)
 	OpenVPNDir,		// Directory where OpenVPN binary sits
 	ProfileDir,		// Directory where temporary OpenVPN profile files are written

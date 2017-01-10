@@ -843,15 +843,9 @@ void CypherDaemon::DoConnect()
 
 	args.push_back("--config");
 
-#if OS_WIN
-	char profile_basename[32];
-	snprintf(profile_basename, sizeof(profile_basename), "profile%d.ovpn", index);
-	_mkdir(GetPath(ProfileDir).c_str());
-	std::string profile_filename = GetPath(ProfileDir, profile_basename);
-#else
-	std::string profile_filename = "/tmp/profile.XXXXXX";
-	mktemp(&profile_filename[0]);
-#endif
+	char profile_filename_tmp[32];
+	snprintf(profile_filename_tmp, sizeof(profile_filename_tmp), "profile%d.ovpn", index);
+	std::string profile_filename = GetPath(ProfileDir, EnsureExists, profile_filename_tmp);
 	{
 		std::ofstream f(profile_filename.c_str());
 		WriteOpenVPNProfile(f, g_settings.locations().at(g_settings.location()).AsStruct(), vpn.get());
