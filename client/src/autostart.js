@@ -70,7 +70,7 @@ if (process.platform == 'win32') {
     fs.unlink(path, err => { if (err) reject(err); else resolve(); });
   });
   AutoStart.isEnabled = () => new Promise((resolve, reject) => {
-    fs.stat(path, stats => resolve(stats ? true : false));
+    fs.access(path, err => resolve(!err));
   });
 
 } else {
