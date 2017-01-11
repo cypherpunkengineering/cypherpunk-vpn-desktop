@@ -6,9 +6,31 @@ import { Title } from './Titlebar.js';
 import RouteTransition from './Transition';
 import daemon from '../daemon.js';
 import server from '../server.js';
+import { DEFAULT_REGION_DATA } from '../util.js';
 const { session } = require('electron').remote;
 
 
+function refreshRegionList() {
+  console.log("refreshRegionList");
+  var countryNames = daemon.config.countryNames || DEFAULT_REGION_DATA.countryNames;
+  var regionNames = daemon.config.regionNames || Array.toDict(DEFAULT_REGION_DATA.regions, x => x[0], x => x[1]);
+  var regionOrder = daemon.config.regionOrder || DEFAULT_REGION_DATA.regions.map(x => x[0]);
+  return Promise.resolve().then(() => {
+    if (countryNames !== daemon.config.countryNames || regionNames !== daemon.config.regionNames || regionOrder !== daemon.config.regionOrder) {
+      return daemon.call.applySettings({ countryNames, regionNames, regionOrder });
+    }
+  }).then(() => {
+    return server.get('/api/v0/location/world').then(response => {
+      if (response.data.country) countryNames = Object.assign({}, countryNames, response.data.country);
+      if (response.data.region) regionNames = Object.assign({}, regionNames, response.data.region);
+      if (response.data.regionOrder) regionOrder = response.data.regionOrder;
+    }, err => {});
+  }).then(() => {
+    if (countryNames !== daemon.config.countryNames || regionNames !== daemon.config.regionNames || regionOrder !== daemon.config.regionOrder) {
+      return daemon.call.applySettings({ countryNames, regionNames, regionOrder });
+    }
+  }).then(() => { countryNames, regionNames, regionOrder });
+}
 
 function refreshLocationList() {
   return server.get('/api/v0/location/list/' + daemon.account.account.type).then(response => {
@@ -48,7 +70,7 @@ function setAccount(data) {
     if (!data.account.confirmed) {
       History.push({ pathname: '/login/confirm', query: { email: daemon.account.account.email } });
     } else {
-      return refreshLocationList().then(locations => {
+      return Promise.all([ refreshRegionList(), refreshLocationList() ]).then(() => {
         // TODO: Move to Application.onLoginSessionEstablished()
         if (History.getCurrentLocation().pathname.startsWith('/login')) {
           History.push('/connect');
@@ -67,7 +89,7 @@ export class Check extends React.Component {
   static run() {
     // Use setImmediate to avoid changing history in the same callstack
     setImmediate(() => {
-      if (daemon.account.account && daemon.account.account.confirmed && daemon.account.privacy && daemon.config.locations) {
+      if (daemon.account.account && daemon.account.account.confirmed && daemon.account.privacy && daemon.config.locations && daemon.config.regions && daemon.config.countryNames && daemon.config.regionNames && daemon.config.regionOrder) {
         // Go straight to main screen and run the check in the background; if it
         // fails, we'll go back to the login screen.
         History.push('/connect');

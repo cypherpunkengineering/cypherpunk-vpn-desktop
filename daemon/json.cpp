@@ -13,7 +13,7 @@
 
 JsonObject ReadJsonFile(const std::string& path)
 {
-	std::string text = ReadFile(GetPath(SettingsFile));
+	std::string text = ReadFile(path);
 	jsonrpc::JsonReader reader(text);
 	return std::move(const_cast<JsonObject&>(reader.GetValue().AsStruct()));
 }

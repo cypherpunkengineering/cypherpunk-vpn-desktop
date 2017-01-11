@@ -30,7 +30,7 @@ void Settings::ReadFromDisk()
 {
 	try
 	{
-		for (auto& p : ReadJsonFile(GetPath(SettingsFile)))
+		for (auto& p : ReadJsonFile(GetFile(SettingsFile)))
 			JsonObject::operator[](p.first) = std::move(p.second);
 		std::vector<std::string> names;
 		for (auto& p : map())
@@ -49,7 +49,7 @@ void Settings::ReadFromDisk()
 
 void Settings::WriteToDisk()
 {
-	WriteJsonFile(GetPath(SettingsFile), map());
+	WriteJsonFile(GetFile(SettingsFile, EnsureExists), map());
 }
 
 void Settings::OnChanged(const std::vector<std::string>& params) noexcept
