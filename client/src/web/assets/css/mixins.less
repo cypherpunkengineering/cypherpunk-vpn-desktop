@@ -1,25 +1,43 @@
 @import 'variables.less';
 
+
 // Theming mixin: takes a ruleset and evaluates it in a context where variables
 // have been replaced with the current body.selected theme.
 .themed(@rules) {
-  // First include the rules as-is, to implement the default theme
-  //@rules();
-  // Then iterate over all themes and add specialized rules for each
-  .mixin-theme(1, @rules);
-  .mixin-theme(@index, @rules) when (@index <= length(@themes)) {
-    @theme: extract(@themes, @index);
-    body.@{theme} & {
-      .theme(@theme);
-      content: @theme;
+  .theme > .apply(@rules);
+}
+
+// Namespace to hold actual theme data.
+#themes() {
+  .default {
+    @import (multiple, reference) 'theme.less';
+  }
+  @import 'theme-overrides.less';
+}
+
+// Helper mixin to apply variables and rulesets with the right scoping.
+.theme() {
+  .apply(@rules) {
+    & {
+      #themes.default;
       @rules();
     }
-    .mixin-theme((@index + 1), @rules);
+    .iterate(1, @rules);
+    .iterate(@index, @rules) when (@index <= length(@themes)) {
+      @theme-name: extract(@themes, @index);
+      html.@{theme-name} & {
+        #themes;
+        .override(@theme-name);
+        @rules();
+      }
+      .iterate((@index + 1), @rules);
+    }
   }
 }
 
 
+// Assuming the existence of a @2x variant of the url in question, apply a background-image
+// that automatically selects the correct resolution depending on the current screen.
 .retina-background(@url) {
   background-image+: ~`"-webkit-image-set(url(@{url}) 1x, url('" + @{url}.replace(/(\.[^.]*)$/, '@2x$1') + "') 2x)"`;
 }
-
