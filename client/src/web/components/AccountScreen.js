@@ -37,18 +37,39 @@ export default class AccountScreen extends React.Component  {
       '6m': "semiannually",
       '3m': "quarterly",
       '1m': "monthly",
-      'forever': "forever"
     }[daemon.account.subscription.renewal];
   }
+  isLifetime() {
+    switch (daemon.account.subscription.renewal) {
+      case 'forever':
+      case 'lifetime':
+        return true;
+      default:
+        return false;
+    }
+  }
   getRenewalString() {
-    if (daemon.account.subscription.renewal === 'forever') {
+    if (this.isLifetime()) {
       return "Lifetime";
     } else if (daemon.account.subscription.expiration != 0) { // note: !=, not !==
       var d = new Date(daemon.account.subscription.expiration);
+      var dateString = `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`;
       var now = new Date();
-      return `${d<=now ? "Expired" : "Renews " + this.getRenewalType()} on ${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`;
+      var renewalType = this.getRenewalType();
+      if (d <= now) {
+        return `Expired on ${dateString}`;
+      } else if (renewalType) {
+        return `Renews ${renewalType} on ${dateString}`;
+      } else {
+        return `Expired on ${dateString}`;
+      }
     } else {
-      return "Renews " + this.getRenewalType();
+      var renewalType = this.getRenewalType();
+      if (renewalType) {
+        return `Renews ${renewalType}`;
+      } else {
+        return null;
+      }
     }
   }
   getContent() {
