@@ -44,12 +44,12 @@ export default class RegionSelector extends DaemonAware(React.Component) {
   }
 
   open() {
-    //this.$.addClass('open');
+    //this.$dom.addClass('open');
     this.setState({ open: true });
   }
   close() {
-    //this.$.removeClass('open');
-    //this.$.children('.list').scrollTop(0);
+    //this.$dom.removeClass('open');
+    //this.$('.list').scrollTop(0);
     this.setState({ open: false });
   }
   ensureVisible(item) {
@@ -63,7 +63,7 @@ export default class RegionSelector extends DaemonAware(React.Component) {
     }
     var itemHeight = item.outerHeight();
     var itemTop = item[0].offsetTop;
-    var list = this.$.children('.list');
+    var list = this.$('.list');
     var listHeight = list.height();
     var listScroll = list.scrollTop();
     if (itemTop + itemHeight > listScroll + listHeight) {
@@ -195,14 +195,8 @@ export default class RegionSelector extends DaemonAware(React.Component) {
     return items;
   }
 
-  get dom() {
-    return ReactDOM.findDOMNode(this);
-  }
-  get $() {
-    return $(this.dom);
-  }
   get $list() {
-    return this.$.children('.list');
+    return this.$('.list');
   }
   $item(location) {
     return this.$list.children(`[data-value="${location}"]`);
