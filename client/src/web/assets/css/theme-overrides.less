@@ -1,0 +1,10 @@
+// This contains subtheme-specific overrides on top of the basic theme.less.
+
+.override(online) {
+  @import (multiple, reference) 'theme.less';
+  @themeWindowBackground: mix(@cpTeal, #7f0, 90%);
+}
+.override(error) {
+  @import (multiple, reference) 'theme.less';
+  @themeWindowBackground: mix(@cpTeal, #f20, 80%);
+}

@@ -1,9 +1,4 @@
-@import 'variables.less';
-
 // Mixins
-.bodyHeight {
-  height: calc(~"100vh -" @fullHeaderHeight);
-}
 
 .border-full--light {
   border: 1px solid @border-light;
@@ -11,13 +6,6 @@
 
 .blur {
   filter: blur(1px);
-}
-
-.draggable {
-  -webkit-app-region: drag;
-}
-.nondraggable {
-  -webkit-app-region: no-drag;
 }
 
 #window-close {
@@ -62,6 +50,31 @@
     outline: none;
   }
 }
+
+.draggable {
+  -webkit-app-region: drag;
+}
+.nondraggable {
+  -webkit-app-region: no-drag;
+}
+
+// Scrollbars
+::-webkit-scrollbar {
+	width: 8px;
+}
+//::-webkit-scrollbar-button {}
+//::-webkit-scrollbar-track {}
+//::-webkit-scrollbar-track-piece {}
+::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: rgba(255,255,255,0.3);
+  &:hover {
+    background: rgba(255,255,255,0.4);
+  }
+}
+//::-webkit-scrollbar-corner {}
+//::-webkit-resizer {}
+
 html, body {
   position: absolute;
   left: 0;
@@ -71,21 +84,25 @@ html, body {
   cursor: default;
   touch-action: none;
 }
+
 body {
   color: #fff;
-  background: @cpBg;
+  .themed({
+    background: @themeBodyBackground;
+  });
   // transition: 2s background;
   font-family: Dosis;
   font-weight: 400;
   line-height: normal;
   overflow-y: hidden;
-  //-webkit-font-smoothing: antialiased;
   height: 100vh;
   // height: calc(~"100vh -" (@dragbarHeight));
   // top: 30px;
-  .bg-gradient--main;
 }
 
+.bodyHeight {
+  height: calc(~"100vh -" @fullHeaderHeight);
+}
 
 /*:not(input):not(textarea), :not(input):not(textarea)::after, :not(input):not(textarea)::before { -webkit-user-select: none; user-select: none; cursor: default; }*/
 /*input, button, textarea, :focus { outline: none; }*/
@@ -139,6 +156,9 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 }
 
 .cp.titlebar {
+  .themed({
+    background: @themeTitlebarBackground;
+  });
   border-bottom: 1px solid @cpWhite25;
   width: 100%;
   height: @fullHeaderHeight;
@@ -411,7 +431,9 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 
 #connect-screen {
   .screen;
-  background: linear-gradient(to top, #034698, #4c8ee1);
+  .themed({
+    background: @themeWindowBackground;
+  });
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -562,7 +584,9 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 
 #login-screen {
   .screen;
-  .bg-gradient--main;
+  .themed({
+    background: @themeWindowBackground;
+  });
   text-align: center;
   padding: 3em 2.5em 0;
 
@@ -1205,164 +1229,6 @@ small {
 }
 
 
-// Scrolbars
-::-webkit-scrollbar {
-	width: 8px;
-}
-//::-webkit-scrollbar-button {}
-//::-webkit-scrollbar-track {}
-//::-webkit-scrollbar-track-piece {}
-::-webkit-scrollbar-thumb {
-  border-radius: 10px;
-  background: rgba(255,255,255,0.3);
-  &:hover {
-    background: rgba(255,255,255,0.4);
-  }
-}
-//::-webkit-scrollbar-corner {}
-//::-webkit-resizer {}
-
-
-// Animations
-
-@screenTransitionTime: 350ms;
-@easeInQuart: cubic-bezier(0.895, 0.03, 0.685, 0.22);
-@easeOutQuart: cubic-bezier(0.165, 0.84, 0.44, 1);
-@easeInBack: cubic-bezier(0.6, -0.28, 0.735, 0.045);
-@easeOutBack: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-@stepSlide: cubic-bezier(0.35, -0.25, 0.35, 1.0);
-
-#root-container > .transition-container {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100vw;
-  height: 100vh;
-}
-.transition-container {
-  position: relative;
-  padding: 0;
-  width: 100%;
-  flex-grow: 1;
-  > * {
-    position: absolute !important;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-  }
-}
-
-.fadeIn {
-  @transitionTime: @screenTransitionTime;
-  &-enter {
-    opacity: 0;
-    &-active {
-      opacity: 1;
-      transition: opacity @transitionTime ease-in;
-    }
-  }
-  &-leave {
-    opacity: 1;
-    pointer-events: none !important;
-    &-active {
-      opacity: 0;
-      transition: opacity @transitionTime ease-in;
-    }
-  }
-  &-appear {
-    opacity: 0;
-    &-active {
-      opacity: 0;
-      transition: opacity @transitionTime ease-in;
-    }
-  }
-}
-
-.nudgeLeft {
-  @transitionTime: 700ms;
-  &-enter {
-    transform: translateX(100vw);
-    opacity: 0;
-    &-active {
-      transform: translateX(0);
-      opacity: 1;
-      transition: transform @transitionTime @stepSlide, opacity @transitionTime @easeInQuart;
-    }
-  }
-  &-leave {
-    transform: translateX(0);
-    opacity: 1;
-    pointer-events: none !important;
-    &-active {
-      transform: translateX(-100vw);
-      opacity: 0;
-      transition: transform @transitionTime @stepSlide, opacity @transitionTime @easeOutQuart;
-    }
-  }
-}
-.nudgeRight {
-  @transitionTime: 700ms;
-  &-enter {
-    transform: translateX(-100vw);
-    opacity: 0;
-    &-active {
-      transform: translateX(0);
-      opacity: 1;
-      transition: transform @transitionTime @stepSlide, opacity @transitionTime @easeInQuart;
-    }
-  }
-  &-leave {
-    transform: translateX(0);
-    opacity: 1;
-    pointer-events: none !important;
-    &-active {
-      transform: translateX(100vw);
-      opacity: 0;
-      transition: transform @transitionTime @stepSlide, opacity @transitionTime @easeOutQuart;
-    }
-  }
-}
-
-.swipeLeft {
-  @transitionTime: @screenTransitionTime;
-  &-enter {
-    transform: translateX(100vw);
-    &-active {
-      transform: translateX(0);
-      transition: transform @transitionTime ease-out;
-    }
-  }
-  &-leave {
-    transform: translateX(0);
-    pointer-events: none !important;
-    &-active {
-      transform: translateX(-100vw);
-      transition: transform @transitionTime ease-out;
-    }
-  }
-}
-
-.swipeRight {
-  @transitionTime: @screenTransitionTime;
-  &-enter {
-    transform: translateX(-100vw);
-    &-active {
-      transform: translateX(0);
-      transition: transform @transitionTime ease-out;
-    }
-  }
-  &-leave {
-    transform: translateX(0);
-    pointer-events: none !important;
-    &-active {
-      transform: translateX(100vw);
-      transition: transform @transitionTime ease-out;
-    }
-  }
-}
-
-
 
 @panelWidth: 290px;
 @leftPanelWidth: @panelWidth;
@@ -1616,6 +1482,58 @@ small {
           background: linear-gradient(to left, rgba(255,255,255,0.1), transparent);
         }
       }
+
+      &.input {
+        display: flex;
+        flex-direction: column;
+        .ui.input {
+          margin: 15px 15px 15px 10px;
+          input {
+            font-size: 18px;
+            //border: 1px solid rgba(255,255,255,0.2);
+            border: none;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+          }
+          + .ui.input {
+            margin-top: 0;
+          }
+        }
+        .ui.button {
+          margin: 15px;
+          width: auto;
+        }
+        button {
+          margin: 15px;
+          width: auto;
+          border: none;
+          background: rgba(0,0,0,0.25);
+          color: rgba(255,255,255,0.75);
+          font-size: 18px;
+          line-height: 40px;
+          padding: 1px;
+          transition: background-color 0.3s, box-shadow 0.3s, color 0.2s, border-color 0.2s;
+          &:hover {
+            background-color: rgba(0,0,0,0.35);
+            color: white;
+          }
+          &:active {
+            padding: 2px 0 0 2px;
+            box-shadow: inset 1px 1px 5px rgba(0,0,0,0.15);
+          }
+          .themed({
+            border-radius: 30px;
+            border: 1px solid #5fbbc4;
+            color: rgba(255,255,255,0.75);
+            background: rgba(0,0,0,0.25);
+            &:hover {
+              background-color: rgba(0,0,0,0.35);
+              box-shadow: inset 0 0 50px -10px #5fbbc4;
+              border-color: white;
+              color: white;
+            }
+          });
+        }
+      }
     }
     .collapsible {
       position: relative;
@@ -1683,7 +1601,9 @@ small {
     width: @leftPanelWidth;
 
     > div {
-      background: linear-gradient(to left, rgba(0,0,0,0.25) 0, transparent 30px), linear-gradient(329deg, transparent, rgba(255,255,255,0.2)), @cpDarkBlue;
+      .themed({
+        background: linear-gradient(to left, rgba(0,0,0,0.25) 0, transparent 30px), linear-gradient(329deg, transparent, rgba(255,255,255,0.2)), @themeDarkBackground;
+      });
     }
 
     ~ .screen {
@@ -1721,7 +1641,9 @@ small {
     width: @rightPanelWidth;
 
     > div {
-      background: linear-gradient(to right, rgba(0,0,0,0.25) 0, transparent 30px), linear-gradient(329deg, transparent, rgba(255,255,255,0.2)), @cpDarkBlue;
+      .themed({
+        background: linear-gradient(to right, rgba(0,0,0,0.25) 0, transparent 30px), linear-gradient(329deg, transparent, rgba(255,255,255,0.2)), @themeDarkBackground;
+      });
     }
 
     ~ .screen {
