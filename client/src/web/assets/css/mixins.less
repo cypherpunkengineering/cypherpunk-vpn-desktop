@@ -7,6 +7,12 @@
   .theme > .apply(@rules);
 }
 
+// Special case for accessing theme variables without allowing/needing overrides.
+.unthemed(@rules) {
+  #themes.default;
+  @rules();
+}
+
 // Namespace to hold actual theme data.
 #themes() {
   .default {
