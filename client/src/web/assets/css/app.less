@@ -1534,6 +1534,28 @@ small {
           });
         }
       }
+
+      // Share links in the "Share with a friend" subscreen; display <a> elements as a vertical list
+      &.share {
+        //display: flex;
+        //flex-direction: column;
+        //padding: 1em;
+
+        a {
+          display: block;
+          margin: 15px;
+          padding: 10px;
+          cursor: pointer;
+          font-size: 20px;
+          border-radius: 8px;
+          border: 1px solid rgba(255,255,255,0.25);
+
+          > i {
+            font-size: 24px;
+            margin-right: 10px;
+          }
+        }
+      }
     }
     .collapsible {
       position: relative;
