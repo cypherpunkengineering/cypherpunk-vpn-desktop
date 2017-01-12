@@ -156,6 +156,9 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 }
 
 .cp.titlebar {
+  .themed({
+    background: @themeTitlebarBackground;
+  });
   border-bottom: 1px solid @cpWhite25;
   width: 100%;
   height: @fullHeaderHeight;
@@ -428,7 +431,9 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 
 #connect-screen {
   .screen;
-  background: linear-gradient(to top, #034698, #4c8ee1);
+  .themed({
+    background: @themeWindowBackground;
+  });
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -580,7 +585,7 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 #login-screen {
   .screen;
   .themed({
-    background: @themeBodyBackground;
+    background: @themeWindowBackground;
   });
   text-align: center;
   padding: 3em 2.5em 0;
@@ -1596,7 +1601,9 @@ small {
     width: @leftPanelWidth;
 
     > div {
-      background: linear-gradient(to left, rgba(0,0,0,0.25) 0, transparent 30px), linear-gradient(329deg, transparent, rgba(255,255,255,0.2)), @cpDarkBlue;
+      .themed({
+        background: linear-gradient(to left, rgba(0,0,0,0.25) 0, transparent 30px), linear-gradient(329deg, transparent, rgba(255,255,255,0.2)), @themeDarkBackground;
+      });
     }
 
     ~ .screen {
@@ -1634,7 +1641,9 @@ small {
     width: @rightPanelWidth;
 
     > div {
-      background: linear-gradient(to right, rgba(0,0,0,0.25) 0, transparent 30px), linear-gradient(329deg, transparent, rgba(255,255,255,0.2)), @cpDarkBlue;
+      .themed({
+        background: linear-gradient(to right, rgba(0,0,0,0.25) 0, transparent 30px), linear-gradient(329deg, transparent, rgba(255,255,255,0.2)), @themeDarkBackground;
+      });
     }
 
     ~ .screen {

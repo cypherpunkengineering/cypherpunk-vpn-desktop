@@ -11,7 +11,9 @@
   bottom: 0;
   z-index: 2;
   transition: top 350ms cubic-bezier(0.5,0,0,1);
-  background: linear-gradient(to top, #034698, #4c8ee1) fixed;
+  .themed({
+    background: @themeWindowBackground;
+  });
   font-size: 1.125rem;
   > .bar {
     position: relative;

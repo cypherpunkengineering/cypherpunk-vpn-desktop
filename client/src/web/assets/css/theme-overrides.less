@@ -1,12 +1,10 @@
 // This contains subtheme-specific overrides on top of the basic theme.less.
 
-.override(darkpurple) {
+.override(online) {
   @import (multiple, reference) 'theme.less';
-  @themeWindowBackground: rgb(14,0,63);
-  @themeBodyBackground: @themeWindowBackground;
+  @themeWindowBackground: mix(@cpTeal, #7f0, 90%);
 }
-.override(darkteal) {
+.override(error) {
   @import (multiple, reference) 'theme.less';
-  @themeWindowBackground: #163238;
-  @themeBodyGradientColor1: @themeWindowBackground;
+  @themeWindowBackground: mix(@cpTeal, #f20, 80%);
 }
