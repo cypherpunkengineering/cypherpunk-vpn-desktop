@@ -42,7 +42,67 @@
 }
 
 
+* {
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  user-select: none;
+  &:focus {
+    outline: none;
+  }
+}
 
+.draggable {
+  -webkit-app-region: drag;
+}
+.nondraggable {
+  -webkit-app-region: no-drag;
+}
+
+// Scrollbars
+::-webkit-scrollbar {
+	width: 8px;
+}
+//::-webkit-scrollbar-button {}
+//::-webkit-scrollbar-track {}
+//::-webkit-scrollbar-track-piece {}
+::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: rgba(255,255,255,0.3);
+  &:hover {
+    background: rgba(255,255,255,0.4);
+  }
+}
+//::-webkit-scrollbar-corner {}
+//::-webkit-resizer {}
+
+html, body {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  cursor: default;
+  touch-action: none;
+}
+
+body {
+  color: #fff;
+  .themed({
+    background: @themeBodyBackground;
+  });
+  // transition: 2s background;
+  font-family: Dosis;
+  font-weight: 400;
+  line-height: normal;
+  overflow-y: hidden;
+  height: 100vh;
+  // height: calc(~"100vh -" (@dragbarHeight));
+  // top: 30px;
+}
+
+.bodyHeight {
+  height: calc(~"100vh -" @fullHeaderHeight);
+}
 
 /*:not(input):not(textarea), :not(input):not(textarea)::after, :not(input):not(textarea)::before { -webkit-user-select: none; user-select: none; cursor: default; }*/
 /*input, button, textarea, :focus { outline: none; }*/
@@ -519,7 +579,9 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 
 #login-screen {
   .screen;
-  .bg-gradient--main;
+  .themed({
+    background: @themeBodyBackground;
+  });
   text-align: center;
   padding: 3em 2.5em 0;
 
