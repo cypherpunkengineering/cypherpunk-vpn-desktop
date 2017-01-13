@@ -172,6 +172,13 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   justify-content: center;
   .draggable;
 
+  &.secondary {
+    .themed({
+      background: @themeSecondaryTitlebarBackground;
+      .themeTransition(background);
+    });
+  }
+
   .title {
     font-size: 110%;
     width: 100%;

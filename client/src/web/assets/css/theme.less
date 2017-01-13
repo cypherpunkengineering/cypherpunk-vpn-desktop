@@ -18,10 +18,10 @@
 @themeWindowBackground: @cpTeal;
 @themeBodyBackground: @themeWindowBackground;
 
-@themeDarkBackground: multiply(@themeWindowBackground, #aaa);
+@themeDarkBackground: multiply(@themeWindowBackground, #ccc);
 
-@themeTitlebarBackground: rgba(0,0,0,0.2);
-@themeSideTitlebarBackground: @themeTitlebarBackground;
+@themeTitlebarBackground: @themeWindowBackground;
+@themeSecondaryTitlebarBackground: multiply(@themeTitlebarBackground, #ccc);
 
 // Transition to return to the base theme color
 @themeTransitionTime: 3s;

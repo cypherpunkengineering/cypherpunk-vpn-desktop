@@ -1,5 +1,6 @@
 import React from 'react';
 import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, createMemoryHistory } from 'react-router';
+import { classList } from '../util';
 
 import AccountIcon from '../assets/img/icon-account-big.svg';
 import SettingsIcon from '../assets/img/icon_settings.svg';
@@ -68,15 +69,10 @@ export class Dragbar extends React.Component {
 export class Titlebar extends React.Component {
   constructor(props) {
     super(props);
-    this._handler= this._handler.bind(this);
-  }
-  _handler(props) {
-    // handler scope doesn't know what this is unless you call bind
-    console.log(props);
   }
   render() {
     return(
-      <div id="titlebar" className="cp titlebar">
+      <div id="titlebar" className={classList("cp titlebar", this.props.className)}>
         {this.props.children}
       </div>
     );
@@ -104,7 +100,7 @@ export class MainTitlebar extends React.Component {
 export class SecondaryTitlebar extends React.Component {
   render() {
     return(
-      <Titlebar>
+      <Titlebar className="secondary">
         <Link className="back" to={this.props.back}><i className="angle left icon"></i></Link>
         <span>{this.props.title}</span>
         <a style={{ visibility: 'hidden' }}/>
@@ -119,7 +115,7 @@ export class SecondaryTitlebar extends React.Component {
 export class PanelTitlebar extends React.Component {
   render() {
     return(
-      <Titlebar>
+      <Titlebar className="secondary">
         <span>{this.props.title}</span>
       </Titlebar>
     )
