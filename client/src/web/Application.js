@@ -70,6 +70,10 @@ export default class Application {
     server.onAuthFailure = () => {
       setImmediate(() => History.push('/login/email'));
     }
+
+    // Listen for daemon state changes
+    daemon.on('state', Application.daemonStateChanged);
+
     History.push('/login');
     // TODO: Later we'll probably want to run this at a different timing
     Application.checkForUpdates();
@@ -149,6 +153,20 @@ export default class Application {
   }
   static isLoggedIn() {
     return Application.History.location.pathname.match(/^\/(?!login)./);
+  }
+  static daemonStateChanged(state) {
+    if (state.state) {
+      switch (state.state) {
+        case 'CONNECTED':
+          $(document.body).one('transitionend', () => { $(document.documentElement).removeClass('online'); });
+          $(document.documentElement).addClass('online');
+          break;
+        case 'DISCONNECTED':
+          $(document.body).one('transitionend', () => { $(document.documentElement).removeClass('error'); });
+          $(document.documentElement).addClass('error');
+          break;
+      }
+    }
   }
   static render() {
     return (

@@ -163,27 +163,29 @@ export default class ConnectScreen extends React.Component {
       <RouteTransition transition="reveal">
         {this.props.children || null}
         <div id="connect-screen" key="self" class="screen">
-          <MainTitlebar/>
-          <OneZeros/>
-          {/* <MainBackground/> */}
-          <div id="connect-container" onClick={this.handleConnectClick}>
+          <div>
+            <MainTitlebar/>
+            <OneZeros/>
+            {/* <MainBackground/> */}
+            <div id="connect-container" onClick={this.handleConnectClick}>
 
-            <svg viewBox="-40 40 200 240" preserveAspectRatio="xMidYMid meet" width="160px" height="200px" ref="connectButton">
-              <circle class="ring" cx="60" cy="200" r="50" style={connectCircleStyle} />
-              <line x1="60" y1="98" x2="60" y2="181" style={connectLineStyle} />
-              <line x1="60" y1="111" x2="80" y2="111"  style={connectSmallLineStyle} />
-              <line x1="60" y1="137" x2="80" y2="137"  style={connectSmallLineStyle} />
-            </svg>
+              <svg viewBox="-40 40 200 240" preserveAspectRatio="xMidYMid meet" width="160px" height="200px" ref="connectButton">
+                <circle class="ring" cx="60" cy="200" r="50" style={connectCircleStyle} />
+                <line x1="60" y1="98" x2="60" y2="181" style={connectLineStyle} />
+                <line x1="60" y1="111" x2="80" y2="111"  style={connectSmallLineStyle} />
+                <line x1="60" y1="137" x2="80" y2="137"  style={connectSmallLineStyle} />
+              </svg>
 
-            {/*<i id="connect" class={"ui fitted massive power link icon" + (this.state.connectionState === 'connected' ? " green" : this.state.connectionState == 'disconnected' ? " red" : " orange disabled")} ref="connectButton" onClick={this.handleConnectClick}></i>*/}
+              {/*<i id="connect" class={"ui fitted massive power link icon" + (this.state.connectionState === 'connected' ? " green" : this.state.connectionState == 'disconnected' ? " red" : " orange disabled")} ref="connectButton" onClick={this.handleConnectClick}></i>*/}
+            </div>
+            <div id="connect-status" ref="connectStatus">{buttonLabel}</div>
+            <div id="connection-stats" class="ui two column center aligned grid">
+              <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.receivedBytes)}</div><div class="label">Received</div></div></div>
+              <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.sentBytes)}</div><div class="label">Sent</div></div></div>
+            </div>
+            <FirewallWarning/>
+            <RegionSelector/>
           </div>
-          <div id="connect-status" ref="connectStatus">{buttonLabel}</div>
-          <div id="connection-stats" class="ui two column center aligned grid">
-            <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.receivedBytes)}</div><div class="label">Received</div></div></div>
-            <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.sentBytes)}</div><div class="label">Sent</div></div></div>
-          </div>
-          <FirewallWarning/>
-          <RegionSelector/>
         </div>
       </RouteTransition>
     );

@@ -23,4 +23,13 @@
 @themeTitlebarBackground: rgba(0,0,0,0.2);
 @themeSideTitlebarBackground: @themeTitlebarBackground;
 
+// Transition to return to the base theme color
+@themeTransitionTime: 3s;
+@themeTransitionFunction: cubic-bezier(0.25, 0, 0.25, 1);
+@themeTransitionDelay: 0.2s;
+
+.themeTransition(@prop) {
+  transition+: @prop @themeTransitionTime @themeTransitionFunction;
+}
+
 // @import 'theme-overrides.less';   // Actually handled in mixins.less

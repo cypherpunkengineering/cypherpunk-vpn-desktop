@@ -1,10 +1,17 @@
 // This contains subtheme-specific overrides on top of the basic theme.less.
 
+@themeDefaultOverrideTransitionTime: 0.1s;
+@themeDefaultOverrideTransitionFunction: cubic-bezier(0, 1, 0, 1);
+
 .override(online) {
   @import (multiple, reference) 'theme.less';
   @themeWindowBackground: mix(@cpTeal, #7f0, 90%);
+  @themeTransitionTime: @themeDefaultOverrideTransitionTime;
+  @themeTransitionFunction: @themeDefaultOverrideTransitionTime;
 }
 .override(error) {
   @import (multiple, reference) 'theme.less';
   @themeWindowBackground: mix(@cpTeal, #f20, 80%);
+  @themeTransitionTime: @themeDefaultOverrideTransitionTime;
+  @themeTransitionFunction: @themeDefaultOverrideTransitionTime;
 }
