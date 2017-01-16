@@ -9,14 +9,16 @@ const REMOTE_PORT_ALTERNATIVES = [ [ 'udp', [ 7133, 5060, 53 ] ], [ 'tcp', [ 713
 export default class RemotePortScreen extends DaemonAware(React.Component)  {
   componentDidMount() {
     super.componentDidMount();
-    $(this.refs.root).find('.ui.checkbox').checkbox({ onChange: this.onChanged.bind(this) });
+    $(this.refs.root).find('.ui.checkbox').click(this.onClick.bind(this)).checkbox({ onChange: this.onChanged.bind(this) });
     this.onDaemonSettingsChanged();
   }
   onChanged() {
     if (this.updatingSettings) return;
     var value = $(this.refs.root).find('input[name=remotePort]:checked').val();
     daemon.post.applySettings({ 'remotePort': value });
-    History.push('/configuration');
+  }
+  onClick() {
+    setImmediate(() => { History.push('/configuration'); });
   }
   onDaemonSettingsChanged() {
     this.updatingSettings = true;

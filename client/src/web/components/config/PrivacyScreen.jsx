@@ -7,14 +7,16 @@ import { SecondaryTitlebar } from '../Titlebar';
 export default class PrivacyScreen extends DaemonAware(React.Component)  {
   componentDidMount() {
     super.componentDidMount();
-    $(this.refs.root).find('.ui.checkbox').checkbox({ onChange: this.onChanged.bind(this) });
+    $(this.refs.root).find('.ui.checkbox').click(this.onClick.bind(this)).checkbox({ onChange: this.onChanged.bind(this) });
     this.onDaemonSettingsChanged();
   }
   onChanged() {
     if (this.updatingSettings) return;
     var value = $(this.refs.root).find('input[name=encryption]:checked').val();
     daemon.post.applySettings({ 'encryption': value });
-    History.push('/configuration');
+  }
+  onClick() {
+    setImmediate(() => { History.push('/configuration'); });
   }
   onDaemonSettingsChanged() {
     this.updatingSettings = true;

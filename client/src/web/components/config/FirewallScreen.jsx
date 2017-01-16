@@ -7,14 +7,16 @@ import { SecondaryTitlebar } from '../Titlebar';
 export default class FirewallScreen extends DaemonAware(React.Component)  {
   componentDidMount() {
     super.componentDidMount();
-    $(this.refs.root).find('.ui.checkbox').checkbox({ onChange: this.onChange.bind(this) });
+    $(this.refs.root).find('.ui.checkbox').click(this.onClick.bind(this)).checkbox({ onChange: this.onChange.bind(this) });
     this.onDaemonSettingsChanged();
   }
   onChange() {
     if (this.updatingSettings) return;
     var value = $(this.refs.root).find('input[name=firewall]:checked').val();
     daemon.post.applySettings({ 'firewall': value });
-    History.push('/configuration');
+  }
+  onClick() {
+    setImmediate(() => { History.push('/configuration'); });
   }
   onDaemonSettingsChanged() {
     this.updatingSettings = true;
