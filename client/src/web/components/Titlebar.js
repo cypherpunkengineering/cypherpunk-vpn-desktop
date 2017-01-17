@@ -1,10 +1,14 @@
 import React from 'react';
 import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, createMemoryHistory } from 'react-router';
+import RetinaImage from './Image';
 import { classList } from '../util';
 
 import AccountIcon from '../assets/img/icon-account-big.svg';
 import SettingsIcon from '../assets/img/icon_settings.svg';
-import LogoText from '../assets/img/header-logo-big.svg';
+
+const LogoText = require('../assets/img/logo_text.png');
+const LogoText2x = require('../assets/img/logo_text@2x.png');
+
 
 // A little helper component to render the main title of the app.
 
@@ -15,7 +19,7 @@ export class Title extends React.Component {
   render() {
     var ActualComponent = this.props.component;
     return(
-      <ActualComponent className={"cp title " + this.props.className}><img src={LogoText} alt=""/></ActualComponent>
+      <ActualComponent className={"cp title " + this.props.className}><RetinaImage src={{ 1: LogoText, 2: LogoText2x }} alt=""/></ActualComponent>
     );
   }
 }

@@ -1,14 +1,16 @@
 import React from 'react';
 import { Link } from 'react-router';
-import CypherPunkLogo from '../assets/img/logomark.svg';
 import { Dragbar } from './Titlebar.js';
 import { Title } from './Titlebar.js';
 import RouteTransition from './Transition';
+import RetinaImage from './Image.js';
 import daemon from '../daemon.js';
 import server from '../server.js';
 import { DEFAULT_REGION_DATA } from '../util.js';
 const { session } = require('electron').remote;
 
+const LoginImage = require('../assets/img/login_illustration.png');
+const LoginImage2x = require('../assets/img/login_illustration@2x.png');
 
 function refreshRegionList() {
   console.log("refreshRegionList");
@@ -265,7 +267,7 @@ export default class LoginScreen extends React.Component {
     return (
       <div className="cp blurring full screen" id="login-screen" ref="root">
         <Dragbar height="225px"/>
-        <img class="logo" src={CypherPunkLogo}/>
+        <RetinaImage className="logo" src={{ 1: LoginImage, 2: LoginImage2x }}/>
         <Title component="h3" />
         <RouteTransition transition={LoginScreen.getTransition}>
           {this.props.children}
