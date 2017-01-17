@@ -689,7 +689,8 @@ void CypherDaemon::WriteOpenVPNProfile(std::ostream& out, const JsonObject& serv
 
 	// Tell OpenVPN to always ignore the pushed DNS (10.10.10.10),
 	// which is simply there as a sensible default for dumb clients.
-	out << "pull-filter ignore \"dhcp-option DNS\"" << endl;
+	out << "pull-filter ignore \"dhcp-option DNS 10.10.10.10\"" << endl;
+	out << "pull-filter ignore \"route 10.10.10.10 255.255.255.255\"" << endl;
 
 	if (g_settings.overrideDNS())
 	{
@@ -699,10 +700,13 @@ void CypherDaemon::WriteOpenVPNProfile(std::ostream& out, const JsonObject& serv
 			+ (g_settings.optimizeDNS() ? 4 : 0);
 		std::string dns_string = std::to_string(dns_index);
 		out << "dhcp-option DNS 10.10.10." << dns_string << endl;
+		out << "route 10.10.10." << dns_string << endl;
 #if OS_LINUX
 		// On Linux, simulate secondary/tertiary DNS servers in order to push any prior DNS out of the list
 		out << "dhcp-option DNS 10.10.11." << dns_string << endl;
 		out << "dhcp-option DNS 10.10.12." << dns_string << endl;
+		out << "route 10.10.11." << dns_string << endl;
+		out << "route 10.10.12." << dns_string << endl;
 #elif OS_WIN
 		// On Windows, add some additional convenience/robustness switches
 		out << "register-dns" << endl;
