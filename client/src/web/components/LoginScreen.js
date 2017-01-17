@@ -13,7 +13,6 @@ const LoginImage = require('../assets/img/login_illustration.png');
 const LoginImage2x = require('../assets/img/login_illustration@2x.png');
 
 function refreshRegionList() {
-  console.log("refreshRegionList");
   var countryNames = daemon.config.countryNames || DEFAULT_REGION_DATA.countryNames;
   var regionNames = daemon.config.regionNames || Array.toDict(DEFAULT_REGION_DATA.regions, x => x[0], x => x[1]);
   var regionOrder = daemon.config.regionOrder || DEFAULT_REGION_DATA.regions.map(x => x[0]);
