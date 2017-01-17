@@ -234,21 +234,51 @@ export class RegisterStep extends React.Component {
 }
 
 export class ConfirmationStep extends React.Component {
+  state = {
+    timedOut: false,
+  }
+  beginPolling() {
+    this.attempts = 0;
+    this.interval = setInterval(this.onTimer.bind(this), 5000);
+  }
+  endPolling() {
+    if (this.interval) { clearInterval(this.interval); this.interval = null; }
+  }
   onTimer() {
-    refreshAccount(); // navigates automatically
+    if (this.attempts++ < 10)
+      refreshAccount(); // navigates automatically
+    else {
+      this.endPolling();
+      this.setState({ timedOut: true });
+    }
+  }
+  onRetry() {
+    this.beginPolling();
+    this.setState({ timedOut: false });
   }
   componentDidMount() {
-    this.setState({ interval: setInterval(this.onTimer.bind(this), 5000) });
+    this.beginPolling();
   }
   componentWillUnmount() {
-    clearInterval(this.state.interval);
+    this.endPolling();
   }
   render() {
-    return(
-      <form className="cp login-confirm ui form">
-        <div className="desc">Awaiting email confirmation...</div>
-        <div className="ui inline active large text loader" ref="loader"></div>
-        <Link className="back link" to="/login/email" tabIndex="0">Back</Link>
+    if (this.state.timedOut) {
+      return (
+        <form className="cp login-confirm ui form">
+          <div className="desc">
+            We haven't received your email confirmation yet.<br/><br/>
+            <a onClick={() => this.onRetry()}>Check again</a>
+          </div>
+          <Link className="back link" to="/login/email" tabIndex="0">Back</Link>
+        </form>
+      );
+    } else {
+      return(
+        <form className="cp login-confirm ui form">
+          <div className="desc">Awaiting email confirmation...</div>
+          <div className="ui inline active large text loader" ref="loader"></div>
+          <Link className="back link" to="/login/email" tabIndex="0">Back</Link>
       </form>
     );
   }
