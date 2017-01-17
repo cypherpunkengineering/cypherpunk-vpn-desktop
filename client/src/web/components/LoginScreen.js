@@ -279,8 +279,9 @@ export class ConfirmationStep extends React.Component {
           <div className="desc">Awaiting email confirmation...</div>
           <div className="ui inline active large text loader" ref="loader"></div>
           <Link className="back link" to="/login/email" tabIndex="0">Back</Link>
-      </form>
-    );
+        </form>
+      );
+    }
   }
 }
 
