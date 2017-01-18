@@ -640,12 +640,14 @@ void CypherDaemon::WriteOpenVPNProfile(std::ostream& out, const JsonObject& serv
 	const auto& encryption = g_settings.encryption();
 	if (encryption == "stealth")
 	{
-		out << "ncp-ciphers AES-128-GCM:AES-128-CBC" << endl;
+		out << "cipher AES-128-GCM" << endl;
+		out << "ncp-disable" << endl;
 		out << "scramble obfuscate cypherpunk-xor-key" << endl;
 	}
 	else if (encryption == "strong")
 	{
-		out << "ncp-ciphers AES-256-GCM:AES-256-CBC" << endl;
+		out << "cipher AES-256-GCM" << endl;
+		out << "ncp-disable" << endl;
 	}
 	else if (encryption == "none")
 	{
