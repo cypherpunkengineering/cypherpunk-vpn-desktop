@@ -94,6 +94,15 @@ Object.values = function values(obj) {
     return Object.keys(obj).map(k => obj[k]);
   }
 };
+// Calls cb(k,v,obj) for every key/value pair in the object
+Object.forEach = function forEach(obj, cb) {
+  if (!obj) return;
+  if (Array.isArray(obj)) {
+    obj.forEach((v, i) => cb(i, v, obj));
+  } else {
+    Object.keys(obj).forEach(k => cb(k, obj[k], obj));
+  }
+}
 
 // Flatten an array of arrays.
 Array.flatten = function flatten(arr) {
