@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router';
 import { Dragbar } from './Titlebar.js';
 import { Title } from './Titlebar.js';
-import RouteTransition from './Transition';
+import { TransitionGroup, Transition, RouteTransition, ReactCSSTransitionGroup } from './Transition';
 import RetinaImage from './Image.js';
 import daemon from '../daemon.js';
 import server from '../server.js';
@@ -118,7 +118,7 @@ export class Check extends React.Component {
   }
   render() {
     return (
-      <form className="cp login-check ui form">
+      <form className="cp login-check ui form" style={{ marginTop: this.props.height + 'px' }}>
         <div className="ui inline active massive text loader" ref="loader"></div>
       </form>
     );
@@ -137,7 +137,7 @@ export class Logout extends React.Component {
   }
   render() {
     return (
-      <form className="cp login-check ui form">
+      <form className="cp login-check ui form" style={{ marginTop: this.props.height + 'px' }}>
         <div className="ui inline active massive text loader" ref="loader"></div>
       </form>
     );
@@ -145,6 +145,7 @@ export class Logout extends React.Component {
 }
 
 export class EmailStep extends React.Component {
+  state = { check: false }
   onSubmit() {
     var email = this.refs.email.value;
     $(this.refs.email).prop('disabled', true).parent().addClass('loading');
@@ -160,13 +161,18 @@ export class EmailStep extends React.Component {
   }
   render() {
     return(
-      <form className="cp login-email ui form">
+      <form className="cp login-email ui form" style={{ marginTop: this.props.height + 'px' }}>
         {/*<div className="welcome">Welcome.</div>*/}
         <div className="desc">Please input your email to begin.</div>
-        <div className="ui icon input">
+        <div className="ui icon input" onClick={() => this.setState({ check: !this.state.check })}>
           <input type="text" placeholder="Email" required autoFocus="true" ref="email" defaultValue={daemon.account.account ? daemon.account.account.email : ""} onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
           <i className="search chevron right link icon" onClick={() => this.onSubmit()}></i>
         </div>
+        <ReactCSSTransitionGroup transitionName="nudgeLeft" transitionEnterTimeout={700} transitionLeaveTimeout={700}>
+          <div key="a">
+            {this.state.check ? <div key="c">CHECK</div> : null}
+          </div>
+        </ReactCSSTransitionGroup>
       </form>
     );
   }
@@ -188,7 +194,7 @@ export class PasswordStep extends React.Component {
   }
   render() {
     return(
-      <form className="cp login-password ui form">
+      <form className="cp login-password ui form" style={{ marginTop: this.props.height + 'px' }}>
         <div className="desc">Logging in to {this.props.location.query.email}...</div>
         <div className="ui icon input">
           <input type="password" placeholder="Password" required autoFocus="true" ref="password" onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
@@ -220,7 +226,7 @@ export class RegisterStep extends React.Component {
   }
   render() {
     return(
-      <form className="cp login-register ui form">
+      <form className="cp login-register ui form" style={{ marginTop: this.props.height + 'px' }}>
         <div className="desc">Registering new account for {this.props.location.query.email}...</div>
         <div className="ui icon input">
           <input type="password" placeholder="Password" required autoFocus="true" ref="password" onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
@@ -265,7 +271,7 @@ export class ConfirmationStep extends React.Component {
   render() {
     if (this.state.timedOut) {
       return (
-        <form className="cp login-confirm ui form">
+        <form className="cp login-confirm ui form" style={{ marginTop: this.props.height + 'px' }}>
           <div className="desc">
             We haven't received your email confirmation yet.<br/><br/>
             <a onClick={() => this.onRetry()}>Check again</a>
@@ -275,7 +281,7 @@ export class ConfirmationStep extends React.Component {
       );
     } else {
       return(
-        <form className="cp login-confirm ui form">
+        <form className="cp login-confirm ui form" style={{ marginTop: this.props.height + 'px' }}>
           <div className="desc">Awaiting email confirmation...</div>
           <div className="ui inline active large text loader" ref="loader"></div>
           <Link className="back link" to="/login/email" tabIndex="0">Back</Link>
@@ -286,22 +292,80 @@ export class ConfirmationStep extends React.Component {
 }
 
 
-const LOGIN_ORDER = [ 'email', 'password', 'register', 'confirm' ];
+export class AnalyticsStep extends React.Component {
+  onAllow() {
+    console.log("Allow");
+  }
+  onDisallow() {
+    console.log("Don't allow");
+  }
+  render() {
+    return (
+      <form className="cp login-analytics ui form" style={{ marginTop: this.props.height + 'px' }}>
+        <div className="desc">
+          <h3>One Final Step</h3>
+          Share anonymized analytics about your VPN connections to help make Cypherpunk Privacy faster and more reliable.
+        </div>
+        <div className="ui inline active large text loader">Placeholder</div>
+        <button className="allow" onClick={() => this.onAllow()}>Allow</button>
+        <a className="disallow" onClick={() => this.onDisallow()}>Don't allow</a>
+      </form>
+    );
+  }
+}
+
+
+const LOGIN_ORDER = [ 'email', 'password', 'register', 'confirm', 'analytics' ];
+const DEFAULT_HEADER_HEIGHT = 275;
+const HEADER_IMAGES = {
+  'check': { src: { 1: LoginImage, 2: LoginImage2x }, title: true, height: 275 },
+  'email': { src: { 1: LoginImage, 2: LoginImage2x }, title: true, height: 275 },
+  'analytics': null,
+};
+
 
 export default class LoginScreen extends React.Component {
-  static getTransition(from,to) {
+  static getTransition(diff) {
+    console.log("getTransition", diff);
+    let from, to;
+    Object.forEach(diff, (key, action) => {
+      if (action === 'leave') from = key;
+      else if (action === 'enter' || action === 'appear') to = key;
+      else debugger;
+    });
+    if (!from || !to) return '';
     if (from === 'check' || to === 'check') return 'fadeIn';
     return (LOGIN_ORDER.indexOf(to) < LOGIN_ORDER.indexOf(from)) ? 'nudgeRight' : 'nudgeLeft';
   }
   render() {
+    var headers = React.Children.map(this.props.children, child => HEADER_IMAGES[child.props.route.path]).filter(i => i);
+    var title = headers.some(h => h.title) ? <Title key="header-title" component="h3"/> : null;
+    var height = headers.reduce((a, b) => Math.max(a, b && b.height || 0), 40);
     return (
       <div className="cp blurring full screen" id="login-screen" ref="root">
-        <Dragbar height="225px"/>
-        <RetinaImage className="logo" src={{ 1: LoginImage, 2: LoginImage2x }}/>
-        <Title component="h3" />
-        <RouteTransition transition={LoginScreen.getTransition}>
-          {this.props.children}
-        </RouteTransition>
+        <Dragbar>
+          <RetinaImage className="logo" src={{ 1: LoginImage, 2: LoginImage2x }} />
+          {title}
+        </Dragbar>
+        {/*<ReactCSSTransitionGroup
+          component={this.props.component || TransitionContainer}
+          transitionName={transition}
+          transitionEnter={!!transition}
+          transitionLeave={!!transition}
+          transitionAppear={!!transition}
+          transitionEnterTimeout={transitionTime}
+          transitionLeaveTimeout={transitionTime}
+          transitionAppearTimeout={transitionTime}
+          >
+          {React.Children.map(children, c => c ? React.cloneElement(c, { key: this.getChildKey(c) }) : null)}
+        </ReactCSSTransitionGroup>*/}
+        <div style={{ height: '275px' }}/>
+        <TransitionGroup transition={LoginScreen.getTransition}>
+          {React.Children.map(this.props.children, child => {
+            let header = HEADER_IMAGES[child.props.route.path];
+            return React.cloneElement(child, { headerHeight: header && header.height || DEFAULT_HEADER_HEIGHT });
+          })}
+        </TransitionGroup>
         <div id="version">{"v"+require('electron').remote.app.getVersion()}</div>
       </div>
     );

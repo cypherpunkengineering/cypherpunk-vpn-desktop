@@ -61,6 +61,7 @@ export class Dragbar extends React.Component {
     }
     return(
       <div id="dragbar" className={className} style={styles}>
+        {this.props.children}
       </div>
     );
   }
