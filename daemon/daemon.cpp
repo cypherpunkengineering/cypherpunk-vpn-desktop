@@ -659,8 +659,11 @@ void CypherDaemon::WriteOpenVPNProfile(std::ostream& out, const JsonObject& serv
 		out << "ncp-ciphers AES-128-GCM:AES-128-CBC" << endl;
 	}
 
-	// Always try to send the server a courtesy exit notification
-	out << "explicit-exit-notify" << endl;
+	if (protocol == "udp")
+	{
+		// Always try to send the server a courtesy exit notification in UDP mode
+		out << "explicit-exit-notify" << endl;
+	}
 
 	// Wait 15s before giving up on a connection and trying the next one
 	out << "server-poll-timeout 10s" << endl;
