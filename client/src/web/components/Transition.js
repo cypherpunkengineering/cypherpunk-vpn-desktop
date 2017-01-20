@@ -23,6 +23,7 @@ const TRANSITION_DURATIONS = {
   'swipeLeft': 350,
   'swipeRight': 350,
   'reveal': 350,
+  'fadeIn': 350,
 };
 
 
@@ -34,14 +35,14 @@ const TRANSITION_DURATIONS = {
 
 function getComponentKey(child, index = 0) {
   if (child && typeof child === 'object') {
-    if (child.props.route && child.props.route.path) {
+    if (child.props.route && child.props.route.path && (!child.key || child.key[0] != '.')) {
       return child.props.route.path;
     }
     if (child.key != null) {
-      return `key-${child.key}`;
+      return child.key;
     }
   }
-  return `key-${index.toString(36)}`;
+  return index.toString(36);
 }
 function getChildMapping(children) {
   var result = {};
@@ -247,27 +248,33 @@ export class TransitionGroup extends React.Component {
     switch (typeof this.props.transition) {
       case 'function':
         // Call callback with a { key: type } map of all current or pending transitions
-        result = this.props.transition(Object.assign(Object.mapValues(this.currentTransitions, (k, v) => v.type), this.pendingTransitions));
+        let allChildren = Object.assign(Object.mapValues(this.currentTransitions, (k, v) => v.type), this.pendingTransitions);
+        if (Object.keys(allChildren).length > 0) {
+          console.log("getTransition in:", allChildren);
+          result = this.props.transition(allChildren);
+          console.log("getTransition out:", result);
+          if (!result || typeof result === 'string') {
+            result = { '*': result };
+          }
+        } else {
+          result = { '*': null };
+        }
         break;
       case 'string':
-        result = this.props.transition;
+        result = { '*': this.props.transition };
+        break;
+      case 'object':
+        result = this.props.transition || { '*': null };
         break;
       default:
-        result = null;
+        result = { '*': null };
         break;
     }
-    if (typeof result !== 'object') {
-      // Give all non-null children the same transition
-      let transition = result;
-      result = {};
-      if (transition) {
-        Object.forEach(children, (key, child) => {
-          if (child) {
-            result[key] = transition;
-          }
-        });
-      }
-    }
+    var fallback = result['*'] || null;
+    delete result['*'];
+    Object.forEach(children, (key, type) => {
+      if (!result.hasOwnProperty(key)) result[key] = fallback;
+    });
     return result;
   }
   performPendingTransitions() {
@@ -280,14 +287,15 @@ export class TransitionGroup extends React.Component {
       }
     }
     Object.forEach(pendingTransitions, (key, type) => {
-      let transition = { type, name: this.state.transitions[key] };
-      let duration = TRANSITION_DURATIONS[transition.name] || DEFAULT_DURATION;
+      let transitionName = this.state.transitions[key];
+      let transition = { type, name: transitionName };
+      let duration = TRANSITION_DURATIONS[transitionName] || DEFAULT_DURATION;
       this.currentTransitions[key] = transition;
       let component = this.refs[key];
 
       //console.log("Beginning transition for", key, transition);
 
-      let className = `${transition.name}-${type}`
+      let className = `${transitionName}-${type}`
       let activeClassName = `${className}-active`;
 
       console.log(`Applying class ${className} to ${key}`);
