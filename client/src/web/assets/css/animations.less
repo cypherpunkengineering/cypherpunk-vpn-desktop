@@ -34,7 +34,7 @@
     opacity: 0;
     &-active {
       opacity: 1;
-      transition: opacity @transitionTime ease-in;
+      transition: opacity @transitionTime ease-in !important;
     }
   }
   &-leave {
@@ -42,14 +42,14 @@
     pointer-events: none !important;
     &-active {
       opacity: 0;
-      transition: opacity @transitionTime ease-in;
+      transition: opacity @transitionTime ease-in !important;
     }
   }
   &-appear {
     opacity: 0;
     &-active {
       opacity: 0;
-      transition: opacity @transitionTime ease-in;
+      transition: opacity @transitionTime ease-in !important;
     }
   }
 }
@@ -62,7 +62,7 @@
     &-active {
       transform: translateX(0);
       opacity: 1;
-      transition: transform @transitionTime @stepSlide, opacity @transitionTime @easeInQuart;
+      transition: transform @transitionTime @stepSlide, opacity @transitionTime @easeInQuart !important;
     }
   }
   &-leave {
@@ -72,7 +72,7 @@
     &-active {
       transform: translateX(-100vw);
       opacity: 0;
-      transition: transform @transitionTime @stepSlide, opacity @transitionTime @easeOutQuart;
+      transition: transform @transitionTime @stepSlide, opacity @transitionTime @easeOutQuart !important;
     }
   }
 }
@@ -84,7 +84,7 @@
     &-active {
       transform: translateX(0);
       opacity: 1;
-      transition: transform @transitionTime @stepSlide, opacity @transitionTime @easeInQuart;
+      transition: transform @transitionTime @stepSlide, opacity @transitionTime @easeInQuart !important;
     }
   }
   &-leave {
@@ -94,7 +94,7 @@
     &-active {
       transform: translateX(100vw);
       opacity: 0;
-      transition: transform @transitionTime @stepSlide, opacity @transitionTime @easeOutQuart;
+      transition: transform @transitionTime @stepSlide, opacity @transitionTime @easeOutQuart !important;
     }
   }
 }
@@ -105,7 +105,7 @@
     transform: translateX(100vw);
     &-active {
       transform: translateX(0);
-      transition: transform @transitionTime ease-out;
+      transition: transform @transitionTime ease-out !important;
     }
   }
   &-leave {
@@ -113,7 +113,7 @@
     pointer-events: none !important;
     &-active {
       transform: translateX(-100vw);
-      transition: transform @transitionTime ease-out;
+      transition: transform @transitionTime ease-out !important;
     }
   }
 }
@@ -124,7 +124,7 @@
     transform: translateX(-100vw);
     &-active {
       transform: translateX(0);
-      transition: transform @transitionTime ease-out;
+      transition: transform @transitionTime ease-out !important;
     }
   }
   &-leave {
@@ -132,7 +132,7 @@
     pointer-events: none !important;
     &-active {
       transform: translateX(100vw);
-      transition: transform @transitionTime ease-out;
+      transition: transform @transitionTime ease-out !important;
     }
   }
 }
