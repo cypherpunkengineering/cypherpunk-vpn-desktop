@@ -5,6 +5,7 @@
   "plugins": [
     "add-module-exports",
     "transform-decorators-legacy",
+    "transform-object-rest-spread",
     "react-html-attrs"
   ],
   "env": {
