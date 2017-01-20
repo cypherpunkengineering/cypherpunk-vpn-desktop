@@ -6,11 +6,9 @@ import { TransitionGroup, Transition, RouteTransition, ReactCSSTransitionGroup }
 import RetinaImage from './Image.js';
 import daemon from '../daemon.js';
 import server from '../server.js';
-import { DEFAULT_REGION_DATA } from '../util.js';
+import { DEFAULT_REGION_DATA, classList } from '../util.js';
 const { session } = require('electron').remote;
 
-const LoginImage = require('../assets/img/login_illustration.png');
-const LoginImage2x = require('../assets/img/login_illustration@2x.png');
 
 function refreshRegionList() {
   var countryNames = daemon.config.countryNames || DEFAULT_REGION_DATA.countryNames;
@@ -86,7 +84,46 @@ function setAccount(data) {
 
 
 
-export class Check extends React.Component {
+const PageTitle = ({ key = "title", top = 220, ...props } = {}) => <Title key={key} component="h3" style={{ top: top + 'px' }}{...props}/>;
+const PageBackground = ({ key, src, top = 0, ...props } = {}) => <RetinaImage key={key} className="background" src={src} style={{ marginTop: top + 'px' }} {...props}/>;
+const BackLink = ({ key = "back", to, text = "Back", icon = 'undo', ...props } = {}) => <Link key={key} className="back link" to={to} tabIndex="0" {...props}><i className={classList("icon", icon)}/>{text}</Link>;
+
+const LoginImage = require('../assets/img/login_illustration.png');
+const LoginImage2x = require('../assets/img/login_illustration@2x.png');
+
+const DefaultPageTitle = PageTitle();
+const DefaultPageBackground = PageBackground({ key: "bg-default", top: 36, src: { 1: LoginImage, 2: LoginImage2x } });
+
+const TitleHeight = 30;
+
+/*
+const Headers = {
+  'default': { src: { 1: LoginImage, 2: LoginImage2x }, height: 275 },
+};
+*/
+
+function pageValue(pageType, member) {
+  return pageType.hasOwnProperty(member) ? pageType[member] : Page[member];
+}
+
+class Page extends React.Component {
+  static elements = [ DefaultPageBackground ];
+  static defaultProps = {
+    top: 270,
+  };
+  render() {
+    return (
+      <form className={classList("cp ui form", this.props.className)} style={{ top: this.props.top + 'px' }}>
+        {this.props.children}
+      </form>
+    );
+  }
+}
+
+
+
+export class Check extends Page {
+  static elements = [];
   static run() {
     // Use setImmediate to avoid changing history in the same callstack
     setImmediate(() => {
@@ -118,14 +155,14 @@ export class Check extends React.Component {
   }
   render() {
     return (
-      <form className="cp login-check ui form" style={{ marginTop: this.props.height + 'px' }}>
+      <Page className="login-check">
         <div className="ui inline active massive text loader" ref="loader"></div>
-      </form>
+      </Page>
     );
   }
 }
 
-export class Logout extends React.Component {
+export class Logout extends Page {
   componentDidMount() {
     setImmediate(() => { // need to use setImmediate since we might modify History
       daemon.post.disconnect(); // make sure we don't stay connected
@@ -137,15 +174,15 @@ export class Logout extends React.Component {
   }
   render() {
     return (
-      <form className="cp login-check ui form" style={{ marginTop: this.props.height + 'px' }}>
+      <Page className="login-check">
         <div className="ui inline active massive text loader" ref="loader"></div>
-      </form>
+      </Page>
     );
   }
 }
 
-export class EmailStep extends React.Component {
-  state = { check: false }
+export class EmailStep extends Page {
+  static elements = [ DefaultPageBackground, DefaultPageTitle ];
   onSubmit() {
     var email = this.refs.email.value;
     $(this.refs.email).prop('disabled', true).parent().addClass('loading');
@@ -161,24 +198,20 @@ export class EmailStep extends React.Component {
   }
   render() {
     return(
-      <form className="cp login-email ui form" style={{ marginTop: this.props.height + 'px' }}>
+      <Page className="login-email" top={290}>
         {/*<div className="welcome">Welcome.</div>*/}
         <div className="desc">Please input your email to begin.</div>
-        <div className="ui icon input" onClick={() => this.setState({ check: !this.state.check })}>
+        <div className="ui icon input">
           <input type="text" placeholder="Email" required autoFocus="true" ref="email" defaultValue={daemon.account.account ? daemon.account.account.email : ""} onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
           <i className="search chevron right link icon" onClick={() => this.onSubmit()}></i>
         </div>
-        <ReactCSSTransitionGroup transitionName="nudgeLeft" transitionEnterTimeout={700} transitionLeaveTimeout={700}>
-          <div key="a">
-            {this.state.check ? <div key="c">CHECK</div> : null}
-          </div>
-        </ReactCSSTransitionGroup>
-      </form>
+      </Page>
     );
   }
 }
 
-export class PasswordStep extends React.Component {
+export class PasswordStep extends Page {
+  static elements = [ DefaultPageBackground, BackLink({ key: 'back-from-password', to: '/login/email' }) ];
   onSubmit() {
     var password = this.refs.password.value;
     $(this.refs.password).prop('disabled', true).parent().addClass('loading');
@@ -194,20 +227,21 @@ export class PasswordStep extends React.Component {
   }
   render() {
     return(
-      <form className="cp login-password ui form" style={{ marginTop: this.props.height + 'px' }}>
+      <Page className="login-password">
         <div className="desc">Logging in to {this.props.location.query.email}...</div>
         <div className="ui icon input">
           <input type="password" placeholder="Password" required autoFocus="true" ref="password" onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
           <i className="chevron right link icon" onClick={() => this.onSubmit()}></i>
         </div>
         <a className="forgot link" tabIndex="0">Forgot password?</a>
-        <Link className="back link" to="/login/email" tabIndex="0"><i className="undo icon"></i>Back</Link>
-      </form>
+        {/*<Link className="back link" to="/login/email" tabIndex="0"><i className="undo icon"></i>Back</Link>*/}
+      </Page>
     );
   }
 }
 
-export class RegisterStep extends React.Component {
+export class RegisterStep extends Page {
+  static elements = [ DefaultPageBackground, BackLink({ key: 'back-from-register', to: '/login/email' }) ];
   onSubmit() {
     var password = this.refs.password.value;
     $(this.refs.password).prop('disabled', true);
@@ -226,20 +260,21 @@ export class RegisterStep extends React.Component {
   }
   render() {
     return(
-      <form className="cp login-register ui form" style={{ marginTop: this.props.height + 'px' }}>
+      <Page className="login-register">
         <div className="desc">Registering new account for {this.props.location.query.email}...</div>
         <div className="ui icon input">
           <input type="password" placeholder="Password" required autoFocus="true" ref="password" onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
         </div>
         <a class="cp yellow button" ref="register" onClick={() => this.onSubmit()}>Register</a>
         <div className="ui inline text loader" ref="loader"></div>
-        <Link className="back link" to="/login/email" tabIndex="0"><i className="undo icon"></i>Back</Link>
-      </form>
+        {/*<Link className="back link" to="/login/email" tabIndex="0"><i className="undo icon"></i>Back</Link>*/}
+      </Page>
     );
   }
 }
 
-export class ConfirmationStep extends React.Component {
+export class ConfirmationStep extends Page {
+  static elements = [ DefaultPageBackground, BackLink({ key: 'back-from-confirm', to: '/login/email' }) ];
   state = {
     timedOut: false,
   }
@@ -269,30 +304,27 @@ export class ConfirmationStep extends React.Component {
     this.endPolling();
   }
   render() {
-    if (this.state.timedOut) {
-      return (
-        <form className="cp login-confirm ui form" style={{ marginTop: this.props.height + 'px' }}>
+    return (
+      <Page className="login-confirm">
+        {this.state.timedOut ? [
           <div className="desc">
             We haven't received your email confirmation yet.<br/><br/>
             <a onClick={() => this.onRetry()}>Check again</a>
-          </div>
+          </div>,
           <Link className="back link" to="/login/email" tabIndex="0">Back</Link>
-        </form>
-      );
-    } else {
-      return(
-        <form className="cp login-confirm ui form" style={{ marginTop: this.props.height + 'px' }}>
-          <div className="desc">Awaiting email confirmation...</div>
-          <div className="ui inline active large text loader" ref="loader"></div>
+        ] : [
+          <div className="desc">Awaiting email confirmation...</div>,
+          <div className="ui inline active large text loader" ref="loader"></div>,
           <Link className="back link" to="/login/email" tabIndex="0">Back</Link>
-        </form>
-      );
-    }
+        ]}
+      </Page>
+    );
   }
 }
 
 
-export class AnalyticsStep extends React.Component {
+export class AnalyticsStep extends Page {
+  static elements = [ DefaultPageBackground ];
   onAllow() {
     console.log("Allow");
   }
@@ -301,7 +333,7 @@ export class AnalyticsStep extends React.Component {
   }
   render() {
     return (
-      <form className="cp login-analytics ui form" style={{ marginTop: this.props.height + 'px' }}>
+      <Page className="login-analytics">
         <div className="desc">
           <h3>One Final Step</h3>
           Share anonymized analytics about your VPN connections to help make Cypherpunk Privacy faster and more reliable.
@@ -309,65 +341,45 @@ export class AnalyticsStep extends React.Component {
         <div className="ui inline active large text loader">Placeholder</div>
         <button className="allow" onClick={() => this.onAllow()}>Allow</button>
         <a className="disallow" onClick={() => this.onDisallow()}>Don't allow</a>
-      </form>
+      </Page>
     );
   }
 }
 
 
 const LOGIN_ORDER = [ 'email', 'password', 'register', 'confirm', 'analytics' ];
-const DEFAULT_HEADER_HEIGHT = 275;
-const HEADER_IMAGES = {
-  'check': { src: { 1: LoginImage, 2: LoginImage2x }, title: true, height: 275 },
-  'email': { src: { 1: LoginImage, 2: LoginImage2x }, title: true, height: 275 },
-  'analytics': null,
-};
 
 
 export default class LoginScreen extends React.Component {
   static getTransition(diff) {
-    console.log("getTransition", diff);
+    if (diff['check'] === 'enter' || diff['check'] === 'leave') {
+      // If going to or from the check screen, always fade everything
+      return 'fadeIn';
+    }
+    let result = {
+      '*': 'fadeIn',
+    };
     let from, to;
-    Object.forEach(diff, (key, action) => {
-      if (action === 'leave') from = key;
-      else if (action === 'enter' || action === 'appear') to = key;
-      else debugger;
+    LOGIN_ORDER.forEach((key, index) => {
+      if (diff[key] === 'leave') from = index;
+      else if (diff[key] === 'enter') to = index;
     });
-    if (!from || !to) return '';
-    if (from === 'check' || to === 'check') return 'fadeIn';
-    return (LOGIN_ORDER.indexOf(to) < LOGIN_ORDER.indexOf(from)) ? 'nudgeRight' : 'nudgeLeft';
+    if (from !== undefined && to !== undefined) {
+      let transition = from < to ? 'nudgeLeft' : 'nudgeRight';
+      result[LOGIN_ORDER[from]] = transition;
+      result[LOGIN_ORDER[to]] = transition;
+    }
+    return result;
   }
   render() {
-    var headers = React.Children.map(this.props.children, child => HEADER_IMAGES[child.props.route.path]).filter(i => i);
-    var title = headers.some(h => h.title) ? <Title key="header-title" component="h3"/> : null;
-    var height = headers.reduce((a, b) => Math.max(a, b && b.height || 0), 40);
+    let pageType = React.Children.only(this.props.children).type;
+    let pageElements = pageValue(pageType, 'elements');
     return (
-      <div className="cp blurring full screen" id="login-screen" ref="root">
-        <Dragbar>
-          <RetinaImage className="logo" src={{ 1: LoginImage, 2: LoginImage2x }} />
-          {title}
-        </Dragbar>
-        {/*<ReactCSSTransitionGroup
-          component={this.props.component || TransitionContainer}
-          transitionName={transition}
-          transitionEnter={!!transition}
-          transitionLeave={!!transition}
-          transitionAppear={!!transition}
-          transitionEnterTimeout={transitionTime}
-          transitionLeaveTimeout={transitionTime}
-          transitionAppearTimeout={transitionTime}
-          >
-          {React.Children.map(children, c => c ? React.cloneElement(c, { key: this.getChildKey(c) }) : null)}
-        </ReactCSSTransitionGroup>*/}
-        <div style={{ height: '275px' }}/>
-        <TransitionGroup transition={LoginScreen.getTransition}>
-          {React.Children.map(this.props.children, child => {
-            let header = HEADER_IMAGES[child.props.route.path];
-            return React.cloneElement(child, { headerHeight: header && header.height || DEFAULT_HEADER_HEIGHT });
-          })}
-        </TransitionGroup>
-        <div id="version">{"v"+require('electron').remote.app.getVersion()}</div>
-      </div>
+      <TransitionGroup transition={LoginScreen.getTransition} component="div" className="cp blurring full screen" id="login-screen">
+        {pageElements}
+        {this.props.children}
+        <div key="version" id="version">{"v"+require('electron').remote.app.getVersion()}</div>
+      </TransitionGroup>
     );
   }
 }

@@ -596,6 +596,7 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 
 #login-screen {
   .screen;
+  .draggable;
   .themed({
     background: @themeWindowBackground;
     .themeTransition(background);
@@ -603,36 +604,45 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   text-align: center;
   align-items: center;
   justify-content: center;
-  padding: 3em 2.5em 0;
+  //padding: 3em 2.5em 0;
 
-  .dragbar {
-    //margin: -3em -2.5em 1em; // Negates the above padding
-    //position: static; // Undoes normal dragbar absolute positioning
-    padding-top: @dragbarHeight;
-    height: auto;
-  }
-
-  .logo {
-    /*
-    margin-top: 20px;
+  > .background {
+    position: absolute;
+    top: 0;
+    margin: 0 auto;
     width: auto;
-    height: 80px;
-    opacity: 0.5;
-    */
+    height: auto;
+    z-index: 0;
   }
 
-  h3.title {
+  > .title {
+    position: absolute;
     font-size: 150%;
     margin-top: 0.5em;
     margin-bottom: 0.5em; //2em;
+    width: auto;
+    height: auto;
+  }
 
-    img {
-      width: 170px;
-    }
+  > .back {
+    .nondraggable;
+    position: absolute;
+    z-index: 10;
+    left: 0;
+    bottom: 0;
+    padding: 8px 25px 25px 25px !important;
+    font-size: 16px !important;
+    border-color: transparent !important;
   }
 
   form {
+    position: absolute;
+    width: 100%;
+    top: @dragbarHeight;
+    bottom: 0;
+    padding: 0 2.5em;
     input {
+      .nondraggable;
       border: none;
       background: rgba(255,255,255,0.1);
       width: 100%;
@@ -647,6 +657,7 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
       }
     }
     .input {
+      .nondraggable;
       width: 100%;
       &.icon .icon {
         font-size: 120%;
@@ -679,11 +690,6 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     margin-bottom: 1em;
   }
 
-  .back {
-    position: absolute;
-    bottom: 25px;
-  }
-
   .login-check {
     .loader {
       margin-top: 30px;
@@ -712,6 +718,10 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     .loader {
       margin-top: 30px;
     }
+  }
+
+  .login-analytics {
+
   }
 
   .cp.button {
@@ -759,12 +769,6 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     float: right;
     position: relative;
     margin-top: 4px;
-  }
-  .back {
-    position: absolute;
-    font-size: 16px !important;
-    bottom: 25px;
-    border-color: transparent !important;
   }
 
   input:focus + .forgot {
