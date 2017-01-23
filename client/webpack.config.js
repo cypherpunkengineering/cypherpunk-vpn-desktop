@@ -88,6 +88,7 @@ if (useWebLibraries) {
     'react/lib': 'react',
     'react/dist': 'react',
     'react-addons-css-transition-group': 'react',
+    'react-addons-transition-group': 'react',
     'react-addons-linked-state-mixin': 'react',
     'react-addons-clone-with-props': 'react',
     'react-addons-create-fragment': 'react',
