@@ -27,7 +27,7 @@ export function classList() {
       result.push(arg);
     } else if (Array.isArray(arg)) {
       result.push(classList(...arg));
-    } else if (typeof arg === 'object') {
+    } else if (arg && typeof arg === 'object') {
       Object.keys(arg).forEach(k => {
         if (arg[k]) {
           result.push(k);
