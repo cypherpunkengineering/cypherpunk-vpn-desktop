@@ -12,18 +12,10 @@ const LogoText2x = require('../assets/img/logo_text@2x.png');
 
 // A little helper component to render the main title of the app.
 
-export class Title extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-  render() {
-    var ActualComponent = this.props.component;
-    return(
-      <ActualComponent className={"cp title " + this.props.className}><RetinaImage src={{ 1: LogoText, 2: LogoText2x }} alt=""/></ActualComponent>
-    );
-  }
+export const Title = ({ component = 'div', left = "Cypherpunk", right = "Privacy", className, ...props } = {}) => {
+  const ActualComponent = component;
+  return <ActualComponent className={classList('cp title', className)} {...props}><RetinaImage src={{ 1: LogoText, 2: LogoText2x }} alt="Cypherpunk Privacy"/></ActualComponent>;
 }
-Title.defaultProps = { component: 'div', left: "Cypherpunk", right: "Privacy", className: "" };
 
 
 // Copy of window close button (for use in modals)
@@ -61,6 +53,7 @@ export class Dragbar extends React.Component {
     }
     return(
       <div id="dragbar" className={className} style={styles}>
+        {this.props.children}
       </div>
     );
   }

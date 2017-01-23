@@ -179,6 +179,7 @@ export default class Application {
             <Route path="password" component={Login.PasswordStep}/>
             <Route path="register" component={Login.RegisterStep}/>
             <Route path="confirm" component={Login.ConfirmationStep}/>
+            <Route path="analytics" component={Login.AnalyticsStep}/>
             <Route path="logout" component={Login.Logout}/>
             <IndexRedirect to="check"/>
           </Route>

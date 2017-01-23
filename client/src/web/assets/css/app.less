@@ -596,6 +596,7 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 
 #login-screen {
   .screen;
+  .draggable;
   .themed({
     background: @themeWindowBackground;
     .themeTransition(background);
@@ -603,50 +604,82 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   text-align: center;
   align-items: center;
   justify-content: center;
-  padding: 3em 2.5em 0;
+  //padding: 3em 2.5em 0;
 
-  #dragbar {
-    height: 260px;
-  }
-
-  .logo {
-    /*
-    margin-top: 20px;
+  > .background {
+    position: absolute;
+    top: 0;
+    margin: 0 auto;
     width: auto;
-    height: 80px;
-    opacity: 0.5;
-    */
+    height: auto;
+    z-index: 0;
   }
 
-  h3.title {
-    font-size: 150%;
+  > .title {
+    position: absolute;
+    font-size: 19px;
     margin-top: 0.5em;
-    margin-bottom: 2em;
+    margin-bottom: 0.5em; //2em;
+    width: auto;
+    height: auto;
+    background: rgba(255,255,255,0.07);
+    padding: 7px 50vw;
 
-    img {
-      width: 170px;
+    > .welcome {
+      text-align: left;
+      font-size: 70%;
+      margin-bottom: 0.25em;
+      color: #5fbbc4;
+      font-weight: 200;
+      letter-spacing: 0.1em;
     }
+    > .logo {
+      width: 12em;
+    }
+  }
+
+  > .back {
+    .nondraggable;
+    position: absolute;
+    z-index: 10;
+    left: 0;
+    bottom: 0;
+    padding: 8px 25px 25px 25px !important;
+    font-size: 16px !important;
+    border-color: transparent !important;
   }
 
   form {
+    position: absolute;
+    width: 100%;
+    top: @dragbarHeight;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    //justify-content: center;
+    padding: 0 2.5em 60px;
     input {
+      .nondraggable;
       border: none;
-      background: rgba(255,255,255,0.1);
+      background: rgba(0,0,0,0.1);
       width: 100%;
       color: #fff;
-      padding: 15px;
+      padding: 14px;
       font-size: 125%;
-      transition: background-color 0.2s;
+      transition: background-color 0.2s, border-color 0.2s, color 0.2s;
       border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.2);
 
       &:focus {
-        background: rgba(255,255,255,0.16);
+        background: rgba(0,0,0,0.2);
+        border-color: rgba(255,255,255,0.4);
       }
     }
     .input {
+      .nondraggable;
       width: 100%;
       &.icon .icon {
-        font-size: 120%;
+        font-size: 150%;
       }
       &.loading.icon .icon {
         margin-right: 0.5em;
@@ -676,39 +709,40 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     margin-bottom: 1em;
   }
 
-  .back {
-    position: absolute;
-    bottom: 25px;
-  }
-
   .login-check {
+    padding-top: 30px;
     .loader {
       margin-top: 30px;
     }
   }
 
   .login-email {
-    .welcome {
-      font-size: 170%;
-      font-weight: 600;
-      margin-bottom: 1em;
-    }
+    padding-top: 30px;
   }
 
   .login-password {
-
+    padding-top: 50px;
   }
 
   .login-register {
+    padding-top: 30px;
     .loader {
       margin-top: 30px;
     }
   }
 
   .login-confirm {
+    padding-top: 30px;
+    .link {
+      font-size: 18px;
+    }
     .loader {
       margin-top: 30px;
     }
+  }
+
+  .login-analytics {
+
   }
 
   .cp.button {
@@ -753,15 +787,9 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     }
   }
   .forgot {
-    float: right;
-    position: relative;
+    align-self: flex-end;
     margin-top: 4px;
-  }
-  .back {
-    position: absolute;
-    font-size: 16px !important;
-    bottom: 25px;
-    border-color: transparent !important;
+    margin-right: 5px;
   }
 
   input:focus + .forgot {
