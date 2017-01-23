@@ -528,7 +528,7 @@ public:
 				TURN_ON(allow_localhost_ipv6, AllowLocalHostFilter<Outgoing, IPv6>());
 				TURN_ON(allow_dhcp_ipv4,      AllowDHCPFilter<IPv4>());
 				TURN_ON(allow_dhcp_ipv6,      AllowDHCPFilter<IPv6>());
-				TURN_ON(block_ipv6,           BlockAllFilter<Outgoing, IPv4>());
+				TURN_ON(block_ipv4,           BlockAllFilter<Outgoing, IPv4>());
 				TURN_ON(block_ipv6,           BlockAllFilter<Outgoing, IPv6>());
 
 				if (success) tx.Commit();
