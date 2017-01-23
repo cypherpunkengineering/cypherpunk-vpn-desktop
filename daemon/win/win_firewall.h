@@ -147,7 +147,7 @@ struct AllowIPRangeFilter<DIRECTION, IPv4> : FWConditionFilter<1, FWP_ACTION_PER
 	FWP_V4_ADDR_AND_MASK _addr;
 	AllowIPRangeFilter(const char* addr, int prefix = 32)
 	{
-		inet_pton(AF_INET, "127.0.0.1", &_addr.addr);
+		inet_pton(AF_INET, addr, &_addr.addr);
 		_addr.addr = ntohl(_addr.addr);
 		_addr.mask = ~0UL << (32 - prefix);
 		SetCondition<FWP_V4_ADDR_MASK>(0, FWPM_CONDITION_IP_REMOTE_ADDRESS, FWP_MATCH_EQUAL, &_addr);
@@ -161,7 +161,7 @@ struct AllowIPRangeFilter<DIRECTION, IPv6> : FWConditionFilter<1, FWP_ACTION_PER
 	FWP_V6_ADDR_AND_MASK _addr;
 	AllowIPRangeFilter(const char* addr, int prefix = 128)
 	{
-		inet_pton(AF_INET6, "::1", &_addr.addr);
+		inet_pton(AF_INET6, addr, &_addr.addr);
 		_addr.prefixLength = prefix;
 		SetCondition<FWP_V6_ADDR_MASK>(0, FWPM_CONDITION_IP_REMOTE_ADDRESS, FWP_MATCH_EQUAL, &_addr);
 		weight.uint8 = 10;
