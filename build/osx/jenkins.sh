@@ -26,6 +26,10 @@ security default-keychain -s "${KEYCHAIN}"
 security unlock-keychain -p cypherpunkkeychainpassword "${KEYCHAIN}"
 security set-keychain-settings -u -t 3600 "${KEYCHAIN}"
 
+# Override and use the Cypherpunk Partners certificates for Jenkins builds
+export APP_SIGN_IDENTITY='"Developer ID Application: Cypherpunk Partners, slf. (3498MVRSX2)"'
+export INSTALLER_SIGN_IDENTITY='"Developer ID Installer: Cypherpunk Partners, slf. (3498MVRSX2)"'
+
 # Invoke build script
 make vpn great again
 
