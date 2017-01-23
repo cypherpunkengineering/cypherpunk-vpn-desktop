@@ -4,7 +4,7 @@ import daemon, { DaemonAware } from '../../daemon.js';
 import { SecondaryTitlebar } from '../Titlebar';
 import '../../util.js';
 
-const REMOTE_PORT_ALTERNATIVES = [ [ 'udp', [ 7133, 5060, 53 ] ], [ 'tcp', [ 7133, 443 ] ] ];
+const REMOTE_PORT_ALTERNATIVES = [ [ 'udp', [ 7133, 5060, 53 ] ], [ 'tcp', [ 7133, 5060, 53 ] ] ];
 
 export default class RemotePortScreen extends DaemonAware(React.Component)  {
   componentDidMount() {
