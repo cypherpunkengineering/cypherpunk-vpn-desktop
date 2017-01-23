@@ -29,8 +29,8 @@ OPENVPN_FILENAME = cypherpunk-privacy-openvpn
 OPENVPN_SCRIPTS = $(shell find $(ROOT)/res/osx/openvpn-scripts -type f -name '*.sh')
 PF_ANCHORS = $(shell find $(ROOT)/res/osx/pf.anchors -type f -name 'com.cypherpunk.*')
 
-APP_SIGN_IDENTITY = "Developer ID Application: Cypherpunk Engineering K.K. (S353YJSBDX)"
-INSTALLER_SIGN_IDENTITY = "Developer ID Installer: Cypherpunk Engineering K.K. (S353YJSBDX)"
+APP_SIGN_IDENTITY ?= "Developer ID Application: Cypherpunk Engineering K.K. (S353YJSBDX)"
+INSTALLER_SIGN_IDENTITY ?= "Developer ID Installer: Cypherpunk Engineering K.K. (S353YJSBDX)"
 
 # BUILD_NUMBER is provided on Jenkins builds, or can be specified explicitly.
 # If BUILD_NAME is specified (e.g. for special/branch builds), it is prepended to the build number.
