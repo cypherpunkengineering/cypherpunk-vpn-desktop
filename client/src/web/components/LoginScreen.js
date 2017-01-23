@@ -228,7 +228,8 @@ export class PasswordStep extends Page {
   render() {
     return(
       <Page className="login-password">
-        <div className="desc">Logging in to {this.props.location.query.email}...</div>
+        <div className="name">{this.props.location.query.email}</div>
+        <div className="desc">Welcome back!</div>
         <div className="ui icon input">
           <input type="password" placeholder="Password" required autoFocus="true" ref="password" onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
           <i className="chevron right link icon" onClick={() => this.onSubmit()}></i>

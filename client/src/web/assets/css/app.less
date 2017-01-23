@@ -722,7 +722,19 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   }
 
   .login-password {
-    padding-top: 50px;
+    padding-top: 10px;
+    > .name {
+      margin: 5px -100px 15px;
+      background: rgba(255,255,255,0.07);
+      font-size: 18px;
+      line-height: 49px;
+      width: 100vw;
+      //.chiseled-border-box(10px, rgba(255,255,255,0.1));
+    }
+    > .desc {
+      margin-bottom: 1.5em;
+      color: rgba(255,255,255,0.5);
+    }
   }
 
   .login-register {
