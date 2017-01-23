@@ -618,6 +618,7 @@ void CypherDaemon::WriteOpenVPNProfile(std::ostream& out, const JsonObject& serv
 	out << "remote-cert-eku \"TLS Web Server Authentication\"" << endl;
 	out << "verify-x509-name " << server.at("ovHostname").AsString() << " name" << endl;
 	out << "auth-user-pass" << endl;
+	out << "ncp-disable" << endl;
 
 	// Default route setting
 	if (g_settings.routeDefault())
@@ -641,22 +642,19 @@ void CypherDaemon::WriteOpenVPNProfile(std::ostream& out, const JsonObject& serv
 	if (encryption == "stealth")
 	{
 		out << "cipher AES-128-GCM" << endl;
-		out << "ncp-disable" << endl;
 		out << "scramble obfuscate cypherpunk-xor-key" << endl;
 	}
 	else if (encryption == "strong")
 	{
 		out << "cipher AES-256-GCM" << endl;
-		out << "ncp-disable" << endl;
 	}
 	else if (encryption == "none")
 	{
 		out << "cipher none" << endl;
-		out << "ncp-disable" << endl;
 	}
 	else // encryption == "default"
 	{
-		out << "ncp-ciphers AES-128-GCM:AES-128-CBC" << endl;
+		out << "cipher AES-128-GCM" << endl;
 	}
 
 	if (protocol == "udp")
