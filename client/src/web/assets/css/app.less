@@ -617,11 +617,25 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 
   > .title {
     position: absolute;
-    font-size: 150%;
+    font-size: 19px;
     margin-top: 0.5em;
     margin-bottom: 0.5em; //2em;
     width: auto;
     height: auto;
+    background: rgba(255,255,255,0.07);
+    padding: 7px 50vw;
+
+    > .welcome {
+      text-align: left;
+      font-size: 70%;
+      margin-bottom: 0.25em;
+      color: #5fbbc4;
+      font-weight: 200;
+      letter-spacing: 0.1em;
+    }
+    > .logo {
+      width: 12em;
+    }
   }
 
   > .back {
@@ -640,27 +654,32 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     width: 100%;
     top: @dragbarHeight;
     bottom: 0;
-    padding: 0 2.5em;
+    display: flex;
+    flex-direction: column;
+    //justify-content: center;
+    padding: 0 2.5em 60px;
     input {
       .nondraggable;
       border: none;
-      background: rgba(255,255,255,0.1);
+      background: rgba(0,0,0,0.1);
       width: 100%;
       color: #fff;
-      padding: 15px;
+      padding: 14px;
       font-size: 125%;
-      transition: background-color 0.2s;
+      transition: background-color 0.2s, border-color 0.2s, color 0.2s;
       border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.2);
 
       &:focus {
-        background: rgba(255,255,255,0.16);
+        background: rgba(0,0,0,0.2);
+        border-color: rgba(255,255,255,0.4);
       }
     }
     .input {
       .nondraggable;
       width: 100%;
       &.icon .icon {
-        font-size: 120%;
+        font-size: 150%;
       }
       &.loading.icon .icon {
         margin-right: 0.5em;
@@ -691,30 +710,32 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   }
 
   .login-check {
+    padding-top: 30px;
     .loader {
       margin-top: 30px;
     }
   }
 
   .login-email {
-    .welcome {
-      font-size: 170%;
-      font-weight: 600;
-      margin-bottom: 1em;
-    }
+    padding-top: 30px;
   }
 
   .login-password {
-
+    padding-top: 50px;
   }
 
   .login-register {
+    padding-top: 30px;
     .loader {
       margin-top: 30px;
     }
   }
 
   .login-confirm {
+    padding-top: 30px;
+    .link {
+      font-size: 18px;
+    }
     .loader {
       margin-top: 30px;
     }
@@ -766,9 +787,9 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     }
   }
   .forgot {
-    float: right;
-    position: relative;
+    align-self: flex-end;
     margin-top: 4px;
+    margin-right: 5px;
   }
 
   input:focus + .forgot {

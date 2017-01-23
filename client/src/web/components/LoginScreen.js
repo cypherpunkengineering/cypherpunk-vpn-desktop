@@ -84,7 +84,7 @@ function setAccount(data) {
 
 
 
-const PageTitle = ({ key = "title", top = 220, ...props } = {}) => <Title key={key} component="h3" style={{ top: top + 'px' }}{...props}/>;
+const PageTitle = ({ key = "title", top = 230, className = null, ...props } = {}) => <h3 key={key} className={classList('cp title', className)} style={{ top: top + 'px' }}{...props}><div className="welcome">Welcome to</div><img className="logo" src={require('../assets/img/logo_text.svg')} alt="Cypherpunk Privacy"/></h3>;
 const PageBackground = ({ key, src, top = 0, ...props } = {}) => <RetinaImage key={key} className="background" src={src} style={{ marginTop: top + 'px' }} {...props}/>;
 const BackLink = ({ key = "back", to, text = "Back", icon = 'undo', ...props } = {}) => <Link key={key} className="back link" to={to} tabIndex="0" {...props}><i className={classList("icon", icon)}/>{text}</Link>;
 
@@ -109,7 +109,7 @@ function pageValue(pageType, member) {
 class Page extends React.Component {
   static elements = [ DefaultPageBackground ];
   static defaultProps = {
-    top: 270,
+    top: 240,
   };
   render() {
     return (
@@ -123,7 +123,7 @@ class Page extends React.Component {
 
 
 export class Check extends Page {
-  static elements = [];
+  static elements = [ DefaultPageTitle ];
   static run() {
     // Use setImmediate to avoid changing history in the same callstack
     setImmediate(() => {
@@ -155,7 +155,7 @@ export class Check extends Page {
   }
   render() {
     return (
-      <Page className="login-check">
+      <Page className="login-check" top={310}>
         <div className="ui inline active massive text loader" ref="loader"></div>
       </Page>
     );
@@ -198,7 +198,7 @@ export class EmailStep extends Page {
   }
   render() {
     return(
-      <Page className="login-email" top={290}>
+      <Page className="login-email" top={310}>
         {/*<div className="welcome">Welcome.</div>*/}
         <div className="desc">Please input your email to begin.</div>
         <div className="ui icon input">
@@ -310,12 +310,10 @@ export class ConfirmationStep extends Page {
           <div className="desc">
             We haven't received your email confirmation yet.<br/><br/>
             <a onClick={() => this.onRetry()}>Check again</a>
-          </div>,
-          <Link className="back link" to="/login/email" tabIndex="0">Back</Link>
+          </div>
         ] : [
           <div className="desc">Awaiting email confirmation...</div>,
-          <div className="ui inline active large text loader" ref="loader"></div>,
-          <Link className="back link" to="/login/email" tabIndex="0">Back</Link>
+          <div className="ui inline active large text loader" ref="loader"></div>
         ]}
       </Page>
     );
