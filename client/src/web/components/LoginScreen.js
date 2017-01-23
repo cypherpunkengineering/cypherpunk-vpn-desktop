@@ -297,6 +297,9 @@ export class ConfirmationStep extends Page {
     this.beginPolling();
     this.setState({ timedOut: false });
   }
+  onResend() {
+
+  }
   componentDidMount() {
     this.beginPolling();
   }
@@ -305,17 +308,20 @@ export class ConfirmationStep extends Page {
   }
   render() {
     return (
-      <Page className="login-confirm">
-        {this.state.timedOut ? [
+      this.state.timedOut
+        ?
+        <Page className="login-confirm">
           <div className="desc">
-            We haven't received your email confirmation yet.<br/><br/>
-            <a onClick={() => this.onRetry()}>Check again</a>
+            We haven't received your email confirmation yet.
           </div>
-        ] : [
-          <div className="desc">Awaiting email confirmation...</div>,
+          <a className="button" tabIndex="0" onClick={() => this.onRetry()}><i className="refresh icon"/> Check again</a>
+          <a className="button" tabIndex="0" onClick={() => this.onResend()}><i className="mail outline icon"/> Resend email</a>
+        </Page>
+        :
+        <Page className="login-confirm">
+          <div className="desc">Awaiting email confirmation...</div>
           <div className="ui inline active large text loader" ref="loader"></div>
-        ]}
-      </Page>
+        </Page>
     );
   }
 }
