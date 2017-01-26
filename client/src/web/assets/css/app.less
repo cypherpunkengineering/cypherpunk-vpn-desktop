@@ -608,34 +608,74 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 
   > .background {
     position: absolute;
-    top: 0;
+    top: 37px;
     margin: 0 auto;
     width: auto;
     height: auto;
-    z-index: 0;
+    z-index: 1;
   }
 
-  > .title {
+  > .pipe {
+    background: white;
     position: absolute;
-    font-size: 19px;
-    margin-top: 0.5em;
-    margin-bottom: 0.5em; //2em;
-    width: auto;
-    height: auto;
-    background: rgba(255,255,255,0.07);
-    padding: 7px 50vw;
+    top: 190px;
+    width: 100%;
+    height: 34px;
+    border-top: 2px solid black;
+    background: #2b565a;
+    line-height: 12px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    color: #7ffffb;
+    //overflow-x: hidden;
 
-    > .welcome {
-      text-align: left;
-      font-size: 70%;
-      margin-bottom: 0.25em;
-      color: #5fbbc4;
-      font-weight: 200;
-      letter-spacing: 0.1em;
+    > div {
+      transform: translate3d(0,0,0);
+      width: auto;
+      position: absolute;
+      white-space: pre;
     }
-    > .logo {
-      width: 12em;
+    > div:nth-child(1) {
+      animation: 20s linear infinite paused marquee;
+      top: 3px;
     }
+    > div:nth-child(2) {
+      animation: 20s linear reverse infinite paused marquee;
+      top: 15px;
+      color: #5fbfbb;
+    }
+    .is-focused & > div {
+      animation-play-state: running;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: -1px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      .themed({
+        background: linear-gradient(to right, @themeWindowBackground, transparent, @themeWindowBackground);
+      });
+    }
+  }
+
+  @headerHeight: 75px;
+  @headerGradientTop: rgba(0,0,0,0.5);
+  @headerGradientBottom: rgba(0,0,0,0.25);
+  @headerArrowHeight: 10px;
+  > .header {
+    position: absolute;
+    display: block;
+    margin: 0;
+    left: 0;
+    top: 224px;
+    width: 100vw;
+    height: @headerHeight;
+    background: linear-gradient(to bottom, @headerGradientTop, @headerGradientBottom 20px);
+    z-index: 0;
   }
 
   > .back {
@@ -649,16 +689,66 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     border-color: transparent !important;
   }
 
+  // What actually goes into the header; positioned inside page itself
+  .title {
+    position: absolute;
+    top: -@headerHeight;
+    height: @headerHeight;
+    font-size: 19px;
+    line-height: (@headerHeight - 30px);
+    padding-top: 16px;
+
+    > .welcome {
+      text-align: left;
+      font-size: 13px;
+      margin: 1px 0 -8px 0;
+      color: #50aeb7;
+      font-weight: 200;
+      letter-spacing: 0.1em;
+      line-height: 14px;
+    }
+    > .logo {
+      width: 200px;
+      margin-top: 13px;
+    }
+    > .text {
+      color: #fff;
+      white-space: nowrap;
+      overflow-x: hidden;
+      text-overflow: ellipsis;
+      max-width: 90vw;
+    }
+    > .loading {
+      color: #50aeb7;
+      font-size: 14px;
+    }
+
+    &::after {
+      content: '';
+      display: block;
+      width: (2 * @headerArrowHeight);
+      position: absolute;
+      left: 50%;
+      top: @headerHeight;
+      //margin-top: @bottomPadding;
+      margin-left: (-@headerArrowHeight);
+      border: @headerArrowHeight solid transparent;
+      border-top-color: @headerGradientBottom;
+      border-bottom: none;
+    }
+  }
+
   form {
     position: absolute;
     width: 100%;
-    top: @dragbarHeight;
+    top: @headerHeight;
     bottom: 0;
     display: flex;
     flex-direction: column;
     //justify-content: center;
     align-items: center;
-    padding: 0 2.5em 60px;
+    padding: 30px 2.5em 40px;
+    z-index: 2;
     input {
       .nondraggable;
       border: none;
@@ -669,11 +759,11 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
       font-size: 125%;
       transition: background-color 0.2s, border-color 0.2s, color 0.2s;
       border-radius: 6px;
-      border: 1px solid rgba(255,255,255,0.2);
+      border: 1px solid rgba(127,255,252,0.2);
 
       &:focus {
         background: rgba(0,0,0,0.2);
-        border-color: rgba(255,255,255,0.4);
+        border-color: rgba(127,255,252,0.4);
       }
     }
     .input {
@@ -681,8 +771,12 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
       width: 100%;
       &.icon .icon {
         font-size: 150%;
+        &.link {
+          color: #7ffffc;
+        }
       }
       &.loading.icon .icon {
+        font-size: 100%;
         margin-right: 0.5em;
         cursor: default;
         pointer-events: none;
@@ -711,18 +805,15 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   }
 
   .login-check {
-    padding-top: 30px;
-    .loader {
-      margin-top: 30px;
-    }
+    justify-content: center;
   }
 
   .login-email {
-    padding-top: 30px;
+
   }
 
   .login-password {
-    padding-top: 10px;
+    padding-top: 50px;
     > .name {
       margin: 5px -100px 15px;
       background: rgba(255,255,255,0.07);
@@ -735,27 +826,46 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
       margin-bottom: 1.5em;
       color: rgba(255,255,255,0.5);
     }
+    > .forgot {
+      align-self: flex-end;
+      margin-top: 5px;
+      margin-right: 5px;
+    }
   }
 
   .login-register {
-    padding-top: 30px;
+    padding-top: 25px;
     .loader {
       margin-top: 30px;
+    }
+    .register {
+      margin-top: 10px;
+      align-self: flex-end;
+      font-size: 18px;
+      font-weight: 500;
+      line-height: 20px;
     }
   }
 
   .login-confirm {
-    padding-top: 30px;
+    padding-top: 20px;
     .link {
       font-size: 18px;
     }
     .loader {
       margin-top: 30px;
     }
+    .button {
+      margin: 0 0 0.5em 0;
+    }
   }
 
   .login-analytics {
 
+  }
+
+  .login-logout {
+    justify-content: center;
   }
 
   .cp.button {
@@ -794,8 +904,9 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     padding: 2px 0;
     border-bottom: 1px dotted transparent;
     transition: color 0.2s, border-bottom-color 0.2s, visibility 0.2s;
+    //display: block;
     &:hover, &:active, &:focus {
-      color: @cpYellow !important; //#fff;
+      color: #7ffffc !important; //#fff;
       &.underline {
         border-bottom: 1px dotted #fff;
       }
@@ -818,7 +929,7 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
       margin-left: -0.5em;
     }
     &:hover, &:focus {
-      border-color: rgba(255,255,255,0.4);
+      border-color: rgba(127,255,252,0.4);
       background: rgba(0,0,0,0.1);
     }
     &:focus {
@@ -834,11 +945,6 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
       border-color: rgba(255,255,255,0.4);
       background: rgba(0,0,0,0.2);
     }
-  }
-  .forgot {
-    align-self: flex-end;
-    margin-top: 4px;
-    margin-right: 5px;
   }
 
   input:focus + .forgot {

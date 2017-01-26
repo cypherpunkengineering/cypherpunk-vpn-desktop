@@ -83,16 +83,29 @@ function setAccount(data) {
 }
 
 
+const PIPE_UPPER_TEXT = 'x`8 0 # = v 7 mb" | y 9 # 8 M } _ + kl $ #mn x -( }e f l]> ! 03 @jno x~`.xl ty }[sx k j';
+const PIPE_LOWER_TEXT = 'dsK 7 & [*h ^% u x 5 8 00 M< K! @ &6^d jkn 70 :93jx p0 bx, 890 Qw ;é " >?7 9 3@ { 5x3 >';
 
-const PageTitle = ({ key = "title", top = 230, className = null, ...props } = {}) => <h3 key={key} className={classList('cp title', className)} style={{ top: top + 'px' }}{...props}><div className="welcome">Welcome to</div><img className="logo" src={require('../assets/img/logo_text.svg')} alt="Cypherpunk Privacy"/></h3>;
-const PageBackground = ({ key, src, top = 0, ...props } = {}) => <RetinaImage key={key} className="background" src={src} style={{ marginTop: top + 'px' }} {...props}/>;
+const PageHeader = ({ key = "header", top = 224, className = null, ...props } = {}) => <div key={key} className={classList('header', className)} style={{ top: top + 'px' }} {...props}></div>;
+const PagePipe = ({ key = "pipe", top = 190, className = null, upper = PIPE_UPPER_TEXT, lower = PIPE_LOWER_TEXT, ...props } = {}) =>
+  <div key={key} className={classList('pipe', className)} style={{ top: top + 'px' }} {...props}>
+    <div style={{ animationDuration: (upper.length*300)+'ms' }}>{upper}{upper}</div>
+    <div style={{ animationDuration: (lower.length*300)+'ms' }}>{lower}{lower}</div>
+  </div>;
+const PageBackground = ({ key, src, top = 0, ...props } = {}) => <RetinaImage key={key} className="background" src={src} style={{ top: top + 'px' }} {...props}/>;
 const BackLink = ({ key = "back", to, text = "Back", icon = 'undo', ...props } = {}) => <Link key={key} className="back link" to={to} tabIndex="0" {...props}><i className={classList("icon", icon)}/>{text}</Link>;
 
-const LoginImage = require('../assets/img/login_illustration.png');
-const LoginImage2x = require('../assets/img/login_illustration@2x.png');
+const LoginImage = require('../assets/img/login_illustration2.png');
+const LoginImage2x = require('../assets/img/login_illustration2@2x.png');
 
-const DefaultPageTitle = PageTitle();
-const DefaultPageBackground = PageBackground({ key: "bg-default", top: 36, src: { 1: LoginImage, 2: LoginImage2x } });
+const DefaultPageBackground = PageBackground({ key: "bg-default", top: 37, src: { 1: LoginImage, 2: LoginImage2x } });
+const DefaultPageElements = [ DefaultPageBackground, PagePipe(), PageHeader() ];
+
+// Goes into the page itself
+const PageTitle = ({ key = "title", text = null, className = null, children, ...props } = {}) => <div key={key} className={classList('title', className)} {...props}>{text}{children}</div>;
+const DefaultPageTitle = <PageTitle><div className="welcome">Welcome to</div><img className="logo" src={require('../assets/img/logo_text.svg')} alt="Cypherpunk Privacy"/></PageTitle>;
+
+
 
 const TitleHeight = 30;
 
@@ -107,9 +120,9 @@ function pageValue(pageType, member) {
 }
 
 class Page extends React.Component {
-  static elements = [ DefaultPageBackground ];
+  static elements = [ DefaultPageElements ];
   static defaultProps = {
-    top: 240,
+    top: 299,
   };
   render() {
     return (
@@ -123,7 +136,7 @@ class Page extends React.Component {
 
 
 export class Check extends Page {
-  static elements = [ DefaultPageTitle ];
+  static elements = [ PagePipe(), PageHeader() ];
   static run() {
     // Use setImmediate to avoid changing history in the same callstack
     setImmediate(() => {
@@ -155,7 +168,8 @@ export class Check extends Page {
   }
   render() {
     return (
-      <Page className="login-check" top={310}>
+      <Page className="login-check">
+        <PageTitle><div className="loading">Loading...</div></PageTitle>
         <div className="ui inline active massive text loader" ref="loader"></div>
       </Page>
     );
@@ -163,6 +177,7 @@ export class Check extends Page {
 }
 
 export class Logout extends Page {
+  static elements = [];
   componentDidMount() {
     setImmediate(() => { // need to use setImmediate since we might modify History
       daemon.post.disconnect(); // make sure we don't stay connected
@@ -174,7 +189,7 @@ export class Logout extends Page {
   }
   render() {
     return (
-      <Page className="login-check">
+      <Page className="login-logout">
         <div className="ui inline active massive text loader" ref="loader"></div>
       </Page>
     );
@@ -182,7 +197,7 @@ export class Logout extends Page {
 }
 
 export class EmailStep extends Page {
-  static elements = [ DefaultPageBackground, DefaultPageTitle ];
+  static elements = [ DefaultPageElements ];
   onSubmit() {
     var email = this.refs.email.value;
     $(this.refs.email).prop('disabled', true).parent().addClass('loading');
@@ -198,8 +213,8 @@ export class EmailStep extends Page {
   }
   render() {
     return(
-      <Page className="login-email" top={310}>
-        {/*<div className="welcome">Welcome.</div>*/}
+      <Page className="login-email">
+        {DefaultPageTitle}
         <div className="desc">Please input your email to begin.</div>
         <div className="ui icon input">
           <input type="text" placeholder="Email" required autoFocus="true" ref="email" defaultValue={daemon.account.account ? daemon.account.account.email : ""} onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
@@ -211,7 +226,7 @@ export class EmailStep extends Page {
 }
 
 export class PasswordStep extends Page {
-  static elements = [ DefaultPageBackground, BackLink({ key: 'back-from-password', to: '/login/email' }) ];
+  static elements = [ DefaultPageElements, BackLink({ key: 'back-from-password', to: '/login/email' }) ];
   onSubmit() {
     var password = this.refs.password.value;
     $(this.refs.password).prop('disabled', true).parent().addClass('loading');
@@ -228,13 +243,15 @@ export class PasswordStep extends Page {
   render() {
     return(
       <Page className="login-password">
-        <div className="name">{this.props.location.query.email}</div>
-        <div className="desc">Welcome back!</div>
+        <PageTitle>
+          <div className="welcome">Welcome back,</div>
+          <div className="text">{this.props.location.query.email}!</div>
+        </PageTitle>
         <div className="ui icon input">
           <input type="password" placeholder="Password" required autoFocus="true" ref="password" onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
           <i className="chevron right link icon" onClick={() => this.onSubmit()}></i>
         </div>
-        <a className="forgot link" tabIndex="0">Forgot password?</a>
+        <a className="underline forgot link" tabIndex="0">Forgot password?</a>
         {/*<Link className="back link" to="/login/email" tabIndex="0"><i className="undo icon"></i>Back</Link>*/}
       </Page>
     );
@@ -242,7 +259,7 @@ export class PasswordStep extends Page {
 }
 
 export class RegisterStep extends Page {
-  static elements = [ DefaultPageBackground, BackLink({ key: 'back-from-register', to: '/login/email' }) ];
+  static elements = [ DefaultPageElements, BackLink({ key: 'back-from-register', to: '/login/email' }) ];
   onSubmit() {
     var password = this.refs.password.value;
     $(this.refs.password).prop('disabled', true);
@@ -262,11 +279,12 @@ export class RegisterStep extends Page {
   render() {
     return(
       <Page className="login-register">
-        <div className="desc">Registering new account for {this.props.location.query.email}...</div>
+        <PageTitle><div className="welcome">Welcome,</div><div className="text">{this.props.location.query.email}!</div></PageTitle>
+        <div className="desc">Setting up your new account...</div>
         <div className="ui icon input">
-          <input type="password" placeholder="Password" required autoFocus="true" ref="password" onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
+          <input type="password" placeholder="Choose a password" required autoFocus="true" ref="password" onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
         </div>
-        <a class="cp yellow button" ref="register" onClick={() => this.onSubmit()}>Register</a>
+        <a class="register link" ref="register" onClick={() => this.onSubmit()}>SIGN UP <i className="right chevron icon"/></a>
         <div className="ui inline text loader" ref="loader"></div>
         {/*<Link className="back link" to="/login/email" tabIndex="0"><i className="undo icon"></i>Back</Link>*/}
       </Page>
@@ -275,7 +293,7 @@ export class RegisterStep extends Page {
 }
 
 export class ConfirmationStep extends Page {
-  static elements = [ DefaultPageBackground, BackLink({ key: 'back-from-confirm', to: '/login/email' }) ];
+  static elements = [ DefaultPageElements, BackLink({ key: 'back-from-confirm', to: '/login/email' }) ];
   state = {
     timedOut: false,
   }
@@ -287,9 +305,9 @@ export class ConfirmationStep extends Page {
     if (this.interval) { clearInterval(this.interval); this.interval = null; }
   }
   onTimer() {
-    if (this.attempts++ < 10)
-      refreshAccount(); // navigates automatically
-    else {
+    if (this.attempts++ < 10) {
+      //refreshAccount(); // navigates automatically
+    } else {
       this.endPolling();
       this.setState({ timedOut: true });
     }
@@ -312,6 +330,7 @@ export class ConfirmationStep extends Page {
       this.state.timedOut
         ?
         <Page className="login-confirm">
+          <PageTitle><div className="welcome">Setting up...</div><div className="text">{this.props.location.query.email}</div></PageTitle>
           <div className="desc">
             We haven't received your email confirmation yet.
           </div>
@@ -320,6 +339,7 @@ export class ConfirmationStep extends Page {
         </Page>
         :
         <Page className="login-confirm">
+          <PageTitle><div className="welcome">Setting up...</div><div className="text">{this.props.location.query.email}</div></PageTitle>
           <div className="desc">Awaiting email confirmation...</div>
           <div className="ui inline active large text loader" ref="loader"></div>
         </Page>
@@ -329,7 +349,7 @@ export class ConfirmationStep extends Page {
 
 
 export class AnalyticsStep extends Page {
-  static elements = [ DefaultPageBackground ];
+  static elements = [ DefaultPageElements ];
   onAllow() {
     console.log("Allow");
   }
