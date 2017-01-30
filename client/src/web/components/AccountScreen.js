@@ -123,6 +123,7 @@ export default class AccountScreen extends React.Component  {
           <div className="links footer">
             <ExternalLink href="https://cypherpunk.com/terms-of-service">Terms of Service</ExternalLink>
             <ExternalLink href="https://cypherpunk.com/privacy-policy">Privacy Policy</ExternalLink>
+            <ExternalLink href="https://cypherpunk.com/legal/license/desktop">License Information</ExternalLink>
           </div>
         </div>
         </div>
