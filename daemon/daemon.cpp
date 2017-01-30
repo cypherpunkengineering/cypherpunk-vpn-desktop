@@ -515,6 +515,8 @@ void CypherDaemon::RPC_applySettings(const JsonObject& settings)
 	// before we actually make any changes
 	//for (auto& p : settings) g_settings.map().at(p.first);
 
+	bool neededReconnect = _needsReconnect;
+
 	std::vector<std::string> changed;
 	for (auto& p : settings)
 	{
@@ -523,6 +525,21 @@ void CypherDaemon::RPC_applySettings(const JsonObject& settings)
 			// FIXME: Validate type
 			changed.push_back(p.first);
 			g_settings[p.first] = JsonValue(p.second);
+			// FIXME: Not all settings require reconnect
+			if (p.first == "remotePort" ||
+				p.first == "location" ||
+				p.first == "localPort" ||
+				p.first == "mtu" ||
+				p.first == "encryption" ||
+				p.first == "overrideDNS" ||
+				p.first == "optimizeDNS" ||
+				p.first == "blockAds" ||
+				p.first == "blockMalware" ||
+				p.first == "routeDefault" ||
+				p.first == "exemptApple")
+			{
+				_needsReconnect = true;
+			}
 		}
 	}
 	if (changed.size() > 0)
@@ -534,9 +551,11 @@ void CypherDaemon::RPC_applySettings(const JsonObject& settings)
 	if (settings.find("account") != settings.end())
 		SendToAllClients(_rpc_client.BuildNotificationData("account", MakeAccountObject()));
 
-	if (!_needsReconnect && (_state == CONNECTING || _state == CONNECTED) && !_process->IsSameServer(g_settings.map()))
-	{
+	if ((_state == CONNECTING || _state == CONNECTED) && !_process->IsSameServer(g_settings.map()))
 		_needsReconnect = true;
+
+	if (!neededReconnect && _needsReconnect)
+	{
 		SendToAllClients(_rpc_client.BuildNotificationData("state", JsonObject({{ "needsReconnect", JsonValue(true) }})));
 	}
 
