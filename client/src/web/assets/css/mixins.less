@@ -47,3 +47,15 @@
 .retina-background(@url) {
   background-image+: ~`"-webkit-image-set(url(@{url}) 1x, url('" + @{url}.replace(/(\.[^.]*)$/, '@2x$1') + "') 2x)"`;
 }
+
+// Turn the element into a Semantic UI icon with the given code (e.g. "\f02e")
+.semanticIcon(@content) {
+  content: @content;
+  font-family: 'Icons';
+  font-style: normal;
+  font-weight: 400;
+  text-decoration: inherit;
+  speak: none;
+  -webkit-font-smoothing: antialiased;
+  backface-visibility: hidden;
+}
