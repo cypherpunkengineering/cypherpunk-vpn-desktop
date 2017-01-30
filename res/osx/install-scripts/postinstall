@@ -18,8 +18,8 @@ if ! dscl . -read /Groups/$GROUP ; then
 fi
 
 # Update permissions on the client executable to exempt it from the killswitch
-chgrp $GROUP "/Applications/Cypherpunk Privacy.app/Contents/MacOS/Cypherpunk Privacy"
-chmod g+s "/Applications/Cypherpunk Privacy.app/Contents/MacOS/Cypherpunk Privacy"
+chgrp $GROUP "$3/Applications/Cypherpunk Privacy.app/Contents/MacOS/Cypherpunk Privacy"
+chmod g+s "$3/Applications/Cypherpunk Privacy.app/Contents/MacOS/Cypherpunk Privacy"
 
 # (The daemon does not need +setgid since it's running as root and can do it by itself)
 
@@ -27,4 +27,4 @@ chmod g+s "/Applications/Cypherpunk Privacy.app/Contents/MacOS/Cypherpunk Privac
 launchctl load /Library/LaunchDaemons/com.cypherpunk.privacy.service.plist
 
 # Launch the client
-osascript -e 'tell application "Cypherpunk Privacy" to activate'
+open "$3/Applications/Cypherpunk Privacy.app" || open -a 'Cypherpunk Privacy' || true
