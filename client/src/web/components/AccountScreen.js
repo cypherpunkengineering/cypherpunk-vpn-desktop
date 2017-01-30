@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router';
+import ExternalLink from './ExternalLink';
 import { PanelTitlebar } from './Titlebar';
 import Modal from './Modal';
 import daemon from '../daemon';
@@ -109,15 +110,15 @@ export default class AccountScreen extends React.Component  {
             {renewal}
           </div>
           <div className="pane" data-title="Account Settings">
-            <div className="setting"><a tabIndex="0" onClick={() => { shell.openExternal('https://cypherpunk.com' + upgradeURL + '?user=' + encodeURIComponent(daemon.account.account.email) + '&secret=' + encodeURIComponent(daemon.account.secret)); }}>{upgradeString}</a></div>
+            <div className="setting"><ExternalLink href={'https://cypherpunk.com' + upgradeURL + '?user=' + encodeURIComponent(daemon.account.account.email) + '&secret=' + encodeURIComponent(daemon.account.secret)}>{upgradeString}</ExternalLink></div>
             <div className="setting"><Link to="/account/email" tabIndex="0"><div>Email<small>{daemon.account.account.email}</small></div></Link></div>
             <div className="setting"><Link to="/account/password" tabIndex="0">Password</Link></div>
           </div>
           <div className="pane" data-title="More">
             <div className="setting"><Link to="/account/share" tabIndex="0">Share Cypherpunk with a Friend</Link></div>
-            <div className="setting"><a tabIndex="0" onClick={() => { shell.openExternal('https://cypherpunk.zendesk.com/tickets/new'); }}><div>Message the Founders<small>We love interacting with our users, all messages are responded to within 12 hours.</small></div></a></div>
-            <div className="setting">{/*<Link to="/account/help" tabIndex="0">Help</Link>*/}<a tabIndex="0" onClick={() => { shell.openExternal('https://support.cypherpunk.com/hc'); }}>Help</a></div>
-            <div className="setting"><Link to="/login/logout" tabIndex="0">Log Out</Link></div>
+            <div className="setting"><ExternalLink href="https://cypherpunk.zendesk.com/hc/requests/new"><div>Open a Support Ticket<small>Your satisfaction is important to us!</small></div></ExternalLink></div>
+            <div className="setting"><ExternalLink href="https://support.cypherpunk.com/hc">Go to Help Center</ExternalLink></div>
+            <div className="setting"><Link to="/login/logout" tabIndex="0">Sign Out</Link></div>
           </div>
           <div className="footer"></div>
         </div>
