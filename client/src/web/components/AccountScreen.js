@@ -118,9 +118,12 @@ export default class AccountScreen extends React.Component  {
             <div className="setting"><Link to="/account/share" tabIndex="0">Share Cypherpunk with a Friend</Link></div>
             <div className="setting"><ExternalLink href="https://cypherpunk.zendesk.com/hc/requests/new"><div>Open a Support Ticket<small>Your satisfaction is important to us!</small></div></ExternalLink></div>
             <div className="setting"><ExternalLink href="https://support.cypherpunk.com/hc">Go to Help Center</ExternalLink></div>
-            <div className="setting"><Link to="/login/logout" tabIndex="0">Sign Out</Link></div>
+            <div className="setting"><Link className="logout" to="/login/logout" tabIndex="0">Sign Out</Link></div>
           </div>
-          <div className="footer"></div>
+          <div className="links footer">
+            <ExternalLink href="https://cypherpunk.com/terms-of-service">Terms of Service</ExternalLink>
+            <ExternalLink href="https://cypherpunk.com/privacy-policy">Privacy Policy</ExternalLink>
+          </div>
         </div>
         </div>
       );
