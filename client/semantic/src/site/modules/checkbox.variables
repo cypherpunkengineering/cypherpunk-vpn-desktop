@@ -56,7 +56,7 @@
 ;
 
 
-@handleBackground: #cde @subtleGradient;
+@handleBackground: #cee linear-gradient(135deg, transparent 45%, rgba(0,0,0,0.2) 55%);
 @handleBoxShadow:
   @subtleShadow,
   0px 0px 0px 1px @strongTransparentWhite inset
