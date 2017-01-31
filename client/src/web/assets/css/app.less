@@ -1974,23 +1974,33 @@ small {
 
 .reconnect-button {
   position: fixed;
+  display: block;
   left: 0;
   width: 100vw;
   bottom: 0;
   height: 44px;
-  line-height: 44px;
+  line-height: 42px;
+  padding: 1px;
   font-size: 16px;
   text-align: center;
   border-radius: 8px 8px 0 0;
   background: #3f7f7e;
-  color: black;
+  color: rgba(0,0,0,0.75);
   cursor: pointer;
+  transition: background-color 0.3s ease;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  z-index: 19;
   > span {
     font-weight: 800;
     text-transform: uppercase;
+    margin-right: 1px;
   }
   &:hover {
     background: #7ffffc;
+    color: black;
+  }
+  &:active {
+    padding: 2px 0 0 2px;
   }
 }
 

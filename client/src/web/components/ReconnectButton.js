@@ -14,7 +14,7 @@ export default class ReconnectButton extends DaemonAware(React.Component) {
       return null;
     }
     return (
-      <div className="reconnect-button"><i className="refresh icon"/><span>Reconnect</span> to apply changes</div>
+      <a className="reconnect-button"><i className="refresh icon"/><span>Reconnect</span> to apply changes</a>
     );
   }
 }

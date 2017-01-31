@@ -30,7 +30,6 @@ export default class ConfigurationScreen extends React.Component  {
             <div className="version footer">
               <div><i className="tag icon"/>{"v"+require('electron').remote.app.getVersion()}</div>
             </div>
-            <ReconnectButton/>
           </div>
         </div>
       );
