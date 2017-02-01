@@ -15,9 +15,15 @@ static const std::string g_connection_setting_names[] = {
 	"localPort",
 	"mtu",
 	"encryption",
-	"firewall",
-	"allowLAN",
-	"blockIPv6",
+	"overrideDNS",
+	"optimizeDNS",
+	"blockAds",
+	"blockMalware",
+	"routeDefault",
+	"exemptApple",
+	//"firewall",
+	//"allowLAN",
+	//"blockIPv6",
 	"runOpenVPNAsRoot",
 };
 

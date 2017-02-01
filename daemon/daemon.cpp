@@ -525,21 +525,6 @@ void CypherDaemon::RPC_applySettings(const JsonObject& settings)
 			// FIXME: Validate type
 			changed.push_back(p.first);
 			g_settings[p.first] = JsonValue(p.second);
-			// FIXME: Not all settings require reconnect
-			if (p.first == "remotePort" ||
-				p.first == "location" ||
-				p.first == "localPort" ||
-				p.first == "mtu" ||
-				p.first == "encryption" ||
-				p.first == "overrideDNS" ||
-				p.first == "optimizeDNS" ||
-				p.first == "blockAds" ||
-				p.first == "blockMalware" ||
-				p.first == "routeDefault" ||
-				p.first == "exemptApple")
-			{
-				_needsReconnect = true;
-			}
 		}
 	}
 	if (changed.size() > 0)
