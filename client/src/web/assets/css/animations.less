@@ -103,7 +103,7 @@
 .swipeLeft {
   @transitionTime: @screenTransitionTime;
   &-enter {
-    transform: translateX(100vw);
+    transform: translateX(@panelWidth);
     &-active {
       transform: translateX(0);
       transition: transform @transitionTime ease-out !important;
@@ -113,7 +113,7 @@
     transform: translateX(0);
     pointer-events: none !important;
     &-active {
-      transform: translateX(-100vw);
+      transform: translateX(-@panelWidth);
       transition: transform @transitionTime ease-out !important;
     }
   }
@@ -122,7 +122,7 @@
 .swipeRight {
   @transitionTime: @screenTransitionTime;
   &-enter {
-    transform: translateX(-100vw);
+    transform: translateX(-@panelWidth);
     &-active {
       transform: translateX(0);
       transition: transform @transitionTime ease-out !important;
@@ -132,7 +132,7 @@
     transform: translateX(0);
     pointer-events: none !important;
     &-active {
-      transform: translateX(100vw);
+      transform: translateX(@panelWidth);
       transition: transform @transitionTime ease-out !important;
     }
   }
