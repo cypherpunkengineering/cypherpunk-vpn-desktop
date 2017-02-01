@@ -515,6 +515,8 @@ void CypherDaemon::RPC_applySettings(const JsonObject& settings)
 	// before we actually make any changes
 	//for (auto& p : settings) g_settings.map().at(p.first);
 
+	bool neededReconnect = _needsReconnect;
+
 	std::vector<std::string> changed;
 	for (auto& p : settings)
 	{
@@ -534,9 +536,11 @@ void CypherDaemon::RPC_applySettings(const JsonObject& settings)
 	if (settings.find("account") != settings.end())
 		SendToAllClients(_rpc_client.BuildNotificationData("account", MakeAccountObject()));
 
-	if (!_needsReconnect && (_state == CONNECTING || _state == CONNECTED) && !_process->IsSameServer(g_settings.map()))
-	{
+	if ((_state == CONNECTING || _state == CONNECTED) && !_process->IsSameServer(g_settings.map()))
 		_needsReconnect = true;
+
+	if (!neededReconnect && _needsReconnect)
+	{
 		SendToAllClients(_rpc_client.BuildNotificationData("state", JsonObject({{ "needsReconnect", JsonValue(true) }})));
 	}
 

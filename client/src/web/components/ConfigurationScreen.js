@@ -8,6 +8,7 @@ import AdvancedSettings from './config/AdvancedSettings.js'
 import RouteTransition from './Transition';
 import { PanelTitlebar } from './Titlebar';
 import Modal from './Modal';
+import ReconnectButton from './ReconnectButton';
 
 const transitionMap = {
   '': { '*': 'swipeLeft' },

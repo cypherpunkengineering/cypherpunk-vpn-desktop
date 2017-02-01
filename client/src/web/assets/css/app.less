@@ -8,28 +8,6 @@
   filter: blur(1px);
 }
 
-#window-close {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: @dragbarHeight;
-  height: @dragbarHeight;
-  line-height: @dragbarHeight;
-  font-size: 18px;
-  margin: 0;
-  z-index: 9001;
-  opacity: 0.25;
-  .nondraggable;
-  &:before {
-    content: '\f00D';
-  }
-  &:hover, &:active {
-    &:before {
-      content: '\f057';
-    }
-  }
-}
-
 // Background Gradient
 .bg-gradient--main {
   // background-image: linear-gradient(@cpBg, @cpBgDark);
@@ -1443,6 +1421,7 @@ small {
   display: block;
   position: absolute;
   top: 0;
+  width: 100%;
   height: 100%;
   margin: 0;
   padding: 0;
@@ -1450,7 +1429,7 @@ small {
   color: #fff;
   background: transparent;
 
-  dialog& > div { // modal wrapper
+  dialog& > .panel-container { // modal wrapper
     width: 100%;
     height: 100%;
     overflow: hidden;
@@ -1853,7 +1832,7 @@ small {
     left: 0;
     width: @leftPanelWidth;
 
-    > div {
+    > .panel-container {
       .themed({
         background: linear-gradient(to left, rgba(0,0,0,0.25) 0, transparent 30px), linear-gradient(329deg, transparent, rgba(255,255,255,0.2)), @themeDarkBackground;
         .themeTransition(background);
@@ -1869,20 +1848,20 @@ small {
       &-enter {
         pointer-events: none !important;
         &::backdrop { pointer-events: none !important; }
-        > div { transform: translateX(-@leftPanelWidth); }
+        > .panel-container { transform: translateX(-@leftPanelWidth); }
         ~ .screen { transform: translateX(0); pointer-events: none !important; }
         &-active {
-          > div { transform: translateX(0); transition: transform @transitionTime ease-out; }
+          > .panel-container { transform: translateX(0); transition: transform @transitionTime ease-out; }
           ~ .screen { transform: translateX(@leftPanelWidth); transition: transform @transitionTime ease-out; }
         }
       }
       &-leave {
         pointer-events: none !important;
         &::backdrop { pointer-events: none !important; }
-        > div { transform: translateX(0); pointer-events: none !important; }
+        > .panel-container { transform: translateX(0); pointer-events: none !important; }
         ~ .screen { transform: translateX(@leftPanelWidth); }
         &-active {
-          > div { transform: translateX(-@leftPanelWidth); transition: transform @transitionTime ease-out; }
+          > .panel-container { transform: translateX(-@leftPanelWidth); transition: transform @transitionTime ease-out; }
           ~ .screen { transform: translateX(0); transition: transform @transitionTime ease-out; }
         }
       }
@@ -1894,7 +1873,7 @@ small {
     left: calc(~"100vw - " @rightPanelWidth);
     width: @rightPanelWidth;
 
-    > div {
+    > .panel-container {
       .themed({
         background: linear-gradient(to right, rgba(0,0,0,0.25) 0, transparent 30px), linear-gradient(329deg, transparent, rgba(255,255,255,0.2)), @themeDarkBackground;
         .themeTransition(background);
@@ -1910,20 +1889,20 @@ small {
       &-enter {
         pointer-events: none !important;
         &::backdrop { pointer-events: none !important; }
-        > div { transform: translateX(@rightPanelWidth); }
+        > .panel-container { transform: translateX(@rightPanelWidth); }
         ~ .screen { transform: translateX(0); pointer-events: none !important; }
         &-active {
-          > div { transform: translateX(0); transition: transform @transitionTime ease-out; }
+          > .panel-container { transform: translateX(0); transition: transform @transitionTime ease-out; }
           ~ .screen { transform: translateX(-@rightPanelWidth); transition: transform @transitionTime ease-out; }
         }
       }
       &-leave {
         pointer-events: none !important;
         &::backdrop { pointer-events: none !important; }
-        > div { transform: translateX(0); }
+        > .panel-container { transform: translateX(0); }
         ~ .screen { transform: translateX(-@rightPanelWidth); }
         &-active {
-          > div { transform: translateX(@rightPanelWidth); transition: transform @transitionTime ease-out; }
+          > .panel-container { transform: translateX(@rightPanelWidth); transition: transform @transitionTime ease-out; }
           ~ .screen { transform: translateX(0); transition: transform @transitionTime ease-out; }
         }
       }
@@ -1967,6 +1946,70 @@ small {
 .settings.panel {
   .content {
 
+  }
+}
+
+
+.overlay-container {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  z-index: 999;
+}
+
+#window-close {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: @dragbarHeight;
+  height: @dragbarHeight;
+  line-height: @dragbarHeight;
+  font-size: 18px;
+  margin: 0;
+  z-index: 9001;
+  opacity: 0.25;
+  .nondraggable;
+  &:before {
+    content: '\f00D';
+  }
+  &:hover, &:active {
+    &:before {
+      content: '\f057';
+    }
+  }
+}
+
+.reconnect-button {
+  position: fixed;
+  display: block;
+  left: 0;
+  width: 100vw;
+  bottom: 0;
+  height: 44px;
+  line-height: 42px;
+  padding: 1px;
+  font-size: 16px;
+  text-align: center;
+  border-radius: 8px 8px 0 0;
+  background: #3f7f7e;
+  color: #0f1f1e;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  z-index: 19;
+  > span {
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-right: 1px;
+  }
+  &:hover {
+    background: #7ffffc;
+    color: black;
+  }
+  &:active {
+    padding: 2px 0 0 2px;
   }
 }
 

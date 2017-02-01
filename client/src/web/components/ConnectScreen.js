@@ -8,6 +8,8 @@ import daemon, { DaemonAware } from '../daemon';
 import { REGION_GROUP_NAMES, REGION_GROUP_ORDER } from '../util';
 import RouteTransition from './Transition';
 import RegionSelector from './RegionSelector';
+import ReconnectButton from './ReconnectButton';
+import { OverlayContainer } from './Overlay';
 
 function humanReadableSize(count) {
   if (count >= 1024 * 1024 * 1024 * 1024) {
@@ -161,6 +163,7 @@ export default class ConnectScreen extends React.Component {
 
     return(
       <RouteTransition transition="reveal">
+        <ReconnectButton key="reconnect"/>
         {this.props.children || null}
         <div id="connect-screen" key="self" class="screen">
           <div>
@@ -187,6 +190,7 @@ export default class ConnectScreen extends React.Component {
             <RegionSelector/>
           </div>
         </div>
+        <OverlayContainer/>
       </RouteTransition>
     );
   }
