@@ -470,11 +470,9 @@ export class RouteTransition extends React.Component {
   }
   getCurrentKey(props) {
     var children = React.Children.toArray(props.children);
-    for (var i = 0; i < children.length; i++) {
-      if (typeof (children[i]) === 'object') {
-        return this.getChildKey(children[0]);
-      }
-    }
+    return(
+      children.map(c => typeof c === 'object' && c.props.route && c.props.route.path).find(r => r) ||
+      null);
   }
   componentWillReceiveProps(nextProps) {
     this.setState({
@@ -502,7 +500,15 @@ export class RouteTransition extends React.Component {
         transitionLeaveTimeout={transitionTime}
         transitionAppearTimeout={transitionTime}
         >
-        {React.Children.map(children, c => c ? React.cloneElement(c, { key: this.getChildKey(c) }) : null)}
+        {
+          React.Children.map(children, child => {
+            if (child) {
+              var Type = child.type;
+              return <Type {...child.props} key={child.props.route && child.props.route.path || child.key || null}/>;
+            }
+            return null;
+          })
+        }
       </ReactCSSTransitionGroup>
     );
   }
