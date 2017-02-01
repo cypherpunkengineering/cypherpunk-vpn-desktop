@@ -8,28 +8,6 @@
   filter: blur(1px);
 }
 
-#window-close {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: @dragbarHeight;
-  height: @dragbarHeight;
-  line-height: @dragbarHeight;
-  font-size: 18px;
-  margin: 0;
-  z-index: 9001;
-  opacity: 0.25;
-  .nondraggable;
-  &:before {
-    content: '\f00D';
-  }
-  &:hover, &:active {
-    &:before {
-      content: '\f057';
-    }
-  }
-}
-
 // Background Gradient
 .bg-gradient--main {
   // background-image: linear-gradient(@cpBg, @cpBgDark);
@@ -1451,7 +1429,7 @@ small {
   color: #fff;
   background: transparent;
 
-  dialog& > div { // modal wrapper
+  dialog& > .panel-container { // modal wrapper
     width: 100%;
     height: 100%;
     overflow: hidden;
@@ -1854,7 +1832,7 @@ small {
     left: 0;
     width: @leftPanelWidth;
 
-    > div {
+    > .panel-container {
       .themed({
         background: linear-gradient(to left, rgba(0,0,0,0.25) 0, transparent 30px), linear-gradient(329deg, transparent, rgba(255,255,255,0.2)), @themeDarkBackground;
         .themeTransition(background);
@@ -1870,20 +1848,20 @@ small {
       &-enter {
         pointer-events: none !important;
         &::backdrop { pointer-events: none !important; }
-        > div { transform: translateX(-@leftPanelWidth); }
+        > .panel-container { transform: translateX(-@leftPanelWidth); }
         ~ .screen { transform: translateX(0); pointer-events: none !important; }
         &-active {
-          > div { transform: translateX(0); transition: transform @transitionTime ease-out; }
+          > .panel-container { transform: translateX(0); transition: transform @transitionTime ease-out; }
           ~ .screen { transform: translateX(@leftPanelWidth); transition: transform @transitionTime ease-out; }
         }
       }
       &-leave {
         pointer-events: none !important;
         &::backdrop { pointer-events: none !important; }
-        > div { transform: translateX(0); pointer-events: none !important; }
+        > .panel-container { transform: translateX(0); pointer-events: none !important; }
         ~ .screen { transform: translateX(@leftPanelWidth); }
         &-active {
-          > div { transform: translateX(-@leftPanelWidth); transition: transform @transitionTime ease-out; }
+          > .panel-container { transform: translateX(-@leftPanelWidth); transition: transform @transitionTime ease-out; }
           ~ .screen { transform: translateX(0); transition: transform @transitionTime ease-out; }
         }
       }
@@ -1895,7 +1873,7 @@ small {
     left: calc(~"100vw - " @rightPanelWidth);
     width: @rightPanelWidth;
 
-    > div {
+    > .panel-container {
       .themed({
         background: linear-gradient(to right, rgba(0,0,0,0.25) 0, transparent 30px), linear-gradient(329deg, transparent, rgba(255,255,255,0.2)), @themeDarkBackground;
         .themeTransition(background);
@@ -1911,20 +1889,20 @@ small {
       &-enter {
         pointer-events: none !important;
         &::backdrop { pointer-events: none !important; }
-        > div { transform: translateX(@rightPanelWidth); }
+        > .panel-container { transform: translateX(@rightPanelWidth); }
         ~ .screen { transform: translateX(0); pointer-events: none !important; }
         &-active {
-          > div { transform: translateX(0); transition: transform @transitionTime ease-out; }
+          > .panel-container { transform: translateX(0); transition: transform @transitionTime ease-out; }
           ~ .screen { transform: translateX(-@rightPanelWidth); transition: transform @transitionTime ease-out; }
         }
       }
       &-leave {
         pointer-events: none !important;
         &::backdrop { pointer-events: none !important; }
-        > div { transform: translateX(0); }
+        > .panel-container { transform: translateX(0); }
         ~ .screen { transform: translateX(-@rightPanelWidth); }
         &-active {
-          > div { transform: translateX(@rightPanelWidth); transition: transform @transitionTime ease-out; }
+          > .panel-container { transform: translateX(@rightPanelWidth); transition: transform @transitionTime ease-out; }
           ~ .screen { transform: translateX(0); transition: transform @transitionTime ease-out; }
         }
       }
@@ -1971,6 +1949,37 @@ small {
   }
 }
 
+
+.overlay-container {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  z-index: 999;
+}
+
+#window-close {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: @dragbarHeight;
+  height: @dragbarHeight;
+  line-height: @dragbarHeight;
+  font-size: 18px;
+  margin: 0;
+  z-index: 9001;
+  opacity: 0.25;
+  .nondraggable;
+  &:before {
+    content: '\f00D';
+  }
+  &:hover, &:active {
+    &:before {
+      content: '\f057';
+    }
+  }
+}
 
 .reconnect-button {
   position: fixed;

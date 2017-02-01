@@ -1,8 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { CloseButton } from './Titlebar';
+import { OverlayContainer } from './Overlay';
 
-export default class Modal extends React.Component {
+export class Modal extends React.Component {
+  static defaultProps = {
+    closable: true
+  };
   showIfNeeded(self) {
     if (!self.open) {
       console.log("showModal");
@@ -55,14 +59,16 @@ export default class Modal extends React.Component {
     // the dialog for transition effects. 
     return (
       <dialog {...props}>
-        <div>
+        <div className="panel-container">
           <div>
             {this.props.children}
           </div>
         </div>
+        <OverlayContainer modal={this} name="a"/>
         <CloseButton/>
       </dialog>
     )
   }
 }
-Modal.defaultProps = { closable: true };
+
+export default Modal;
