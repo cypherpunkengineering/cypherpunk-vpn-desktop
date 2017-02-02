@@ -21,7 +21,7 @@ cd ..\..\out\win
 echo * Uploading build to builds server...
 scp -scp -P 92 -i "%USERPROFILE%\.ssh\pscp.ppk" cypherpunk-*.exe "upload@builds-upload.cypherpunk.engineering:/data/builds/"
 echo * Uploading build to google cloud storage bucket...
-gsutil cp cypherpunk-*.exe gs://builds.cypherpunk.com/builds/windows/
+"C:\Program Files (x86)\Google\Cloud SDK\google-cloud-sdk\bin\gsutil" cp cypherpunk-*.exe gs://builds.cypherpunk.com/builds/windows/
 
 echo done
 

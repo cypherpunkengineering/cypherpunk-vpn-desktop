@@ -10,6 +10,7 @@ export BUILD_NUMBER="$(printf '%05d' "${BUILD_NUMBER}")"
 
 # Fix path
 export PATH=$PATH:/usr/local/bin
+export PATH=$PATH:$HOME/Library/google-cloud-sdk/bin
 
 # Use nvm to set nodejs version
 export NVM_DIR="$HOME/.nvm"
