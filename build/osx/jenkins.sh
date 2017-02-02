@@ -35,6 +35,8 @@ make vpn great again
 
 # Archive build artifacts
 scp -P92 ../../out/osx/cypherpunk-*.pkg upload@builds-upload.cypherpunk.engineering:/data/builds/ || echo "* Warning: failed to upload build"
+# upload build to google cloud storage bucket
+gsutil cp ../../out/osx/cypherpunk-*.pkg gs://builds.cypherpunk.com/builds/macos/
 
 # Done
 exit 0

@@ -16,6 +16,8 @@ export PATH=$PATH:/usr/local/bin
 
 # Archive build artifacts
 scp -P92 ../../out/cypherpunk-*.deb upload@builds-upload.cypherpunk.engineering:/data/builds/ || echo "* Warning: failed to upload build"
+# upload build to google cloud storage bucket
+gsutil cp ../../out/cypherpunk-*.deb gs://builds.cypherpunk.com/builds/debian/
 
 # Done
 exit 0

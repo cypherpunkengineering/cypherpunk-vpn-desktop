@@ -18,8 +18,10 @@ if %errorlevel% neq 0 goto error
 echo cd to output dir
 cd ..\..\out\win
 
-echo * Uploading build...
+echo * Uploading build to builds server...
 scp -scp -P 92 -i "%USERPROFILE%\.ssh\pscp.ppk" cypherpunk-*.exe "upload@builds-upload.cypherpunk.engineering:/data/builds/"
+echo * Uploading build to google cloud storage bucket...
+gsutil cp cypherpunk-*.exe gs://builds.cypherpunk.com/builds/windows/
 
 echo done
 
