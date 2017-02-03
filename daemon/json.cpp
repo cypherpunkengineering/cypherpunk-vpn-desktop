@@ -69,3 +69,163 @@ namespace jsonrpc {
 		return !(lhs == rhs);
 	}
 }
+
+
+
+
+
+
+void NativeJsonObjectMapping::AddMember(MemberInfo member)
+{
+	std::string name = member.name;
+	_members.emplace(std::pair<const std::string, MemberInfo>(std::move(name), std::move(member)));
+}
+
+const NativeJsonObjectMapping::MemberInfo& NativeJsonObjectMapping::GetMember(const std::string& name)
+{
+	return _members.at(name);
+}
+
+bool NativeJsonObjectMapping::SerializeMember(const std::string& name, JsonValue& target, const Context* context)
+{
+	auto it = _members.find(name);
+	if (it != _members.end())
+	{
+		target = JsonValue(it->second.serialize(context));
+		return true;
+	}
+	return false;
+}
+
+bool NativeJsonObjectMapping::SerializeMember(const std::string& name, JsonObject& container, const Context* context)
+{
+	auto it = _members.find(name);
+	if (it != _members.end())
+	{
+		container[name] = JsonValue(it->second.serialize(context));
+		return true;
+	}
+	return false;
+}
+
+bool NativeJsonObjectMapping::SerializeMember(const std::string& name, JsonWriter& writer, const Context* context)
+{
+	auto it = _members.find(name);
+	if (it != _members.end())
+	{
+		writer.StartStructElement(name);
+		(it->second.serialize(context)).Write(writer);
+		writer.EndStructElement();
+		return true;
+	}
+	return false;
+}
+
+//bool NativeJsonObjectMapping::DeserializeMember(const std::string& name, const JsonValue& value, Context* context)
+//{
+//
+//}
+
+bool NativeJsonObjectMapping::DeserializeMember(const std::string& name, JsonValue&& value, Context* context)
+{
+	auto it = _members.find(name);
+	if (it != _members.end())
+	{
+		it->second.deserialize(std::move(value), context);
+		return true;
+	}
+	return false;
+}
+
+void NativeJsonObjectMapping::SerializeAllMembers(JsonObject& container, const Context* context)
+{
+
+}
+
+void NativeJsonObjectMapping::SerializeAllMembers(JsonWriter& writer, const Context* context)
+{
+
+}
+
+void NativeJsonObjectMapping::DeserializeAllMembers(const JsonObject& source, const Context* context)
+{
+
+}
+
+void NativeJsonObjectMapping::DeserializeAllMembersAndConsume(JsonObject& source, const Context* context)
+{
+
+}
+
+
+
+
+
+
+
+
+/*
+
+JsonValue NativeJsonObject::SerializeMember(std::string name)
+{
+	auto it = _members.find(name);
+	if (it != _members.end())
+		return it->serialize(this);
+	else if (_keep_unknown)
+	{
+		auto it2 = _unknown.find(name);
+		if (it2 != _unknown.end())
+			return it2->second;
+	}
+	throw std::out_of_range_exception("member \"" + name + "\" not found");
+}
+
+void NativeJsonObject::DeserializeMember(std::string name, JsonValue&& value)
+{
+	auto it = _members.find(name);
+	if (it != _members.end())
+		it->deserialize(this, std::move(p.second));
+	else if (_keep_unknown)
+		_unknown[name] = std::move(p.second);
+	if (_on_changed)
+		_on_changed(name);
+}
+
+void NativeJsonObject::Read(JsonObject&& src)
+{
+	for (auto& p : src)
+	{
+		DeserializeMember(p.first, std::move(p.second));
+	}
+	src.clear();
+}
+
+void NativeJsonObject::Write(JsonObject& dst)
+{
+
+}
+
+std::string NativeJsonObject::ToJson()
+{
+	std::string result;
+	ToJson([&result](const char* data, size_t size) { result.assign(data, size); });
+	return result;
+}
+
+void NativeJsonObject::ToJson(std::function<void(const char* data, size_t size)> cb)
+{
+	if (cb)
+	{
+		jsonrpc::JsonWriter writer;
+		writer.StartStruct();
+		for (auto& element : obj) {
+			writer.StartStructElement(element.first);
+			element.second.Write(writer);
+			writer.EndStructElement();
+		}
+		writer.EndStruct();
+		auto data = writer.GetData();
+		cb(data->GetData(), data->GetSize());
+	}
+}
+*/
