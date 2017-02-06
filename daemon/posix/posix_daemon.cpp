@@ -18,13 +18,12 @@
 #include <signal.h>
 #include <stdio.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #ifdef OS_LINUX
-#include <sys/types.h>
 #include <sys/wait.h>
 #endif
-
 
 void firewall_install();
 void firewall_uninstall();
@@ -735,6 +734,9 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Error: failed to set group id to %d with error %d\n", gr->gr_gid, errno);
 		return 3;
 	}
+
+	// set default umask
+	umask(S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
 	g_old_terminate_handler = std::set_terminate(terminate_handler);
 
