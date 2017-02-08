@@ -271,20 +271,21 @@ class JsonString : public JsonType, public std::string
 class JsonObject : public JsonType, public std::unordered_map<std::string, JsonValue> {};
 */
 
+#include <set>
+
 namespace json {
 
-class JsonUndefined
+class JsonValue
 {
-public:
-	constexpr JsonUndefined() {}
-};
+	template<typename ...Ts> struct empty_template {};
+	template<typename T, typename _ = void> struct is_iterable : public std::false_type {};
+	template<typename T> struct is_iterable<T, std::conditional_t<false, empty_template<decltype(std::begin(std::declval<T>())), decltype(std::end(std::declval<T>()))>, void>> : public std::true_type {};
 
-class JsonValue final
-{
 public:
-	typedef JsonUndefined Undefined;
+	typedef struct UndefinedType {} Undefined;
+	typedef std::nullptr_t Null;
 	typedef bool Boolean;
-	typedef double Number;
+	typedef double Double;
 	typedef int Int32;
 	typedef std::string String;
 	typedef std::unordered_map<String, JsonValue> Object;
@@ -297,125 +298,218 @@ public:
 		TYPE_UNDEFINED = 0x00,
 		TYPE_NULL = 0x01,
 		TYPE_BOOLEAN = 0x02,
-		TYPE_FALSE = TYPE_BOOLEAN | 0x00,
-		// all types above this line are falsy
-		TYPE_TRUE = TYPE_BOOLEAN | 0x01,
 		TYPE_NUMBER = 0x04,
 		TYPE_DOUBLE = TYPE_NUMBER | 0x00,
 		TYPE_INT32 = TYPE_NUMBER | 0x01,
 		TYPE_STRING = 0x08,
 		TYPE_OBJECT = 0x10,
 		TYPE_ARRAY = TYPE_OBJECT | 0x01,
+
+		TYPE_FROZEN = 0x80, // This JsonValue insance must not change type (e.g. this is actually a subclass with type guarantees)
+		TYPE_FLAGS = (TYPE_FROZEN),
+		TYPE_MASK = 0xFF ^ TYPE_FLAGS,
 	};
 
+private:
+	template<typename T> static auto forward_begin(std::remove_reference_t<T>& iterable) -> decltype(std::begin(iterable)) { return std::begin(iterable); }
+	template<typename T> static auto forward_begin(std::remove_reference_t<T>&& iterable) -> decltype(std::begin(iterable)) { return std::make_move_iterator(std::begin(iterable)); }
+	template<typename T> static auto forward_end(std::remove_reference_t<T>& iterable) -> decltype(std::end(iterable)) { return std::end(iterable); }
+	template<typename T> static auto forward_end(std::remove_reference_t<T>&& iterable) -> decltype(std::make_move_iterator(std::end(iterable))) { return std::make_move_iterator(std::end(iterable)); }
+
+public:
 	constexpr JsonValue() : _type(TYPE_UNDEFINED), _number(0) {}
-	constexpr JsonValue(const JsonUndefined&) : _type(TYPE_UNDEFINED), _number(0) {}
-	constexpr JsonValue(std::nullptr_t) : _type(TYPE_NULL), _number(0) {}
-	constexpr JsonValue(bool value) : _type(value ? TYPE_TRUE : TYPE_FALSE), _number(0) {}
+	constexpr JsonValue(const Undefined&) : _type(TYPE_UNDEFINED), _number(0) {}
+	constexpr JsonValue(const Null&) : _type(TYPE_NULL), _number(0) {}
+	constexpr JsonValue(bool value) : _type(TYPE_BOOLEAN), _boolean(value) {}
 	constexpr JsonValue(int value) : _type(TYPE_INT32), _int32(value) {}
 	constexpr JsonValue(double value) : _type(TYPE_DOUBLE), _number(value) {}
-	JsonValue(const String& value) : _type(TYPE_STRING), _string(new String(value)) {}
-	JsonValue(String&& value) : _type(TYPE_STRING), _string(new String(std::move(value))) {}
-	JsonValue(const Object& value) : _type(TYPE_OBJECT), _object(new Object(value)) {}
-	JsonValue(Object&& value) : _type(TYPE_OBJECT), _object(new Object(std::move(value))) {}
-	JsonValue(const Array& value) : _type(TYPE_ARRAY), _array(new Array(value)) {}
-	JsonValue(Array&& value) : _type(TYPE_ARRAY), _array(new Array(std::move(value))) {}
+	JsonValue(String value) : _type(TYPE_STRING), _string(new String(std::move(value))) {}
+	JsonValue(Object value) : _type(TYPE_OBJECT), _object(new Object(std::move(value))) {}
+	JsonValue(Array value) : _type(TYPE_ARRAY), _array(new Array(std::move(value))) {}
+	template<typename ...Args> JsonValue(Args&& ...args) : JsonValue() { Construct(std::forward<Args>(args)...); }
 
-	template<typename ...Args> JsonValue(Args&& ...args, std::enable_if_t<std::is_constructible<String, Args...>::value, void*> = 0) : _type(TYPE_STRING), _string(new String(std::forward<Args>(args)...)) {}
+	JsonValue(const JsonValue& copy) : JsonValue() { operator=(copy); }
+	JsonValue(JsonValue&& move) : JsonValue() { operator=(std::move(move)); }
 
-	template<typename ...Args> JsonValue(Args&& ...args, std::enable_if_t<std::is_constructible<Object, Args...>::value, void*> = 0) : _type(TYPE_OBJECT), _object(new Object(std::forward<Args>(args)...)) {}
-	template<typename T> JsonValue(const std::map<std::string, T>& value) : _type(TYPE_OBJECT), _object(new Object()) { InitObject(value); }
-	template<typename T> JsonValue(std::map<std::string, T>&& value) : _type(TYPE_OBJECT), _object(new Object()) { InitObject(std::move(value)); }
-	template<typename T> JsonValue(const std::unordered_map<std::string, T>& value) : _type(TYPE_OBJECT), _object(new Object()) { InitObject(value); }
-	template<typename T> JsonValue(std::unordered_map<std::string, T>&& value) : _type(TYPE_OBJECT), _object(new Object()) { InitObject(std::move(value)); }
-	template<typename T> JsonValue(const std::initializer_list<std::pair<std::string, T>>& properties, std::enable_if_t<std::is_constructible<JsonValue, T>::value, void*> = 0) : _type(TYPE_OBJECT), _object(new Object()) { InitObject(properties); }
+	~JsonValue() { Reset(); }
 
-	template<typename ...Args> JsonValue(Args&& ...args, std::enable_if_t<std::is_constructible<Array, Args...>::value, void*> = 0) : _type(TYPE_ARRAY), _array(new Array(std::forward<Args>(args)...)) {}
-	template<typename T> JsonValue(const std::vector<T>& values, std::enable_if_t<std::is_constructible<JsonValue, T>::value, void*> = 0) : _type(TYPE_ARRAY), _array(new Array()) { InitArray(values); }
-	template<typename T> JsonValue(std::vector<T>&& values, std::enable_if_t<std::is_constructible<JsonValue, T>::value, void*> = 0) : _type(TYPE_ARRAY), _array(new Array()) { InitArray(std::move(values)); }
-
-	~JsonValue()
+private:
+	Type SetType(Type type)
 	{
-		if (_type & (TYPE_STRING | TYPE_OBJECT))
-		{
-			if (_type == TYPE_STRING) delete _string;
-			else if (_type == TYPE_OBJECT) delete _object;
-			else if (_type == TYPE_ARRAY) delete _array;
-		}
-		_type = TYPE_UNDEFINED;
+		if (!CanChangeType(type))
+			throw std::invalid_argument("Attempted to change type of a typed/frozen JsonValue");
+		Type old = type;
+		_type = (Type)((_type & TYPE_FLAGS) | (type &~ TYPE_FLAGS));
+		return old;
 	}
 
-	template<typename T>
-	void InitObject(T&& enumerable)
-	{
-		try { for (auto& p : enumerable) { _object->emplace(std::move(p)); } }
-		catch (...) { Reset(); throw; }
-	}
-	template<typename T>
-	void InitArray(T&& enumerable)
-	{
-		try { for (auto& v : enumerable) { _array->emplace_back(std::move(v)); } }
-		catch (...) { Reset(); throw; }
-	}
+	void Construct() { SetType(TYPE_UNDEFINED); }
+	void Construct(const Undefined&) { SetType(TYPE_UNDEFINED); }
+	void Construct(const Null&) { SetType(TYPE_NULL); }
+	Boolean& Construct(Boolean value) { SetType(TYPE_BOOLEAN); return _boolean = value; }
+	Int32& Construct(Int32 value) { SetType(TYPE_INT32); return _int32 = value; }
+	Double& Construct(Double value) { SetType(TYPE_DOUBLE); return _number = value; }
+	String& Construct(const String&  value) { SetType(TYPE_STRING); return *(_string = new String(value)); }
+	String& Construct(      String&& value) { SetType(TYPE_STRING); return *(_string = new String(std::move(value))); }
+	Object& Construct(const Object&  value) { SetType(TYPE_OBJECT); return *(_object = new Object(value)); }
+	Object& Construct(      Object&& value) { SetType(TYPE_OBJECT); return *(_object = new Object(std::move(value))); }
+	Array & Construct(const Array &  value) { SetType(TYPE_ARRAY ); return *(_array  = new Array (value)); }
+	Array & Construct(      Array && value) { SetType(TYPE_ARRAY ); return *(_array  = new Array (std::move(value))); }
+	template<typename T> std::enable_if_t<is_iterable<T>::value> Construct(T&& iterable) { Construct(forward_begin<T>(iterable), forward_end<T>(iterable)); }
+	template<typename T> std::enable_if_t<std::is_assignable<char, decltype(*std::declval<T>())>::value, String&> Construct(T&& first, T&& last) { SetType(TYPE_STRING); return *(_string = new String(std::forward<T>(first), std::forward<T>(last))); }
+	template<typename T> std::enable_if_t<!std::is_assignable<char, decltype(*std::declval<T>())>::value && std::is_assignable<std::pair<const std::string, JsonValue>, decltype(*std::declval<T>())>::value, Object&> Construct(T&& first, T&& last) { SetType(TYPE_OBJECT); return *(_object = new Object(std::forward<T>(first), std::forward<T>(last))); }
+	template<typename T> std::enable_if_t<!std::is_assignable<char, decltype(*std::declval<T>())>::value && std::is_assignable<JsonValue, decltype(*std::declval<T>())>::value, Array&> Construct(T&& first, T&& last) { SetType(TYPE_ARRAY); return *(_array = new Array(std::forward<T>(first), std::forward<T>(last))); }
+	//String& Construct(const std::initializer_list<char>& l) { SetType(TYPE_STRING); return *(_string = new String(l)); }
+	//Object& Construct(const std::initializer_list<std::pair<const std::string, JsonValue>>& l) { SetType(TYPE_OBJECT); return *(_object = new Object(l)); }
+	//Array& Construct(const std::initializer_list<JsonValue>& l) { SetType(TYPE_ARRAY); return *(_array = new Array(l)); }
 
-	bool IsUndefined() const { return _type == TYPE_UNDEFINED; }
-	bool IsNull() const { return _type == TYPE_NULL; }
-	bool IsBoolean() const { return (_type & TYPE_BOOLEAN) != 0; }
-	bool IsTrue() const { return _type == TYPE_TRUE; }
-	bool IsFalse() const { return _type == TYPE_FALSE; }
+public:
+	constexpr Type GetType() const { return (Type)(_type & TYPE_MASK); }
 
-	bool IsTruthy() const { return operator bool(); }
-	bool IsFalsy() const { return !operator bool(); }
+	bool CanChangeType() const { return (_type & (TYPE_FROZEN)) == 0; }
+	bool CanChangeType(Type other) const { return !CanChangeType() && GetType() != other; }
+	void Freeze() { _type = (Type)(_type | TYPE_FROZEN); }
+	void Unfreeze() { _type = (Type)(_type & ~TYPE_FROZEN); }
+
+	constexpr bool IsUndefined() const { return GetType() == TYPE_UNDEFINED; }
+	constexpr bool IsNull() const { return GetType() == TYPE_NULL; }
+	constexpr bool IsBoolean() const { return (GetType() & TYPE_BOOLEAN) != 0; }
+	constexpr bool IsNumber() const { return (GetType() & TYPE_NUMBER) != 0; }
+	constexpr bool IsDouble() const { return GetType() == TYPE_DOUBLE; }
+	constexpr bool IsInt32() const { return GetType() == TYPE_INT32; }
+	bool IsString() const { return GetType() == TYPE_STRING; }
+	bool IsObject() const { return GetType() == TYPE_OBJECT; }
+	bool IsArray() const { return GetType() == TYPE_ARRAY; }
+
+	constexpr bool IsTrue() const { return GetType() == TYPE_BOOLEAN && _boolean; }
+	constexpr bool IsFalse() const { return GetType() == TYPE_BOOLEAN && !_boolean; }
+	constexpr bool IsTruthy() const { return operator bool(); }
+	constexpr bool IsFalsy() const { return !operator bool(); }
 
 	constexpr operator bool() const
 	{
-		if (_type < TYPE_TRUE) return false;
-		if (_type & (TYPE_NUMBER | TYPE_STRING))
+		Type type = GetType();
+		if (type < TYPE_BOOLEAN) return false;
+		if (type & (TYPE_NUMBER | TYPE_STRING))
 		{
-			return (_type & TYPE_STRING) ? !_string->empty() :
-				(_type & 1) ? _int32 != 0 : _number != 0;
+			return (type & TYPE_STRING) ? !_string->empty() :
+				(type & 1) ? _int32 != 0 : _number != 0;
 		}
 		return true;
 	}
 
-	/*
-	static constexpr Type TypeOf(const JsonUndefined&) { return TYPE_UNDEFINED; }
-	static constexpr Type TypeOf(const std::nullptr_t&) { return TYPE_NULL; }
-	static constexpr Type TypeOf(bool value) { return value ? TYPE_TRUE : TYPE_FALSE; }
-	static constexpr Type TypeOf(int) { return TYPE_INT32; }
-	static constexpr Type TypeOf(double) { return TYPE_DOUBLE; }
-
-	static constexpr Type TypeOf(const std::string&) { return TYPE_STRING; }
-	template<typename T> static constexpr std::enable_if_t<std::is_constructible<JsonValue, T>::value, Type> TypeOf(const std::map<std::string, T>&) { return TYPE_OBJECT; }
-	template<typename T> static constexpr std::enable_if_t<std::is_constructible<JsonValue, T>::value, Type> TypeOf(const std::unordered_map<std::string, T>&) { return TYPE_OBJECT; }
-	template<typename T> static constexpr std::enable_if_t<std::is_constructible<JsonValue, T>::value, Type> TypeOf(const std::vector<T>&) { return TYPE_ARRAY; }
-
-	template<typename T> static constexpr std::enable_if_t<std::is_constructible<String, T>::value, Type> TypeOf(const T&) { return TYPE_STRING; }
-	template<typename T> static constexpr std::enable_if_t<std::is_constructible<Object, T>::value, Type> TypeOf(const T&) { return TYPE_OBJECT; }
-	template<typename T> static constexpr std::enable_if_t<std::is_constructible<Array, T>::value, Type> TypeOf(const T&) { return TYPE_ARRAY; }
-	template<typename T> static constexpr std::enable_if_t<std::is_constructible<std::map<std::string, >, T>::value, Type> TypeOf(const T&) { return TYPE_; }
-	template<typename T> static constexpr std::enable_if_t<std::is_constructible<JsonValue, T>::value, Type> TypeOf(const T&) { return TYPE_; }
-	template<typename T> static constexpr std::enable_if_t<std::is_constructible<JsonValue, T>::value, Type> TypeOf(const T&) { return TYPE_; }
-	template<typename T> static constexpr std::enable_if_t<std::is_constructible<JsonValue, T>::value, Type> TypeOf(const T&) { return TYPE_; }
-	*/
-
-	template<typename T> JsonValue& operator=(T&& value) { return Reset(std::forward<T>(value)); }
-
-
+	template<typename T> std::enable_if_t<std::is_assignable<String, T>::value, JsonValue&> operator=(T&& value)
+	{
+		if (IsString()) { *_string = std::forward<T>(value); return *this; }
+		else return Reset(std::forward<T>(value));
+	}
+	template<typename T> std::enable_if_t<std::is_assignable<Object, T>::value, JsonValue&> operator=(T&& value)
+	{
+		if (IsObject()) { *_object = std::forward<T>(value); return *this; }
+		else return Reset(std::forward<T>(value));
+	}
+	template<typename T> std::enable_if_t<std::is_assignable<Array, T>::value, JsonValue&> operator=(T&& value)
+	{
+		if (IsArray()) { *_array = std::forward<T>(value); return *this; }
+		else return Reset(std::forward<T>(value));
+	}
+	JsonValue& operator=(const JsonValue& copy)
+	{
+		if (&copy == this)
+			return *this;
+		Type type = GetType(), other = copy.GetType();
+		if (type == other)
+		{
+			switch (type)
+			{
+			case TYPE_STRING: *_string = *copy._string; return *this;
+			case TYPE_OBJECT: *_object = *copy._object; return *this;
+			case TYPE_ARRAY: *_array = *copy._array; return *this;
+			default: break;
+			}
+		}
+		else if (!CanChangeType())
+			throw std::invalid_argument("Attempted to change type of a frozen JsonValue");
+		else
+		{
+			Reset();
+			switch (other)
+			{
+			case TYPE_BOOLEAN: _boolean = copy._boolean; break;
+			case TYPE_DOUBLE: _number = copy._number; break;
+			case TYPE_INT32: _int32 = copy._int32; break;
+			case TYPE_STRING: _string = new String(*copy._string); break;
+			case TYPE_OBJECT: _object = new Object(*copy._object); break;
+			case TYPE_ARRAY: _array = new Array(*copy._array); break;
+			default: break;
+			}
+			SetType(copy._type);
+		}
+		return *this;
+	}
+	JsonValue& operator=(JsonValue&& move)
+	{
+		if (&move == this)
+			return *this;
+		Type type = GetType(), other = move.GetType();
+		if (!CanChangeType(other))
+			throw std::invalid_argument("Attempted to change type of a frozen JsonValue");
+		if (move.CanChangeType(TYPE_UNDEFINED))
+		{
+			// Fastest case; just steal state and leave the other as undefined
+			Reset();
+			switch (other)
+			{
+			case TYPE_BOOLEAN: _boolean = move._boolean; break;
+			case TYPE_DOUBLE: _number = move._number; break;
+			case TYPE_INT32: _int32 = move._int32; break;
+			case TYPE_STRING: _string = move._string; break;
+			case TYPE_OBJECT: _object = move._object; break;
+			case TYPE_ARRAY: _array = move._array; break;
+			default: break;
+			}
+			SetType(move.SetType(TYPE_UNDEFINED));
+		}
+		else if (type == other)
+		{
+			// Can swap underlying objects and leave the other side with empty remains
+			switch (type)
+			{
+			case TYPE_BOOLEAN: _boolean = move._boolean; break;
+			case TYPE_DOUBLE: _number = move._number; break;
+			case TYPE_INT32: _int32 = move._int32; break;
+			case TYPE_STRING: _string->clear(); std::swap(_string, move._string);  break;
+			case TYPE_OBJECT: _object->clear(); std::swap(_object, move._object); break;
+			case TYPE_ARRAY: _array->clear(); std::swap(_array, move._array); break;
+			default: break;
+			}
+		}
+		else
+		{
+			// No choice but to copy assign
+			return operator=(static_cast<const JsonValue&>(move));
+		}
+		return *this;
+	}
+	// Fallback assignment operator if nothing else matched
+	template<typename T> std::enable_if_t<!std::is_assignable<String, T>::value && !std::is_assignable<Object, T>::value && !std::is_assignable<Array, T>::value, JsonValue&> operator=(T&& value) { return Reset(std::forward<T>(value)); }
 
 protected:
 	template<typename ...Args>
 	JsonValue& Reset(Args&& ...args)
 	{
-		this->~JsonValue();
-		try
+		Reset();
+		Construct(std::forward<Args>(args)...);
+		return *this;
+	}
+	JsonValue& Reset()
+	{
+		Type type = SetType(TYPE_UNDEFINED);
+		if (type & (TYPE_STRING | TYPE_OBJECT))
 		{
-			new(this) JsonValue(std::forward<Args>(args)...);
-		}
-		catch (...)
-		{
-			new(this) JsonValue();
-			throw;
+			if (type == TYPE_STRING) delete _string;
+			else if (type == TYPE_OBJECT) delete _object;
+			else if (type == TYPE_ARRAY) delete _array;
 		}
 		return *this;
 	}
@@ -424,12 +518,59 @@ protected:
 	Type _type;
 	union
 	{
-		Number _number;
+		Boolean _boolean;
+		Double _number;
 		Int32 _int32;
 		String* _string;
 		Object* _object;
 		Array* _array;
 	};
 };
+
+template<JsonValue::Type type>
+class TypedJsonValue : public JsonValue
+{
+protected:
+	template<typename T> TypedJsonValue(T&& value) : JsonValue(std::forward<T>(value)) { Freeze(); }
+	template<typename T> auto CheckType(T&& value) -> decltype(std::forward<T>(value)) { if (value.GetType() != type) throw std::invalid_argument("Attempted to change type of a frozen JsonValue"); return std::forward<T>(value); }
+public:
+	TypedJsonValue(const TypedJsonValue&) = default;
+	TypedJsonValue(TypedJsonValue&&) = default;
+	TypedJsonValue(const JsonValue& copy) : JsonValue(CheckType(copy)) { Freeze(); }
+	TypedJsonValue(JsonValue&& move) : JsonValue(std::move(CheckType(move))) { Freeze(); }
+
+	TypedJsonValue& operator=(const TypedJsonValue&) = default;
+	TypedJsonValue& operator=(TypedJsonValue&&) = default;
+	TypedJsonValue& operator=(const JsonValue& copy) { JsonValue::operator=(CheckType(copy)); return *this; }
+	TypedJsonValue& operator=(JsonValue&& move) { JsonValue::operator=(std::move(CheckType(move))); return *this; }
+};
+
+struct JsonUndefined : public JsonValue { JsonUndefined() : JsonValue() { Freeze(); } };
+struct JsonNull : public JsonValue { JsonNull() : JsonValue(nullptr) { Freeze(); } };
+struct JsonBoolean : public JsonValue { JsonBoolean(Boolean value) : JsonValue(value) { Freeze(); } };
+struct JsonDouble : public JsonValue { JsonDouble(Double value) : JsonValue(value) { Freeze(); } };
+struct JsonInt32 : public JsonValue { JsonInt32(Int32 value) : JsonValue(value) { Freeze(); } };
+struct JsonString : public JsonValue { JsonString(String value) : JsonValue(value) { Freeze(); } };
+struct JsonObject : public JsonValue { JsonObject(Object value) : JsonValue(value) { Freeze(); } };
+struct JsonArray : public JsonValue { JsonArray(Array value) : JsonValue(value) { Freeze(); } };
+
+static inline void test()
+{
+	JsonValue u;
+	JsonValue n(nullptr);
+	JsonValue t(true);
+	JsonValue f(false);
+	JsonValue i(1);
+	JsonValue d(1.0);
+	JsonValue s("1");
+	JsonObject o({ { "n", nullptr }, { "t", true }, { "i", 1 }, { "d", 1.0 }, { "s", "s" } });
+	JsonArray a({ nullptr, true, false, 1, 1.0, "1", o });
+
+	std::set<JsonValue> ha({ nullptr, true, false, 1, 1.0, "1", o });
+	JsonValue gas(ha);
+
+	JsonValue::String ss;
+	ss = s;
+}
 
 }
