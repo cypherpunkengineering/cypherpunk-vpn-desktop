@@ -10,10 +10,14 @@ import { DEFAULT_REGION_DATA, classList } from '../util.js';
 const { session } = require('electron').remote;
 
 
+function nonEmpty(obj) {
+  return (typeof obf === 'object' && obj && Object.keys(obj).length > 0) ? obj : null;
+}
+
 function refreshRegionList() {
-  var countryNames = daemon.config.countryNames || DEFAULT_REGION_DATA.countryNames;
-  var regionNames = daemon.config.regionNames || Array.toDict(DEFAULT_REGION_DATA.regions, x => x[0], x => x[1]);
-  var regionOrder = daemon.config.regionOrder || DEFAULT_REGION_DATA.regions.map(x => x[0]);
+  var countryNames = nonEmpty(daemon.config.countryNames) || DEFAULT_REGION_DATA.countryNames;
+  var regionNames = nonEmpty(daemon.config.regionNames) || Array.toDict(DEFAULT_REGION_DATA.regions, x => x[0], x => x[1]);
+  var regionOrder = nonEmpty(daemon.config.regionOrder) || DEFAULT_REGION_DATA.regions.map(x => x[0]);
   return Promise.resolve().then(() => {
     if (countryNames !== daemon.config.countryNames || regionNames !== daemon.config.regionNames || regionOrder !== daemon.config.regionOrder) {
       return daemon.call.applySettings({ countryNames, regionNames, regionOrder });
