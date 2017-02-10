@@ -11,6 +11,14 @@
 #include <jsonrpc-lean/jsonreader.h>
 #include <jsonrpc-lean/jsonwriter.h>
 
+std::string ToJson(const JsonValue& value)
+{
+	JsonWriter writer;
+	value.Write(writer);
+	auto data = writer.GetData();
+	return std::string(data->GetData(), data->GetSize());
+}
+
 JsonObject ReadJsonFile(const std::string& path)
 {
 	std::string text = ReadFile(path);
@@ -32,118 +40,53 @@ void WriteJsonFile(const std::string& path, const JsonObject& obj)
 	WriteFile(path, data->GetData(), data->GetSize());
 }
 
-namespace jsonrpc {
-	bool operator ==(const JsonValue& lhs, const JsonValue& rhs)
+
+void NativeJsonObject::ReadFromDisk(const std::string& path, const char* type)
+{
+	try
 	{
-		auto type = lhs.GetType();
-		if (type == rhs.GetType())
+		for (auto& p : ReadJsonFile(path))
 		{
-			switch (type)
+			try
 			{
-			case jsonrpc::Value::Type::ARRAY:
-				return lhs.AsArray() == rhs.AsArray();
-			case jsonrpc::Value::Type::BINARY:
-				return lhs.AsBinary() == rhs.AsBinary();
-			case jsonrpc::Value::Type::BOOLEAN:
-				return lhs.AsBoolean() == rhs.AsBoolean();
-			case jsonrpc::Value::Type::DATE_TIME:
-				return lhs.AsDateTime() == rhs.AsDateTime();
-			case jsonrpc::Value::Type::DOUBLE:
-				return lhs.AsDouble() == rhs.AsDouble();
-			case jsonrpc::Value::Type::INTEGER_32:
-				return lhs.AsInteger32() == rhs.AsInteger32();
-			case jsonrpc::Value::Type::INTEGER_64:
-				return lhs.AsInteger64() == rhs.AsInteger64();
-			case jsonrpc::Value::Type::NIL:
-				return true;
-			case jsonrpc::Value::Type::STRING:
-				return lhs.AsString() == rhs.AsString();
-			case jsonrpc::Value::Type::STRUCT:
-				return lhs.AsStruct() == rhs.AsStruct();
+				JsonObject::operator[](p.first) = std::move(p.second);
+				if (_on_changed) _on_changed(p.first.c_str());
+			}
+			catch (std::exception& e)
+			{
+				LOG(WARNING) << "Incorrect data type " << (int)p.second.GetType() << " for " << type << " item " << p.first << ", ignoring";
 			}
 		}
-		return false;
 	}
-	bool operator !=(const JsonValue& lhs, const JsonValue& rhs)
+	catch (const std::system_error& e)
 	{
-		return !(lhs == rhs);
+		LOG(WARNING) << "Couldn't open " << type << " file: " << e;
 	}
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-
-JsonValue NativeJsonObject::SerializeMember(std::string name)
-{
-	auto it = _members.find(name);
-	if (it != _members.end())
-		return it->serialize(this);
-	else if (_keep_unknown)
+	catch (const std::exception& e)
 	{
-		auto it2 = _unknown.find(name);
-		if (it2 != _unknown.end())
-			return it2->second;
+		LOG(ERROR) << "Invalid " << type << " file: " << e;
 	}
-	throw std::out_of_range_exception("member \"" + name + "\" not found");
 }
 
-void NativeJsonObject::DeserializeMember(std::string name, JsonValue&& value)
+void NativeJsonObject::WriteToDisk(const std::string& path, const char* type) const
 {
-	auto it = _members.find(name);
-	if (it != _members.end())
-		it->deserialize(this, std::move(p.second));
-	else if (_keep_unknown)
-		_unknown[name] = std::move(p.second);
-	if (_on_changed)
-		_on_changed(name);
-}
-
-void NativeJsonObject::Read(JsonObject&& src)
-{
-	for (auto& p : src)
+	try
 	{
-		DeserializeMember(p.first, std::move(p.second));
+		WriteJsonFile(path, *this);
 	}
-	src.clear();
-}
-
-void NativeJsonObject::Write(JsonObject& dst)
-{
-
-}
-
-std::string NativeJsonObject::ToJson()
-{
-	std::string result;
-	ToJson([&result](const char* data, size_t size) { result.assign(data, size); });
-	return result;
-}
-
-void NativeJsonObject::ToJson(std::function<void(const char* data, size_t size)> cb)
-{
-	if (cb)
+	catch (const std::exception& e)
 	{
-		jsonrpc::JsonWriter writer;
-		writer.StartStruct();
-		for (auto& element : obj) {
-			writer.StartStructElement(element.first);
-			element.second.Write(writer);
-			writer.EndStructElement();
-		}
-		writer.EndStruct();
-		auto data = writer.GetData();
-		cb(data->GetData(), data->GetSize());
+		LOG(WARNING) << "Failed to write " << type << " file: " << e;
 	}
 }
-*/
+
+void NativeJsonObject::RemoveUnknownFields()
+{
+	for (auto it = JsonObject::begin(); it != JsonObject::end(); )
+	{
+		if (!_fields.count(it->first))
+			it = erase(it);
+		else
+			++it;
+	}
+}
