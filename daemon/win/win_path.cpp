@@ -81,6 +81,8 @@ std::string GetPredefinedFile(PredefinedFile file, EnsureExistsTag ensure_path_e
 	case DaemonExecutable: return g_argv0;
 	case ClientExecutable: return g_client_executable;
 	case OpenVPNExecutable: return GetPath(OpenVPNDir, ensure_path_exists, "cypherpunk-privacy-openvpn.exe");
+	case ConfigFile: return GetPath(SettingsDir, ensure_path_exists, "config.json");
+	case AccountFile: return GetPath(SettingsDir, ensure_path_exists, "account.json");
 	case SettingsFile: return GetPath(SettingsDir, ensure_path_exists, "settings.json");
 	case TapInstallExecutable: return GetPath(TapDriverDir, ensure_path_exists, "tapinstall.exe");
 	default:

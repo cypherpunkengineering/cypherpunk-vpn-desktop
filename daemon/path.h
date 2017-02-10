@@ -20,6 +20,8 @@ enum PredefinedFile
 	DaemonExecutable,
 	ClientExecutable,
 	OpenVPNExecutable,
+	ConfigFile,
+	AccountFile,
 	SettingsFile,
 #ifdef WIN32
 	TapInstallExecutable,

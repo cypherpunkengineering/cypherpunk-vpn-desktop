@@ -18,6 +18,7 @@
 #include <memory>
 #include <set>
 #include <thread>
+#include <unordered_set>
 
 extern class CypherDaemon* g_daemon;
 
@@ -80,7 +81,9 @@ public:
 	virtual void OnOpenVPNStdErr(OpenVPNProcess* process, const asio::error_code& error, std::string line);
 	virtual void OnOpenVPNCallback(OpenVPNProcess* process, std::string args);
 	virtual void OnOpenVPNProcessExited(OpenVPNProcess* process);
-	virtual void OnSettingsChanged(const std::vector<std::string>& names);
+	virtual void OnConfigChanged(const char* name);
+	virtual void OnAccountChanged(const char* name);
+	virtual void OnSettingsChanged(const char* name);
 
 protected:
 	typedef websocketpp::connection_hdl Connection;
@@ -98,19 +101,24 @@ protected:
 	void OnReceiveMessage(Connection con, WebSocketServer::message_ptr msg);
 	void OnStateChanged(unsigned int state_changed_flags);
 
+	void NotifyChanges();
+
 	void PingServers();
 	void WriteOpenVPNProfile(std::ostream& out, const JsonObject& server, OpenVPNProcess* process);
 
-	JsonObject MakeStateObject();
-	JsonObject MakeConfigObject();
-	JsonObject MakeAccountObject();
+	JsonObject MakeConfigObject(const std::unordered_set<std::string>* keys = nullptr);
+	JsonObject MakeAccountObject(const std::unordered_set<std::string>* keys = nullptr);
+	JsonObject MakeSettingsObject(const std::unordered_set<std::string>* keys = nullptr);
+	JsonObject MakeStateObject(int flags = -1);
 
 	// Get one of the datasets (state, settings or config).
 	JsonObject RPC_get(const std::string& type);
-	// Apply one or more settings.
-	void RPC_applySettings(const JsonObject& settings);
 	// Set the user account info. FIXME: should probably have the daemon be in charge of this instead, or at least validate the information independently from the client.
 	void RPC_setAccount(const JsonObject& account);
+	// Apply config settings (settings that are not supposed to be touched directly by the user)
+	void RPC_applyConfig(const JsonObject& config);
+	// Apply one or more settings.
+	void RPC_applySettings(const JsonObject& settings);
 	// Connect to the currently configured server. Returns false if already
 	// connected and no changes are required.
 	bool RPC_connect();
@@ -131,6 +139,11 @@ protected:
 	int64_t _bytesReceived, _bytesSent;
 	bool _needsReconnect;
 	JsonObject _ping_stats;
+	struct {
+		std::unordered_set<std::string> config, account, settings;
+		int state;
+	} _to_notify;
+	bool _notify_scheduled;
 	//std::map<std::string, ServerInfo> _servers;
 
 protected:

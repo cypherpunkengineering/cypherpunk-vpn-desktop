@@ -45,6 +45,8 @@ std::string GetPredefinedFile(PredefinedFile file, EnsureExistsTag ensure_path_e
 #else
 		: GetPath(BaseDir, "daemon", "third_party", "openvpn_osx", "openvpn");
 #endif
+	case ConfigFile: return GetPath(SettingsDir, ensure_path_exists, "config.json");
+	case AccountFile: return GetPath(SettingsDir, ensure_path_exists, "account.json");
 	case SettingsFile: return GetPath(SettingsDir, ensure_path_exists, "settings.json");
 	default:
 		LOG(ERROR) << "Unknown file";
