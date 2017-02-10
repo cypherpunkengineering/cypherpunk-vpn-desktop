@@ -20,7 +20,7 @@ function refreshRegionList() {
   var regionOrder = nonEmpty(daemon.config.regionOrder) || DEFAULT_REGION_DATA.regions.map(x => x[0]);
   return Promise.resolve().then(() => {
     if (countryNames !== daemon.config.countryNames || regionNames !== daemon.config.regionNames || regionOrder !== daemon.config.regionOrder) {
-      return daemon.call.applySettings({ countryNames, regionNames, regionOrder });
+      return daemon.call.applyConfig({ countryNames, regionNames, regionOrder });
     }
   }).then(() => {
     return server.get('/api/v0/location/world').then(response => {
@@ -30,7 +30,7 @@ function refreshRegionList() {
     }, err => {});
   }).then(() => {
     if (countryNames !== daemon.config.countryNames || regionNames !== daemon.config.regionNames || regionOrder !== daemon.config.regionOrder) {
-      return daemon.call.applySettings({ countryNames, regionNames, regionOrder });
+      return daemon.call.applyConfig({ countryNames, regionNames, regionOrder });
     }
   }).then(() => { countryNames, regionNames, regionOrder });
 }
@@ -44,7 +44,7 @@ function refreshLocationList() {
       }
     });
     var regions = Object.mapValues(Array.toMultiDict(Object.values(locations), s => s.region), (r,c) => Object.mapValues(Array.toMultiDict(c, l => l.country), (c,l) => l.map(m => m.id)));
-    var result = daemon.call.applySettings({ regions: regions, locations: locations });
+    var result = daemon.call.applyConfig({ regions: regions, locations: locations });
     // Workaround: ensure region selection is not empty
     if (!locations[daemon.settings.location] || locations[daemon.settings.location].disabled) {
       for (let l of Object.values(locations)) {
