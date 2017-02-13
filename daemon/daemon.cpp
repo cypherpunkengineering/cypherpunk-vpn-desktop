@@ -35,6 +35,7 @@ using namespace std::placeholders;
 CypherDaemon::CypherDaemon()
 	: _rpc_client(_json_handler)
 	, _state(STARTING)
+	, _shouldConnect(false)
 	, _needsReconnect(false)
 	, _notify_scheduled(false)
 {
@@ -737,7 +738,7 @@ bool CypherDaemon::RPC_connect()
 			if (!_needsReconnect && _process->IsSameServer(settings))
 			{
 				LOG(INFO) << "No need to reconnect; new server is the same as old";
-				return true;
+				break;
 			}
 			// fallthrough
 		case DISCONNECTING:
@@ -747,12 +748,12 @@ bool CypherDaemon::RPC_connect()
 			_state = SWITCHING;
 			OnStateChanged(STATE | BYTECOUNT);
 			_process->SendManagementCommand("signal SIGTERM");
-			return true;
+			break;
 
 		case SWITCHING:
 			// Already switching; make sure connection is marked as stale
 			_process->stale = true;
-			return true;
+			break;
 
 		case DISCONNECTED:
 			// Connect normally.
@@ -760,12 +761,19 @@ bool CypherDaemon::RPC_connect()
 			_state = CONNECTING;
 			OnStateChanged(STATE | BYTECOUNT);
 			_io.post([this](){ DoConnect(); });
-			return true;
+			break;
 
 		default:
 			// Can't connect under other circumstances.
 			return false;
 	}
+	if (!_shouldConnect)
+	{
+		_shouldConnect = true;
+		OnStateChanged(CONNECT);
+	}
+	NotifyChanges();
+	return true;
 }
 
 void CypherDaemon::DoConnect()
@@ -967,12 +975,18 @@ void CypherDaemon::DoConnect()
 
 void CypherDaemon::RPC_disconnect()
 {
+	if (_shouldConnect)
+	{
+		_shouldConnect = false;
+		OnStateChanged(CONNECT);
+	}
 	if (_state == CONNECTING || _state == CONNECTED || _state == SWITCHING)
 	{
 		_state = DISCONNECTING;
 		OnStateChanged(STATE);
 		_process->SendManagementCommand("signal SIGTERM");
 	}
+	NotifyChanges();
 }
 
 template<typename T>

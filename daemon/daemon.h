@@ -89,8 +89,6 @@ protected:
 	typedef websocketpp::connection_hdl Connection;
 	typedef std::set<Connection, std::owner_less<Connection>> ConnectionList;
 
-	enum StateChangedFlags { STATE = 1, NEEDSRECONNECT = 2, IPADDRESS = 4, BYTECOUNT = 8, PING_STATS = 16 };
-
 	void SendToClient(Connection con, const std::shared_ptr<jsonrpc::FormattedData>& data);
 	void SendToAllClients(const std::shared_ptr<jsonrpc::FormattedData>& data);
 	void SendErrorToAllClients(const std::string& name, const std::string& description);
@@ -134,14 +132,33 @@ protected:
 	JsonRPCDispatcher _dispatcher;
 	JsonRPCClient _rpc_client;
 	std::shared_ptr<OpenVPNProcess> _process;
+	
+	// Bitfield to internally signal which state-related fields have changed
+	enum StateChangedFlags
+	{
+		CONNECT = 1,         // _shouldConnect
+		STATE = 2,           // _state
+		NEEDSRECONNECT = 4,  // _needsReconnect
+		IPADDRESS = 8,       // _localIP, _remoteIP
+		BYTECOUNT = 16,      // _bytesSent, _bytesReceived
+		PING_STATS = 32,     // _ping_stats
+	};
+
+	// Client has clicked the connect button and wants to be online
+	bool _shouldConnect;
+	// Actual current daemon/connection state
 	State _state;
-	std::string _localIP, _remoteIP;
-	int64_t _bytesReceived, _bytesSent;
+	// Some setting has changed which requires a reconnect (i.e. call RPC_connect again)
 	bool _needsReconnect;
+	// IP addresses for the current connection (invalid when _state != CONNECTED)
+	std::string _localIP, _remoteIP, _publicIP;
+	// Traffic stats
+	int64_t _bytesReceived, _bytesSent;
+	// Ping statistics for 
 	JsonObject _ping_stats;
 	struct {
 		std::unordered_set<std::string> config, account, settings;
-		int state;
+		int state; // StateChangedFlags
 	} _to_notify;
 	bool _notify_scheduled;
 	//std::map<std::string, ServerInfo> _servers;
