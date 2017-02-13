@@ -705,9 +705,9 @@ void CypherDaemon::WriteOpenVPNProfile(std::ostream& out, const JsonObject& serv
 
 	// Include hardcoded certificate authority
 	out << "<ca>" << endl;
-	for (auto& ca : g_certificate_authorities)
-		for (auto& line : ca)
-			out << line << endl;
+	for (auto& ca : g_config.certificateAuthorities())
+		for (auto& line : ca.AsArray())
+			out << line.AsString() << endl;
 	out << "</ca>" << endl;
 }
 

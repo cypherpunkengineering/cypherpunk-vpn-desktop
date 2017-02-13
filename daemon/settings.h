@@ -2,8 +2,6 @@
 
 #include "json.h"
 
-extern const std::vector<std::vector<std::string>> g_certificate_authorities;
-
 class Config : public NativeJsonObject
 {
 public:
@@ -16,7 +14,7 @@ public:
 	JsonField(JsonObject, regionNames, {});
 	JsonField(JsonArray, regionOrder, {});
 
-	JsonArray certificateAuthorities() const;
+	const JsonArray& certificateAuthorities() const;
 };
 extern Config g_config;
 
