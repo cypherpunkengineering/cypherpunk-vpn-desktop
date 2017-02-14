@@ -535,22 +535,8 @@ public:
 	}
 	virtual void ApplyFirewallSettings() override
 	{
-		bool is_connected;
-		switch (_state)
-		{
-		case CONNECTING:
-		case CONNECTED:
-		case DISCONNECTING:
-		case SWITCHING:
-			is_connected = true;
-			break;
-		default:
-			is_connected = false;
-			break;
-		}
-
 		auto mode = g_settings.firewall();
-		if (!_connections.empty() && (mode == "on" || (is_connected && mode == "auto")))
+		if (!_connections.empty() && (mode == "on" || (_shouldConnect && mode == "auto")))
 		{
 #if OS_OSX
 			firewall_set_anchor_enabled("100.killswitch", true);

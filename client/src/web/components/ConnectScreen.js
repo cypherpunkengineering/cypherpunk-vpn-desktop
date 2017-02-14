@@ -40,7 +40,7 @@ class FirewallWarning extends DaemonAware(React.Component) {
     if (state.state) this.onChange();
   }
   shouldDisplay() {
-    return daemon.settings.firewall === 'on' && daemon.state.state === 'DISCONNECTED';
+    return daemon.settings.firewall === 'on' && (!daemon.state.connect || daemon.state.state === 'DISCONNECTED');
   }
   onChange() {
     var visible = this.shouldDisplay();

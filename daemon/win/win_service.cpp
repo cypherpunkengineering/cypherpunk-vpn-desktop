@@ -464,24 +464,10 @@ public:
 			} \
 		} while(false)
 
-		bool is_connected;
-		switch (_state)
-		{
-		case CONNECTING:
-		case CONNECTED:
-		case DISCONNECTING:
-		case SWITCHING:
-			is_connected = true;
-			break;
-		default:
-			is_connected = false;
-			break;
-		}
-
 		auto adapters = win_get_tap_adapters();
 
 		auto mode = g_settings.firewall();
-		if (!_connections.empty() && (mode == "on" || (is_connected && mode == "auto")))
+		if (!_connections.empty() && (mode == "on" || (_shouldConnect && mode == "auto")))
 		{
 			try
 			{

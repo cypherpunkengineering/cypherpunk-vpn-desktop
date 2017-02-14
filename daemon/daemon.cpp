@@ -413,7 +413,7 @@ void CypherDaemon::NotifyChanges()
 	if (config.count("locations"))
 		PingServers();
 
-	if (state & STATE || settings.count("firewall") || settings.count("allowLAN"))
+	if (state & (STATE | CONNECT) || settings.count("firewall") || settings.count("allowLAN"))
 		ApplyFirewallSettings();
 }
 
@@ -438,6 +438,7 @@ JsonObject CypherDaemon::MakeSettingsObject(const std::unordered_set<std::string
 JsonObject CypherDaemon::MakeStateObject(int flags)
 {
 	JsonObject state;
+	if (flags & CONNECT)        state["connect"]        = _shouldConnect;
 	if (flags & STATE)          state["state"]          = GetStateString(_state);
 	if (flags & NEEDSRECONNECT) state["needsReconnect"] = _needsReconnect;
 	if (flags & IPADDRESS)      state["localIP"]        = (_state == CONNECTED) ? JsonValue(_localIP) : nullptr;
