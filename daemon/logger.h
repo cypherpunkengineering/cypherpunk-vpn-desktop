@@ -31,11 +31,11 @@ extern class Logger* g_logger;
 
 #define LOG_ENABLED(level) (STATIC_LOG_ENABLED(level) && (Logger::levels & (1 << (int)(level))))
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 #define LOG_WITH_LOCATION Location(__func__, __FILE__, __LINE__)
-#else
-#define LOG_WITH_LOCATION
-#endif
+//#else
+//#define LOG_WITH_LOCATION
+//#endif
 
 #define Log( level, fmt, ...) g_logger->Write(level, fmt,##__VA_ARGS__)
 #define LogCritical(fmt, ...) g_logger->Write(LogLevel::CRITICAL, fmt,##__VA_ARGS__)
