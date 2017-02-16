@@ -35,9 +35,14 @@ export INSTALLER_SIGN_IDENTITY='"Developer ID Installer: Cypherpunk Partners, sl
 make vpn great again
 
 # Archive build artifacts
-scp -P92 ../../out/osx/cypherpunk-*.pkg upload@builds-upload.cypherpunk.engineering:/data/builds/ || echo "* Warning: failed to upload build"
-# upload build to google cloud storage bucket
-gsutil cp ../../out/osx/cypherpunk-*.pkg gs://builds.cypherpunk.com/builds/macos/
+cd ../../out/osx/
+ARTIFACT=$(echo cypherpunk-*.pkg)
+echo "Uploading build to builds repo..."
+scp -P92 "${ARTIFACT}" upload@builds-upload.cypherpunk.engineering:/data/builds/
+echo "Uploading build to GCS bucket..."
+gsutil cp "${ARTIFACT}" gs://builds.cypherpunk.com/builds/macos/
+echo "Sending notification to slack..."
+curl -X POST --data "payload={\"text\": \"cypherpunk-privacy-macos build ${BUILD_NUMBER} is now available from https://download.cypherpunk.com/builds/macos/${ARTIFACT}\"}" https://hooks.slack.com/services/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
 
 # Done
 exit 0

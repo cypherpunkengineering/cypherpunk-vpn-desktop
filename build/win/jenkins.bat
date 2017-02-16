@@ -18,10 +18,14 @@ if %errorlevel% neq 0 goto error
 echo cd to output dir
 cd ..\..\out\win
 
-echo * Uploading build to builds server...
-scp -scp -P 92 -i "%USERPROFILE%\.ssh\pscp.ppk" cypherpunk-*.exe "upload@builds-upload.cypherpunk.engineering:/data/builds/"
-echo * Uploading build to google cloud storage bucket...
-"C:\Program Files (x86)\Google\Cloud SDK\google-cloud-sdk\bin\gsutil" cp cypherpunk-*.exe gs://builds.cypherpunk.com/builds/windows/
+echo Save build artifacts
+for %%f in (cypherpunk-*.exe) do set ARTIFACT=%%~nxf
+echo Uploading build to builds repo...
+scp -scp -P 92 -i "%USERPROFILE%\.ssh\pscp.ppk" "%ARTIFACT%" "upload@builds-upload.cypherpunk.engineering:/data/builds/"
+echo Uploading build to GCS bucket...
+"C:\Program Files (x86)\Google\Cloud SDK\google-cloud-sdk\bin\gsutil" cp "%ARTIFACT%" gs://builds.cypherpunk.com/builds/windows/
+echo Sending notification to slack...
+curl -X POST --data "payload={\"text\": \"cypherpunk-privacy-windows build %BUILD_NUMBER% is now available from https://download.cypherpunk.com/builds/windows/%ARTIFACT%\"}" https://hooks.slack.com/services/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
 
 echo done
 
