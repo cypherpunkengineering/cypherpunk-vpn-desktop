@@ -52,7 +52,7 @@ void NativeJsonObject::ReadFromDisk(const std::string& path, const char* type)
 				JsonObject::operator[](p.first) = std::move(p.second);
 				if (_on_changed) _on_changed(p.first.c_str());
 			}
-			catch (std::exception& e)
+			catch (std::exception&)
 			{
 				LOG(WARNING) << "Incorrect data type " << (int)p.second.GetType() << " for " << type << " item " << p.first << ", ignoring";
 			}

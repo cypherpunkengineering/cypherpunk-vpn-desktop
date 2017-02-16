@@ -473,7 +473,7 @@ void CypherDaemon::RPC_setAccount(const JsonObject& account)
 		{
 			g_account.Set(p.first, p.second);
 		}
-		catch (std::exception& e)
+		catch (const std::exception&)
 		{
 			LOG(WARNING) << "Received bad account item from client: " << p.first << " = " << p.second;
 		}
@@ -492,7 +492,7 @@ void CypherDaemon::RPC_applyConfig(const JsonObject& config)
 			{
 				g_config.Set(p.first, p.second);
 			}
-			catch (std::exception& e)
+			catch (const std::exception&)
 			{
 				LOG(WARNING) << "Received bad config item from client: " << p.first << " = " << p.second;
 			}
@@ -518,7 +518,7 @@ void CypherDaemon::RPC_applySettings(const JsonObject& settings)
 			{
 				g_settings.Set(p.first, p.second);
 			}
-			catch (std::exception& e)
+			catch (const std::exception&)
 			{
 				LOG(WARNING) << "Received bad setting from client: " << p.first << " = " << p.second;
 			}
