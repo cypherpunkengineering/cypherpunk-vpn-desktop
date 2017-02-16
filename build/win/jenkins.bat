@@ -25,7 +25,7 @@ scp -scp -P 92 -i "%USERPROFILE%\.ssh\pscp.ppk" "%ARTIFACT%" "upload@builds-uplo
 echo Uploading build to GCS bucket...
 call "C:\Program Files (x86)\Google\Cloud SDK\google-cloud-sdk\bin\gsutil" cp "%ARTIFACT%" gs://builds.cypherpunk.com/builds/windows/
 echo Sending notification to slack...
-curl -X POST --data "payload={\"text\": \"cypherpunk-privacy-windows build %BUILD_NUMBER% is now available from https://download.cypherpunk.com/builds/windows/%ARTIFACT%\"}" https://hooks.slack.com/services/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
+"C:\windows\system32\curl" -X POST --data "payload={\"text\": \"cypherpunk-privacy-windows build %BUILD_NUMBER% is now available from https://download.cypherpunk.com/builds/windows/%ARTIFACT%\"}" https://hooks.slack.com/services/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
 
 echo done
 
