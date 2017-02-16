@@ -52,7 +52,8 @@ export APP_VERSION
 PKG_NAME="cypherpunk-privacy-${PLATFORM}-${ARCH}"
 PKG_MAINTAINER="Cypherpunk Privacy <debian-maintainer@cypherpunk.com>"
 PKG_STR="${PKG_NAME}_${APP_VERSION}"
-PKG_FILE="${PKG_STR}.deb"
+PKG_STR_MINUS=`echo "${PKG_STR}"|sed -e 's/+/-/g'`
+PKG_FILE="${PKG_STR_MINUS}.deb"
 PKG_PATH="out/${PKG_FILE}"
 
 # script vars
