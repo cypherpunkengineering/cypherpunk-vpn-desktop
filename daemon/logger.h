@@ -19,6 +19,7 @@ enum class LogLevel
 	WARNING,
 	INFO,
 	VERBOSE,
+	DEBUG,
 };
 typedef unsigned int LogLevelMask;
 
@@ -26,7 +27,11 @@ extern class Logger* g_logger;
 
 #define LEVEL_ALL ((LogLevelMask)0xFFFFFFFU)
 
+#ifdef _DEBUG
 #define STATIC_LOG_LEVELS LEVEL_ALL
+#else
+#define STATIC_LOG_LEVELS ((LogLevelMask)~LogLevel::DEBUG)
+#endif
 #define STATIC_LOG_ENABLED(level) (STATIC_LOG_LEVELS & (1 << (int)(level)))
 
 #define LOG_ENABLED(level) (STATIC_LOG_ENABLED(level) && (Logger::levels & (1 << (int)(level))))
