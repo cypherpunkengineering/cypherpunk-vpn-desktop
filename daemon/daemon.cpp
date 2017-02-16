@@ -128,7 +128,7 @@ void CypherDaemon::RequestShutdown()
 
 void CypherDaemon::SendToClient(Connection connection, const std::shared_ptr<jsonrpc::FormattedData>& data)
 {
-	LOG(VERBOSE) << "Sending RPC message: " << std::string(data->GetData(), data->GetSize());
+	LOG(DEBUG) << "Sending RPC message: " << std::string(data->GetData(), data->GetSize());
 	_ws_server.send(connection, data->GetData(), data->GetSize(), websocketpp::frame::opcode::TEXT);
 }
 
@@ -185,7 +185,7 @@ void CypherDaemon::OnLastClientDisconnected()
 
 void CypherDaemon::OnReceiveMessage(Connection connection, WebSocketServer::message_ptr msg)
 {
-	LOG(VERBOSE) << "Received RPC message: " << msg->get_payload();
+	LOG(DEBUG) << "Received RPC message: " << msg->get_payload();
 	try
 	{
 		auto response = _json_handler.CreateReader(msg->get_payload())->GetResponse();
