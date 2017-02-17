@@ -5,8 +5,8 @@
 class Config : public NativeJsonObject
 {
 public:
-	void ReadFromDisk();
-	void WriteToDisk() const;
+	bool ReadFromDisk();
+	bool WriteToDisk() const;
 
 	JsonField(JsonObject, regions, {});
 	JsonField(JsonObject, locations, {});
@@ -22,8 +22,8 @@ extern Config g_config;
 class Account : public NativeJsonObject
 {
 public:
-	void ReadFromDisk();
-	void WriteToDisk() const;
+	bool ReadFromDisk();
+	bool WriteToDisk() const;
 
 	JsonField(JsonObject, privacy, {});
 
@@ -35,8 +35,8 @@ extern Account g_account;
 class Settings : public NativeJsonObject
 {
 public:
-	void ReadFromDisk();
-	void WriteToDisk() const;
+	bool ReadFromDisk();
+	bool WriteToDisk() const;
 
 	JsonField(std::string, remotePort, "udp:7133")
 	JsonField(std::string, location, "tokyodev") // FIXME: don't hardcode

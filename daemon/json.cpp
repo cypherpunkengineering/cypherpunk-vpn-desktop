@@ -41,7 +41,7 @@ void WriteJsonFile(const std::string& path, const JsonObject& obj)
 }
 
 
-void NativeJsonObject::ReadFromDisk(const std::string& path, const char* type)
+bool NativeJsonObject::ReadFromDisk(const std::string& path, const char* type)
 {
 	try
 	{
@@ -57,26 +57,31 @@ void NativeJsonObject::ReadFromDisk(const std::string& path, const char* type)
 				LOG(WARNING) << "Incorrect data type " << (int)p.second.GetType() << " for " << type << " item " << p.first << ", ignoring";
 			}
 		}
+		return true;
 	}
 	catch (const std::system_error& e)
 	{
 		LOG(WARNING) << "Couldn't open " << type << " file: " << e;
+		return false;
 	}
 	catch (const std::exception& e)
 	{
 		LOG(ERROR) << "Invalid " << type << " file: " << e;
+		return false;
 	}
 }
 
-void NativeJsonObject::WriteToDisk(const std::string& path, const char* type) const
+bool NativeJsonObject::WriteToDisk(const std::string& path, const char* type) const
 {
 	try
 	{
 		WriteJsonFile(path, *this);
+		return true;
 	}
 	catch (const std::exception& e)
 	{
 		LOG(WARNING) << "Failed to write " << type << " file: " << e;
+		return false;
 	}
 }
 

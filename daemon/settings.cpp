@@ -13,31 +13,31 @@ Account g_account;
 Settings g_settings;
 
 
-void Config::ReadFromDisk()
+bool Config::ReadFromDisk()
 {
-	NativeJsonObject::ReadFromDisk(GetFile(SettingsFile), "config");
+	return NativeJsonObject::ReadFromDisk(GetFile(ConfigFile), "config");
 }
-void Config::WriteToDisk() const
+bool Config::WriteToDisk() const
 {
-	NativeJsonObject::WriteToDisk(GetFile(SettingsFile, EnsureExists), "config");
-}
-
-void Account::ReadFromDisk()
-{
-	NativeJsonObject::ReadFromDisk(GetFile(SettingsFile), "account");
-}
-void Account::WriteToDisk() const
-{
-	NativeJsonObject::WriteToDisk(GetFile(SettingsFile, EnsureExists), "account");
+	return NativeJsonObject::WriteToDisk(GetFile(ConfigFile, EnsureExists), "config");
 }
 
-void Settings::ReadFromDisk()
+bool Account::ReadFromDisk()
 {
-	NativeJsonObject::ReadFromDisk(GetFile(SettingsFile));
+	return NativeJsonObject::ReadFromDisk(GetFile(AccountFile), "account");
 }
-void Settings::WriteToDisk() const
+bool Account::WriteToDisk() const
 {
-	NativeJsonObject::WriteToDisk(GetFile(SettingsFile, EnsureExists));
+	return NativeJsonObject::WriteToDisk(GetFile(AccountFile, EnsureExists), "account");
+}
+
+bool Settings::ReadFromDisk()
+{
+	return NativeJsonObject::ReadFromDisk(GetFile(SettingsFile));
+}
+bool Settings::WriteToDisk() const
+{
+	return NativeJsonObject::WriteToDisk(GetFile(SettingsFile, EnsureExists));
 }
 
 

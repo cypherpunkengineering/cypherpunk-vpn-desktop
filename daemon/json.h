@@ -71,8 +71,8 @@ public:
 	const JsonValue& at(const std::string& name) { return JsonObject::at(name); }
 	const JsonValue& operator[](const std::string& name) { return JsonObject::operator[](name); }
 
-	void ReadFromDisk(const std::string& path, const char* type = "setting");
-	void WriteToDisk(const std::string& path, const char* type = "setting") const;
+	bool ReadFromDisk(const std::string& path, const char* type = "setting");
+	bool WriteToDisk(const std::string& path, const char* type = "setting") const;
 
 	void RemoveUnknownFields();
 };
