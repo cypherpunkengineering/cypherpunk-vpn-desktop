@@ -163,6 +163,11 @@ protected:
 	bool _notify_scheduled;
 	//std::map<std::string, ServerInfo> _servers;
 
+	// Number of reconnection to tolerate before we should treat as disconnected. Initally set to the number of <connection> entries
+	size_t _connection_retries_left;
+	bool _was_ever_connected;
+
+
 protected:
 	// Create a platform-specific handler around an OpenVPN process.
 	// Note: the process isn't actually started until 'Run' is called on it.

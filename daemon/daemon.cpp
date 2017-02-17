@@ -38,6 +38,8 @@ CypherDaemon::CypherDaemon()
 	, _shouldConnect(false)
 	, _needsReconnect(false)
 	, _notify_scheduled(false)
+	, _connection_retries_left(0)
+	, _was_ever_connected(false)
 {
 
 }
@@ -273,17 +275,28 @@ void CypherDaemon::OnOpenVPNProcessExited(OpenVPNProcess* process)
 	if (process == _process.get())
 	{
 		_process.reset();
-		if (_state == SWITCHING || _shouldConnect)
+		switch (_state)
 		{
-			_io.post([this](){ DoConnect(); });
-			if (_state != SWITCHING)
+		case CONNECTING:
+		case CONNECTED:
+			if (_shouldConnect && _connection_retries_left > 0) // TODO: Only retry up to N times
 			{
-				_state = CONNECTING;
-				OnStateChanged(STATE);
+				--_connection_retries_left;
+		case SWITCHING:
+				_io.post([this]() { DoConnect(); });
+				if (_state != SWITCHING)
+				{
+					_state = CONNECTING;
+					OnStateChanged(STATE);
+				}
+				break;
 			}
-		}
-		else
-		{
+			// TODO: Report error to client?
+			// fallthrough
+		case DISCONNECTING:
+		case DISCONNECTED:
+		default:
+			_was_ever_connected = false;
 			if (_state != DISCONNECTED)
 			{
 				_state = DISCONNECTED;
@@ -294,6 +307,7 @@ void CypherDaemon::OnOpenVPNProcessExited(OpenVPNProcess* process)
 				_needsReconnect = false;
 				OnStateChanged(NEEDSRECONNECT);
 			}
+			break;
 		}
 	}
 }
@@ -682,7 +696,7 @@ void CypherDaemon::WriteOpenVPNProfile(std::ostream& out, const JsonObject& serv
 		out << "  remote " << ip.AsString() << ' ' << remotePort << endl;
 		out << "</connection>" << endl;
 	}
-	process->connection_retries_left = serverIPs.size() - 1;
+	_connection_retries_left = serverIPs.size() - 1;
 
 	// Extra routes; currently only used by the "exempt Apple services" setting
 #if OS_OSX
@@ -803,12 +817,10 @@ void CypherDaemon::DoConnect()
 	_needsReconnect = false;
 	OnStateChanged(NEEDSRECONNECT);
 
-	std::shared_ptr<OpenVPNProcess> vpn(CreateOpenVPNProcess(_ws_server.get_io_service()));
-	vpn->CopySettings();
+	_process = std::shared_ptr<OpenVPNProcess>(CreateOpenVPNProcess(_ws_server.get_io_service()));
+	_process->CopySettings();
 
-	int port = vpn->StartManagementInterface();
-
-	_process = vpn;
+	int port = _process->StartManagementInterface();
 
 	std::vector<std::string> args;
 
@@ -869,110 +881,119 @@ void CypherDaemon::DoConnect()
 	std::string profile_filename = GetPath(ProfileDir, EnsureExists, profile_filename_tmp);
 	{
 		std::ofstream f(profile_filename.c_str());
-		WriteOpenVPNProfile(f, g_settings.currentLocation(), vpn.get());
+		WriteOpenVPNProfile(f, g_settings.currentLocation(), _process.get());
 		f.close();
 	}
 	args.push_back(profile_filename);
 
-	vpn->OnManagementResponse("HOLD", [=](const std::string& line) {
-		vpn->SendManagementCommand("hold release");
-	});
-	vpn->OnManagementResponse("PASSWORD", [=](const std::string& line) {
-		LOG(INFO) << line;
-		size_t q1 = line.find('\'');
-		size_t q2 = line.find('\'', q1 + 1);
-		auto id = line.substr(q1 + 1, q2 - q1 - 1);
-		vpn->SendManagementCommand(
-			"username \"" + id + "\" \"" + vpn->_username + "\"\n"
-			"password \"" + id + "\" \"" + vpn->_password + "\"");
-	});
-	vpn->OnManagementResponse("STATE", [=](const std::string& line) {
-		try
-		{
-			auto params = SplitToVector(line, ',');
-			if (params.size() >= 2)
+	{
+		// Naked pointer ONLY for OnManagementResponse and other callbacks
+		OpenVPNProcess* p = _process.get();
+
+		p->OnManagementResponse("HOLD", [this, p](const std::string& line) {
+			p->SendManagementCommand("hold release");
+		});
+		p->OnManagementResponse("PASSWORD", [this, p](const std::string& line) {
+			LOG(INFO) << line;
+			size_t q1 = line.find('\'');
+			size_t q2 = line.find('\'', q1 + 1);
+			auto id = line.substr(q1 + 1, q2 - q1 - 1);
+			p->SendManagementCommand(
+				"username \"" + id + "\" \"" + p->_username + "\"\n"
+				"password \"" + id + "\" \"" + p->_password + "\"");
+		});
+		p->OnManagementResponse("STATE", [this, p](const std::string& line) {
+			try
 			{
-				const auto& s = params[1];
-				if (s == "CONNECTED")
+				auto params = SplitToVector(line, ',');
+				if (params.size() >= 2)
 				{
-					_process->connection_retries_left = 1;
-					if (_state == DISCONNECTING)
+					const auto& s = params[1];
+					if (s == "CONNECTED")
 					{
-						_process->SendManagementCommand("signal SIGTERM");
-						return;
+						_was_ever_connected = true;
+						_connection_retries_left = 5;
+						if (_state == DISCONNECTING)
+						{
+							p->SendManagementCommand("signal SIGTERM");
+							return;
+						}
+						if (params.size() >= 5)
+						{
+							_localIP = params.at(3);
+							_remoteIP = params.at(4);
+						}
+						_state = CONNECTED;
+						OnStateChanged(STATE | IPADDRESS);
 					}
-					if (params.size() >= 5)
+					else if (s == "RECONNECTING")
 					{
-						_localIP = params.at(3);
-						_remoteIP = params.at(4);
+						if (_state == CONNECTED)
+						{
+							// Connection dropped, OpenVPN is trying to reconnect
+							_state = CONNECTING;
+							OnStateChanged(STATE);
+						}
+						else if (_state == CONNECTING && _connection_retries_left > 0)
+						{
+							// Reconnection attempt N
+							--_connection_retries_left;
+						}
+						else
+						{
+							// Reconnection has failed; stop retrying
+							_state = DISCONNECTING;
+							OnStateChanged(STATE);
+							p->SendManagementCommand("signal SIGTERM");
+							// TODO: Send an error message to the client
+							// TODO: Implement a way to send error messages to the client
+						}
 					}
-					_state = CONNECTED;
-					OnStateChanged(STATE | IPADDRESS);
-				}
-				else if (s == "RECONNECTING")
-				{
-					if (_state == CONNECTED)
+					else if (s == "EXITING")
 					{
-						_state = CONNECTING;
-						OnStateChanged(STATE);
-					}
-					else if (_state == CONNECTING && (_process->connection_retries_left == 0 || --_process->connection_retries_left == 0))
-					{
-						_process->SendManagementCommand("signal SIGTERM");
-						// TODO: Send an error message to the client
-						// TODO: Implement a way to send error messages to the client
-					}
-				}
-				else if (s == "EXITING")
-				{
-					// Do actual reconnect in OnOpenVPNProcessExited (if needed), just set state here
-					if (_state != SWITCHING)
-					{
-						_state = CONNECTING;
-						OnStateChanged(STATE);
+						// Do actual reconnect in OnOpenVPNProcessExited (if needed), just set state here
+						if (_state != SWITCHING)
+						{
+							_state = CONNECTING;
+							OnStateChanged(STATE);
+						}
 					}
 				}
 			}
-		}
-		catch (const std::exception& e)
-		{
-			LOG(ERROR) << e;
-			_state = DISCONNECTED;
-			_needsReconnect = false;
-			if (_process)
+			catch (const std::exception& e)
 			{
-				_process->Kill();
-				_process.reset();
+				LOG(ERROR) << "Failed to parse management interface response: " << e;
+				p->Shutdown();
 			}
-		}
-	});
-	vpn->OnManagementResponse("BYTECOUNT", [=](const std::string& line) {
-		try
-		{
-			auto params = SplitToVector(line, ',');
-			_bytesReceived = std::stoll(params[0]);
-			_bytesSent = std::stoll(params[1]);
-			OnStateChanged(BYTECOUNT);
-		}
-		catch (const std::exception& e) { LOG(WARNING) << e; }
-	});
-	vpn->OnManagementResponse("LOG", [=](const std::string& line) {
-		auto params = SplitToVector(line, ',', 2);
-		LogLevel level;
-		if (params[1] == "F") level = LogLevel::CRITICAL;
-		else if (params[1] == "N") level = LogLevel::ERROR;
-		else if (params[1] == "W") level = LogLevel::WARNING;
-		else if (params[1] == "I") level = LogLevel::INFO;
-		else /*if (params[1] == "D")*/ level = LogLevel::VERBOSE;
-		LOG_EX(level, true, Location("openvpn")) << params[2];
-	});
+		});
+		p->OnManagementResponse("BYTECOUNT", [this](const std::string& line) {
+			try
+			{
+				auto params = SplitToVector(line, ',');
+				_bytesReceived = std::stoll(params[0]);
+				_bytesSent = std::stoll(params[1]);
+				OnStateChanged(BYTECOUNT);
+			}
+			catch (const std::exception& e) { LOG(WARNING) << e; }
+		});
+		p->OnManagementResponse("LOG", [this](const std::string& line) {
+			auto params = SplitToVector(line, ',', 2);
+			LogLevel level;
+			if (params[1] == "F") level = LogLevel::CRITICAL;
+			else if (params[1] == "N") level = LogLevel::ERROR;
+			else if (params[1] == "W") level = LogLevel::WARNING;
+			else if (params[1] == "I") level = LogLevel::INFO;
+			else /*if (params[1] == "D")*/ level = LogLevel::VERBOSE;
+			LOG_EX(level, true, Location("openvpn")) << params[2];
+		});
 
-	vpn->Run(args);
-	vpn->AsyncWait([this, vpn](const asio::error_code& error) {
-		OnOpenVPNProcessExited(vpn.get());
-	});
+		p->Run(args);
+		p->AsyncWait([this, p](const asio::error_code& error) {
+			OnOpenVPNProcessExited(p);
+		});
+	}
 
-	vpn->SendManagementCommand("state on\nbytecount 5\nhold release");
+	_process->SendManagementCommand("state on\nbytecount 5\nhold release");
 }
 
 void CypherDaemon::RPC_disconnect()
@@ -986,7 +1007,8 @@ void CypherDaemon::RPC_disconnect()
 	{
 		_state = DISCONNECTING;
 		OnStateChanged(STATE);
-		_process->SendManagementCommand("signal SIGTERM");
+		if (_process)
+			_process->SendManagementCommand("signal SIGTERM");
 	}
 	NotifyChanges();
 }
