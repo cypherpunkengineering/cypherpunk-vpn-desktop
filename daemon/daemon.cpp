@@ -167,6 +167,7 @@ void CypherDaemon::OnClientDisconnected(Connection c)
 
 void CypherDaemon::OnLastClientDisconnected()
 {
+	_shouldConnect = false;
 	switch (_state)
 	{
 		case CONNECTED:
