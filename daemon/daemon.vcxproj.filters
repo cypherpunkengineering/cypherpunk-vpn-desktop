@@ -30,18 +30,6 @@
     <ClInclude Include="config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="win\SampleService.h">
-      <Filter>Header Files\win</Filter>
-    </ClInclude>
-    <ClInclude Include="win\ServiceBase.h">
-      <Filter>Header Files\win</Filter>
-    </ClInclude>
-    <ClInclude Include="win\ServiceInstaller.h">
-      <Filter>Header Files\win</Filter>
-    </ClInclude>
-    <ClInclude Include="win\ThreadPool.h">
-      <Filter>Header Files\win</Filter>
-    </ClInclude>
     <ClInclude Include="win\util.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -72,6 +60,30 @@
     <ClInclude Include="websocketpp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="json.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ping.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="posix\posix.h">
+      <Filter>Header Files\posix</Filter>
+    </ClInclude>
+    <ClInclude Include="win\win_firewall.h">
+      <Filter>Header Files\win</Filter>
+    </ClInclude>
+    <ClInclude Include="debug.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="serialization.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="win\win_service.cpp">
@@ -100,6 +112,12 @@
     </ClCompile>
     <ClCompile Include="posix\posix_path.cpp">
       <Filter>Source Files\posix</Filter>
+    </ClCompile>
+    <ClCompile Include="json.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="win\win_firewall.cpp">
+      <Filter>Source Files\win</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
