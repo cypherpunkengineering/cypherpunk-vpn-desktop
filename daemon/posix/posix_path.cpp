@@ -58,7 +58,7 @@ std::string GetPredefinedDirectory(PredefinedDirectory dir)
 {
 	switch (dir)
 	{
-	case BaseDir: return g_is_installed ? "/usr/local/cypherpunk" : (g_daemon_path + "/../..");
+	case BaseDir: return g_is_installed ? "/usr/local/cypherpunk" : (g_daemon_path + "/../../..");
 #if OS_LINUX
 	case ScriptsDir: return g_is_installed ? GetPath(BaseDir, "etc", "scripts") : GetPath(BaseDir, "res", "linux", "openvpn-scripts");
 #else
