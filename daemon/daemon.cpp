@@ -272,15 +272,27 @@ void CypherDaemon::OnOpenVPNProcessExited(OpenVPNProcess* process)
 	if (process == _process.get())
 	{
 		_process.reset();
-		if (_state == SWITCHING)
+		if (_state == SWITCHING || _shouldConnect)
 		{
 			_io.post([this](){ DoConnect(); });
+			if (_state != SWITCHING)
+			{
+				_state = CONNECTING;
+				OnStateChanged(STATE);
+			}
 		}
-		else if (_state != DISCONNECTED)
+		else
 		{
-			_state = DISCONNECTED;
-			_needsReconnect = false;
-			OnStateChanged(STATE | NEEDSRECONNECT);
+			if (_state != DISCONNECTED)
+			{
+				_state = DISCONNECTED;
+				OnStateChanged(STATE);
+			}
+			if (_needsReconnect)
+			{
+				_needsReconnect = false;
+				OnStateChanged(NEEDSRECONNECT);
+			}
 		}
 	}
 }
@@ -880,25 +892,6 @@ void CypherDaemon::DoConnect()
 			if (params.size() >= 2)
 			{
 				const auto& s = params[1];
-				if (_state == SWITCHING)
-				{
-					if (s == "CONNECTED" || s == "RECONNECTING")
-					{
-						// Default handling below
-					}
-					else if (s == "EXITING")
-					{
-						if (_process->stale)
-						{
-							_process.reset();
-							DoConnect();
-							return;
-						}
-						// Default handling below
-					}
-					else
-						return;
-				}
 				if (s == "CONNECTED")
 				{
 					_process->connection_retries_left = 1;
@@ -931,10 +924,12 @@ void CypherDaemon::DoConnect()
 				}
 				else if (s == "EXITING")
 				{
-					_process.reset();
-					_state = DISCONNECTED;
-					_needsReconnect = false;
-					OnStateChanged(STATE | NEEDSRECONNECT);
+					// Do actual reconnect in OnOpenVPNProcessExited (if needed), just set state here
+					if (_state != SWITCHING)
+					{
+						_state = CONNECTING;
+						OnStateChanged(STATE);
+					}
 				}
 			}
 		}
