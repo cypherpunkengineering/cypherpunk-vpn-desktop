@@ -542,7 +542,7 @@ void CypherDaemon::RPC_applySettings(const JsonObject& settings)
 		}
 	}
 
-	if ((_state == CONNECTING || _state == CONNECTED) && !_process->IsSameServer(g_settings.map()))
+	if ((_state == CONNECTING || _state == CONNECTED) && !_process->CompareSettings())
 	{
 		_needsReconnect = true;
 		OnStateChanged(NEEDSRECONNECT);
@@ -753,7 +753,7 @@ bool CypherDaemon::RPC_connect()
 		case CONNECTED:
 		case CONNECTING:
 			// Reconnect only if settings have changed
-			if (!_needsReconnect && _process->IsSameServer(settings))
+			if (!_needsReconnect && _process->CompareSettings())
 			{
 				LOG(INFO) << "No need to reconnect; new server is the same as old";
 				break;
@@ -803,7 +803,7 @@ void CypherDaemon::DoConnect()
 	OnStateChanged(NEEDSRECONNECT);
 
 	std::shared_ptr<OpenVPNProcess> vpn(CreateOpenVPNProcess(_ws_server.get_io_service()));
-	vpn->SetSettings(g_settings.map());
+	vpn->CopySettings();
 
 	int port = vpn->StartManagementInterface();
 

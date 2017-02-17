@@ -42,19 +42,42 @@ OpenVPNProcess::~OpenVPNProcess()
 
 }
 
-void OpenVPNProcess::SetSettings(const JsonObject& connection_settings)
+void OpenVPNProcess::CopySettings()
 {
+	_connection.clear();
 	for (auto name : g_connection_setting_names)
 	{
-		auto it = connection_settings.find(name);
-		if (it != connection_settings.end())
+		auto it = g_settings.map().find(name);
+		if (it != g_settings.map().end())
 			_connection[name] = JsonValue(it->second);
 	}
-	_connection_server = JsonValue(connection_settings.at("locations").AsStruct().at(connection_settings.at("location").AsString()));
+	_connection_server = g_settings.currentLocation();
 	const JsonObject& login = g_account.privacy();
 	_username = login.at("username").AsString();
 	_password = login.at("password").AsString();
 }
+
+bool OpenVPNProcess::CompareSettings()
+{
+	for (auto name : g_connection_setting_names)
+	{
+		auto a = _connection.find(name);
+		auto b = g_settings.map().find(name);
+		if (a != _connection.end())
+		{
+			if (b == g_settings.map().end())
+				return false;
+			if (*a != *b)
+				return false;
+		}
+		else if (b != g_settings.map().end())
+			return false;
+	}
+	if (_connection_server != g_settings.currentLocation())
+		return false;
+	return true;
+}
+
 
 int OpenVPNProcess::StartManagementInterface()
 {
@@ -163,37 +186,6 @@ void OpenVPNProcess::OnManagementInterfaceResponse(const std::string& line)
 			}
 		}
 	}
-}
-
-bool OpenVPNProcess::IsSameServer(const jsonrpc::Value::Struct& connection)
-{
-	for (auto name : g_connection_setting_names)
-	{
-		auto a = _connection.find(name);
-		auto b = connection.find(name);
-		if (a != _connection.end())
-		{
-			if (b == connection.end())
-				return false;
-			if (*a != *b)
-				return false;
-		}
-		else if (b != connection.end())
-			return false;
-	}
-	if (_connection_server != connection.at("locations").AsStruct().at(connection.at("location").AsString()))
-		return false;
-	return true;
-}
-
-bool OpenVPNProcess::SettingRequiresReconnect(const std::string& name)
-{
-	for (auto n : g_connection_setting_names)
-		if (n == name)
-			return true;
-	if (name == "locations")
-		return true;
-	return false;
 }
 
 void OpenVPNProcess::Shutdown()

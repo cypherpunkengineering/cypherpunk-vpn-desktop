@@ -27,7 +27,7 @@ protected:
 	std::map<std::string, std::function<void(const std::string&)>> _on_management_response;
 
 	JsonObject _connection;
-	JsonValue _connection_server;
+	JsonObject _connection_server;
 
 	std::string _username;
 	std::string _password;
@@ -45,14 +45,13 @@ public:
 	virtual ~OpenVPNProcess();
 
 public:
-	void SetSettings(const JsonObject& connection_settings); 
+	void CopySettings();
+	bool CompareSettings();
+
 	int StartManagementInterface();
 	void StopManagementInterface();
 	void SendManagementCommand(std::string cmd);
 	void OnManagementResponse(const std::string& prefix, std::function<void(const std::string&)> callback);
-
-	bool IsSameServer(const JsonObject& settings);
-	static bool SettingRequiresReconnect(const std::string& name);
 
 	// Request clean shutdown (first via management interface, calls Kill if that fails)
 	void Shutdown();
