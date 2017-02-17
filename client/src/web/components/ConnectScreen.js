@@ -205,12 +205,11 @@ export default class ConnectScreen extends React.Component {
         break;
       case 'connecting':
       case 'connected':
+      case 'disconnecting':
         // Fake a connection state for now, as the daemon is too busy to report it back
         daemon.call.disconnect().catch(() => {
           daemon.post.get('state');
         });
-        break;
-      case 'disconnecting':
         break;
     }
   }
