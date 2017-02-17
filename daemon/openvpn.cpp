@@ -85,12 +85,14 @@ int OpenVPNProcess::StartManagementInterface()
 
 	_io.post([this]() {
 		_management_write_queue.emplace_back("\n\n\n");
+		_management_acceptor.set_option(asio::ip::tcp::acceptor::reuse_address(true));
+		_management_acceptor.set_option(asio::ip::tcp::acceptor::linger(false, 0));
 		_management_acceptor.listen(1);
 		_management_acceptor.async_accept(_management_socket, [this](const asio::error_code& error) {
 			if (!error)
 			{
-				asio::async_read_until(_management_socket, _management_readbuf, '\n', std::bind(&OpenVPNProcess::HandleManagementReadLine, this, _1, _2));
-				asio::async_write(_management_socket, asio::buffer(_management_write_queue.front()), std::bind(&OpenVPNProcess::HandleManagementWrite, this, _1, _2));
+				asio::async_read_until(_management_socket, _management_readbuf, '\n', THIS_CALLBACK(HandleManagementReadLine));
+				asio::async_write(_management_socket, asio::buffer(_management_write_queue.front()), THIS_CALLBACK(HandleManagementWrite));
 			}
 			else
 				LOG(WARNING) << error << " : " << error.message();
@@ -116,7 +118,7 @@ void OpenVPNProcess::SendManagementCommand(std::string cmd)
 		_management_write_queue.push_back(std::move(cmd));
 		if (first && _management_socket.is_open())
 		{
-			asio::async_write(_management_socket, asio::buffer(_management_write_queue.front()), std::bind(&OpenVPNProcess::HandleManagementWrite, this, _1, _2));
+			asio::async_write(_management_socket, asio::buffer(_management_write_queue.front()), THIS_CALLBACK(HandleManagementWrite));
 		}
 	});
 }
@@ -133,7 +135,7 @@ void OpenVPNProcess::HandleManagementWrite(const asio::error_code& error, std::s
 		_management_write_queue.pop_front();
 		if (!_management_write_queue.empty() && _management_socket.is_open())
 		{
-			asio::async_write(_management_socket, asio::buffer(_management_write_queue.front()), std::bind(&OpenVPNProcess::HandleManagementWrite, this, _1, _2));
+			asio::async_write(_management_socket, asio::buffer(_management_write_queue.front()), THIS_CALLBACK(HandleManagementWrite));
 		}
 	}
 	else
@@ -153,7 +155,7 @@ void OpenVPNProcess::HandleManagementReadLine(const asio::error_code& error, std
 
 		if (_management_socket.is_open())
 		{
-			asio::async_read_until(_management_socket, _management_readbuf, '\n', std::bind(&OpenVPNProcess::HandleManagementReadLine, this, _1, _2));
+			asio::async_read_until(_management_socket, _management_readbuf, '\n', THIS_CALLBACK(HandleManagementReadLine));
 		}
 	}
 	else

@@ -8,9 +8,10 @@
 #include <deque>
 #include <functional>
 #include <map>
+#include <memory>
 #include <thread>
 
-class OpenVPNProcess
+class OpenVPNProcess : public std::enable_shared_from_this<OpenVPNProcess>
 {
 	OpenVPNProcess(const OpenVPNProcess&) = delete;
 	OpenVPNProcess& operator=(const OpenVPNProcess&) = delete;

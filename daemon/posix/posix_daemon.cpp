@@ -398,22 +398,20 @@ class ASIOLineReader
 public:
 	typedef void callback_t(const asio::error_code& error, std::string line);
 private:
-	AsyncReadStream& _stream;
+	std::shared_ptr<AsyncReadStream> _stream;
 	asio::streambuf _readbuf;
 	std::function<callback_t> _callback;
 public:
-	ASIOLineReader(AsyncReadStream& stream, std::function<callback_t> callback)
-		: _stream(stream), _callback(std::move(callback))
+	void Run(std::shared_ptr<AsyncReadStream> stream, std::function<callback_t> callback)
 	{
-	}
-	void Begin()
-	{
+		_stream = std::move(stream);
+		_callback = std::move(callback);
 		AsyncReadLine();
 	}
 private:
 	void AsyncReadLine()
 	{
-		asio::async_read_until(_stream, _readbuf, '\n', THIS_CALLBACK(HandleLine));
+		asio::async_read_until(*_stream, _readbuf, '\n', THIS_CALLBACK(HandleLine));
 	}
 	void HandleLine(const asio::error_code& error, std::size_t bytes_transferred)
 	{
@@ -430,6 +428,8 @@ private:
 		else
 		{
 			_callback(error, std::string());
+			_stream.reset();
+			_callback = nullptr;
 		}
 	}
 };
@@ -444,8 +444,6 @@ class PosixOpenVPNProcess : public OpenVPNProcess, public PosixSubprocess
 public:
 	PosixOpenVPNProcess(asio::io_service& io)
 		: OpenVPNProcess(io), PosixSubprocess(io)
-		, _stdout_reader(stdout_handle, [this](const asio::error_code& error, std::string line) { g_daemon->OnOpenVPNStdOut(this, error, std::move(line)); })
-		, _stderr_reader(stderr_handle, [this](const asio::error_code& error, std::string line) { g_daemon->OnOpenVPNStdErr(this, error, std::move(line)); })
 	{
 
 	}
@@ -462,8 +460,8 @@ public:
 		std::string openvpn = GetFile(OpenVPNExecutable);
 		PosixSubprocess::Run(openvpn, params);
 
-		_stdout_reader.Begin();
-		_stderr_reader.Begin();
+		_stdout_reader.Run(std::shared_ptr<decltype(stdout_handle)>(shared_from_this(), &stdout_handle), THIS_CALLBACK(OnStdOut));
+		_stderr_reader.Run(std::shared_ptr<decltype(stderr_handle)>(shared_from_this(), &stderr_handle), THIS_CALLBACK(OnStdErr));
 	}
 
 	virtual void Kill() override
@@ -498,6 +496,15 @@ private:
 			if (!_stdin_write_queue.empty())
 				asio::async_write(stdin_handle, asio::buffer(_stdin_write_queue.front()), THIS_CALLBACK(HandleLineWritten));
 		}
+	}
+
+	void OnStdOut(const asio::error_code& error, std::string line)
+	{
+		g_daemon->OnOpenVPNStdOut(this, error, std::move(line));
+	}
+	void OnStdErr(const asio::error_code& error, std::string line)
+	{
+		g_daemon->OnOpenVPNStdErr(this, error, std::move(line));
 	}
 };
 
