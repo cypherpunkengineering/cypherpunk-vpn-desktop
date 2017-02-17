@@ -190,6 +190,7 @@ public:
 			(level == LogLevel::WARNING) ? "WARNING" :
 			(level == LogLevel::INFO) ? "INFO" :
 			(level == LogLevel::VERBOSE) ? "VERBOSE" :
+			(level == LogLevel::DEBUG) ? "DEBUG" :
 			"";
 	}
 };
