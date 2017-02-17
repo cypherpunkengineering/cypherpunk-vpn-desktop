@@ -19,6 +19,7 @@ enum class LogLevel
 	WARNING,
 	INFO,
 	VERBOSE,
+	DEBUG,
 };
 typedef unsigned int LogLevelMask;
 
@@ -26,16 +27,20 @@ extern class Logger* g_logger;
 
 #define LEVEL_ALL ((LogLevelMask)0xFFFFFFFU)
 
+#ifdef _DEBUG
 #define STATIC_LOG_LEVELS LEVEL_ALL
+#else
+#define STATIC_LOG_LEVELS ((LogLevelMask)~(LogLevelMask)LogLevel::DEBUG)
+#endif
 #define STATIC_LOG_ENABLED(level) (STATIC_LOG_LEVELS & (1 << (int)(level)))
 
 #define LOG_ENABLED(level) (STATIC_LOG_ENABLED(level) && (Logger::levels & (1 << (int)(level))))
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 #define LOG_WITH_LOCATION Location(__func__, __FILE__, __LINE__)
-#else
-#define LOG_WITH_LOCATION
-#endif
+//#else
+//#define LOG_WITH_LOCATION
+//#endif
 
 #define Log( level, fmt, ...) g_logger->Write(level, fmt,##__VA_ARGS__)
 #define LogCritical(fmt, ...) g_logger->Write(LogLevel::CRITICAL, fmt,##__VA_ARGS__)
@@ -43,6 +48,7 @@ extern class Logger* g_logger;
 #define LogWarning( fmt, ...) g_logger->Write(LogLevel::WARNING,  fmt,##__VA_ARGS__)
 #define LogInfo(    fmt, ...) g_logger->Write(LogLevel::INFO,     fmt,##__VA_ARGS__)
 #define LogVerbose( fmt, ...) g_logger->Write(LogLevel::VERBOSE,  fmt,##__VA_ARGS__)
+#define LogDebug(   fmt, ...) g_logger->Write(LogLevel::DEBUG,    fmt,##__VA_ARGS__)
 
 #define LOG_IMPL(classname, level, condition, location, ...) (!(LOG_ENABLED(level) && (condition))) ? (void)0 : Voidify() | classname (__VA_ARGS__) (level) (location)
 #define LOG_EX(level, condition, location) LOG_IMPL(PrefixLogWriter<LogWriter>, level, condition, location)
@@ -185,6 +191,7 @@ public:
 			(level == LogLevel::WARNING) ? "WARNING" :
 			(level == LogLevel::INFO) ? "INFO" :
 			(level == LogLevel::VERBOSE) ? "VERBOSE" :
+			(level == LogLevel::DEBUG) ? "DEBUG" :
 			"";
 	}
 };

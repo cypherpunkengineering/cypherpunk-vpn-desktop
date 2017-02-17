@@ -1,5 +1,18 @@
-.PHONY: all run stop
+.PHONY: all clean run stop
 .DEFAULT: all
+
+DEBUG ?= true
+
+ifneq ($(strip $(RELEASE)),)
+DEBUG =
+endif
+
+CFLAGS += -std=c++14
+ifneq ($(strip $(DEBUG)),)
+CFLAGS += -g -D_DEBUG=1
+else
+CFLAGS += -O2 -D_RELEASE=1
+endif
 
 SRCS= \
 	$(wildcard *.cpp) \
@@ -19,17 +32,20 @@ ifeq ($(UNAME_S),Linux)
 endif
 
 all:
+	mkdir -p out
 	g++ \
-	-std=c++14 \
-	-D_DEBUG \
+	$(CFLAGS) \
 	$(INCS) \
 	$(SRCS) \
 	$(LIBS) \
-	-o cypherpunk-privacy-service
+	-o out/cypherpunk-privacy-service
+
+clean:
+	rm -rf out
 
 stop:
 	sudo launchctl unload /Library/LaunchDaemons/com.cypherpunk.privacy.service.plist || true
 
 run:
-	sudo ./cypherpunk-privacy-service
+	sudo ./out/cypherpunk-privacy-service
 

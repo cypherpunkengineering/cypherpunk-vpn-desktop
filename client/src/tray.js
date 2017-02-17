@@ -118,7 +118,7 @@ class Tray {
       }
       items.push({
         label: connectName,
-        icon: state === 'DISCONNECTING' ? null : getFlag(location.country.toLowerCase()),
+        icon: (state === 'DISCONNECTING' || !location || !location.country) ? null : getFlag(location.country.toLowerCase()),
         enabled: state === 'DISCONNECTED' || (state === 'CONNECTED' && this.state.state.needsReconnect),
         click: () => { daemon.post.connect(); }
       });

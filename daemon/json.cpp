@@ -11,6 +11,14 @@
 #include <jsonrpc-lean/jsonreader.h>
 #include <jsonrpc-lean/jsonwriter.h>
 
+std::string ToJson(const JsonValue& value)
+{
+	JsonWriter writer;
+	value.Write(writer);
+	auto data = writer.GetData();
+	return std::string(data->GetData(), data->GetSize());
+}
+
 JsonObject ReadJsonFile(const std::string& path)
 {
 	std::string text = ReadFile(path);
@@ -32,40 +40,58 @@ void WriteJsonFile(const std::string& path, const JsonObject& obj)
 	WriteFile(path, data->GetData(), data->GetSize());
 }
 
-namespace jsonrpc {
-	bool operator ==(const JsonValue& lhs, const JsonValue& rhs)
+
+bool NativeJsonObject::ReadFromDisk(const std::string& path, const char* type)
+{
+	try
 	{
-		auto type = lhs.GetType();
-		if (type == rhs.GetType())
+		for (auto& p : ReadJsonFile(path))
 		{
-			switch (type)
+			try
 			{
-			case jsonrpc::Value::Type::ARRAY:
-				return lhs.AsArray() == rhs.AsArray();
-			case jsonrpc::Value::Type::BINARY:
-				return lhs.AsBinary() == rhs.AsBinary();
-			case jsonrpc::Value::Type::BOOLEAN:
-				return lhs.AsBoolean() == rhs.AsBoolean();
-			case jsonrpc::Value::Type::DATE_TIME:
-				return lhs.AsDateTime() == rhs.AsDateTime();
-			case jsonrpc::Value::Type::DOUBLE:
-				return lhs.AsDouble() == rhs.AsDouble();
-			case jsonrpc::Value::Type::INTEGER_32:
-				return lhs.AsInteger32() == rhs.AsInteger32();
-			case jsonrpc::Value::Type::INTEGER_64:
-				return lhs.AsInteger64() == rhs.AsInteger64();
-			case jsonrpc::Value::Type::NIL:
-				return true;
-			case jsonrpc::Value::Type::STRING:
-				return lhs.AsString() == rhs.AsString();
-			case jsonrpc::Value::Type::STRUCT:
-				return lhs.AsStruct() == rhs.AsStruct();
+				JsonObject::operator[](p.first) = std::move(p.second);
+				if (_on_changed) _on_changed(p.first.c_str());
+			}
+			catch (std::exception&)
+			{
+				LOG(WARNING) << "Incorrect data type " << (int)p.second.GetType() << " for " << type << " item " << p.first << ", ignoring";
 			}
 		}
+		return true;
+	}
+	catch (const std::system_error& e)
+	{
+		LOG(WARNING) << "Couldn't open " << type << " file: " << e;
 		return false;
 	}
-	bool operator !=(const JsonValue& lhs, const JsonValue& rhs)
+	catch (const std::exception& e)
 	{
-		return !(lhs == rhs);
+		LOG(ERROR) << "Invalid " << type << " file: " << e;
+		return false;
+	}
+}
+
+bool NativeJsonObject::WriteToDisk(const std::string& path, const char* type) const
+{
+	try
+	{
+		WriteJsonFile(path, *this);
+		return true;
+	}
+	catch (const std::exception& e)
+	{
+		LOG(WARNING) << "Failed to write " << type << " file: " << e;
+		return false;
+	}
+}
+
+void NativeJsonObject::RemoveUnknownFields()
+{
+	for (auto it = JsonObject::begin(); it != JsonObject::end(); )
+	{
+		if (!_fields.count(it->first))
+			it = erase(it);
+		else
+			++it;
 	}
 }

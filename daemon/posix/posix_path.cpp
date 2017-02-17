@@ -45,6 +45,8 @@ std::string GetPredefinedFile(PredefinedFile file, EnsureExistsTag ensure_path_e
 #else
 		: GetPath(BaseDir, "daemon", "third_party", "openvpn_osx", "openvpn");
 #endif
+	case ConfigFile: return GetPath(SettingsDir, ensure_path_exists, "config.json");
+	case AccountFile: return GetPath(SettingsDir, ensure_path_exists, "account.json");
 	case SettingsFile: return GetPath(SettingsDir, ensure_path_exists, "settings.json");
 	default:
 		LOG(ERROR) << "Unknown file";
@@ -56,7 +58,7 @@ std::string GetPredefinedDirectory(PredefinedDirectory dir)
 {
 	switch (dir)
 	{
-	case BaseDir: return g_is_installed ? "/usr/local/cypherpunk" : (g_daemon_path + "/../..");
+	case BaseDir: return g_is_installed ? "/usr/local/cypherpunk" : (g_daemon_path + "/../../..");
 #if OS_LINUX
 	case ScriptsDir: return g_is_installed ? GetPath(BaseDir, "etc", "scripts") : GetPath(BaseDir, "res", "linux", "openvpn-scripts");
 #else

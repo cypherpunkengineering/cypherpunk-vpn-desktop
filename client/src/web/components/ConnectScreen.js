@@ -40,7 +40,7 @@ class FirewallWarning extends DaemonAware(React.Component) {
     if (state.state) this.onChange();
   }
   shouldDisplay() {
-    return daemon.settings.firewall === 'on' && daemon.state.state === 'DISCONNECTED';
+    return daemon.settings.firewall === 'on' && (!daemon.state.connect || daemon.state.state === 'DISCONNECTED');
   }
   onChange() {
     var visible = this.shouldDisplay();
@@ -205,12 +205,11 @@ export default class ConnectScreen extends React.Component {
         break;
       case 'connecting':
       case 'connected':
+      case 'disconnecting':
         // Fake a connection state for now, as the daemon is too busy to report it back
         daemon.call.disconnect().catch(() => {
           daemon.post.get('state');
         });
-        break;
-      case 'disconnecting':
         break;
     }
   }

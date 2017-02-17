@@ -261,11 +261,11 @@ public:
 	{
 		WinSubprocess::Run(GetFile(OpenVPNExecutable), params, GetPath(OpenVPNDir), !g_settings.runOpenVPNAsRoot());
 
-		_stdout_read_thread = std::thread(THIS_CALLBACK(ReadThread), std::move(stdout_handle), [this](const asio::error_code& error, std::string line) {
-			g_daemon->OnOpenVPNStdOut(this, error, std::move(line));
+		_stdout_read_thread = std::thread(THIS_CALLBACK(ReadThread), std::move(stdout_handle), [self = shared_from_this()](const asio::error_code& error, std::string line) {
+			g_daemon->OnOpenVPNStdOut(self.get(), error, std::move(line));
 		});
-		_stderr_read_thread = std::thread(THIS_CALLBACK(ReadThread), std::move(stderr_handle), [this](const asio::error_code& error, std::string line) {
-			g_daemon->OnOpenVPNStdErr(this, error, std::move(line));
+		_stderr_read_thread = std::thread(THIS_CALLBACK(ReadThread), std::move(stderr_handle), [self = shared_from_this()](const asio::error_code& error, std::string line) {
+			g_daemon->OnOpenVPNStdErr(self.get(), error, std::move(line));
 		});
 	}
 
@@ -301,7 +301,7 @@ private:
 			else
 				_io.post([=]() { cb(error, std::string()); });
 		}
-		_io.post([=](){ cb(error, std::string()); });
+		_io.post([error, cb = std::move(cb)](){ cb(error, std::string()); });
 	}
 
 	static size_t SyncReadUntil(Win32Handle& handle, asio::streambuf& buffer, char delim, asio::error_code& error)
@@ -464,24 +464,10 @@ public:
 			} \
 		} while(false)
 
-		bool is_connected;
-		switch (_state)
-		{
-		case CONNECTING:
-		case CONNECTED:
-		case DISCONNECTING:
-		case SWITCHING:
-			is_connected = true;
-			break;
-		default:
-			is_connected = false;
-			break;
-		}
-
 		auto adapters = win_get_tap_adapters();
 
 		auto mode = g_settings.firewall();
-		if (!_connections.empty() && (mode == "on" || (is_connected && mode == "auto")))
+		if (!_connections.empty() && (mode == "on" || (_shouldConnect && mode == "auto")))
 		{
 			try
 			{

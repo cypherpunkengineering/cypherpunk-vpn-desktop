@@ -42,19 +42,42 @@ OpenVPNProcess::~OpenVPNProcess()
 
 }
 
-void OpenVPNProcess::SetSettings(const JsonObject& connection_settings)
+void OpenVPNProcess::CopySettings()
 {
+	_connection.clear();
 	for (auto name : g_connection_setting_names)
 	{
-		auto it = connection_settings.find(name);
-		if (it != connection_settings.end())
+		auto it = g_settings.map().find(name);
+		if (it != g_settings.map().end())
 			_connection[name] = JsonValue(it->second);
 	}
-	_connection_server = JsonValue(connection_settings.at("locations").AsStruct().at(connection_settings.at("location").AsString()));
-	const JsonObject& login = g_settings.account().at("privacy").AsStruct();
+	_connection_server = g_settings.currentLocation();
+	const JsonObject& login = g_account.privacy();
 	_username = login.at("username").AsString();
 	_password = login.at("password").AsString();
 }
+
+bool OpenVPNProcess::CompareSettings()
+{
+	for (auto name : g_connection_setting_names)
+	{
+		auto a = _connection.find(name);
+		auto b = g_settings.map().find(name);
+		if (a != _connection.end())
+		{
+			if (b == g_settings.map().end())
+				return false;
+			if (*a != *b)
+				return false;
+		}
+		else if (b != g_settings.map().end())
+			return false;
+	}
+	if (_connection_server != g_settings.currentLocation())
+		return false;
+	return true;
+}
+
 
 int OpenVPNProcess::StartManagementInterface()
 {
@@ -62,12 +85,14 @@ int OpenVPNProcess::StartManagementInterface()
 
 	_io.post([this]() {
 		_management_write_queue.emplace_back("\n\n\n");
+		_management_acceptor.set_option(asio::ip::tcp::acceptor::reuse_address(true));
+		_management_acceptor.set_option(asio::ip::tcp::acceptor::linger(false, 0));
 		_management_acceptor.listen(1);
 		_management_acceptor.async_accept(_management_socket, [this](const asio::error_code& error) {
 			if (!error)
 			{
-				asio::async_read_until(_management_socket, _management_readbuf, '\n', std::bind(&OpenVPNProcess::HandleManagementReadLine, this, _1, _2));
-				asio::async_write(_management_socket, asio::buffer(_management_write_queue.front()), std::bind(&OpenVPNProcess::HandleManagementWrite, this, _1, _2));
+				asio::async_read_until(_management_socket, _management_readbuf, '\n', THIS_CALLBACK(HandleManagementReadLine));
+				asio::async_write(_management_socket, asio::buffer(_management_write_queue.front()), THIS_CALLBACK(HandleManagementWrite));
 			}
 			else
 				LOG(WARNING) << error << " : " << error.message();
@@ -93,7 +118,7 @@ void OpenVPNProcess::SendManagementCommand(std::string cmd)
 		_management_write_queue.push_back(std::move(cmd));
 		if (first && _management_socket.is_open())
 		{
-			asio::async_write(_management_socket, asio::buffer(_management_write_queue.front()), std::bind(&OpenVPNProcess::HandleManagementWrite, this, _1, _2));
+			asio::async_write(_management_socket, asio::buffer(_management_write_queue.front()), THIS_CALLBACK(HandleManagementWrite));
 		}
 	});
 }
@@ -110,7 +135,7 @@ void OpenVPNProcess::HandleManagementWrite(const asio::error_code& error, std::s
 		_management_write_queue.pop_front();
 		if (!_management_write_queue.empty() && _management_socket.is_open())
 		{
-			asio::async_write(_management_socket, asio::buffer(_management_write_queue.front()), std::bind(&OpenVPNProcess::HandleManagementWrite, this, _1, _2));
+			asio::async_write(_management_socket, asio::buffer(_management_write_queue.front()), THIS_CALLBACK(HandleManagementWrite));
 		}
 	}
 	else
@@ -130,7 +155,7 @@ void OpenVPNProcess::HandleManagementReadLine(const asio::error_code& error, std
 
 		if (_management_socket.is_open())
 		{
-			asio::async_read_until(_management_socket, _management_readbuf, '\n', std::bind(&OpenVPNProcess::HandleManagementReadLine, this, _1, _2));
+			asio::async_read_until(_management_socket, _management_readbuf, '\n', THIS_CALLBACK(HandleManagementReadLine));
 		}
 	}
 	else
@@ -163,37 +188,6 @@ void OpenVPNProcess::OnManagementInterfaceResponse(const std::string& line)
 			}
 		}
 	}
-}
-
-bool OpenVPNProcess::IsSameServer(const jsonrpc::Value::Struct& connection)
-{
-	for (auto name : g_connection_setting_names)
-	{
-		auto a = _connection.find(name);
-		auto b = connection.find(name);
-		if (a != _connection.end())
-		{
-			if (b == connection.end())
-				return false;
-			if (*a != *b)
-				return false;
-		}
-		else if (b != connection.end())
-			return false;
-	}
-	if (_connection_server != connection.at("locations").AsStruct().at(connection.at("location").AsString()))
-		return false;
-	return true;
-}
-
-bool OpenVPNProcess::SettingRequiresReconnect(const std::string& name)
-{
-	for (auto n : g_connection_setting_names)
-		if (n == name)
-			return true;
-	if (name == "locations")
-		return true;
-	return false;
 }
 
 void OpenVPNProcess::Shutdown()

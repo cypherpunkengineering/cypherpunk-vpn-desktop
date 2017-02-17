@@ -8,9 +8,10 @@
 #include <deque>
 #include <functional>
 #include <map>
+#include <memory>
 #include <thread>
 
-class OpenVPNProcess
+class OpenVPNProcess : public std::enable_shared_from_this<OpenVPNProcess>
 {
 	OpenVPNProcess(const OpenVPNProcess&) = delete;
 	OpenVPNProcess& operator=(const OpenVPNProcess&) = delete;
@@ -27,7 +28,7 @@ protected:
 	std::map<std::string, std::function<void(const std::string&)>> _on_management_response;
 
 	JsonObject _connection;
-	JsonValue _connection_server;
+	JsonObject _connection_server;
 
 	std::string _username;
 	std::string _password;
@@ -45,14 +46,13 @@ public:
 	virtual ~OpenVPNProcess();
 
 public:
-	void SetSettings(const JsonObject& connection_settings); 
+	void CopySettings();
+	bool CompareSettings();
+
 	int StartManagementInterface();
 	void StopManagementInterface();
 	void SendManagementCommand(std::string cmd);
 	void OnManagementResponse(const std::string& prefix, std::function<void(const std::string&)> callback);
-
-	bool IsSameServer(const JsonObject& settings);
-	static bool SettingRequiresReconnect(const std::string& name);
 
 	// Request clean shutdown (first via management interface, calls Kill if that fails)
 	void Shutdown();
@@ -64,6 +64,4 @@ public:
 
 	// Flag to indicate the user should reconnect to a new server for their settings to take effect.
 	bool stale;
-	// Number of reconnection to tolerate before we should treat as disconnected. Initally set to the number of <connection> entries
-	size_t connection_retries_left;
 };
