@@ -87,7 +87,7 @@ npm --production run build
 
 # build daemon
 cd ../daemon/posix/
-make
+make RELEASE=1 all
 
 # prepare dirs
 cd "../../${OUT_PATH}/"
@@ -105,7 +105,7 @@ rm -r "./${ELECTRON_NAME}"
 # rename app binary to remove space
 mv "${APP_PATH_RELATIVE}/${APP_NAME}" "${APP_PATH_RELATIVE}/${APP_NAME_NOSPACE}"
 # install daemon
-install -c -m 755 "../../daemon/posix/cypherpunk-privacy-service" "${APP_PATH_RELATIVE}/bin/cypherpunk-privacy-service"
+install -c -m 755 "../../daemon/posix/out/cypherpunk-privacy-service" "${APP_PATH_RELATIVE}/bin/cypherpunk-privacy-service"
 # install OpenVPN binary
 install -c -m 755 "../../daemon/third_party/openvpn_${PLATFORM}/${BITS}/openvpn" "${APP_PATH_RELATIVE}/bin/cypherpunk-privacy-openvpn"
 

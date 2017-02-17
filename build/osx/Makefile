@@ -98,10 +98,10 @@ client: check-node-modules version
 	$(ECHO) "* Rebuilding Electron modules..."
 	$(HUSH) cd "$(ROOT)/client" && ./node_modules/.bin/electron-rebuild
 
-daemon: $(ROOT)/daemon/posix/$(DAEMON_FILENAME)
+daemon: $(ROOT)/daemon/posix/out/$(DAEMON_FILENAME)
 
-$(ROOT)/daemon/posix/$(DAEMON_FILENAME): version
-	$(HUSH) $(MAKE) -C $(ROOT)/daemon/posix
+$(ROOT)/daemon/posix/out/$(DAEMON_FILENAME): version
+	$(HUSH) $(MAKE) -C $(ROOT)/daemon/posix RELEASE=1 all
 
 
 # Staging
@@ -128,7 +128,7 @@ stage-client: client
 
 stage-daemon: $(STAGING)/usr/local/cypherpunk/bin/$(DAEMON_FILENAME) $(STAGING)/Library/LaunchDaemons/$(DAEMON_NS).plist $(STAGING)/usr/local/cypherpunk/bin/$(OPENVPN_FILENAME) $(OPENVPN_SCRIPTS:$(ROOT)/res/osx/openvpn-scripts/%=$(STAGING)/usr/local/cypherpunk/etc/scripts/%) $(PF_ANCHORS:$(ROOT)/res/osx/pf.anchors/%=$(STAGING)/usr/local/cypherpunk/etc/pf.anchors/%)
 
-$(STAGING)/usr/local/cypherpunk/bin/$(DAEMON_FILENAME): $(ROOT)/daemon/posix/$(DAEMON_FILENAME)
+$(STAGING)/usr/local/cypherpunk/bin/$(DAEMON_FILENAME): $(ROOT)/daemon/posix/out/$(DAEMON_FILENAME)
 	$(ECHO_STAGING)
 	$(HUSH) mkdir -p $(dir $@)
 	$(HUSH) install -c -m 755 $< $@
