@@ -39,11 +39,7 @@ CypherDaemon::CypherDaemon()
 	, _needsReconnect(false)
 	, _notify_scheduled(false)
 {
-	g_config.SetOnChangedHandler(THIS_CALLBACK(OnConfigChanged));
-	g_account.SetOnChangedHandler(THIS_CALLBACK(OnAccountChanged));
-	g_settings.SetOnChangedHandler(THIS_CALLBACK(OnSettingsChanged));
 
-	//_state.SetOnChangedHandler(THIS_CALLBACK(OnStateChanged));
 }
 
 int CypherDaemon::Run()
@@ -90,9 +86,15 @@ int CypherDaemon::Run()
 		d.AddMethod("ping", [](){});
 	}
 
-	_state = INITIALIZED;
-
+	g_config.ReadFromDisk();
+	g_account.ReadFromDisk();
 	g_settings.ReadFromDisk();
+
+	g_config.SetOnChangedHandler(THIS_CALLBACK(OnConfigChanged));
+	g_account.SetOnChangedHandler(THIS_CALLBACK(OnAccountChanged));
+	g_settings.SetOnChangedHandler(THIS_CALLBACK(OnSettingsChanged));
+
+	_state = INITIALIZED;
 
 	_ws_server.run(); // internally calls _io.run()
 
@@ -396,14 +398,17 @@ void CypherDaemon::NotifyChanges()
 	if (config.size())
 	{
 		SendToAllClients(_rpc_client.BuildNotificationData("config", MakeConfigObject(&config)));
+		g_config.WriteToDisk();
 	}
 	if (account.size())
 	{
 		SendToAllClients(_rpc_client.BuildNotificationData("account", MakeAccountObject(&account)));		
+		g_account.WriteToDisk();
 	}
 	if (settings.size())
 	{
 		SendToAllClients(_rpc_client.BuildNotificationData("settings", MakeSettingsObject(&settings)));
+		g_settings.WriteToDisk();
 	}
 	if (state != 0)
 	{
