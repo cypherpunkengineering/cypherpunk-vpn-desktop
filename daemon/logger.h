@@ -30,7 +30,7 @@ extern class Logger* g_logger;
 #ifdef _DEBUG
 #define STATIC_LOG_LEVELS LEVEL_ALL
 #else
-#define STATIC_LOG_LEVELS ((LogLevelMask)~LogLevel::DEBUG)
+#define STATIC_LOG_LEVELS ((LogLevelMask)~(LogLevelMask)LogLevel::DEBUG)
 #endif
 #define STATIC_LOG_ENABLED(level) (STATIC_LOG_LEVELS & (1 << (int)(level)))
 
@@ -48,6 +48,7 @@ extern class Logger* g_logger;
 #define LogWarning( fmt, ...) g_logger->Write(LogLevel::WARNING,  fmt,##__VA_ARGS__)
 #define LogInfo(    fmt, ...) g_logger->Write(LogLevel::INFO,     fmt,##__VA_ARGS__)
 #define LogVerbose( fmt, ...) g_logger->Write(LogLevel::VERBOSE,  fmt,##__VA_ARGS__)
+#define LogDebug(   fmt, ...) g_logger->Write(LogLevel::DEBUG,    fmt,##__VA_ARGS__)
 
 #define LOG_IMPL(classname, level, condition, location, ...) (!(LOG_ENABLED(level) && (condition))) ? (void)0 : Voidify() | classname (__VA_ARGS__) (level) (location)
 #define LOG_EX(level, condition, location) LOG_IMPL(PrefixLogWriter<LogWriter>, level, condition, location)
