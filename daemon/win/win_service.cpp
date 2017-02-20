@@ -256,6 +256,11 @@ class WinOpenVPNProcess : public OpenVPNProcess, public WinSubprocess
 	std::thread _stderr_read_thread;
 public:
 	WinOpenVPNProcess(asio::io_service& io) : OpenVPNProcess(io), WinSubprocess(io) {}
+	~WinOpenVPNProcess()
+	{
+		_stderr_read_thread.join();
+		_stdout_read_thread.join();
+	}
 
 	virtual void Run(const std::vector<std::string>& params) override
 	{
