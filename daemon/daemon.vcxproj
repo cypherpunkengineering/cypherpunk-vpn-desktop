@@ -145,7 +145,6 @@
     <ClInclude Include="util.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="websocketpp.h" />
-    <ClInclude Include="win\util.h" />
     <ClInclude Include="win\win.h" />
     <ClInclude Include="win\win_firewall.h" />
   </ItemGroup>
