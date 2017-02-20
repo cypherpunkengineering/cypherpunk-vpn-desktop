@@ -177,7 +177,7 @@ export default class ConnectScreen extends React.Component {
             {/* <MainBackground/> */}
             <div id="connect-container" onClick={this.handleConnectClick}>
 
-              <svg viewBox="-40 40 200 240" preserveAspectRatio="xMidYMid meet" width="160px" height="200px" ref="connectButton">
+              <svg viewBox="-40 60 200 240" preserveAspectRatio="xMidYMid meet" width="160px" height="200px" ref="connectButton">
                 <circle class="ring" cx="60" cy="200" r="50" style={connectCircleStyle} />
                 <line x1="60" y1="98" x2="60" y2="181" style={connectLineStyle} />
                 <line x1="60" y1="111" x2="80" y2="111"  style={connectSmallLineStyle} />
@@ -186,8 +186,8 @@ export default class ConnectScreen extends React.Component {
 
               {/*<i id="connect" class={"ui fitted massive power link icon" + (this.state.connectionState === 'connected' ? " green" : this.state.connectionState == 'disconnected' ? " red" : " orange disabled")} ref="connectButton" onClick={this.handleConnectClick}></i>*/}
             </div>
-            <Link className="left page-link" to="/account"><RetinaImage src={AccountIcon}/></Link>
-            <Link className="right page-link" to="/configuration"><i className="settings icon"/></Link>
+            <Link className="left page-link" to="/account" tabIndex="0"><RetinaImage src={AccountIcon}/></Link>
+            <Link className="right page-link" to="/configuration" tabIndex="0"><i className="settings icon"/></Link>
             
             <div id="connect-status" ref="connectStatus">{buttonLabel}</div>
             <div id="connection-stats" class="ui two column center aligned grid">

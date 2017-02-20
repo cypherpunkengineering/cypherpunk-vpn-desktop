@@ -478,28 +478,32 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     font-size: 24px;
     z-index: 1002;
     .themed({
-      background: @themeTitlebarBackground;
+      background-color: @themeTitlebarBackground;
       color: saturate(screen(@themeMainBackground, #ccc), 40%);
-      border: 2px solid @themeBorderColor;
+      border-bottom: 2px solid @themeBorderColor;
       border-top: none;
+      .themeTransition(background-color);
+      .themeTransition(color);
     });
     img { opacity: 0.8; }
-    &:hover {
+    &:hover, &:focus {
       color: #fff;
-      .themed({
-        background: linear-gradient(to bottom, @themeTitlebarBackground 50%, black);
-      });
+      background-image: linear-gradient(to bottom, transparent 50%, black);
       img { opacity: 1; }
     }
     &.left {
       left: 0;
       border-radius: 0 30px 30px 0;
-      border-left: none;
+      .themed({
+        border-right: 2px solid @themeBorderColor;
+      });
     }
     &.right {
       right: 0;
       border-radius: 30px 0 0 30px;
-      border-right: none;
+      .themed({
+        border-left: 2px solid @themeBorderColor;
+      });
       padding-left: 6px;
     }
   }
@@ -507,10 +511,12 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     z-index: 1;
     cursor: pointer;
     // margin-top: (130px - @fullHeaderHeight);
-    height: 120px;
+    height: 160px;
     display: flex;
     align-items: center;
     justify-content: center;
+    position: absolute;
+    top: 80px;
 
     svg {
       pointer-events: none;
@@ -955,10 +961,11 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 
 
 #connect-status {
-  margin-top: 36px;
   font-size: 24px;
   font-weight: 500;
   color: #ccc;
+  position: absolute;
+  top: 240px;
 }
 
 #connection-stats {
