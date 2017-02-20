@@ -526,11 +526,11 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     }
     &[data-position~="left"][data-tooltip] {
       &:before { left: 1.5em; }
-      &:after { left: 0.7em; }
+      &:after { left: 0.7em; transform-origin: left top; }
     }
     &[data-position~="right"][data-tooltip] {
       &:before { right: 1.5em; }
-      &:after { right: 0.7em; }
+      &:after { right: 0.7em; transform-origin: right top; }
     }
   }
   #connect-container {
