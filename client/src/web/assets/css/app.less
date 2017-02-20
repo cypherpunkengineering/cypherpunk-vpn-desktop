@@ -506,6 +506,32 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
       });
       padding-left: 6px;
     }
+    &[data-tooltip] {
+      &:before, &:after {
+        top: 86% !important;
+        color: black !important;
+        z-index: 2;
+      }
+      &:before {
+        .themed({
+          background: screen(@themeMainBackground, #aaa) !important;
+        });
+      }
+      &:after {
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.25);
+        .themed({
+          background: linear-gradient(to bottom, screen(@themeMainBackground, #aaa), screen(@themeMainBackground, #888));
+        });
+      }
+    }
+    &[data-position~="left"][data-tooltip] {
+      &:before { left: 1.5em; }
+      &:after { left: 0.7em; }
+    }
+    &[data-position~="right"][data-tooltip] {
+      &:before { right: 1.5em; }
+      &:after { right: 0.7em; }
+    }
   }
   #connect-container {
     z-index: 1;

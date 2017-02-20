@@ -186,8 +186,8 @@ export default class ConnectScreen extends React.Component {
 
               {/*<i id="connect" class={"ui fitted massive power link icon" + (this.state.connectionState === 'connected' ? " green" : this.state.connectionState == 'disconnected' ? " red" : " orange disabled")} ref="connectButton" onClick={this.handleConnectClick}></i>*/}
             </div>
-            <Link className="left page-link" to="/account" tabIndex="0"><RetinaImage src={AccountIcon}/></Link>
-            <Link className="right page-link" to="/configuration" tabIndex="0"><i className="settings icon"/></Link>
+            <Link className="left account page-link" to="/account" tabIndex="0" data-tooltip="My Account" data-inverted="" data-position="bottom left"><RetinaImage src={AccountIcon}/></Link>
+            <Link className="right settings page-link" to="/configuration" tabIndex="0" data-tooltip="Configuration" data-inverted="" data-position="bottom right"><i className="settings icon"/></Link>
             
             <div id="connect-status" ref="connectStatus">{buttonLabel}</div>
             <div id="connection-stats" class="ui two column center aligned grid">
