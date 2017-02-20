@@ -112,7 +112,7 @@ void CypherDaemon::RequestShutdown()
 			{
 				// Shut down any OpenVPN process first.
 				_process->Shutdown();
-				_process->AsyncWait([this](const asio::error_code& error) {
+				_process->AsyncWait([p = _process, this](const asio::error_code& error) {
 					LOG(INFO) << "Stopping message loop";
 					if (!_ws_server.stopped())
 						_ws_server.stop();
@@ -988,8 +988,8 @@ void CypherDaemon::DoConnect()
 		});
 
 		p->Run(args);
-		p->AsyncWait([this, p](const asio::error_code& error) {
-			OnOpenVPNProcessExited(p);
+		p->AsyncWait([this, p = p->shared_from_this()](const asio::error_code& error) {
+			OnOpenVPNProcessExited(p.get());
 		});
 	}
 

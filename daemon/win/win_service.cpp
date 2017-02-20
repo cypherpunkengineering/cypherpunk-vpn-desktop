@@ -261,10 +261,10 @@ public:
 	{
 		WinSubprocess::Run(GetFile(OpenVPNExecutable), params, GetPath(OpenVPNDir), !g_settings.runOpenVPNAsRoot());
 
-		_stdout_read_thread = std::thread(THIS_CALLBACK(ReadThread), std::move(stdout_handle), [self = shared_from_this()](const asio::error_code& error, std::string line) {
+		_stdout_read_thread = std::thread(ReadThread, shared_from_this(), std::move(stdout_handle), [self = shared_from_this()](const asio::error_code& error, std::string line) {
 			g_daemon->OnOpenVPNStdOut(self.get(), error, std::move(line));
 		});
-		_stderr_read_thread = std::thread(THIS_CALLBACK(ReadThread), std::move(stderr_handle), [self = shared_from_this()](const asio::error_code& error, std::string line) {
+		_stderr_read_thread = std::thread(ReadThread, shared_from_this(), std::move(stderr_handle), [self = shared_from_this()](const asio::error_code& error, std::string line) {
 			g_daemon->OnOpenVPNStdErr(self.get(), error, std::move(line));
 		});
 	}
@@ -281,8 +281,10 @@ public:
 		});
 	}
 
+	std::shared_ptr<WinOpenVPNProcess> shared_from_this() { return std::static_pointer_cast<WinOpenVPNProcess>(OpenVPNProcess::shared_from_this()); }
+
 private:
-	void ReadThread(Win32Handle handle, std::function<void(const asio::error_code&, std::string)> cb)
+	static void ReadThread(std::shared_ptr<WinOpenVPNProcess> self, Win32Handle handle, std::function<void(const asio::error_code&, std::string)> cb)
 	{
 		asio::io_service io;
 		asio::error_code error;
@@ -296,12 +298,12 @@ private:
 				std::getline(is, line);
 				if (line.size() > 0 && *line.crbegin() == '\r')
 					line.pop_back();
-				_io.post([=, line = std::move(line)]() { cb(error, line); });
+				self->_io.post([=, line = std::move(line)]() { cb(error, line); });
 			}
 			else
-				_io.post([=]() { cb(error, std::string()); });
+				self->_io.post([=]() { cb(error, std::string()); });
 		}
-		_io.post([error, cb = std::move(cb)](){ cb(error, std::string()); });
+		self->_io.post([error, cb = std::move(cb)](){ cb(error, std::string()); });
 	}
 
 	static size_t SyncReadUntil(Win32Handle& handle, asio::streambuf& buffer, char delim, asio::error_code& error)
