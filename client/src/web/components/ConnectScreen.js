@@ -1,15 +1,18 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { MainTitlebar } from './Titlebar';
+import { Link } from 'react-router';
+import { MainTitlebar, Dragbar, Titlebar, Title } from './Titlebar';
 import MainBackground from './MainBackground';
 import OneZeros from './OneZeros';
-import { Dragbar } from './Titlebar';
 import daemon, { DaemonAware } from '../daemon';
 import { REGION_GROUP_NAMES, REGION_GROUP_ORDER } from '../util';
 import RouteTransition from './Transition';
 import RegionSelector from './RegionSelector';
 import ReconnectButton from './ReconnectButton';
 import { OverlayContainer } from './Overlay';
+import RetinaImage from './Image';
+
+const AccountIcon = { 1: require('../assets/img/account_icon.png'), 2: require('../assets/img/account_icon@2x.png') };
 
 function humanReadableSize(count) {
   if (count >= 1024 * 1024 * 1024 * 1024) {
@@ -167,7 +170,9 @@ export default class ConnectScreen extends React.Component {
         {this.props.children || null}
         <div id="connect-screen" key="self" class="screen">
           <div>
-            <MainTitlebar/>
+            <Titlebar>
+              <Title/>
+            </Titlebar>
             <OneZeros/>
             {/* <MainBackground/> */}
             <div id="connect-container" onClick={this.handleConnectClick}>
@@ -181,6 +186,9 @@ export default class ConnectScreen extends React.Component {
 
               {/*<i id="connect" class={"ui fitted massive power link icon" + (this.state.connectionState === 'connected' ? " green" : this.state.connectionState == 'disconnected' ? " red" : " orange disabled")} ref="connectButton" onClick={this.handleConnectClick}></i>*/}
             </div>
+            <Link className="left page-link" to="/account"><RetinaImage src={AccountIcon}/></Link>
+            <Link className="right page-link" to="/configuration"><i className="settings icon"/></Link>
+            
             <div id="connect-status" ref="connectStatus">{buttonLabel}</div>
             <div id="connection-stats" class="ui two column center aligned grid">
               <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.receivedBytes)}</div><div class="label">Received</div></div></div>
