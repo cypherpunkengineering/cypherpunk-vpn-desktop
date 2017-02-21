@@ -480,16 +480,21 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     .nondraggable;
     .themed({
       background-color: @themeTitlebarBackground;
+      background-image: linear-gradient(to bottom, transparent 50%, transparent);
       color: saturate(screen(@themeMainBackground, #ccc), 40%);
       border-bottom: 2px solid @themeBorderColor;
       border-top: none;
       .themeTransition(background-color);
       .themeTransition(color);
     });
-    img { opacity: 0.8; }
+    img {
+      opacity: 0.8;
+      transition: 0.3s opacity ease;
+    }
     &:hover, &:focus {
       color: #fff;
       background-image: linear-gradient(to bottom, transparent 50%, black);
+      transition+: 0.3s color ease;
       img { opacity: 1; }
     }
     &.left {
