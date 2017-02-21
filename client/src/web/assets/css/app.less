@@ -2000,15 +2000,28 @@ small {
   font-size: 18px;
   margin: 0;
   z-index: 9001;
-  opacity: 0.25;
+  color: #266;
   cursor: pointer;
+  padding-right: 2px;
   .nondraggable;
   &:before {
-    content: '\f00D';
+    transition: 0.3s color ease;
+    position: relative;
+    content: '\f2d4';
   }
   &:hover, &:active {
     &:before {
-      content: '\f057';
+      content: '\f2d3';
+    }
+  }
+  &:hover {
+    color: #fff;
+  }
+  &:active {
+    color: #6cc;
+    &:before {
+      top: 1px;
+      left: 1px;
     }
   }
 }
