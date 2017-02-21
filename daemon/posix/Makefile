@@ -30,22 +30,36 @@ UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
 	LIBS += -lpthread
 endif
+ifeq ($(UNAME_S),Darwin)
+	GDB ?= lldb
+endif
+GDB ?= gdb
 
-all:
-	mkdir -p out
-	g++ \
+OUT ?= out/cypherpunk-privacy-service
+
+-include out/deps.d
+
+$(OUT): $(SRCS)
+	@echo "Building $@..."
+	@mkdir -p out
+	@g++ \
 	$(CFLAGS) \
+	-MMD -MF out/deps.d \
 	$(INCS) \
-	$(SRCS) \
 	$(LIBS) \
-	-o out/cypherpunk-privacy-service
+	$(SRCS) \
+	-o $@
+
+all: $(OUT)
 
 clean:
-	rm -rf out
+	@rm -rf out
 
 stop:
-	sudo launchctl unload /Library/LaunchDaemons/com.cypherpunk.privacy.service.plist || true
+	@sudo launchctl unload /Library/LaunchDaemons/com.cypherpunk.privacy.service.plist || true
 
 run:
-	sudo ./out/cypherpunk-privacy-service
+	@sudo $(OUT)
 
+debug:
+	@sudo $(GDB) $(OUT)
