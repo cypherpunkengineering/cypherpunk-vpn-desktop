@@ -22,10 +22,8 @@
     font-size: 12px;
     line-height: 22px;
     padding: 0 10px;
-    .themed({
-      border-bottom-color: fade(@themeLightBackground, 50%);
-      color: #8cc;
-    });
+    border-bottom-color: fade(@themeLightBackground, 50%);
+    color: #8cc;
   }
   > .selected-location {
     width: 100%;
@@ -36,9 +34,7 @@
     justify-content: center;
     font-size: 16px;
     z-index: 2;
-    .themed({
-      background: fade(@themeLightBackground, 50%);
-    });
+    background: fade(@themeLightBackground, 50%);
     &::after {
       content: '';
       position: absolute;
@@ -58,10 +54,7 @@
     flex-direction: row;
     flex-wrap: wrap;
     padding-left: 110px;
-
-    .themed({
-      background: linear-gradient(to bottom, fade(multiply(@themeWindowBackground, #aaa), 85%), fade(@themeWindowBackground, 85%));
-    });
+    background: linear-gradient(to bottom, fade(multiply(@themeWindowBackground, #aaa), 85%), fade(@themeWindowBackground, 75%));
 
     > .auto-routing {
       width: 110px;
@@ -90,9 +83,7 @@
       border: 1px solid rgba(0,0,0,0.25);
       cursor: pointer;
       transition: 0.3s background-color ease, 0.3s color ease;
-      .themed({
-        color: #8cc;
-      });
+      color: #8cc;
       > img, > i {
         display: inline-block;
         position: relative;
@@ -102,9 +93,7 @@
         background: black;
         object-fit: none;
         transition: 0.3s border-color ease;
-        .themed({
-          border: 2px solid #366;
-        });
+        border: 2px solid #366;
         margin: 0;
         margin-bottom: 7px;
         font-size: 24px;
@@ -112,27 +101,21 @@
       }
       &:not(.disabled) {
         &:hover {
-          transition-duration: 0.1s;
-          .themed({
-            background: @themeWindowBackground;
-            color: #fff;
-          });
+          transition: 0.1s;
+          background: @themeWindowBackground;
+          color: #fff;
           > img, > i {
-            .themed({
-              border-color: #8cc;
-            });
+            border-color: #8cc;
           }
         }
         &:active {
-          transition: 0.1s color ease !important;
-          .themed({
-            background: multiply(@themeWindowBackground, #ddd);
-          });
+          transition: 0.1s color ease;
+          background: multiply(@themeWindowBackground, #ddd);
           padding: 2px 0 0 2px;
           box-shadow: inset 2px 2px 4px rgba(0,0,0,0.2);
           > img, > i {
             //top: 1px; left: 1px;
-            transition: 0.1s border-color ease !important;
+            transition: 0.1s border-color ease;
           }
         }
       }

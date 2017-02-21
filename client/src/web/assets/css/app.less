@@ -63,12 +63,11 @@ html, body {
   touch-action: none;
 }
 
+html {
+  background: @themeBodyBackground;
+}
 body {
-  color: #fff;
-  .themed({
-    background: @themeBodyBackground;
-    .themeTransition(background);
-  });
+  background: transparent;
   // transition: 2s background;
   font-family: Dosis, Arial, sans-serif;
   font-weight: 400;
@@ -135,10 +134,7 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 }
 
 .cp.titlebar {
-  .themed({
-    background: @themeTitlebarBackground;
-    .themeTransition(background);
-  });
+  background: @themeTitlebarBackground;
   border-bottom: 2px solid @cpWhite20;
   width: 100%;
   height: @fullHeaderHeight;
@@ -152,10 +148,7 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 
   &.secondary {
     height: 95px;
-    .themed({
-      background: @themeSecondaryTitlebarBackground;
-      .themeTransition(background);
-    });
+    background: @themeSecondaryTitlebarBackground;
   }
 
   .title {
@@ -420,20 +413,15 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 #connect-screen {
   .screen;
   > div {
-    .themed({
-      background: @themeMainBackground;
-      .themeTransition(background);
-    });
+    background: @themeMainBackground;
     display: flex;
     flex-direction: column;
     align-items: center;
     height: 100vh;
   }
   #titlebar {
-    .themed({
-      background: @themeTitlebarBackground;
-      border-bottom: 1px solid @themeBorderColor;
-    });
+    background: @themeTitlebarBackground;
+    border-bottom: 1px solid @themeBorderColor;
     height: 70px;
     padding-top: 25px;
     img {
@@ -478,15 +466,11 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     font-size: 24px;
     z-index: 1002;
     .nondraggable;
-    .themed({
-      background-color: @themeTitlebarBackground;
-      background-image: linear-gradient(to bottom, transparent 50%, transparent);
-      color: saturate(screen(@themeMainBackground, #ccc), 40%);
-      border-bottom: 2px solid @themeBorderColor;
-      border-top: none;
-      .themeTransition(background-color);
-      .themeTransition(color);
-    });
+    background-color: @themeTitlebarBackground;
+    background-image: linear-gradient(to bottom, transparent 50%, transparent);
+    color: saturate(screen(@themeMainBackground, #ccc), 40%);
+    border-bottom: 2px solid @themeBorderColor;
+    border-top: none;
     img {
       opacity: 0.8;
       transition: 0.3s opacity ease;
@@ -500,16 +484,12 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     &.left {
       left: 0;
       border-radius: 0 30px 30px 0;
-      .themed({
-        border-right: 2px solid @themeBorderColor;
-      });
+      border-right: 2px solid @themeBorderColor;
     }
     &.right {
       right: 0;
       border-radius: 30px 0 0 30px;
-      .themed({
-        border-left: 2px solid @themeBorderColor;
-      });
+      border-left: 2px solid @themeBorderColor;
       padding-left: 6px;
     }
     &[data-tooltip] {
@@ -519,15 +499,11 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
         z-index: 2;
       }
       &:before {
-        .themed({
-          background: screen(@themeMainBackground, #aaa) !important;
-        });
+        background: screen(@themeMainBackground, #aaa) !important;
       }
       &:after {
         box-shadow: 2px 2px 5px rgba(0,0,0,0.25);
-        .themed({
-          background: linear-gradient(to bottom, screen(@themeMainBackground, #aaa), screen(@themeMainBackground, #888));
-        });
+        background: linear-gradient(to bottom, screen(@themeMainBackground, #aaa), screen(@themeMainBackground, #888));
       }
     }
     &[data-position~="left"][data-tooltip] {
@@ -601,10 +577,7 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 #login-screen {
   .screen;
   .draggable;
-  .themed({
-    background: @themeWindowBackground;
-    .themeTransition(background);
-  });
+  background: @themeWindowBackground;
   text-align: center;
   align-items: center;
   justify-content: center;
@@ -660,9 +633,7 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
       left: 0;
       right: 0;
       bottom: 0;
-      .themed({
-        background: linear-gradient(to right, @themeWindowBackground, transparent, @themeWindowBackground);
-      });
+      background: linear-gradient(to right, @themeWindowBackground, transparent, @themeWindowBackground);
     }
   }
 
@@ -1739,26 +1710,20 @@ small {
           line-height: 40px;
           padding: 1px;
           transition: background-color 0.3s, box-shadow 0.3s, color 0.2s, border-color 0.2s;
-          &:hover {
-            background-color: rgba(0,0,0,0.35);
-            color: white;
-          }
           &:active {
             padding: 2px 0 0 2px;
             box-shadow: inset 1px 1px 5px rgba(0,0,0,0.15);
           }
-          .themed({
-            border-radius: 30px;
-            border: 1px solid #5fbbc4;
-            color: rgba(255,255,255,0.75);
-            background: rgba(0,0,0,0.25);
-            &:hover {
-              background-color: rgba(0,0,0,0.35);
-              box-shadow: inset 0 0 50px -10px #5fbbc4;
-              border-color: white;
-              color: white;
-            }
-          });
+          border-radius: 30px;
+          border: 1px solid #5fbbc4;
+          color: rgba(255,255,255,0.75);
+          background: rgba(0,0,0,0.25);
+          &:hover {
+            background-color: rgba(0,0,0,0.35);
+            box-shadow: inset 0 0 50px -10px #5fbbc4;
+            border-color: white;
+            color: white;
+          }
         }
       }
 
@@ -1870,10 +1835,7 @@ small {
     width: @leftPanelWidth;
 
     > .panel-container {
-      .themed({
-        background: linear-gradient(to left, rgba(0,0,0,0.4) 0, transparent 30px), linear-gradient(329deg, rgba(0,0,0,0.2), rgba(255,255,255,0.1)), @themeDarkBackground;
-        .themeTransition(background);
-      });
+      background: linear-gradient(to left, rgba(0,0,0,0.4) 0, transparent 30px), linear-gradient(329deg, rgba(0,0,0,0.2), rgba(255,255,255,0.1)), @themeDarkBackground;
     }
 
     ~ .screen {
@@ -1911,10 +1873,7 @@ small {
     width: @rightPanelWidth;
 
     > .panel-container {
-      .themed({
-        background: linear-gradient(to right, rgba(0,0,0,0.4) 0, transparent 30px), linear-gradient(329deg, rgba(0,0,0,0.2), rgba(255,255,255,0.1)), @themeDarkBackground;
-        .themeTransition(background);
-      });
+      background: linear-gradient(to right, rgba(0,0,0,0.4) 0, transparent 30px), linear-gradient(329deg, rgba(0,0,0,0.2), rgba(255,255,255,0.1)), @themeDarkBackground;
     }
 
     ~ .screen {
