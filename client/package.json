@@ -107,7 +107,7 @@
     "react-addons-transition-group": "15.4.2",
     "run-sequence": "^1.2.2",
     "sass-loader": "^4.0.0",
-    "semantic-ui": "^2.2.6",
+    "semantic-ui": "2.2.7",
     "style-loader": "^0.13.1",
     "through": "^2.3.8",
     "utf-8-validate": "^1.2 .1",
