@@ -158,12 +158,10 @@ export default class Application {
     if (state.state) {
       switch (state.state) {
         case 'CONNECTED':
-          $(document.body).one('transitionend', () => { $(document.documentElement).removeClass('online'); });
-          $(document.documentElement).addClass('online');
+          document.documentElement.className = 'online';
           break;
         case 'DISCONNECTED':
-          $(document.body).one('transitionend', () => { $(document.documentElement).removeClass('error'); });
-          $(document.documentElement).addClass('error');
+          document.documentElement.className = 'offline';
           break;
       }
     }
