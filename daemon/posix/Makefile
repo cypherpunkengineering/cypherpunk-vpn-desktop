@@ -46,8 +46,8 @@ $(OUT): $(SRCS)
 	$(CFLAGS) \
 	-MMD -MF out/deps.d \
 	$(INCS) \
-	$(LIBS) \
 	$(SRCS) \
+	$(LIBS) \
 	-o $@
 
 all: $(OUT)
