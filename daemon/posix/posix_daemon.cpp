@@ -513,9 +513,13 @@ class PosixCypherDaemon : public CypherDaemon
 	std::unordered_map<pid_t, PosixOpenVPNProcess*> _process_map;
 public:
 	PosixCypherDaemon()
-		: _signals(_io, SIGCHLD, SIGPIPE, SIGTERM)
+		: _signals(_io)
 	{
 		// Register signal listeners
+		_signals.add(SIGCHLD);
+		_signals.add(SIGPIPE);
+		_signals.add(SIGINT);
+		_signals.add(SIGTERM);		
 		_signals.async_wait(THIS_CALLBACK(OnSignal));
 
 		firewall_install();
@@ -581,6 +585,7 @@ public:
 					}
 					break;
 				}
+				case SIGINT:
 				case SIGTERM:
 				{
 					RequestShutdown();
