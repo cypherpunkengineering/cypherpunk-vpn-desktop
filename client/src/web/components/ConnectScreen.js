@@ -11,6 +11,7 @@ import RegionSelector from './RegionSelector';
 import ReconnectButton from './ReconnectButton';
 import { OverlayContainer } from './Overlay';
 import RetinaImage from './Image';
+import QuickPanel from './QuickPanel';
 
 const AccountIcon = { 1: require('../assets/img/account_icon.png'), 2: require('../assets/img/account_icon@2x.png') };
 
@@ -195,7 +196,7 @@ export default class ConnectScreen extends React.Component {
               <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.sentBytes)}</div><div class="label">Sent</div></div></div>
             </div>
             <FirewallWarning/>
-            <RegionSelector/>
+            <QuickPanel/>
           </div>
         </div>
         <OverlayContainer/>
