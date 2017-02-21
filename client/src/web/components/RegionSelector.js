@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import '../util';
+import { classList } from '../util';
 import daemon, { DaemonAware } from '../daemon';
 
 // Always use this stub to import standard React addons, as we will either use
@@ -10,6 +10,56 @@ function reactAddon(module, name) {
 }
 
 const ReactCSSTransitionGroup = reactAddon(require('react-addons-css-transition-group'), 'CSSTransitionGroup');
+
+
+export const Location = ({ location, className, selected = false, favorite = null, ping = null, onClick, ...props } = {}) => {
+  let classes = [ 'location' ];
+  let tag = null;
+  if (location.disabled) {
+    classes.push('disabled');
+    tag = 'UNAVAILABLE';
+  }
+  switch (location.level) {
+    case 'free':
+      if (!location.disabled) {
+        classes.push('free');
+        tag = 'FREE';
+      }
+      break;
+    case 'premium':
+      if (!location.authorized || !location.disabled) {
+        classes.push('premium');
+        tag = 'PREMIUM';
+      }
+      break;
+    case 'developer':
+      classes.push('developer');
+      tag = 'DEV';
+      break;
+  }
+  if (selected) {
+    classes.push('selected');
+  }
+  if (favorite) {
+    classes.push('favorite');
+  }
+  if (ping) {
+    if (!ping.replies) return null;
+    ping = (ping.average * 1000).toFixed(0);
+    ping = (ping === "0") ? "<1ms" : (ping + "ms");
+  }
+  var flag = (dpi = '') => `../assets/img/flags/24/${location.country.toLowerCase()}${dpi}.png`;
+  return (
+    <div className={classList(classes, className)} data-value={location.id} onClick={onClick} {...props}>
+      {location.country ? <img className="flag" src={flag()} srcSet={`${flag()} 1x, ${flag('@2x')} 2x`} alt=""/> : null}
+      <span data-tag={tag}>{location.name}</span>
+      {ping ? <span className="ping-time">{ping}</span> : null}
+      {favorite !== null ? <i className="cp-fav icon"></i> : null}
+    </div>
+  );
+}
+
+
 
 
 export default class RegionSelector extends DaemonAware(React.Component) {
@@ -110,50 +160,13 @@ export default class RegionSelector extends DaemonAware(React.Component) {
     }
   }
 
-  formatPingTime(id) {
-    if (!this.state.pingStats) return null;
-    var s = this.state.pingStats[id];
-    if (!s) return null;
-    if (!s.replies) return null;
-    s = (s.average * 1000).toFixed(0);
-    return (s === "0") ? "<1ms" : (s + "ms");
-  }
-
   makeLocationHeader(id, name) {
     return <div key={id} className="header">{name}</div>;
   }
   makeLocation(location, type = 'location') {
     const clickable = type !== 'header';
-    var classes = [ 'region' ];
-    var tag = null;
-    if (location.disabled) {
-      classes.push('disabled');
-      tag = 'UNAVAILABLE';
-    }
-    switch (location.level) {
-      case 'free':
-        if (!location.disabled) {
-          classes.push('free');
-          tag = 'FREE';
-        }
-        break;
-      case 'premium':
-        if (!location.authorized || !location.disabled) {
-          classes.push('premium');
-          tag = 'PREMIUM';
-        }
-        break;
-      case 'developer':
-        classes.push('developer');
-        tag = 'DEV';
-        break;
-    }
-    if (this.state.selected === location.id) {
-      classes.push('selected');
-    }
-    if (this.state.favorites[location.id]) {
-      classes.push('favorite');
-    }
+    const key = type + '-' + location.id;
+    const ping = this.state.pingStats && this.state.pingStats[location.id];
     var onclick = event => {
       var value = event.currentTarget.getAttribute('data-value');
       if (event.target.className.indexOf('cp-fav') != -1) {
@@ -162,16 +175,10 @@ export default class RegionSelector extends DaemonAware(React.Component) {
         this.onLocationClick(value);
       }
     };
-    var flag = (dpi = '') => `../assets/img/flags/24/${location.country.toLowerCase()}${dpi}.png`;
-    return(
-      <div className={classes.join(' ')} data-value={clickable ? location.id : null} key={type + '-' + location.id} onClick={clickable ? onclick : null}>
-        {/* <i className={location.country.toLowerCase() + " flag"}></i> */}
-        <img className="flag" src={flag()} srcSet={`${flag()} 1x, ${flag('@2x')} 2x`} alt=""/>
-        <span data-tag={tag}>{location.name}</span>
-        {(type !== 'header') ? <span className="ping-time">{this.formatPingTime(location.id)}</span> : null}
-        <i className="cp-fav icon"></i>
-      </div>
-    );
+    if (clickable)
+      return <Location location={location} key={key} className="region" onClick={onclick} selected={this.state.selected === location.id} favorite={!!this.state.favorites[location.id]} ping={ping}/>;
+    else
+      return <Location location={location} key={key} className="region"/>;
   }
 
   makeRegionList(regions, locations) {
