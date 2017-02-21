@@ -40,7 +40,7 @@ ipc.on('navigate', (event, loc) => {
       app.emit('account-changed', null);
     }
   }
-})
+});
 
 // This event is received when the user attempts to close the window
 ipc.on('close', event => {
@@ -130,7 +130,7 @@ function createMainWindow() {
   window = new BrowserWindow({
     title: 'Cypherpunk Privacy',
     //icon: icon,
-    backgroundColor: '#1560bd',
+    backgroundColor: '#163238',
     show: false,
     fullscreen: false,
     useContentSize: true,
