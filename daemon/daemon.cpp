@@ -731,7 +731,7 @@ void CypherDaemon::WriteOpenVPNProfile(std::ostream& out, const JsonObject& serv
 		int dns_index = 10
 			+ (g_settings.blockAds() ? 1 : 0)
 			+ (g_settings.blockMalware() ? 2 : 0)
-			+ (g_settings.optimizeDNS() ? 4 : 0);
+			+ (g_settings.locationFlag() == "cypherplay" ? 4 : 0);
 		std::string dns_string = std::to_string(dns_index);
 		out << "dhcp-option DNS 10.10.10." << dns_string << endl;
 		out << "route 10.10.10." << dns_string << endl;
