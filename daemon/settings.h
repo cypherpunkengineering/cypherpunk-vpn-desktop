@@ -40,6 +40,7 @@ public:
 
 	JsonField(std::string, remotePort, "udp:7133")
 	JsonField(std::string, location, "tokyodev") // FIXME: don't hardcode
+	JsonField(std::string, locationFlag, "") // "cypherplay", "fastest", "fastest-us", "fastest-uk" or empty
 	JsonField(int, localPort, 0)
 	JsonField(int, mtu, 1500)
 	JsonField(std::string, encryption, "default") // "none", "default", "strong" or "stealth"
