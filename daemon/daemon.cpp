@@ -41,6 +41,8 @@ CypherDaemon::CypherDaemon()
 	, _connection_retries_left(0)
 	, _was_ever_connected(false)
 	, _valid_client_count(0)
+	, _ping_timer(_io)
+	, _next_ping_scheduled(false)
 {
 
 }
@@ -159,6 +161,7 @@ void CypherDaemon::OnFirstClientConnected()
 	// If the kill-switch is set to always on, trigger it when the first client connects
 	if (g_settings.firewall() == "on")
 		ApplyFirewallSettings();
+	PingServers();
 }
 
 void CypherDaemon::OnClientConnected(Connection c)
@@ -193,6 +196,8 @@ void CypherDaemon::OnLastClientDisconnected()
 				ApplyFirewallSettings();
 			break;
 	}
+	_ping_timer.cancel();
+	_next_ping_scheduled = false;
 }
 
 void CypherDaemon::OnReceiveMessage(Connection connection, WebSocketServer::message_ptr msg)
@@ -1055,6 +1060,10 @@ bool CypherDaemon::RPC_setFirewall(const jsonrpc::Value::Struct& params)
 void CypherDaemon::PingServers()
 {
 	auto now = std::chrono::steady_clock::now();
+	_ping_timer.cancel();
+	_last_ping_round = now;
+	_next_ping_scheduled = false;
+	auto stamp = now.time_since_epoch().count();
 	std::chrono::duration<double> cutoff = (now - std::chrono::minutes(60)).time_since_epoch();
 	auto pinger = std::make_shared<ServerPingerThinger>(_io);
 	for (const auto& p : g_config.locations())
@@ -1072,13 +1081,14 @@ void CypherDaemon::PingServers()
 		catch (...) {}
 	}
 	pinger->Start(5, [this](std::vector<ServerPingerThinger::Result> results) {
-		std::chrono::duration<double> now = std::chrono::steady_clock::now().time_since_epoch();
+		auto now = std::chrono::steady_clock::now();
+		auto stamp = std::chrono::duration<double>(now.time_since_epoch()).count();
 		for (auto& r : results)
 		{
 			LOG(INFO) << "Ping " << r.id << ": avg=" << (r.average * 1000) << " min=" << (r.minimum * 1000) << " max=" << (r.maximum * 1000) << " replies=" << r.replies << " timeouts=" << r.timeouts;
 			JsonObject obj;
 			if (r.replies > 0 || r.timeouts > 0)
-				obj.emplace("lastChecked", now.count());
+				obj.emplace("lastChecked", stamp);
 			obj.emplace("average", r.average);
 			obj.emplace("minimum", r.minimum);
 			obj.emplace("maximum", r.maximum);
@@ -1087,5 +1097,19 @@ void CypherDaemon::PingServers()
 			_ping_stats[r.id] = std::move(obj);
 		}
 		OnStateChanged(PING_STATS);
+		ScheduleNextPingServers(now + std::chrono::seconds(60));
 	});
+}
+
+void CypherDaemon::ScheduleNextPingServers(std::chrono::steady_clock::time_point t)
+{
+	if (!_next_ping_scheduled)
+	{
+		_next_ping_scheduled = true;
+		_ping_timer.cancel();
+		_ping_timer.expires_at(t);
+		_ping_timer.async_wait([this](const asio::error_code& error) {
+			if (!error) PingServers();
+		});
+	}
 }

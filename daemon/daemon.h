@@ -103,6 +103,7 @@ protected:
 	void NotifyChanges();
 
 	void PingServers();
+	void ScheduleNextPingServers(std::chrono::steady_clock::time_point t);
 	void WriteOpenVPNProfile(std::ostream& out, const JsonObject& server, OpenVPNProcess* process);
 
 	JsonObject MakeConfigObject(const std::unordered_set<std::string>* keys = nullptr);
@@ -168,6 +169,9 @@ protected:
 	size_t _connection_retries_left;
 	bool _was_ever_connected;
 	size_t _valid_client_count;
+	asio::basic_waitable_timer<std::chrono::steady_clock> _ping_timer;
+	std::chrono::steady_clock::time_point _last_ping_round;
+	bool _next_ping_scheduled;
 
 
 protected:
