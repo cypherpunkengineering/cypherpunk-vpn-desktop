@@ -32,8 +32,9 @@ void WriteJsonFile(const std::string& path, const JsonObject& obj);
 	private: \
 	type& _field_##name = InitializeField<type>(#name, default_value); \
 	public: \
+	type& name() { return _field_##name; } \
 	const type& name() const { return _field_##name; } \
-	template<typename T> const type& name(T&& value) { _field_##name = std::forward<T>(value); if (_on_changed) _on_changed(#name); return _field_##name; }
+	template<typename T> type& name(T&& value) { _field_##name = std::forward<T>(value); if (_on_changed) _on_changed(#name); return _field_##name; }
 
 class NativeJsonObject : protected JsonObject
 {
@@ -68,8 +69,9 @@ public:
 	const_iterator begin() const { return JsonObject::begin(); }
 	const_iterator end() const { return JsonObject::end(); }
 	const JsonObject& map() { return *this; }
-	const JsonValue& at(const std::string& name) { return JsonObject::at(name); }
-	const JsonValue& operator[](const std::string& name) { return JsonObject::operator[](name); }
+	JsonValue& at(const std::string& name) { return JsonObject::at(name); }
+	const JsonValue& at(const std::string& name) const { return JsonObject::at(name); }
+	JsonValue& operator[](const std::string& name) { return JsonObject::operator[](name); }
 
 	bool ReadFromDisk(const std::string& path, const char* type = "setting");
 	bool WriteToDisk(const std::string& path, const char* type = "setting") const;
