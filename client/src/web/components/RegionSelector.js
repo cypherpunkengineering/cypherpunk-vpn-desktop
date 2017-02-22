@@ -13,6 +13,7 @@ const ReactCSSTransitionGroup = reactAddon(require('react-addons-css-transition-
 
 
 export const Location = ({ location, className, selected = false, favorite = null, ping = null, onClick, ...props } = {}) => {
+  if (!location) return null;
   let classes = [ 'location' ];
   let tag = null;
   if (location.disabled) {

@@ -97,7 +97,7 @@ class Tray {
   }
   createMenu() {
     const hasLocations = typeof this.state.config.locations === 'object' && Object.keys(this.state.config.locations).length > 0;
-    const location = this.state.config.locations[this.state.settings.location];
+    const location = hasLocations && this.state.config.locations[this.state.settings.location];
     const state = this.state.state.state;
     const connected = state !== 'DISCONNECTED';
     let items = [];
