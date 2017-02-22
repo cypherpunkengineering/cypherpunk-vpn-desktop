@@ -64,7 +64,7 @@ export class QuickPanel extends DaemonAware(React.Component) {
 
   checkPingStats(stats) {
     let fastest = null, fastestUS = null, fastestUK = null;
-    Object.forEach(([id, ping]) => {
+    Object.forEach(stats, ([id, ping]) => {
       console.log(id, ping);
     });
     return { pingStats: stats };
