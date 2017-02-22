@@ -1061,7 +1061,7 @@ bool CypherDaemon::RPC_setFirewall(const jsonrpc::Value::Struct& params)
 
 void CypherDaemon::PingServers()
 {
-	const auto PING_INTERVAL = std::chrono::minutes(5);
+	static constexpr const auto PING_INTERVAL = std::chrono::minutes(5);
 	auto now = std::chrono::steady_clock::now();
 	_ping_timer.cancel();
 	_last_ping_round = now;
