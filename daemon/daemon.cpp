@@ -1059,12 +1059,13 @@ bool CypherDaemon::RPC_setFirewall(const jsonrpc::Value::Struct& params)
 
 void CypherDaemon::PingServers()
 {
+	const auto PING_INTERVAL = std::chrono::minutes(5);
 	auto now = std::chrono::steady_clock::now();
 	_ping_timer.cancel();
 	_last_ping_round = now;
 	_next_ping_scheduled = false;
 	auto stamp = now.time_since_epoch().count();
-	std::chrono::duration<double> cutoff = (now - std::chrono::minutes(60)).time_since_epoch();
+	std::chrono::duration<double> cutoff = (now - PING_INTERVAL).time_since_epoch();
 	auto pinger = std::make_shared<ServerPingerThinger>(_io);
 	for (const auto& p : g_config.locations())
 	{
@@ -1097,7 +1098,7 @@ void CypherDaemon::PingServers()
 			_ping_stats[r.id] = std::move(obj);
 		}
 		OnStateChanged(PING_STATS);
-		ScheduleNextPingServers(now + std::chrono::seconds(60));
+		ScheduleNextPingServers(now + PING_INTERVAL);
 	});
 }
 
