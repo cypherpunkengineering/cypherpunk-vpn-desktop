@@ -40,6 +40,7 @@ CypherDaemon::CypherDaemon()
 	, _notify_scheduled(false)
 	, _connection_retries_left(0)
 	, _was_ever_connected(false)
+	, _valid_client_count(0)
 {
 
 }
@@ -51,12 +52,18 @@ int CypherDaemon::Run()
 	_ws_server.set_message_handler(std::bind(&CypherDaemon::OnReceiveMessage, this, _1, _2));
 	_ws_server.set_open_handler([this](Connection c) {
 		bool first = _connections.empty();
-		_connections.insert(c);
+		_connections.insert(std::make_pair(c, false));
 		if (first) OnFirstClientConnected();
 		OnClientConnected(c);
 	});
 	_ws_server.set_close_handler([this](Connection c) {
-		_connections.erase(c);
+		try
+		{
+			if (_connections.at(c))
+				--_valid_client_count;
+			_connections.erase(c);
+		}
+		catch (...) {}
 		OnClientDisconnected(c);
 		if (_connections.empty()) OnLastClientDisconnected();
 	});
@@ -139,7 +146,7 @@ void CypherDaemon::SendToClient(Connection connection, const std::shared_ptr<jso
 void CypherDaemon::SendToAllClients(const std::shared_ptr<jsonrpc::FormattedData>& data)
 {
 	for (const auto& it : _connections)
-		SendToClient(it, data);
+		SendToClient(it.first, data);
 }
 
 void CypherDaemon::SendErrorToAllClients(const std::string& name, const std::string& description)

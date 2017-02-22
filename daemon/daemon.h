@@ -88,6 +88,7 @@ public:
 protected:
 	typedef websocketpp::connection_hdl Connection;
 	typedef std::set<Connection, std::owner_less<Connection>> ConnectionList;
+	typedef std::map<Connection, bool, std::owner_less<Connection>> ConnectionMap;
 
 	void SendToClient(Connection con, const std::shared_ptr<jsonrpc::FormattedData>& data);
 	void SendToAllClients(const std::shared_ptr<jsonrpc::FormattedData>& data);
@@ -127,7 +128,7 @@ protected:
 
 	asio::io_service _io;
 	WebSocketServer _ws_server;
-	ConnectionList _connections;
+	ConnectionMap _connections;
 	jsonrpc::JsonFormatHandler _json_handler;
 	JsonRPCDispatcher _dispatcher;
 	JsonRPCClient _rpc_client;
@@ -166,6 +167,7 @@ protected:
 	// Number of reconnection to tolerate before we should treat as disconnected. Initally set to the number of <connection> entries
 	size_t _connection_retries_left;
 	bool _was_ever_connected;
+	size_t _valid_client_count;
 
 
 protected:
