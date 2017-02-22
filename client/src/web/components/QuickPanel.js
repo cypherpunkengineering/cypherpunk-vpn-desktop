@@ -64,10 +64,16 @@ export class QuickPanel extends DaemonAware(React.Component) {
 
   checkPingStats(stats) {
     let fastest = null, fastestUS = null, fastestUK = null;
-    Object.forEach(stats, ([id, ping]) => {
-      console.log(id, ping);
+    let locations = this.state.locations;
+    Object.forEach(stats, (id, ping) => {
+      if (ping.replies) {
+        if (locations[id] && (!fastest || ping.average < stats[fastest].average)) fastest = id;
+        if (locations[id] && locations[id].country.toLowerCase() == 'us' && (!fastestUS || ping.average < stats[fastestUS].average)) fastestUS = id;
+        if (locations[id] && locations[id].country.toLowerCase() == 'gb' && (!fastestUK || ping.average < stats[fastestUK].average)) fastestUK = id;
+      }
     });
-    return { pingStats: stats };
+    // TODO: Disable buttons when stats are unavailable
+    return { fastest, fastestUS, fastestUK, pingStats: stats };
   }
 
   onClick(button, event) {
