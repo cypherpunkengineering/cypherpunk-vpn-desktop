@@ -759,13 +759,15 @@ void CypherDaemon::WriteOpenVPNProfile(std::ostream& out, const JsonObject& serv
 
 bool CypherDaemon::RPC_connect()
 {
-	// FIXME: Shouldn't simply read raw profile parameters from the params
-	const JsonObject& settings = g_settings.map();
-
 	// Access the region early, should trigger an exception if it doesn't exist (before we've done any state changes)
 	g_settings.currentLocation();
 
 	{
+		std::chrono::duration<double> timestamp = std::chrono::steady_clock::now().time_since_epoch();
+		g_settings.lastConnected()[g_settings.location()] = JsonValue(timestamp.count());
+		// Secretly modified properties, need to explicitly notify
+		g_settings.OnChanged("lastConnected");
+
 		static const int MAX_RECENT_ITEMS = 3;
 		JsonArray recent = g_settings.recent();
 		recent.erase(std::remove(recent.begin(), recent.end(), g_settings.location()), recent.end());

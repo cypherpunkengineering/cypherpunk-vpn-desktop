@@ -63,7 +63,8 @@ public:
 	JsonField(bool, showNotifications, true)
 
 	JsonField(JsonArray, favorites, {});
-	JsonField(JsonArray, recent, {});
+	JsonField(JsonArray, recent, {}); // deprecated
+	JsonField(JsonObject, lastConnected, {});
 
 	const JsonObject& currentLocation() const { return g_config.locations().at(location()).AsObject(); }
 };
