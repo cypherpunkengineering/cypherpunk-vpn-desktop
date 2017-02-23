@@ -56,7 +56,7 @@ export class QuickPanel extends DaemonAware(React.Component) {
     } else if (/*button != this.state.selected &&*/ !event.currentTarget.classList.contains('disabled')) {
       let settings = { locationFlag: '' };
       switch (button) {
-        case 0: settings.location = this.state.fastest; settings.locationFlag = 'cypherpunk'; break;
+        case 0: settings.location = this.state.fastest; settings.locationFlag = 'cypherplay'; break;
         case 1: settings.location = this.state.fastest; settings.locationFlag = 'fastest'; break;
         case 2: settings.location = this.state.fastestUS; settings.locationFlag = 'fastest-us'; break;
         case 3: settings.location = this.state.fastestUK; settings.locationFlag = 'fastest-uk'; break;
