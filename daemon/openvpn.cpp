@@ -32,6 +32,7 @@ OpenVPNProcess::OpenVPNProcess(asio::io_service& io)
 	, _management_acceptor(io, asio::ip::tcp::endpoint(asio::ip::address::from_string("127.0.0.1"), 0), true)
 	, _management_socket(io)
 	, _management_signaled(false)
+	, _cypherplay(false)
 	, stale(false)
 {
 
@@ -51,6 +52,7 @@ void OpenVPNProcess::CopySettings()
 		if (it != g_settings.map().end())
 			_connection[name] = JsonValue(it->second);
 	}
+	_cypherplay = g_settings.locationFlag() == "cypherplay";
 	_connection_server = g_settings.currentLocation();
 	const JsonObject& login = g_account.privacy();
 	_username = login.at("username").AsString();
@@ -74,6 +76,8 @@ bool OpenVPNProcess::CompareSettings()
 			return false;
 	}
 	if (_connection_server != g_settings.currentLocation())
+		return false;
+	if (_cypherplay != (g_settings.locationFlag() == "cypherplay"))
 		return false;
 	return true;
 }

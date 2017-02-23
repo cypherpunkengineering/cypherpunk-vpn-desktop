@@ -33,7 +33,7 @@ protected:
 	std::string _username;
 	std::string _password;
 
-	bool _management_signaled;
+	bool _management_signaled, _cypherplay;
 
 private:
 	void HandleManagementWrite(const asio::error_code& error, std::size_t bytes_transferred);
