@@ -3,6 +3,7 @@ import EventEmitter from 'events';
 import { RPC, IPCImpl } from '../rpc.js';
 import Loader from './loader.js';
 import './unload.js';
+import './util.js';
 
 var ipc, rpc, daemon;
 var opened = false;
@@ -107,11 +108,12 @@ export const DaemonAware = (Base = React.Component) => class extends Base {
   constructor(props) {
     super(props);
     this._daemonThunks = {
-      account: a => this.daemonAccountChanged(a),
-      config: c => this.daemonConfigChanged(c),
-      settings: s => this.daemonSettingsChanged(s),
-      state: s => this.daemonStateChanged(s),
-    }; 
+      account: a => { this.daemonChanged('account', a); this.daemonAccountChanged(a); },
+      config: c => { this.daemonChanged('config', c); this.daemonConfigChanged(c); },
+      settings: s => { this.daemonChanged('settings', s); this.daemonSettingsChanged(s); },
+      state: s => { this.daemonChanged('state', s); this.daemonStateChanged(s); },
+    };
+    this._daemonSubscriptions = { account: {}, config: {}, settings: {}, state: {} };
   }
   componentDidMount() {
     if (super.componentDidMount) super.componentDidMount();
@@ -127,9 +129,81 @@ export const DaemonAware = (Base = React.Component) => class extends Base {
     daemon.removeListener('config', this._daemonThunks.config);
     daemon.removeListener('account', this._daemonThunks.account);
   }
+  daemonChanged(category, values) {
+    let subscriptions = this._daemonSubscriptions[category];
+    Object.forEach(values, (key, value) => {
+      if (subscriptions.hasOwnProperty(key)) {
+        let s = subscriptions[key];
+        let name = s.as || key;
+        if (s.filter) value = s.filter(value);
+        let oldValue = this.state[name];
+        if (s.onBeforeChange) {
+          let r = s.onBeforeChange(value, oldValue, name);
+          if (r && typeof r === 'object') this.setState(r);
+        }
+        this.setState({ [name]: value });
+        if (s.onChange) {
+          let r = s.onChange(value, oldValue, name);
+          if (r && typeof r === 'object') this.setState(r);
+        }
+      }
+    });
+  }
   daemonAccountChanged(account) {}
   daemonConfigChanged(config) {}
   daemonSettingsChanged(settings) {}
   daemonStateChanged(state) {}
+
+  daemonSubscribeState(values) {
+    let state = {};
+    let parse = (category, key, args) => {
+      let def = {};
+      category = category || args.shift();
+      key = key || args.shift();
+      def.as = args.shift();
+      let props = args.shift();
+      if (typeof def.as === 'object' && !props) {
+        props = def.as;
+        delete def.as;
+      }
+      if (props && typeof props === 'object') {
+        Object.assign(def, props);
+      }
+      this._daemonSubscriptions[category][key] = def;
+      state[def.as || key] = (def.filter || (a => a))(daemon[category][key]);
+    };
+    if (Array.isArray(values)) {
+      if (!values.length || Array.isArray(values[0])) {
+        // daemonSubscribeState([ [ 'category', 'name', ... ], [ 'category', 'name', ... ] ]);
+        values.forEach(value => parse(null, null, value));
+      } else {
+        // daemonSubscribeState([ 'category', 'name', ... ]);
+        parse(null, null, value);
+      }
+    } else if (values && typeof values === 'object') {
+      for (let category of Object.keys(this._daemonSubscriptions)) {
+        let categoryValues = values[category];
+        if (Array.isArray(categoryValues)) {
+          if (!categoryValues.length || Array.isArray(categoryValues[0])) {
+            // daemonSubscribeState({ category: [ [ 'name', ... ], [ 'name', ... ] ] });
+            categoryValues.forEach(value => parse(category, null, value));
+          } else {
+            // daemonSubscribeState({ category: [ 'name', ... ], [ 'name', ... ] });
+            parse(category, null, value);
+          }
+        } else if (categoryValues && typeof categoryValues === 'object') {
+          // daemonSubscribeState({ category: { name: ..., name: ... } });
+          Object.forEach(categoryValues, (key, value) => {
+            parse(category, key, Array.isArray(value) ? value : [value]);
+          });
+        }
+      }
+    } else {
+      // daemonSubscribeState('category', 'name', ...);
+      parse(null, null, [...arguments]);
+    }
+    if (!this.state) this.state = {};
+    Object.assign(this.state, state);
+  }
 };
 
