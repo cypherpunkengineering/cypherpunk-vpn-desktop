@@ -74,12 +74,19 @@ export class QuickPanel extends DaemonAware(React.Component) {
   }
 
   render() {
+    let cypherPlayDisabledWarning = {};
+    if (!this.state.overrideDNS) {
+      cypherPlayDisabledWarning = {
+        'data-tooltip': "CypherPlay is unavailable due to compatibility settings",
+        'data-position': "top left"
+      };
+    }
     return(
       <div className="quick-panel">
         <div className="description">CONNECT TO</div>
         <Location className="selected-location" location={this.state.locations[this.state.location]}/>
         <div className="grid">
-          <div className={classList("cypherplay", { "selected": this.state.selected === 0, "disabled": !this.state.fastest || !this.state.overrideDNS })} onClick={e => this.onClick(0, e)}>
+          <div className={classList("cypherplay", { "selected": this.state.selected === 0, "disabled": !this.state.fastest || !this.state.overrideDNS })} onClick={e => this.onClick(0, e)} {...cypherPlayDisabledWarning}>
             <RetinaImage src={CypherPlayIcon}/><span>CypherPlay&trade;</span>
           </div>
           <div className={classList("fastest", { "selected": this.state.selected === 1, "disabled": !this.state.fastest })} onClick={e => this.onClick(1, e)}>

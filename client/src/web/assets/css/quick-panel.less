@@ -69,6 +69,18 @@
         margin-bottom: 14px;
         border-width: 2px;
       }
+      &[data-tooltip] {
+        &::before, &::after {
+          bottom: 85%;
+        }
+        &::before {
+          left: 48px;
+        }
+        &::after {
+          left: 10px;
+          transform-origin: 45px bottom;
+        }
+      }
     }
     > * {
       width: 80px;
