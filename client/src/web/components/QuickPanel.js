@@ -15,7 +15,7 @@ export class QuickPanel extends DaemonAware(React.Component) {
     this.daemonSubscribeState({
       config: { locations: true, regions: true, countryNames: true, regionNames: true, regionOrder: true },
       settings: { location: true, locationFlag: true, favorites: v => { favorites: Array.toDict(v, f => f, f => true) }, lastConnected: true, overrideDNS: true },
-      state: { pingStats: true },
+      state: { state: true, connect: true, pingStats: true },
     });
   }
   state = {
@@ -81,9 +81,17 @@ export class QuickPanel extends DaemonAware(React.Component) {
         'data-position': "top left"
       };
     }
+    let connectString;
+    switch (this.state.state) {
+      default:
+      case 'DISCONNECTED': connectString = "CONNECT TO"; break;
+      case 'CONNECTING': connectString = "CONNECTING TO"; break;
+      case 'CONNECTED': connectString = "CONNECTED TO"; break;
+      case 'DISCONNECTING': connectString = "DISCONNECTING FROM"; break;
+    }
     return(
       <div className="quick-panel">
-        <div className="description">CONNECT TO</div>
+        <div className="description">{connectString}</div>
         <Location className="selected-location" location={this.state.locations[this.state.location]}/>
         <div className="grid">
           <div className={classList("cypherplay", { "selected": this.state.selected === 0, "disabled": !this.state.fastest || !this.state.overrideDNS })} onClick={e => this.onClick(0, e)} {...cypherPlayDisabledWarning}>
