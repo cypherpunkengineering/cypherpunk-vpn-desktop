@@ -133,6 +133,27 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   }
 }
 
+[data-tooltip] {
+  &::before, &::after {
+    color: black !important;
+    z-index: 10;
+  }
+  &::before {
+    z-index: 11;
+    background: screen(@themeMainBackground, #888) !important;
+  }
+  &[data-position~=bottom] {
+    &::before {
+      background: screen(@themeMainBackground, #aaa) !important;
+    }
+  }
+  &::after {
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.25);
+    background: linear-gradient(to bottom, screen(@themeMainBackground, #aaa) 20%, screen(@themeMainBackground, #888) 80%);
+  }
+}
+
+
 .cp.titlebar {
   background: @themeTitlebarBackground;
   border-bottom: 2px solid @cpWhite20;
@@ -495,15 +516,6 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     &[data-tooltip] {
       &:before, &:after {
         top: 86% !important;
-        color: black !important;
-        z-index: 2;
-      }
-      &:before {
-        background: screen(@themeMainBackground, #aaa) !important;
-      }
-      &:after {
-        box-shadow: 2px 2px 5px rgba(0,0,0,0.25);
-        background: linear-gradient(to bottom, screen(@themeMainBackground, #aaa), screen(@themeMainBackground, #888));
       }
     }
     &[data-position~="left"][data-tooltip] {
