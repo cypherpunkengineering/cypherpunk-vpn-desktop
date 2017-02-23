@@ -99,7 +99,7 @@
         font-size: 24px;
         line-height: 50px;
       }
-      &:not(.disabled) {
+      &:not(.selected):not(.disabled), &.other {
         &:hover {
           transition: 0.1s;
           background: @themeWindowBackground;
@@ -120,10 +120,13 @@
         }
       }
       &.selected {
-        background: #255 !important;
+        background: fade(@themeLightBackground, 50%) !important;
         color: #fff !important;
         > img, > i {
           border-color: #8cc !important;
+        }
+        &:not(.other) {
+          cursor: default;
         }
       }
       &.disabled {

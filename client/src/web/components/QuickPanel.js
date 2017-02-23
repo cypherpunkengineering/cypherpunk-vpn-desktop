@@ -58,21 +58,22 @@ export class QuickPanel extends DaemonAware(React.Component) {
   onClick(button, event) {
     if (button === 6) {
       // Show full location list
-    } else if (button != this.state.selected && !this.state.buttons[button].disabled) {
-      let settings = {};
-      if (button === 0) {
-        settings.optimizeDNS = true;
-      } else if (this.state.selected === 0) {
-        settings.optimizeDNS = false;
-      }
+    } else if (button != this.state.selected && !event.target.classList.contains('disabled')) {
+      let settings = { locationFlag: '' };
       switch (button) {
-        case 0: settings.location = this.state.fastest; break;
-        case 1: settings.location = this.state.fastest; break;
-        case 2: settings.location = this.state.fastestUS; break;
-        case 3: settings.location = this.state.fastestUK; break;
+        case 0: settings.location = this.state.fastest; settings.locationFlag = 'cypherpunk'; break;
+        case 1: settings.location = this.state.fastest; settings.locationFlag = 'fastest'; break;
+        case 2: settings.location = this.state.fastestUS; settings.locationFlag = 'fastest-us'; break;
+        case 3: settings.location = this.state.fastestUK; settings.locationFlag = 'fastest-uk'; break;
         case 4: break;
         case 5: break;
       }
+      if (settings.hasOwnProperty('location') && !location) {
+        console.error("Can't connect - no known fastest server");
+        return;
+      }
+      this.setState({ selected: button });
+      return;
       daemon.call.applySettings(settings).then(() => {
         daemon.post.connect();
       });
@@ -85,25 +86,25 @@ export class QuickPanel extends DaemonAware(React.Component) {
         <div className="description">CONNECT TO</div>
         <Location className="selected-location" location={this.state.locations[this.state.location]}/>
         <div className="grid">
-          <div className={classList("cypherplay", { "selected disabled": this.state.selected === 0 })} onClick={e => this.onClick(0, e)}>
+          <div className={classList("cypherplay", { "selected": this.state.selected === 0 })} onClick={e => this.onClick(0, e)}>
             <RetinaImage src={CypherPlayIcon}/><span>CypherPlay&trade;</span>
           </div>
-          <div className={classList("fastest", { "selected disabled": this.state.selected === 1 })} onClick={e => this.onClick(1)}>
+          <div className={classList("fastest", { "selected": this.state.selected === 1 })} onClick={e => this.onClick(1, e)}>
             <RetinaImage src={FastestIcon}/><span>Fastest</span>
           </div>
-          <div className={classList("fastest-us", { "selected disabled": this.state.selected === 2 })} onClick={e => this.onClick(2)}>
+          <div className={classList("fastest-us", { "selected": this.state.selected === 2 })} onClick={e => this.onClick(2, e)}>
             <Flag country="us"/><span>Fastest US</span>
           </div>
-          <div className={classList("fastest-uk", { "selected disabled": this.state.selected === 3 })} onClick={e => this.onClick(3)}>
+          <div className={classList("fastest-uk", { "selected": this.state.selected === 3 })} onClick={e => this.onClick(3, e)}>
             <Flag country="gb"/><span>Fastest UK</span>
           </div>
-          <div className={classList("favorite disabled", { "selected disabled": this.state.selected === 4 })} onClick={e => this.onClick(4, e)}>
+          <div className={classList("favorite disabled", { "selected": this.state.selected === 4 })} onClick={e => this.onClick(4, e)}>
 
           </div>
-          <div className={classList("recent disabled", { "selected disabled": this.state.selected === 5 })} onClick={e => this.onClick(5, e)}>
+          <div className={classList("recent disabled", { "selected": this.state.selected === 5 })} onClick={e => this.onClick(5, e)}>
 
           </div>
-          <div className={classList("other selected", { "selected": this.state.selected === 6 })} onClick={e => this.onClick(6, e)}>
+          <div className={classList("other", { "selected": this.state.selected === 6 })} onClick={e => this.onClick(6, e)}>
             <i className="horizontal ellipsis icon"/><span>Other</span>
           </div>
         </div>
