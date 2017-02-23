@@ -182,7 +182,10 @@ export const DaemonAware = (Base = React.Component) => class extends Base {
     if (!this.state) this.state = {};
     let combinedState = Object.assign({}, this.state);
     Object.assign(this.state, state);
-    this.daemonDataChanged(Object.assign(combinedState, state));
+    let extra = this.daemonDataChanged(Object.assign(combinedState, state));
+    if (extra && typeof extra === 'object') {
+      Object.assign(this.state, extra);
+    }
   }
 };
 
