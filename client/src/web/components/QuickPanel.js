@@ -12,19 +12,13 @@ export class QuickPanel extends DaemonAware(React.Component) {
 
   constructor(props) {
     super(props);
-    Object.assign(this.state, this.checkPingStats(daemon.state.pingStats));
+    this.daemonSubscribeState({
+      config: { locations: {}, regions: {}, countryNames: {}, regionNames: {}, regionOrder: {} },
+      settings: { location: {}, locationFlag: {}, favorites: { filter: v => Array.toDict(v, f => f, f => true) }, lastConnected: {} },
+      state: { pingStats: { onChange: stats => this.checkPingStats(stats) } },
+    });
   }
   state = {
-    locations: daemon.config.locations,
-    regions: daemon.config.regions,
-    countryNames: daemon.config.countryNames,
-    regionNames: daemon.config.regionNames,
-    regionOrder: daemon.config.regionOrder,
-    location: daemon.settings.location,
-    locationFlag: daemon.settings.locationFlag,
-    favorites: Array.toDict(daemon.settings.favorites, f => f, f => true),
-    lastConnected: daemon.settings.lastConnected,
-    pingStats: daemon.state.pingStats,
     selected: 6,
     fastest: null,
     fastestUS: null,
@@ -32,19 +26,7 @@ export class QuickPanel extends DaemonAware(React.Component) {
     custom1: null,
     custom2: null,
   }
-  daemonConfigChanged(config) {
-    if (config.hasOwnProperty('locations')) this.setState({ locations: config.locations });
-    if (config.hasOwnProperty('regions')) this.setState({ regions: config.regions });
-    if (config.hasOwnProperty('countryNames')) this.setState({ countryNames: config.countryNames });
-    if (config.hasOwnProperty('regionNames')) this.setState({ regionNames: config.regionNames });
-    if (config.hasOwnProperty('regionOrder')) this.setState({ regionOrder: config.regionOrder });
-  }
   daemonSettingsChanged(settings) {
-    if (settings.hasOwnProperty('location')) this.setState({ location: settings.location });
-    if (settings.hasOwnProperty('locationFlag')) this.setState({ locationFlag: settings.locationFlag });
-    if (settings.hasOwnProperty('favorites')) this.setState({ favorites: Array.toDict(settings.favorites, f => f, f => true) });
-    if (settings.hasOwnProperty('lastConnected')) this.setState({ lastConnected: settings.lastConnected });
-
     let selected = 6; // other
     switch (this.state.locationFlag) {
       case 'cypherplay': selected = 0; break;
@@ -57,9 +39,6 @@ export class QuickPanel extends DaemonAware(React.Component) {
         break;
     }
     if (selected !== this.state.selected) this.setState({ selected: selected });
-  }
-  daemonStateChanged(state) {
-    if (state.hasOwnProperty('pingStats')) this.setState(this.checkPingStats(state.pingStats));
   }
 
   checkPingStats(stats) {
