@@ -121,6 +121,16 @@ function oncall(method, params, id) {
 function onpost(method, params) {
   if (window) window.webContents.send('daemon-post', method, params);
   switch (method) {
+    case 'data':
+      ['config','account','settings','state'].forEach(type => {
+        if (params[0].hasOwnProperty(type)) {
+          filterChanges(daemon[type], params[0][type]);
+          Object.assign(daemon[type], params[0][type]);
+          daemon.emit(type, params[0][type]); // deprecated
+        }
+      });
+      break;
+    // deprecated
     case 'account':
     case 'config':
     case 'settings':

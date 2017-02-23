@@ -166,10 +166,12 @@ void CypherDaemon::OnFirstClientConnected()
 
 void CypherDaemon::OnClientConnected(Connection c)
 {
-	SendToClient(c, _rpc_client.BuildNotificationData("config", MakeConfigObject()));
-	SendToClient(c, _rpc_client.BuildNotificationData("account", MakeAccountObject()));
-	SendToClient(c, _rpc_client.BuildNotificationData("settings", g_settings.map()));
-	SendToClient(c, _rpc_client.BuildNotificationData("state", MakeStateObject()));
+	JsonObject data;
+	data["config"] = MakeConfigObject();
+	data["account"] = MakeAccountObject();
+	data["settings"] = MakeSettingsObject();
+	data["state"] = MakeStateObject();
+	SendToClient(c, _rpc_client.BuildNotificationData("data", std::move(data)));
 }
 
 void CypherDaemon::OnClientDisconnected(Connection c)
@@ -221,7 +223,7 @@ void CypherDaemon::OnReceiveMessage(Connection connection, WebSocketServer::mess
 			// Special case: the 'get' method responds with a separate notification
 			if (request.GetMethodName() == "get")
 			{
-				SendToClient(connection, _rpc_client.BuildNotificationData(request.GetParameters().front().AsString(), response.GetResult()));
+				SendToClient(connection, _rpc_client.BuildNotificationData("data", response.GetResult()));
 				return;
 			}
 			if (response.GetId().IsBoolean() && response.GetId().AsBoolean() == false)
@@ -434,25 +436,29 @@ void CypherDaemon::NotifyChanges()
 	_to_notify.settings.clear();
 	_to_notify.state = 0;
 
+	JsonObject data;
+
 	if (config.size())
 	{
-		SendToAllClients(_rpc_client.BuildNotificationData("config", MakeConfigObject(&config)));
+		data["config"] = MakeConfigObject(&config);
 		g_config.WriteToDisk();
 	}
 	if (account.size())
 	{
-		SendToAllClients(_rpc_client.BuildNotificationData("account", MakeAccountObject(&account)));		
+		data["account"] = MakeAccountObject(&account);
 		g_account.WriteToDisk();
 	}
 	if (settings.size())
 	{
-		SendToAllClients(_rpc_client.BuildNotificationData("settings", MakeSettingsObject(&settings)));
+		data["settings"] = MakeSettingsObject(&settings);
 		g_settings.WriteToDisk();
 	}
 	if (state != 0)
 	{
-		SendToAllClients(_rpc_client.BuildNotificationData("state", MakeStateObject(state)));
+		data["state"] = MakeStateObject(state);
 	}
+
+	SendToAllClients(_rpc_client.BuildNotificationData("data", std::move(data)));
 
 	if (config.count("locations"))
 		PingServers();
@@ -496,15 +502,16 @@ JsonObject CypherDaemon::MakeStateObject(int flags)
 
 JsonObject CypherDaemon::RPC_get(const std::string& type)
 {
-	if (type == "state")
-		return MakeStateObject();
-	if (type == "settings")
-		return g_settings.map();
-	if (type == "account")
-		return MakeAccountObject();
-	if (type == "config")
-		return MakeConfigObject();
-	throw jsonrpc::InvalidParametersFault();
+	JsonObject data;
+	if (type == "state" || type == "all")
+		data["state"] = MakeStateObject();
+	if (type == "settings" || type == "all")
+		data["settings"] = MakeSettingsObject();
+	if (type == "account" || type == "all")
+		data["account"] = MakeAccountObject();
+	if (type == "config" || type == "all")
+		data["config"] = MakeConfigObject();
+	return data;
 }
 
 

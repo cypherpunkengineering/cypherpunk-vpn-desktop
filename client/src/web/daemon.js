@@ -53,6 +53,16 @@ class Daemon extends EventEmitter {
 
 function onpost(method, params) {
   switch (method) {
+    case 'data':
+      [ 'config', 'account', 'settings', 'state' ].forEach(type => {
+        if (params[0].hasOwnProperty(type)) {
+          filterChanges(daemon[type], params[0][type]);
+          Object.assign(daemon[type], params[0][type]);
+          if (opened) daemon.emit(type, params[0][type]); // deprecated
+        }
+      });
+      break;
+    // deprecated
     case 'account':
     case 'config':
     case 'settings':
@@ -65,7 +75,8 @@ function onpost(method, params) {
 }
 
 function up(event, data) {
-  [ 'config', 'account', 'settings', 'state' ].forEach(s => onpost(s, [ data[s] ]));
+  onpost('data', [ data ]);
+  [ 'config', 'account', 'settings', 'state' ].forEach(s => onpost(s, [ data[s] ])); // deprecated
   opened = true;
   errorCount = 0;
   var cbs = readyCallbacks;
@@ -107,103 +118,71 @@ import React from 'react';
 export const DaemonAware = (Base = React.Component) => class extends Base {
   constructor(props) {
     super(props);
-    this._daemonThunks = {
-      account: a => { this.daemonChanged('account', a); this.daemonAccountChanged(a); },
-      config: c => { this.daemonChanged('config', c); this.daemonConfigChanged(c); },
-      settings: s => { this.daemonChanged('settings', s); this.daemonSettingsChanged(s); },
-      state: s => { this.daemonChanged('state', s); this.daemonStateChanged(s); },
+    this._daemon = {
+      onDataChanged: data => {
+        let combinedState = Object.assign({}, this.state);
+        let changed = false;
+        Object.forEach(this._daemon.subscriptions, (category, keyMap) => {
+          if (data.hasOwnProperty(category)) {
+            changed = true;
+            let state = {};
+            let values = data[category];
+            if (typeof values === 'object' && values) {
+              Object.forEach(keyMap, (key, mapper) => {
+                if (values.hasOwnProperty(key)) {
+                  Object.assign(state, mapper(values[key]));
+                }
+              });
+            }
+            this.setState(state);
+            this['daemon' + category.charAt(0).toUpperCase() + category.slice(1) + 'Changed'](values); // deprecated
+            Object.assign(combinedState, state);
+          }
+        });
+        if (changed) {
+          let extra = this.daemonDataChanged(combinedState);
+          if (extra && typeof extra === 'object') {
+            this.setState(extra);
+          }
+        }
+      },
+      subscriptions: { account: {}, config: {}, settings: {}, state: {} }
     };
-    this._daemonSubscriptions = { account: {}, config: {}, settings: {}, state: {} };
   }
   componentDidMount() {
     if (super.componentDidMount) super.componentDidMount();
-    daemon.on('account', this._daemonThunks.account);
-    daemon.on('config', this._daemonThunks.config);
-    daemon.on('settings', this._daemonThunks.settings);
-    daemon.on('state', this._daemonThunks.state);
+    daemon.on('data', this._daemon.onDataChanged);
   }
   componentWillUnmount() {
     if (super.componentWillUnmount) super.componentWillUnmount();
-    daemon.removeListener('state', this._daemonThunks.state);
-    daemon.removeListener('settings', this._daemonThunks.settings);
-    daemon.removeListener('config', this._daemonThunks.config);
-    daemon.removeListener('account', this._daemonThunks.account);
+    daemon.removeListener('data', this._daemon.onDataChanged);
   }
-  daemonChanged(category, values) {
-    let subscriptions = this._daemonSubscriptions[category];
-    Object.forEach(values, (key, value) => {
-      if (subscriptions.hasOwnProperty(key)) {
-        let s = subscriptions[key];
-        let name = s.as || key;
-        if (s.filter) value = s.filter(value);
-        let oldValue = this.state[name];
-        if (s.onBeforeChange) {
-          let r = s.onBeforeChange(value, oldValue, name);
-          if (r && typeof r === 'object') this.setState(r);
-        }
-        this.setState({ [name]: value });
-        if (s.onChange) {
-          let r = s.onChange(value, oldValue, name);
-          if (r && typeof r === 'object') this.setState(r);
-        }
-      }
-    });
-  }
+  daemonDataChanged(state) {} // TODO: Rename to daemonStateChanged
   daemonAccountChanged(account) {}
   daemonConfigChanged(config) {}
   daemonSettingsChanged(settings) {}
   daemonStateChanged(state) {}
 
-  daemonSubscribeState(values) {
+  daemonSubscribeState(map) {
     let state = {};
-    let parse = (category, key, args) => {
-      let def = {};
-      category = category || args.shift();
-      key = key || args.shift();
-      def.as = args.shift();
-      let props = args.shift();
-      if (typeof def.as === 'object' && !props) {
-        props = def.as;
-        delete def.as;
-      }
-      if (props && typeof props === 'object') {
-        Object.assign(def, props);
-      }
-      this._daemonSubscriptions[category][key] = def;
-      state[def.as || key] = (def.filter || (a => a))(daemon[category][key]);
-    };
-    if (Array.isArray(values)) {
-      if (!values.length || Array.isArray(values[0])) {
-        // daemonSubscribeState([ [ 'category', 'name', ... ], [ 'category', 'name', ... ] ]);
-        values.forEach(value => parse(null, null, value));
-      } else {
-        // daemonSubscribeState([ 'category', 'name', ... ]);
-        parse(null, null, value);
-      }
-    } else if (values && typeof values === 'object') {
-      for (let category of Object.keys(this._daemonSubscriptions)) {
-        let categoryValues = values[category];
-        if (Array.isArray(categoryValues)) {
-          if (!categoryValues.length || Array.isArray(categoryValues[0])) {
-            // daemonSubscribeState({ category: [ [ 'name', ... ], [ 'name', ... ] ] });
-            categoryValues.forEach(value => parse(category, null, value));
-          } else {
-            // daemonSubscribeState({ category: [ 'name', ... ], [ 'name', ... ] });
-            parse(category, null, value);
+    Object.forEach(this._daemon.subscriptions, category => {
+      let keyMap = map[category];
+      if (keyMap) {
+        Object.forEach(keyMap, (key, value) => {
+          if (typeof value === 'string') {
+            value = (function(name, v) { return { [name] : v }}).bind(null, value);
+          } else if (typeof value !== 'function') {
+            value = (function(name, v) { return { [name] : v }}).bind(null, key);
           }
-        } else if (categoryValues && typeof categoryValues === 'object') {
-          // daemonSubscribeState({ category: { name: ..., name: ... } });
-          Object.forEach(categoryValues, (key, value) => {
-            parse(category, key, Array.isArray(value) ? value : [value]);
-          });
-        }
+          this._daemon.subscriptions[category][key] = value;
+          Object.assign(state, value(daemon[category][key]));
+        });
       }
-    } else {
-      // daemonSubscribeState('category', 'name', ...);
-      parse(null, null, [...arguments]);
-    }
+    });
     if (!this.state) this.state = {};
+    let combinedState = Object.assign({}, this.state);
     Object.assign(this.state, state);
+    this.daemonDataChanged(Object.assign(combinedState, state));
   }
 };
 
