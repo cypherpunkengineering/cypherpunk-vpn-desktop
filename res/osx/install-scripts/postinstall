@@ -23,6 +23,9 @@ chmod g+s "$3/Applications/Cypherpunk Privacy.app/Contents/MacOS/Cypherpunk Priv
 
 # (The daemon does not need +setgid since it's running as root and can do it by itself)
 
+# force reload of pfctl main configuration file in case main rules got flushed somehow
+pfctl -q -f /etc/pf.conf
+
 # Make sure the daemon is running in the background
 launchctl load /Library/LaunchDaemons/com.cypherpunk.privacy.service.plist
 

@@ -73,6 +73,7 @@ void firewall_uninstall()
 	{
 		// Strip out added lines and reload
 		LOG(INFO) << "Uninstalling PF anchors";
+		// FIXME: doesnt seem to work
 		logged_system("sed -i '' '/com\\.cypherpunk\\.privacy/d' /etc/pf.conf && pfctl -q -f /etc/pf.conf");
 	}
 #elif OS_LINUX
@@ -140,6 +141,17 @@ void firewall_disable(const std::string& token)
 }
 */
 
+void firewall_log_status()
+{
+#ifdef OS_OSX
+	logged_system("pfctl -sr");
+	logged_system("pfctl -sr -a com.cypherpunk.privacy");
+	logged_system("pfctl -sr -a com.cypherpunk.privacy/100.killswitch");
+	logged_system("pfctl -sr -a com.cypherpunk.privacy/200.exemptLAN");
+#elif OS_LINUX
+#endif
+}
+
 void firewall_ensure_enabled()
 {
 #ifdef OS_OSX
@@ -190,6 +202,7 @@ bool firewall_anchor_enabled(const std::string& anchor)
 
 void firewall_set_anchor_enabled(const std::string& anchor, bool enable)
 {
+	firewall_log_status();
 	bool currently_enabled = firewall_anchor_enabled(anchor);
 	if (!enable != !currently_enabled)
 	{
@@ -198,4 +211,5 @@ void firewall_set_anchor_enabled(const std::string& anchor, bool enable)
 		else
 			firewall_disable_anchor(anchor);
 	}
+	firewall_log_status();
 }
