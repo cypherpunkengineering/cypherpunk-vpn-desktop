@@ -1,64 +1,131 @@
 .quick-panel {
   @headerHeight: 46px;
-  @contentHeight: 188px;
-  @panelHeight: @headerHeight + @contentHeight;
+  @gridHeight: 188px;
+  @panelHeight: @headerHeight + @gridHeight;
+  @fullHeight: 420px;
+  @listHeight: @fullHeight - @headerHeight;
 
   position: absolute;
   left: 0;
-  right: 0;
+  width: 100vw;
   bottom: 0;
   height: @panelHeight;
+  z-index: 3;
 
-  > .description {
-    @descriptionHeight: 17px;
-
+  > .drawer {
     position: absolute;
-    height: @descriptionHeight;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: @descriptionHeight solid transparent;
-    border-top: none;
-    font-size: 12px;
-    line-height: 22px;
-    padding: 0 10px;
-    border-bottom-color: fade(@themeLightBackground, 50%);
-    color: #8cc;
-  }
-  > .selected-location {
+    left: 0;
+    top: 0;
     width: 100%;
-    height: @headerHeight;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    z-index: 2;
-    background: fade(@themeLightBackground, 50%);
-    &::after {
-      content: '';
+    height: @fullHeight;
+    transition: 0.5s transform;
+
+    > .description {
+      @descriptionHeight: 17px;
+
       position: absolute;
-      top: 100%;
+      height: @descriptionHeight;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: @descriptionHeight solid transparent;
+      border-top: none;
+      font-size: 12px;
+      line-height: 22px;
+      padding: 0 10px;
+      border-bottom-color: fade(@themeLightBackground, 50%);
+      color: #8cc;
+    }
+    > .selected-location {
       width: 100%;
-      height: 5px;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.25), transparent);
+      height: @headerHeight;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      z-index: 2;
+      background: fade(@themeLightBackground, 50%);
+      &::before {
+        content: '\f106';
+        font-family: Icons;
+        font-size: 20px;
+        flex: none;
+        position: absolute;
+        right: 20px;
+      }
+      &::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        width: 100%;
+        height: 5px;
+        background: linear-gradient(to bottom, rgba(0,0,0,0.25), transparent);
+      }
+    }
+    > .list {
+      display: block;
+      height: @listHeight;
+      background: linear-gradient(to bottom, fade(multiply(@themeWindowBackground, #aaa), 85%), fade(@themeWindowBackground, 85%) @gridHeight);
+      > .locations {
+        display: flex;
+        width: 100vw;
+        height: 100%;
+        opacity: 0;
+        transition: 0.5s opacity;
+        flex-direction: column;
+        overflow-x: hidden;
+        overflow-y: overlay;
+        padding-bottom: 30px;
+        > * {
+          flex: 0 0 auto;
+          width: 100%;
+          padding-left: 15px;
+        }
+        > .header {
+          margin-top: 10px;
+          padding-top: 10px;
+          padding-bottom: 10px;
+          border-bottom: 2px solid rgba(0,0,0,0.25);
+          margin-bottom: 5px;
+          font-size: 17px;
+        }
+        > .location {
+          height: 32px;
+          > span:first-of-type {
+            flex-grow: 1;
+            font-size: 15px;
+          }
+          &:not(.disabled) {
+            cursor: pointer;
+            &:hover {
+              background: linear-gradient(to right, rgba(255,255,255,0.1), transparent);
+            }
+          }
+          &.disabled {
+            opacity: 0.3;
+          }
+        }
+      }
     }
   }
 
   > .grid {
-    //position: absolute;
-    //left: 100px;
-    //right: 0;
-    height: @contentHeight;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100vw;
+    height: @gridHeight;
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     padding-left: 110px;
-    background: linear-gradient(to bottom, fade(multiply(@themeWindowBackground, #aaa), 85%), fade(@themeWindowBackground, 85%));
+    transition: 0.5s opacity;
+    z-index: 4;
 
     > .cypherplay {
       width: 110px;
-      height: @contentHeight;
+      height: @gridHeight;
       position: absolute;
       left: 0;
       //border: none;
@@ -84,7 +151,7 @@
     }
     > * {
       width: 80px;
-      height: @contentHeight / 2;
+      height: @gridHeight / 2;
       cursor: pointer;
       padding: 1px;
       display: flex;
@@ -144,6 +211,23 @@
           opacity: 0.25;
         }
       }
+    }
+  }
+
+
+  &.location-list-open {
+    > .drawer {
+      transform: translateY(@panelHeight - @fullHeight);
+      > .list {
+        > .locations {
+          opacity: 1;
+        }
+      }
+    }
+    > .grid {
+      opacity: 0;
+      z-index: 0;
+      pointer-events: none;
     }
   }
 }
