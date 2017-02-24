@@ -734,7 +734,7 @@ int main(int argc, char **argv)
 	}
 
 	// set default umask
-	umask(S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	umask(022);
 
 	g_old_terminate_handler = std::set_terminate(terminate_handler);
 
