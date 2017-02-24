@@ -18,6 +18,10 @@ export class QuickPanel extends DaemonAware(React.Component) {
       state: { state: true, connect: true, pingStats: true },
     });
   }
+  static defaultProps = {
+    expanded: false,
+    onOtherClick: function() {},
+  }
   state = {
     selected: 6,
     fastest: null,
@@ -25,6 +29,7 @@ export class QuickPanel extends DaemonAware(React.Component) {
     fastestUK: null,
     custom1: null,
     custom2: null,
+    favorites: {},
   }
   daemonDataChanged(state) {
     let fastest = null, fastestUS = null, fastestUK = null;
@@ -52,8 +57,8 @@ export class QuickPanel extends DaemonAware(React.Component) {
 
   onClick(button, event) {
     if (button === 6) {
-      // Show full location list
-    } else if (/*button != this.state.selected &&*/ !event.currentTarget.classList.contains('disabled')) {
+      this.props.onOtherClick();
+    } else {
       let settings = { locationFlag: '' };
       switch (button) {
         case 0: settings.location = this.state.fastest; settings.locationFlag = 'cypherplay'; break;
@@ -73,6 +78,61 @@ export class QuickPanel extends DaemonAware(React.Component) {
     }
   }
 
+  makeRegionList(regions, locations) {
+    const Header = ({ name, ...props }) => <div className="header" {...props}>{name}</div>;
+    const Server = ({ location, type }) => {
+      const clickable = type !== 'header';
+      const key = type + '-' + location.id;
+      const ping = this.state.pingStats && this.state.pingStats[location.id];
+      var onclick = event => {
+        var value = event.currentTarget.getAttribute('data-value');
+        if (event.target.className.indexOf('cp-fav') != -1) {
+          this.onLocationFavoriteClick(value);
+        } else if (event.currentTarget.className.indexOf('disabled') == -1) {
+          this.onLocationClick(value);
+        }
+      };
+      if (clickable)
+        return <Location location={location} key={key} className="region" onClick={onclick} selected={this.state.selected === location.id} favorite={!!this.state.favorites[location.id]} ping={ping}/>;
+      else
+        return <Location location={location} key={key} className="region"/>;
+    };
+    const mapSort = (a, b, map) => map(a).localeCompare(map(b));
+
+    var items = Array.flatten(
+      this.state.regionOrder.map(g => ({
+        id: g,
+        name: this.state.regionNames[g],
+        locations:
+          Array.flatten(
+            Object.mapToArray(regions[g], (c,l) => [c,l]) // get all countries of region as well as list of location IDs for each
+              .sort((a, b) => mapSort(a, b, v => this.state.countryNames[v[0]])) // sort by country name
+              .map(([country, locs]) => // project to list of <Location> elements, sorted by name
+                locs
+                  .map(l => locations[l])
+                  .sort((a, b) => mapSort(a, b, v => v.name))
+                  .map(l => Server({ location: l, type: 'location' }))
+              )
+              .filter(l => l && l.length > 0) // filter out empty countries
+          )
+      }))
+        .filter(r => r.locations && r.locations.length > 0) // filter out empty regions
+        .map(r => [ <Header key={'region-' + r.id.toLowerCase()} name={r.name}/> ].concat(r.locations)) // project to element list containing region header and locations
+    );
+
+    var recent = Object.keys(this.state.lastConnected).sort((a, b) => this.state.lastConnected[b] - this.state.lastConnected[a]).filter(l => !this.state.favorites[l] && this.state.locations[l]);
+    if (recent.length > 0) {
+      // Prepend recent list
+      items = [ <Header key="recent" name="Recent"/> ].concat(recent.slice(0, 3).map(l => Server({ location: locations[l], type: 'recent' })), items);
+    }
+    var favorites = Object.keys(this.state.favorites).filter(f => this.state.favorites[f] && locations[f]);
+    if (favorites.length > 0) {
+      // Prepend favorites list
+      items = [ <Header key="favorites" name="Favorites"/> ].concat(favorites.sort((a, b) => mapSort(a, b, v => locations[v].name)).map(l => Server({ location: locations[l], type: 'favorite' })), items);
+    }
+    return items;
+  }
+
   render() {
     let cypherPlayDisabledWarning = {};
     if (!this.state.overrideDNS) {
@@ -89,32 +149,38 @@ export class QuickPanel extends DaemonAware(React.Component) {
       case 'CONNECTED': connectString = "CONNECTED TO"; break;
       case 'DISCONNECTING': connectString = "DISCONNECTING FROM"; break;
     }
+    let Button = ({ className, index, disabled, ...props } = {}) => <div className={classList(className, { "selected": this.state.selected === index, "disabled": disabled })} tabIndex={disabled || this.props.expanded ? -1 : 0} onClick={e => !disabled && this.onClick(index, e)} {...props}/>;
     return(
-      <div className="quick-panel">
-        <div className="description">{connectString}</div>
-        <Location className="selected-location" location={this.state.locations[this.state.location]}/>
+      <div className={classList("quick-panel", { "location-list-open": this.props.expanded })}>
+        <div className="drawer">
+          <div className="description">{connectString}</div>
+          <Location className="selected-location" location={this.state.locations[this.state.location]}/>
+          <div className="list">
+            <div className="locations">
+              {this.makeRegionList(this.state.regions, this.state.locations)}
+            </div>
+          </div>
+        </div>
         <div className="grid">
-          <div className={classList("cypherplay", { "selected": this.state.selected === 0, "disabled": !this.state.fastest || !this.state.overrideDNS })} onClick={e => this.onClick(0, e)} {...cypherPlayDisabledWarning}>
+          <Button index={0} className="cypherplay" disabled={!this.state.fastest | !this.state.overrideDNS} {...cypherPlayDisabledWarning}>
             <RetinaImage src={CypherPlayIcon}/><span>CypherPlay&trade;</span>
-          </div>
-          <div className={classList("fastest", { "selected": this.state.selected === 1, "disabled": !this.state.fastest })} onClick={e => this.onClick(1, e)}>
+          </Button>
+          <Button index={1} className="fastest" disabled={!this.state.fastest}>
             <RetinaImage src={FastestIcon}/><span>Fastest</span>
-          </div>
-          <div className={classList("fastest-us", { "selected": this.state.selected === 2, "disabled": !this.state.fastestUS })} onClick={e => this.onClick(2, e)}>
+          </Button>
+          <Button index={2} className="fastest" disabled={!this.state.fastest}>
             <Flag country="us"/><span>Fastest US</span>
-          </div>
-          <div className={classList("fastest-uk", { "selected": this.state.selected === 3, "disabled": !this.state.fastestUK })} onClick={e => this.onClick(3, e)}>
+          </Button>
+          <Button index={3} className="fastest" disabled={!this.state.fastest}>
             <Flag country="gb"/><span>Fastest UK</span>
-          </div>
-          <div className={classList("favorite disabled", { "selected": this.state.selected === 4 })} onClick={e => this.onClick(4, e)}>
-
-          </div>
-          <div className={classList("recent disabled", { "selected": this.state.selected === 5 })} onClick={e => this.onClick(5, e)}>
-
-          </div>
-          <div className={classList("other", { "selected": this.state.selected === 6 })} onClick={e => this.onClick(6, e)}>
+          </Button>
+          <Button index={4} className="favorite" disabled={true}>
+          </Button>
+          <Button index={5} className="favorite" disabled={true}>
+          </Button>
+          <Button index={6} className="other">
             <i className="horizontal ellipsis icon"/><span>Other</span>
-          </div>
+          </Button>
         </div>
       </div>
     );

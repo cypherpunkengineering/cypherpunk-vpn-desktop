@@ -5,7 +5,7 @@ import { MainTitlebar, Dragbar, Titlebar, Title } from './Titlebar';
 import MainBackground from './MainBackground';
 import OneZeros from './OneZeros';
 import daemon, { DaemonAware } from '../daemon';
-import { REGION_GROUP_NAMES, REGION_GROUP_ORDER } from '../util';
+import { REGION_GROUP_NAMES, REGION_GROUP_ORDER, classList } from '../util';
 import RouteTransition from './Transition';
 import RegionSelector from './RegionSelector';
 import ReconnectButton from './ReconnectButton';
@@ -83,6 +83,7 @@ export default class ConnectScreen extends React.Component {
     receivedBytes: 0,
     sentBytes: 0,
     connectionState: 'disconnected',
+    locationListOpen: false,
   }
 
   translateDaemonState(state) {
@@ -176,7 +177,7 @@ export default class ConnectScreen extends React.Component {
             </Titlebar>
             <OneZeros/>
             {/* <MainBackground/> */}
-            <div id="connect-container" onClick={this.handleConnectClick}>
+            <div id="connect-container" onClick={this.handleConnectClick} className={classList({ "hidden": this.state.locationListOpen })}>
 
               <svg viewBox="-40 60 200 240" preserveAspectRatio="xMidYMid meet" width="160px" height="200px" ref="connectButton">
                 <circle class="ring" cx="60" cy="200" r="50" style={connectCircleStyle} />
@@ -196,7 +197,7 @@ export default class ConnectScreen extends React.Component {
               <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.sentBytes)}</div><div class="label">Sent</div></div></div>
             </div>
             <FirewallWarning/>
-            <QuickPanel/>
+            <QuickPanel expanded={this.state.locationListOpen} onOtherClick={() => this.setState({ locationListOpen: !this.state.locationListOpen })}/>
           </div>
         </div>
         <OverlayContainer/>

@@ -537,6 +537,13 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     justify-content: center;
     position: absolute;
     top: 85px;
+    opacity: 1;
+    transition: 0.5s opacity;
+
+    &.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
 
     svg {
       pointer-events: none;
