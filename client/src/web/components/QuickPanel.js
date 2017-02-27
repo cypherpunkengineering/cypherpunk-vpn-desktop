@@ -95,7 +95,7 @@ export class QuickPanel extends DaemonAware(React.Component) {
         }
       };
       if (clickable)
-        return <Location location={location} key={key} className="region" onClick={onclick} selected={this.state.selected === location.id} favorite={!!this.state.favorites[location.id]} ping={ping}/>;
+        return <Location location={location} key={key} className="region" onClick={onclick} selected={this.state.location === location.id} favorite={!!this.state.favorites[location.id]} ping={ping} favorite={!!this.state.favorites[location.id]}/>;
       else
         return <Location location={location} key={key} className="region"/>;
     };
