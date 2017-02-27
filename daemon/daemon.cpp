@@ -1090,6 +1090,8 @@ void CypherDaemon::PingServers()
 		}
 		catch (...) {}
 	}
+	_ping_stats["updating"] = true;
+	OnStateChanged(PING_STATS);
 	pinger->Start(5, [this](std::vector<ServerPingerThinger::Result> results) {
 		auto now = std::chrono::steady_clock::now();
 		auto stamp = std::chrono::duration<double>(now.time_since_epoch()).count();
@@ -1106,6 +1108,7 @@ void CypherDaemon::PingServers()
 			obj.emplace("timeouts", (signed)r.timeouts);
 			_ping_stats[r.id] = std::move(obj);
 		}
+		_ping_stats["updating"] = false;
 		OnStateChanged(PING_STATS);
 		ScheduleNextPingServers(now + PING_INTERVAL);
 	});
