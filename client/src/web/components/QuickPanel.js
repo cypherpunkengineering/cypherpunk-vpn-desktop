@@ -8,6 +8,8 @@ import { classList } from '../util.js';
 const CypherPlayIcon = { 1: require('../assets/img/icon_cypherplay.png'), 2: require('../assets/img/icon_cypherplay@2x.png') };
 const FastestIcon = { 1: require('../assets/img/icon_fastest.png'), 2: require('../assets/img/icon_fastest@2x.png') };
 
+const Header = ({ name, count = null, ...props }) => <div className="header" data-count={count} {...props}>{name}</div>;
+
 export class QuickPanel extends DaemonAware(React.Component) {
 
   constructor(props) {
@@ -81,7 +83,6 @@ export class QuickPanel extends DaemonAware(React.Component) {
   }
 
   makeRegionList(regions, locations) {
-    const Header = ({ name, ...props }) => <div className="header" {...props}>{name}</div>;
     const Server = ({ location, type }) => {
       const clickable = type !== 'header';
       const key = type + '-' + location.id;
