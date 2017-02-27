@@ -6,6 +6,9 @@ import { eventPromise, timeoutPromise } from './util.js';
 import Notification from './notification.js';
 import AutoLaunch from './autostart.js';
 
+// Hardcode DNS resolution for API requests
+app.commandLine.appendSwitch('host-resolver-rules', 'MAP cypherpunk.privacy.network 216.239.32.21');
+
 // Initialize the tray manager
 tray = require('./tray.js');
 
