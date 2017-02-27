@@ -98,7 +98,8 @@
           }
         }
         > .location {
-          height: 32px;
+          @lineHeight: 32px;
+          height: @lineHeight;
           color: rgba(255,255,255,0.7);
           transition: 0.3s background, 0.3s color;
           > span:first-of-type {
@@ -121,6 +122,7 @@
           }
           > .cp-fav {
             transition: 0.3s color;
+            line-height: @lineHeight;
           }
         }
       }
