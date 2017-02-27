@@ -14,7 +14,7 @@ export class QuickPanel extends DaemonAware(React.Component) {
     super(props);
     this.daemonSubscribeState({
       config: { locations: true, regions: true, countryNames: true, regionNames: true, regionOrder: true },
-      settings: { location: true, locationFlag: true, favorites: v => { favorites: Array.toDict(v, f => f, f => true) }, lastConnected: true, overrideDNS: true },
+      settings: { location: true, locationFlag: true, favorites: v => ({ favorites: Array.toDict(v, f => f, f => true) }), lastConnected: true, overrideDNS: true },
       state: { state: true, connect: true, pingStats: true },
     });
   }

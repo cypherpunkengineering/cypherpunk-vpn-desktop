@@ -240,10 +240,10 @@ export default class ConnectScreen extends React.Component {
     this.setState({ locationListOpen: false });
   }
   onLocationFavoriteClick(value) {
-    if (daemon.settings.favorites.hasOwnProperty(value))
-      daemon.post.applySettings({ favorites: Object.keys(daemon.settings.favorites).filter(v => v !== value) });
+    if (daemon.settings.favorites.includes(value))
+      daemon.post.applySettings({ favorites: daemon.settings.favorites.filter(v => v !== value) });
     else
-      daemon.post.applySettings({ favorites: Object.keys(daemon.settings.favorites).concat([ value ]) });
+      daemon.post.applySettings({ favorites: daemon.settings.favorites.concat([ value ]) });
   }
 
 }
