@@ -92,6 +92,8 @@
         }
         > .location {
           height: 32px;
+          color: rgba(255,255,255,0.7);
+          transition: 0.3s background, 0.3s color;
           > span:first-of-type {
             flex-grow: 1;
             font-size: 15px;
@@ -99,11 +101,19 @@
           &:not(.disabled) {
             cursor: pointer;
             &:hover {
-              background: linear-gradient(to right, rgba(255,255,255,0.1), transparent);
+              background: fade(#8dfffc, 25%);
+              color: #fff;
             }
           }
           &.disabled {
             opacity: 0.3;
+          }
+          &.selected {
+            color: #8dfffc;
+            background: fade(#8dfffc, 10%);
+          }
+          > .cp-fav {
+            transition: 0.3s color;
           }
         }
       }

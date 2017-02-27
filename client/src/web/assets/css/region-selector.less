@@ -202,4 +202,31 @@
   &.disabled > span[data-tag]:after {
     color: rgba(255,255,255,0.7);
   }
+
+  > .cp-fav {
+    cursor: pointer;
+    font-size: 120%;
+    width: 40px;
+    height: auto;
+    padding-right: 6px;
+    //line-height: 100%;
+    //align-self: stretch;
+    color: rgba(255,255,255,0.5);
+    &:before {
+      content: '\f006';
+    }
+    &:hover {
+      color: #fff !important;
+    }
+  }
+  &.favorite > .cp-fav {
+    color: @cpYellowDark;
+    &:before {
+      content: '\f005';
+    }
+    &:hover {
+      color: @cpYellow !important;
+    }
+  }
+
 }
