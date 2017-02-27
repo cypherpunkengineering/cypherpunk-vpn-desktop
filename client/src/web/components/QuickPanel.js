@@ -21,6 +21,8 @@ export class QuickPanel extends DaemonAware(React.Component) {
   static defaultProps = {
     expanded: false,
     onOtherClick: function() {},
+    onLocationClick: function(value) {},
+    onLocationFavoriteClick: function(value) {},
   }
   state = {
     selected: 6,
@@ -87,9 +89,9 @@ export class QuickPanel extends DaemonAware(React.Component) {
       var onclick = event => {
         var value = event.currentTarget.getAttribute('data-value');
         if (event.target.className.indexOf('cp-fav') != -1) {
-          this.onLocationFavoriteClick(value);
+          this.props.onLocationFavoriteClick(value);
         } else if (event.currentTarget.className.indexOf('disabled') == -1) {
-          this.onLocationClick(value);
+          this.props.onLocationClick(value);
         }
       };
       if (clickable)

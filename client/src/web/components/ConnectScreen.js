@@ -197,7 +197,13 @@ export default class ConnectScreen extends React.Component {
               <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.sentBytes)}</div><div class="label">Sent</div></div></div>
             </div>
             <FirewallWarning/>
-            <QuickPanel expanded={this.state.locationListOpen} onOtherClick={() => this.setState({ locationListOpen: !this.state.locationListOpen })}/>
+            {/*<RegionSelector/>*/}
+            <QuickPanel
+              expanded={this.state.locationListOpen}
+              onOtherClick={() => this.setState({ locationListOpen: !this.state.locationListOpen })}
+              onLocationClick={value => this.onLocationClick(value)}
+              onLocationFavoriteClick={value => this.onLocationFavoriteClick(value)}
+              />
           </div>
         </div>
         <OverlayContainer/>
@@ -226,4 +232,18 @@ export default class ConnectScreen extends React.Component {
   getSelectedRegion() {
     return $(this.refs.regionDropdown).dropdown('get value');
   }
+
+  onLocationClick(value) {
+    daemon.call.applySettings({ location: value, locationFlag: '' }).then(() => {
+      daemon.post.connect();
+    });
+    this.setState({ locationListOpen: false });
+  }
+  onLocationFavoriteClick(value) {
+    if (daemon.settings.favorites.hasOwnProperty(value))
+      daemon.post.applySettings({ favorites: Object.keys(daemon.settings.favorites).filter(v => v !== value) });
+    else
+      daemon.post.applySettings({ favorites: Object.keys(daemon.settings.favorites).concat([ value ]) });
+  }
+
 }
