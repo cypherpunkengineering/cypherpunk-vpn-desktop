@@ -195,13 +195,16 @@
         line-height: 50px;
       }
       &:not(.disabled), &.other {
-        &:hover {
+        &:hover, &:focus {
           transition: 0.1s;
           background: @themeWindowBackground;
           color: #fff;
           > img, > i {
             border-color: #8cc;
           }
+        }
+        &:focus {
+          border: 1px dotted fade(#8dfffc, 25%);
         }
         &:active {
           transition: 0.1s color ease;
