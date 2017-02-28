@@ -18,7 +18,6 @@
     top: 0;
     width: 100%;
     height: @fullHeight;
-    transition: 0.5s transform;
 
     > .description {
       @descriptionHeight: 17px;
@@ -72,7 +71,6 @@
         width: 100vw;
         height: 100%;
         opacity: 0;
-        transition: 0.5s opacity;
         flex-direction: column;
         overflow-x: hidden;
         overflow-y: overlay;
@@ -129,18 +127,17 @@
     }
   }
 
-  > .grid {
+  .grid {
     position: absolute;
     left: 0;
-    bottom: 0;
+    top: @headerHeight;
+    //bottom: 0;
     width: 100vw;
     height: @gridHeight;
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     padding-left: 110px;
-    transition: 0.5s opacity;
-    z-index: 4;
 
     > .cypherplay {
       width: 110px;
@@ -234,18 +231,44 @@
   }
 
 
-  &.location-list-open {
+  @gridTransitionDuration: 2s;
+  @listTransitionDuration: 3s;
+
+  // FIXME: pointer-events isn't actually animatable on chromium, not even discretely... look for another way to block interactivity during the animation?
+
+  & {
     > .drawer {
-      transform: translateY(@panelHeight - @fullHeight);
-      > .list {
-        > .locations {
-          opacity: 1;
-        }
+      transition: transform @listTransitionDuration;
+      > .list > .locations {
+        transition: opacity @listTransitionDuration ease-out, visibility @listTransitionDuration step-end, pointer-events @listTransitionDuration step-start;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
       }
     }
-    > .grid {
+    .grid {
+      transition: opacity @gridTransitionDuration @listTransitionDuration, visibility @gridTransitionDuration step-start @listTransitionDuration, pointer-events @gridTransitionDuration step-start @listTransitionDuration;
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+  }
+
+  &.location-list-open {
+    > .drawer {
+      transition: transform @listTransitionDuration @gridTransitionDuration;
+      transform: translateY(@panelHeight - @fullHeight);
+      > .list > .locations {
+        transition: opacity @listTransitionDuration ease-in @gridTransitionDuration, visibility @listTransitionDuration step-start @gridTransitionDuration, pointer-events @listTransitionDuration step-end @gridTransitionDuration;
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+      }
+    }
+    .grid {
+      transition: opacity @gridTransitionDuration, visibility @gridTransitionDuration step-end, pointer-events @gridTransitionDuration step-start;
       opacity: 0;
-      z-index: 0;
+      visibility: hidden;
       pointer-events: none;
     }
   }

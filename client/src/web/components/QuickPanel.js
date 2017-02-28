@@ -163,27 +163,29 @@ export class QuickPanel extends DaemonAware(React.Component) {
               {this.makeRegionList(this.state.regions, this.state.locations)}
             </div>
           </div>
-        </div>
-        <div className="grid">
-          <Button index={0} className="cypherplay" disabled={!this.state.fastest | !this.state.overrideDNS} updating={this.state.pingStats.updating} {...cypherPlayDisabledWarning}>
-            <RetinaImage src={CypherPlayIcon}/><span>CypherPlay&trade;</span>
-          </Button>
-          <Button index={1} className="fastest" disabled={!this.state.fastest} updating={this.state.pingStats.updating}>
-            <RetinaImage src={FastestIcon}/><span>Fastest</span>
-          </Button>
-          <Button index={2} className="fastest" disabled={!this.state.fastest} updating={this.state.pingStats.updating}>
-            <Flag country="us"/><span>Fastest US</span>
-          </Button>
-          <Button index={3} className="fastest" disabled={!this.state.fastest} updating={this.state.pingStats.updating}>
-            <Flag country="gb"/><span>Fastest UK</span>
-          </Button>
-          <Button index={4} className="favorite" disabled={true}>
-          </Button>
-          <Button index={5} className="favorite" disabled={true}>
-          </Button>
-          <Button index={6} className="other">
-            <i className="horizontal ellipsis icon"/><span>Other</span>
-          </Button>
+
+          <div className="grid">
+            <Button index={0} className="cypherplay" disabled={!this.state.fastest | !this.state.overrideDNS} updating={this.state.pingStats.updating} {...cypherPlayDisabledWarning}>
+              <RetinaImage src={CypherPlayIcon}/><span>CypherPlay&trade;</span>
+            </Button>
+            <Button index={1} className="fastest" disabled={!this.state.fastest} updating={this.state.pingStats.updating}>
+              <RetinaImage src={FastestIcon}/><span>Fastest</span>
+            </Button>
+            <Button index={2} className="fastest" disabled={!this.state.fastest} updating={this.state.pingStats.updating}>
+              <Flag country="us"/><span>Fastest US</span>
+            </Button>
+            <Button index={3} className="fastest" disabled={!this.state.fastest} updating={this.state.pingStats.updating}>
+              <Flag country="gb"/><span>Fastest UK</span>
+            </Button>
+            <Button index={4} className="favorite" disabled={true}>
+            </Button>
+            <Button index={5} className="favorite" disabled={true}>
+            </Button>
+            <Button index={6} className="other">
+              <i className="horizontal ellipsis icon"/><span>Other</span>
+            </Button>
+          </div>
+
         </div>
       </div>
     );
