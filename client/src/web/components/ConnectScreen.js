@@ -200,7 +200,8 @@ export default class ConnectScreen extends React.Component {
             {/*<RegionSelector/>*/}
             <QuickPanel
               expanded={this.state.locationListOpen}
-              onOtherClick={() => this.setState({ locationListOpen: !this.state.locationListOpen })}
+              onOtherClick={() => this.setState({ locationListOpen: true })}
+              onListCloseClick={() => this.setState({ locationListOpen: false })}
               onLocationClick={value => this.onLocationClick(value)}
               onLocationFavoriteClick={value => this.onLocationFavoriteClick(value)}
               />

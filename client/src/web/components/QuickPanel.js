@@ -23,6 +23,7 @@ export class QuickPanel extends DaemonAware(React.Component) {
   static defaultProps = {
     expanded: false,
     onOtherClick: function() {},
+    onListCloseClick: function() {},
     onLocationClick: function(value) {},
     onLocationFavoriteClick: function(value) {},
   }
@@ -157,7 +158,12 @@ export class QuickPanel extends DaemonAware(React.Component) {
       <div className={classList("quick-panel", { "location-list-open": this.props.expanded })}>
         <div className="drawer">
           <div className="description">{connectString}</div>
-          <Location className="selected-location" location={this.state.locations[this.state.location]}/>
+          <div className="header">
+            <Location className="selected-location" location={this.state.locations[this.state.location]}/>
+            <div className="list-header">
+              <i className="down chevron icon link" onClick={this.props.onListCloseClick}/>
+            </div>
+          </div>
           <div className="list">
             <div className="locations">
               {this.makeRegionList(this.state.regions, this.state.locations)}
