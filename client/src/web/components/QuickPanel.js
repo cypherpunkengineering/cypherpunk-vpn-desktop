@@ -188,7 +188,7 @@ export class QuickPanel extends DaemonAware(React.Component) {
             <Button index={5} className="favorite" disabled={true}>
             </Button>
             <Button index={6} className="other">
-              <i className="horizontal ellipsis icon"/><span>Other</span>
+              <i className="list layout icon"/><span>Other</span>
             </Button>
           </div>
 

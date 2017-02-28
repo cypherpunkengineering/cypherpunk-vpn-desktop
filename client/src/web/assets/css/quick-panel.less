@@ -35,23 +35,61 @@
       border-bottom-color: fade(@themeLightBackground, 50%);
       color: #8cc;
     }
-    > .selected-location {
+    > .header {
       width: 100%;
       height: @headerHeight;
       position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      z-index: 2;
       background: fade(@themeLightBackground, 50%);
-      &::before {
-        content: '\f106';
-        font-family: Icons;
-        font-size: 20px;
-        flex: none;
+      font-size: 16px;
+      > .selected-location {
         position: absolute;
-        right: 20px;
+        width: 100%;
+        height: @headerHeight;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      > .list-header {
+        position: absolute;
+        width: 100%;
+        height: @headerHeight;
+        line-height: @headerHeight;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        > .input {
+          flex: 1 0 auto;
+          margin: 0 10px;
+          height: 28px;
+          > input {
+            border: none;
+            border-radius: 20px;
+            background: rgba(10,30,40,0.25);
+            color: rgba(255,255,255,0.5);
+            &:focus, &:hover {
+              background: rgba(10,30,40,0.35);
+            }
+            &:focus {
+              color: #fff !important;
+            }
+          }
+        }
+        > i.icon.link {
+          width: auto;
+          height: @headerHeight;
+          margin: 0;
+          min-width: 24px;
+          opacity: 0.5;
+          &.selected {
+            opacity: 1.0 !important;
+            cursor: default !important;
+            pointer-events: none;
+          }
+          &:last-child {
+            padding: 0 20px;
+            opacity: 0.75;
+          }
+        }
       }
       &::after {
         content: '';
@@ -191,8 +229,8 @@
         border: 2px solid #366;
         margin: 0;
         margin-bottom: 7px;
-        font-size: 24px;
-        line-height: 50px;
+        font-size: 20px;
+        line-height: 44px;
       }
       &:not(.disabled), &.other {
         &:hover, &:focus {
