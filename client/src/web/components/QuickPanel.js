@@ -35,6 +35,8 @@ export class QuickPanel extends DaemonAware(React.Component) {
     custom1: null,
     custom2: null,
     favorites: {},
+    sortOrder: 'geographical', // or 'bypingtime' or 'alphabetical'
+    filterText: '',
   }
   daemonDataChanged(state) {
     let fastest = null, fastestUS = null, fastestUK = null;
@@ -161,6 +163,10 @@ export class QuickPanel extends DaemonAware(React.Component) {
           <div className="header">
             <Location className="selected-location" location={this.state.locations[this.state.location]}/>
             <div className="list-header">
+              <div className="ui left icon input"><input name="filter-locations" type="text" size="5" value={this.state.filterText} onChange={e => this.setState({ filterText: e.target.value})}/><i className="search icon"/></div>
+              <i className={classList("world icon link", { "selected": this.state.sortOrder === 'geographical' })} onClick={() => this.setState({ sortOrder: 'geographical' })}/>
+              <i className={classList("dashboard icon link", { "selected": this.state.sortOrder === 'bypingtime' })} onClick={() => this.setState({ sortOrder: 'bypingtime' })}/>
+              <i className={classList("sort alphabet ascending icon link", { "selected": this.state.sortOrder === 'alphabetical' })} onClick={() => this.setState({ sortOrder: 'alphabetical' })}/>
               <i className="down chevron icon link" onClick={this.props.onListCloseClick}/>
             </div>
           </div>
