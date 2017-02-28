@@ -237,42 +237,29 @@
   @gridTransitionDuration: 0.2s;
   @listTransitionDuration: 0.3s;
 
-  // FIXME: pointer-events isn't actually animatable on chromium, not even discretely... look for another way to block interactivity during the animation?
 
   & {
     > .drawer {
       transition: transform @listTransitionDuration;
-      > .list > .locations {
-        transition: opacity @listTransitionDuration ease-out, visibility @listTransitionDuration step-end, pointer-events @listTransitionDuration step-start;
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
+      > .header {
+        > .selected-location { .fadeInTransition(@listTransitionDuration, ease-in); }
+        > .list-header { .fadeOutTransition(@listTransitionDuration, ease-out); }
       }
+      > .list > .locations { .fadeOutTransition(@listTransitionDuration, ease-out); }
     }
-    .grid {
-      transition: opacity @gridTransitionDuration @listTransitionDuration, visibility @gridTransitionDuration step-start @listTransitionDuration, pointer-events @gridTransitionDuration step-start @listTransitionDuration;
-      opacity: 1;
-      visibility: visible;
-      pointer-events: auto;
-    }
+    .grid { .fadeInTransition(@gridTransitionDuration, ease, @listTransitionDuration); }
   }
 
   &.location-list-open {
     > .drawer {
       transition: transform @listTransitionDuration @gridTransitionDuration;
       transform: translateY(@panelHeight - @fullHeight);
-      > .list > .locations {
-        transition: opacity @listTransitionDuration ease-in @gridTransitionDuration, visibility @listTransitionDuration step-start @gridTransitionDuration, pointer-events @listTransitionDuration step-end @gridTransitionDuration;
-        opacity: 1;
-        visibility: visible;
-        pointer-events: auto;
+      > .header {
+        > .selected-location { .fadeOutTransition(@listTransitionDuration, ease-out, @gridTransitionDuration); }
+        > .list-header { .fadeInTransition(@listTransitionDuration, ease-in, @gridTransitionDuration); }
       }
+      > .list > .locations { .fadeInTransition(@listTransitionDuration, ease-in, @gridTransitionDuration); }
     }
-    .grid {
-      transition: opacity @gridTransitionDuration, visibility @gridTransitionDuration step-end, pointer-events @gridTransitionDuration step-start;
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-    }
+    .grid { .fadeOutTransition(@gridTransitionDuration); }
   }
 }

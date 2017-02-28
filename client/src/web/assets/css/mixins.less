@@ -17,3 +17,18 @@
   -webkit-font-smoothing: antialiased;
   backface-visibility: hidden;
 }
+
+// FIXME: pointer-events isn't actually animatable on chromium, not even discretely... look for another way to block interactivity during the animation?
+
+.fadeInTransition(@duration, @easing: ease, @delay: 0s) {
+  transition+: opacity @duration @easing @delay, visibility @duration step-start @delay, pointer-events @duration step-end @delay;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+.fadeOutTransition(@duration, @easing: ease, @delay: 0s) {
+  transition+: opacity @duration @easing @delay, visibility @duration step-end @delay, pointer-events @duration step-start @delay;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
