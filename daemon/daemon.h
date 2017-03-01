@@ -88,6 +88,7 @@ public:
 protected:
 	typedef websocketpp::connection_hdl Connection;
 	typedef std::set<Connection, std::owner_less<Connection>> ConnectionList;
+	typedef std::map<Connection, bool, std::owner_less<Connection>> ConnectionMap;
 
 	void SendToClient(Connection con, const std::shared_ptr<jsonrpc::FormattedData>& data);
 	void SendToAllClients(const std::shared_ptr<jsonrpc::FormattedData>& data);
@@ -102,6 +103,7 @@ protected:
 	void NotifyChanges();
 
 	void PingServers();
+	void ScheduleNextPingServers(std::chrono::steady_clock::time_point t);
 	void WriteOpenVPNProfile(std::ostream& out, const JsonObject& server, OpenVPNProcess* process);
 
 	JsonObject MakeConfigObject(const std::unordered_set<std::string>* keys = nullptr);
@@ -127,7 +129,7 @@ protected:
 
 	asio::io_service _io;
 	WebSocketServer _ws_server;
-	ConnectionList _connections;
+	ConnectionMap _connections;
 	jsonrpc::JsonFormatHandler _json_handler;
 	JsonRPCDispatcher _dispatcher;
 	JsonRPCClient _rpc_client;
@@ -166,6 +168,10 @@ protected:
 	// Number of reconnection to tolerate before we should treat as disconnected. Initally set to the number of <connection> entries
 	size_t _connection_retries_left;
 	bool _was_ever_connected;
+	size_t _valid_client_count;
+	asio::basic_waitable_timer<std::chrono::steady_clock> _ping_timer;
+	std::chrono::steady_clock::time_point _last_ping_round;
+	bool _next_ping_scheduled;
 
 
 protected:

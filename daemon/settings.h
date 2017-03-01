@@ -40,6 +40,7 @@ public:
 
 	JsonField(std::string, remotePort, "udp:7133")
 	JsonField(std::string, location, "tokyodev") // FIXME: don't hardcode
+	JsonField(std::string, locationFlag, "") // "cypherplay", "fastest", "fastest-us", "fastest-uk" or empty
 	JsonField(int, localPort, 0)
 	JsonField(int, mtu, 1500)
 	JsonField(std::string, encryption, "default") // "none", "default", "strong" or "stealth"
@@ -48,7 +49,7 @@ public:
 	JsonField(bool, allowLAN, true)
 	JsonField(bool, blockIPv6, true)
 	JsonField(bool, overrideDNS, true)
-	JsonField(bool, optimizeDNS, false) // only usable when overrideDNS == true
+	//JsonField(bool, optimizeDNS, false) // only usable when overrideDNS == true
 	JsonField(bool, blockAds, false) // only usable when overrideDNS == true
 	JsonField(bool, blockMalware, true) // only usable when overrideDNS == true
 	JsonField(bool, routeDefault, true) // add a default (or 0/1+1/1) route to the VPN interface
@@ -63,7 +64,8 @@ public:
 	JsonField(bool, showNotifications, true)
 
 	JsonField(JsonArray, favorites, {});
-	JsonField(JsonArray, recent, {});
+	JsonField(JsonArray, recent, {}); // deprecated
+	JsonField(JsonObject, lastConnected, {});
 
 	const JsonObject& currentLocation() const { return g_config.locations().at(location()).AsObject(); }
 };

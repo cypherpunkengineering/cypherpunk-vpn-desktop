@@ -111,6 +111,7 @@ class WebSocketImpl extends EventEmitter {
                   return reply('result', result);
                 }
               } catch (ex) {
+                console.warn(ex);
                 return replyError(ex);
               }
             }
@@ -271,6 +272,7 @@ if (!process || process.type === 'renderer') {
             ipcRenderer.send('daemon-result', id, null, error);
           });
         } catch (ex) {
+          console.warn(ex);
           ipcRenderer.send('daemon-result', id, null, ex);
         }
       });
@@ -282,14 +284,14 @@ if (!process || process.type === 'renderer') {
             this.emit(method, ...params);
             onpost(method, params);
           }
-        } catch (ex) {}
+        } catch (ex) { console.warn(ex); }
       });
       ipcRenderer.on('daemon-result', (event, id, result, error) => {
         try {
           let cb = this._callbacks[id];
           delete this._callbacks[id];
           cb(result, error);
-        } catch (ex) {}
+        } catch (ex) { console.warn(ex); }
       });
     }
     send(method, params, callback) {

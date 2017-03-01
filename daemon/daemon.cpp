@@ -40,6 +40,9 @@ CypherDaemon::CypherDaemon()
 	, _notify_scheduled(false)
 	, _connection_retries_left(0)
 	, _was_ever_connected(false)
+	, _valid_client_count(0)
+	, _ping_timer(_io)
+	, _next_ping_scheduled(false)
 {
 
 }
@@ -51,12 +54,18 @@ int CypherDaemon::Run()
 	_ws_server.set_message_handler(std::bind(&CypherDaemon::OnReceiveMessage, this, _1, _2));
 	_ws_server.set_open_handler([this](Connection c) {
 		bool first = _connections.empty();
-		_connections.insert(c);
+		_connections.insert(std::make_pair(c, false));
 		if (first) OnFirstClientConnected();
 		OnClientConnected(c);
 	});
 	_ws_server.set_close_handler([this](Connection c) {
-		_connections.erase(c);
+		try
+		{
+			if (_connections.at(c))
+				--_valid_client_count;
+			_connections.erase(c);
+		}
+		catch (...) {}
 		OnClientDisconnected(c);
 		if (_connections.empty()) OnLastClientDisconnected();
 	});
@@ -139,7 +148,7 @@ void CypherDaemon::SendToClient(Connection connection, const std::shared_ptr<jso
 void CypherDaemon::SendToAllClients(const std::shared_ptr<jsonrpc::FormattedData>& data)
 {
 	for (const auto& it : _connections)
-		SendToClient(it, data);
+		SendToClient(it.first, data);
 }
 
 void CypherDaemon::SendErrorToAllClients(const std::string& name, const std::string& description)
@@ -152,14 +161,17 @@ void CypherDaemon::OnFirstClientConnected()
 	// If the kill-switch is set to always on, trigger it when the first client connects
 	if (g_settings.firewall() == "on")
 		ApplyFirewallSettings();
+	PingServers();
 }
 
 void CypherDaemon::OnClientConnected(Connection c)
 {
-	SendToClient(c, _rpc_client.BuildNotificationData("config", MakeConfigObject()));
-	SendToClient(c, _rpc_client.BuildNotificationData("account", MakeAccountObject()));
-	SendToClient(c, _rpc_client.BuildNotificationData("settings", g_settings.map()));
-	SendToClient(c, _rpc_client.BuildNotificationData("state", MakeStateObject()));
+	JsonObject data;
+	data["config"] = MakeConfigObject();
+	data["account"] = MakeAccountObject();
+	data["settings"] = MakeSettingsObject();
+	data["state"] = MakeStateObject();
+	SendToClient(c, _rpc_client.BuildNotificationData("data", std::move(data)));
 }
 
 void CypherDaemon::OnClientDisconnected(Connection c)
@@ -186,6 +198,8 @@ void CypherDaemon::OnLastClientDisconnected()
 				ApplyFirewallSettings();
 			break;
 	}
+	_ping_timer.cancel();
+	_next_ping_scheduled = false;
 }
 
 void CypherDaemon::OnReceiveMessage(Connection connection, WebSocketServer::message_ptr msg)
@@ -209,7 +223,7 @@ void CypherDaemon::OnReceiveMessage(Connection connection, WebSocketServer::mess
 			// Special case: the 'get' method responds with a separate notification
 			if (request.GetMethodName() == "get")
 			{
-				SendToClient(connection, _rpc_client.BuildNotificationData(request.GetParameters().front().AsString(), response.GetResult()));
+				SendToClient(connection, _rpc_client.BuildNotificationData("data", response.GetResult()));
 				return;
 			}
 			if (response.GetId().IsBoolean() && response.GetId().AsBoolean() == false)
@@ -422,25 +436,29 @@ void CypherDaemon::NotifyChanges()
 	_to_notify.settings.clear();
 	_to_notify.state = 0;
 
+	JsonObject data;
+
 	if (config.size())
 	{
-		SendToAllClients(_rpc_client.BuildNotificationData("config", MakeConfigObject(&config)));
+		data["config"] = MakeConfigObject(&config);
 		g_config.WriteToDisk();
 	}
 	if (account.size())
 	{
-		SendToAllClients(_rpc_client.BuildNotificationData("account", MakeAccountObject(&account)));		
+		data["account"] = MakeAccountObject(&account);
 		g_account.WriteToDisk();
 	}
 	if (settings.size())
 	{
-		SendToAllClients(_rpc_client.BuildNotificationData("settings", MakeSettingsObject(&settings)));
+		data["settings"] = MakeSettingsObject(&settings);
 		g_settings.WriteToDisk();
 	}
 	if (state != 0)
 	{
-		SendToAllClients(_rpc_client.BuildNotificationData("state", MakeStateObject(state)));
+		data["state"] = MakeStateObject(state);
 	}
+
+	SendToAllClients(_rpc_client.BuildNotificationData("data", std::move(data)));
 
 	if (config.count("locations"))
 		PingServers();
@@ -484,15 +502,16 @@ JsonObject CypherDaemon::MakeStateObject(int flags)
 
 JsonObject CypherDaemon::RPC_get(const std::string& type)
 {
-	if (type == "state")
-		return MakeStateObject();
-	if (type == "settings")
-		return g_settings.map();
-	if (type == "account")
-		return MakeAccountObject();
-	if (type == "config")
-		return MakeConfigObject();
-	throw jsonrpc::InvalidParametersFault();
+	JsonObject data;
+	if (type == "state" || type == "all")
+		data["state"] = MakeStateObject();
+	if (type == "settings" || type == "all")
+		data["settings"] = MakeSettingsObject();
+	if (type == "account" || type == "all")
+		data["account"] = MakeAccountObject();
+	if (type == "config" || type == "all")
+		data["config"] = MakeConfigObject();
+	return data;
 }
 
 
@@ -719,7 +738,7 @@ void CypherDaemon::WriteOpenVPNProfile(std::ostream& out, const JsonObject& serv
 		int dns_index = 10
 			+ (g_settings.blockAds() ? 1 : 0)
 			+ (g_settings.blockMalware() ? 2 : 0)
-			+ (g_settings.optimizeDNS() ? 4 : 0);
+			+ (g_settings.locationFlag() == "cypherplay" ? 4 : 0);
 		std::string dns_string = std::to_string(dns_index);
 		out << "dhcp-option DNS 10.10.10." << dns_string << endl;
 		out << "route 10.10.10." << dns_string << endl;
@@ -747,13 +766,15 @@ void CypherDaemon::WriteOpenVPNProfile(std::ostream& out, const JsonObject& serv
 
 bool CypherDaemon::RPC_connect()
 {
-	// FIXME: Shouldn't simply read raw profile parameters from the params
-	const JsonObject& settings = g_settings.map();
-
 	// Access the region early, should trigger an exception if it doesn't exist (before we've done any state changes)
 	g_settings.currentLocation();
 
 	{
+		std::chrono::duration<double> timestamp = std::chrono::steady_clock::now().time_since_epoch();
+		g_settings.lastConnected()[g_settings.location()] = JsonValue(timestamp.count());
+		// Secretly modified properties, need to explicitly notify
+		g_settings.OnChanged("lastConnected");
+
 		static const int MAX_RECENT_ITEMS = 3;
 		JsonArray recent = g_settings.recent();
 		recent.erase(std::remove(recent.begin(), recent.end(), g_settings.location()), recent.end());
@@ -1047,8 +1068,13 @@ bool CypherDaemon::RPC_setFirewall(const jsonrpc::Value::Struct& params)
 
 void CypherDaemon::PingServers()
 {
+	static constexpr const auto PING_INTERVAL = std::chrono::minutes(5);
 	auto now = std::chrono::steady_clock::now();
-	std::chrono::duration<double> cutoff = (now - std::chrono::minutes(60)).time_since_epoch();
+	_ping_timer.cancel();
+	_last_ping_round = now;
+	_next_ping_scheduled = false;
+	auto stamp = now.time_since_epoch().count();
+	std::chrono::duration<double> cutoff = (now - PING_INTERVAL).time_since_epoch();
 	auto pinger = std::make_shared<ServerPingerThinger>(_io);
 	for (const auto& p : g_config.locations())
 	{
@@ -1064,14 +1090,17 @@ void CypherDaemon::PingServers()
 		}
 		catch (...) {}
 	}
+	_ping_stats["updating"] = true;
+	OnStateChanged(PING_STATS);
 	pinger->Start(5, [this](std::vector<ServerPingerThinger::Result> results) {
-		std::chrono::duration<double> now = std::chrono::steady_clock::now().time_since_epoch();
+		auto now = std::chrono::steady_clock::now();
+		auto stamp = std::chrono::duration<double>(now.time_since_epoch()).count();
 		for (auto& r : results)
 		{
 			LOG(INFO) << "Ping " << r.id << ": avg=" << (r.average * 1000) << " min=" << (r.minimum * 1000) << " max=" << (r.maximum * 1000) << " replies=" << r.replies << " timeouts=" << r.timeouts;
 			JsonObject obj;
 			if (r.replies > 0 || r.timeouts > 0)
-				obj.emplace("lastChecked", now.count());
+				obj.emplace("lastChecked", stamp);
 			obj.emplace("average", r.average);
 			obj.emplace("minimum", r.minimum);
 			obj.emplace("maximum", r.maximum);
@@ -1079,6 +1108,21 @@ void CypherDaemon::PingServers()
 			obj.emplace("timeouts", (signed)r.timeouts);
 			_ping_stats[r.id] = std::move(obj);
 		}
+		_ping_stats["updating"] = false;
 		OnStateChanged(PING_STATS);
+		ScheduleNextPingServers(now + PING_INTERVAL);
 	});
+}
+
+void CypherDaemon::ScheduleNextPingServers(std::chrono::steady_clock::time_point t)
+{
+	if (!_next_ping_scheduled)
+	{
+		_next_ping_scheduled = true;
+		_ping_timer.cancel();
+		_ping_timer.expires_at(t);
+		_ping_timer.async_wait([this](const asio::error_code& error) {
+			if (!error) PingServers();
+		});
+	}
 }

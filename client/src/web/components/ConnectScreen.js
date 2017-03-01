@@ -5,12 +5,13 @@ import { MainTitlebar, Dragbar, Titlebar, Title } from './Titlebar';
 import MainBackground from './MainBackground';
 import OneZeros from './OneZeros';
 import daemon, { DaemonAware } from '../daemon';
-import { REGION_GROUP_NAMES, REGION_GROUP_ORDER } from '../util';
+import { REGION_GROUP_NAMES, REGION_GROUP_ORDER, classList } from '../util';
 import RouteTransition from './Transition';
 import RegionSelector from './RegionSelector';
 import ReconnectButton from './ReconnectButton';
 import { OverlayContainer } from './Overlay';
 import RetinaImage from './Image';
+import QuickPanel from './QuickPanel';
 
 const AccountIcon = { 1: require('../assets/img/account_icon.png'), 2: require('../assets/img/account_icon@2x.png') };
 
@@ -82,6 +83,7 @@ export default class ConnectScreen extends React.Component {
     receivedBytes: 0,
     sentBytes: 0,
     connectionState: 'disconnected',
+    locationListOpen: false,
   }
 
   translateDaemonState(state) {
@@ -175,7 +177,7 @@ export default class ConnectScreen extends React.Component {
             </Titlebar>
             <OneZeros/>
             {/* <MainBackground/> */}
-            <div id="connect-container" onClick={this.handleConnectClick}>
+            <div id="connect-container" onClick={this.handleConnectClick} className={classList({ "hidden": this.state.locationListOpen })}>
 
               <svg viewBox="-40 60 200 240" preserveAspectRatio="xMidYMid meet" width="160px" height="200px" ref="connectButton">
                 <circle class="ring" cx="60" cy="200" r="50" style={connectCircleStyle} />
@@ -186,8 +188,8 @@ export default class ConnectScreen extends React.Component {
 
               {/*<i id="connect" class={"ui fitted massive power link icon" + (this.state.connectionState === 'connected' ? " green" : this.state.connectionState == 'disconnected' ? " red" : " orange disabled")} ref="connectButton" onClick={this.handleConnectClick}></i>*/}
             </div>
-            <Link className="left account page-link" to="/account" tabIndex="0" data-tooltip="My Account" data-inverted="" data-position="bottom left"><RetinaImage src={AccountIcon}/></Link>
-            <Link className="right settings page-link" to="/configuration" tabIndex="0" data-tooltip="Configuration" data-inverted="" data-position="bottom right"><i className="settings icon"/></Link>
+            <Link className="left account page-link" to="/account" tabIndex="0" data-tooltip="My Account" data-position="bottom left"><RetinaImage src={AccountIcon}/></Link>
+            <Link className="right settings page-link" to="/configuration" tabIndex="0" data-tooltip="Configuration" data-position="bottom right"><i className="settings icon"/></Link>
             
             <div id="connect-status" ref="connectStatus">{buttonLabel}</div>
             <div id="connection-stats" class="ui two column center aligned grid">
@@ -195,7 +197,14 @@ export default class ConnectScreen extends React.Component {
               <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.sentBytes)}</div><div class="label">Sent</div></div></div>
             </div>
             <FirewallWarning/>
-            <RegionSelector/>
+            {/*<RegionSelector/>*/}
+            <QuickPanel
+              expanded={this.state.locationListOpen}
+              onOtherClick={() => this.setState({ locationListOpen: true })}
+              onListCloseClick={() => this.setState({ locationListOpen: false })}
+              onLocationClick={value => this.onLocationClick(value)}
+              onLocationFavoriteClick={value => this.onLocationFavoriteClick(value)}
+              />
           </div>
         </div>
         <OverlayContainer/>
@@ -224,4 +233,18 @@ export default class ConnectScreen extends React.Component {
   getSelectedRegion() {
     return $(this.refs.regionDropdown).dropdown('get value');
   }
+
+  onLocationClick(value) {
+    daemon.call.applySettings({ location: value, locationFlag: '' }).then(() => {
+      daemon.post.connect();
+    });
+    this.setState({ locationListOpen: false });
+  }
+  onLocationFavoriteClick(value) {
+    if (daemon.settings.favorites.includes(value))
+      daemon.post.applySettings({ favorites: daemon.settings.favorites.filter(v => v !== value) });
+    else
+      daemon.post.applySettings({ favorites: daemon.settings.favorites.concat([ value ]) });
+  }
+
 }

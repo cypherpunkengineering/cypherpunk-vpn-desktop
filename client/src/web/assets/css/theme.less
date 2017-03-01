@@ -1,19 +1,5 @@
-// This is the main theme definition, with properties common to and overridable
-// from all sub-themes. (It has to be a separate file so it can be included as-is
-// in subtheme rules, as a mixin would perform early variable evaluation.)
-
-// These theme variables are only accessible from within special blocks in your
-// LESS rules, as follows:
-//
-// div.myclass {
-//   height: 40px;
-//   .themed({
-//     color: @themeEmphasisTextColor;
-//   });
-// }
-//
-// Such blocks will be spliced in and the styles overridden at runtime depending
-// on any override class (see theme-overrides.less) applied to the <html> tag.
+// This is the main theme definition, providing reusable variables for consistent
+// colors etc. across the application.
 
 @themeWindowBackground: @cpTeal;
 @themeBodyBackground: @themeWindowBackground;
@@ -25,15 +11,6 @@
 @themeTitlebarBackground: multiply(@themeMainBackground, #ccc);
 @themeSecondaryTitlebarBackground: multiply(@themeTitlebarBackground, #ccc);
 
+@themeLightBackground: saturate(screen(@themeWindowBackground, #444), 30%);
+
 @themeBorderColor: #19474c;
-
-// Transition to return to the base theme color
-@themeTransitionTime: 2s;
-@themeTransitionFunction: cubic-bezier(0.25, 0, 0.25, 1);
-@themeTransitionDelay: 0.2s;
-
-.themeTransition(@prop) {
-  transition+: @prop @themeTransitionTime @themeTransitionFunction;
-}
-
-// @import 'theme-overrides.less';   // Actually handled in mixins.less

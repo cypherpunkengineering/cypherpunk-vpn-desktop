@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import '../util';
+import { classList } from '../util';
 
-export default class RetinaImage extends React.Component {
+export class RetinaImage extends React.Component {
   render() {
     var src = null;
     var srcSet = [];
@@ -42,3 +42,12 @@ export default class RetinaImage extends React.Component {
     return React.createElement('img', props, null);
   }
 }
+
+export const Flag = ({ country, size = 24, className, ...props } = {}) => {
+  country = country.toLowerCase();
+  const flag = (dpi = '') => `../assets/img/flags/${size}/${country}${dpi}.png`;
+  const src = { 1: flag(), 2: flag('@2x') };
+  return country ? <RetinaImage src={src} className={classList('flag', className)} {...props} /> : null;
+};
+
+export default RetinaImage;

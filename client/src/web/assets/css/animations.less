@@ -1,5 +1,40 @@
 // Animations
 
+@keyframes windowOnline {
+  0% { opacity: 1; }
+  5% { opacity: .85; }
+  100% { opacity: .95; }
+}
+@keyframes windowOffline {
+  0% { opacity: 1; }
+  5% { opacity: .75; }
+  100% { opacity: 1; }
+}
+@keyframes windowError {
+  0% { opacity: 1; }
+  5% { opacity: .8; }
+  100% { opacity: .9; }
+}
+
+html.online {
+  background-color: #7f0;
+  > body { animation-name: windowOnline; }
+}
+html.offline {
+  background-color: #000;
+  > body { animation-name: windowOffline; animation-duration: 1.5s; }
+}
+html.error {
+  background-color: #f20;
+  > body { animation-name: windowError; }
+}
+body {
+  animation-duration: 2s;
+  animation-fill-mode: forwards;
+  animation-timing-function: cubic-bezier(0.25, 0, 0.25, 1);
+}
+
+
 @screenTransitionTime: 350ms;
 @easeInQuart: cubic-bezier(0.895, 0.03, 0.685, 0.22);
 @easeOutQuart: cubic-bezier(0.165, 0.84, 0.44, 1);
