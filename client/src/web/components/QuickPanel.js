@@ -116,6 +116,7 @@ export class QuickPanel extends DaemonAware(React.Component) {
               .map(([country, locs]) => // project to list of <Location> elements, sorted by name
                 locs
                   .map(l => locations[l])
+                  .filter(l => l)
                   .sort((a, b) => mapSort(a, b, v => v.name))
                   .map(l => Server({ location: l, type: 'location' }))
               )
@@ -126,7 +127,7 @@ export class QuickPanel extends DaemonAware(React.Component) {
         .map(r => [ <Header key={'region-' + r.id.toLowerCase()} name={r.name}/> ].concat(r.locations)) // project to element list containing region header and locations
     );
 
-    var recent = Object.keys(this.state.lastConnected).sort((a, b) => this.state.lastConnected[b] - this.state.lastConnected[a]).filter(l => !this.state.favorites[l] && this.state.locations[l]);
+    var recent = Object.keys(this.state.lastConnected).sort((a, b) => this.state.lastConnected[b] - this.state.lastConnected[a]).filter(l => !this.state.favorites[l] && locations[l]);
     if (recent.length > 0) {
       // Prepend recent list
       items = [ <Header key="recent" name="Recent"/> ].concat(recent.slice(0, 3).map(l => Server({ location: locations[l], type: 'recent' })), items);
@@ -135,6 +136,10 @@ export class QuickPanel extends DaemonAware(React.Component) {
     if (favorites.length > 0) {
       // Prepend favorites list
       items = [ <Header key="favorites" name="Favorites"/> ].concat(favorites.sort((a, b) => mapSort(a, b, v => locations[v].name)).map(l => Server({ location: locations[l], type: 'favorite' })), items);
+    }
+    // Return placeholder if empty list
+    if (items.length == 0) {
+      items = [ <div key="empty" className="empty">No locations found.</div> ];
     }
     return items;
   }
@@ -155,6 +160,13 @@ export class QuickPanel extends DaemonAware(React.Component) {
       case 'CONNECTED': connectString = "CONNECTED TO"; break;
       case 'DISCONNECTING': connectString = "DISCONNECTING FROM"; break;
     }
+    let filterText = this.state.filterText ? this.state.filterText.toLocaleLowerCase() : null;
+    let locationList = this.makeRegionList(this.state.regions, filterText ? Object.filter(this.state.locations, (id, location) => {
+      if (location.name.toLocaleLowerCase().includes(filterText)) return true;
+      if (this.state.countryNames[location.country].toLocaleLowerCase().includes(filterText)) return true;
+      if (this.state.regionNames[location.region].toLocaleLowerCase().includes(filterText)) return true;
+      return false;
+    }) : this.state.locations);
     let Button = ({ className, index, disabled, updating, ...props } = {}) => <div className={classList(className, { "selected": this.state.selected === index, "disabled": disabled, "updating": updating })} tabIndex={disabled || this.props.expanded ? -1 : 0} onClick={e => !disabled && this.onClick(index, e)} {...props}/>;
     return(
       <div className={classList("quick-panel", { "location-list-open": this.props.expanded })}>
@@ -172,7 +184,7 @@ export class QuickPanel extends DaemonAware(React.Component) {
           </div>
           <div className="list">
             <div className="locations">
-              {this.makeRegionList(this.state.regions, this.state.locations)}
+              {locationList}
             </div>
           </div>
 
