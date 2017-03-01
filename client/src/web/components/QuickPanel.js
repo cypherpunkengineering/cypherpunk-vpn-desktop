@@ -105,29 +105,44 @@ export class QuickPanel extends DaemonAware(React.Component) {
     };
     const mapSort = (a, b, map) => map(a).localeCompare(map(b));
 
-    var items = Array.flatten(
-      this.state.regionOrder.map(g => ({
-        id: g,
-        name: this.state.regionNames[g],
-        locations:
-          Array.flatten(
-            Object.mapToArray(regions[g], (c,l) => [c,l]) // get all countries of region as well as list of location IDs for each
-              .sort((a, b) => mapSort(a, b, v => this.state.countryNames[v[0]])) // sort by country name
-              .map(([country, locs]) => // project to list of <Location> elements, sorted by name
-                locs
-                  .map(l => locations[l])
-                  .filter(l => l)
-                  .sort((a, b) => mapSort(a, b, v => v.name))
-                  .map(l => Server({ location: l, type: 'location' }))
-              )
-              .filter(l => l && l.length > 0) // filter out empty countries
-          )
-      }))
-        .filter(r => r.locations && r.locations.length > 0) // filter out empty regions
-        .map(r => [ <Header key={'region-' + r.id.toLowerCase()} name={r.name}/> ].concat(r.locations)) // project to element list containing region header and locations
-    );
-
-    var recent = Object.keys(this.state.lastConnected).sort((a, b) => this.state.lastConnected[b] - this.state.lastConnected[a]).filter(l => !this.state.favorites[l] && locations[l]);
+    let items;
+    let sorter = (a, b) => mapSort(a, b, v => v.name);
+    let ping = l => this.state.pingStats[l.id] && this.state.pingStats[l.id].average || 999;
+    if (this.state.sortOrder === 'alphabetical') {
+      items = Object.values(locations)
+        .sort(sorter)
+        .map(l => Server({ location: l, type: 'location' }));
+      if (items.length > 0) items.unshift(<Header key="alphabetical" name="Alphabetical"/>);
+    } else if (this.state.sortOrder === 'bypingtime') {
+      sorter = (a, b) => (ping(a) - ping(b)) || mapSort(a, b, v => v.name);
+      items = Object.values(locations)
+        .sort(sorter)
+        .map(l => Server({ location: l, type: 'location' }));
+      if (items.length > 0) items.unshift(<Header key="bypingtimes" name="Fastest"/>);
+    } else {
+      items = Array.flatten(
+        this.state.regionOrder.map(g => ({
+          id: g,
+          name: this.state.regionNames[g],
+          locations:
+            Array.flatten(
+              Object.mapToArray(regions[g], (c,l) => [c,l]) // get all countries of region as well as list of location IDs for each
+                .sort((a, b) => mapSort(a, b, v => this.state.countryNames[v[0]])) // sort by country name
+                .map(([country, locs]) => // project to list of <Location> elements, sorted by name
+                  locs
+                    .map(l => locations[l])
+                    .filter(l => l)
+                    .sort((a, b) => mapSort(a, b, v => v.name))
+                    .map(l => Server({ location: l, type: 'location' }))
+                )
+                .filter(l => l && l.length > 0) // filter out empty countries
+            )
+        }))
+          .filter(r => r.locations && r.locations.length > 0) // filter out empty regions
+          .map(r => [ <Header key={'region-' + r.id.toLowerCase()} name={r.name}/> ].concat(r.locations)) // project to element list containing region header and locations
+      );
+    }
+    var recent = Object.keys(this.state.lastConnected).filter(l => !this.state.favorites[l] && locations[l] && this.state.lastConnected[l]).sort((a, b) => (this.state.lastConnected[b] - this.state.lastConnected[a]) || mapSort(a, b, v => locations[v]));
     if (recent.length > 0) {
       // Prepend recent list
       items = [ <Header key="recent" name="Recent"/> ].concat(recent.slice(0, 3).map(l => Server({ location: locations[l], type: 'recent' })), items);
@@ -135,7 +150,7 @@ export class QuickPanel extends DaemonAware(React.Component) {
     var favorites = Object.keys(this.state.favorites).filter(f => this.state.favorites[f] && locations[f]);
     if (favorites.length > 0) {
       // Prepend favorites list
-      items = [ <Header key="favorites" name="Favorites"/> ].concat(favorites.sort((a, b) => mapSort(a, b, v => locations[v].name)).map(l => Server({ location: locations[l], type: 'favorite' })), items);
+      items = [ <Header key="favorites" name="Favorites"/> ].concat(favorites.map(f => locations[f]).sort(sorter).map(l => Server({ location: l, type: 'favorite' })), items);
     }
     // Return placeholder if empty list
     if (items.length == 0) {
