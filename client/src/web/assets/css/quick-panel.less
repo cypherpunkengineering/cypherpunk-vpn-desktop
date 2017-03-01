@@ -5,6 +5,8 @@
   @fullHeight: 420px;
   @listHeight: @fullHeight - @headerHeight;
 
+  @headerColor: fade(multiply(@themeLightBackground, #ccc), 75%);
+
   position: absolute;
   left: 0;
   width: 100vw;
@@ -32,14 +34,14 @@
       font-size: 12px;
       line-height: 22px;
       padding: 0 10px;
-      border-bottom-color: fade(@themeLightBackground, 50%);
+      border-bottom-color: @headerColor;
       color: #8cc;
     }
     > .header {
       width: 100%;
       height: @headerHeight;
       position: relative;
-      background: fade(@themeLightBackground, 50%);
+      background: @headerColor;
       font-size: 16px;
       > .selected-location {
         position: absolute;
@@ -80,10 +82,12 @@
           margin: 0;
           min-width: 24px;
           opacity: 0.5;
+          color: #add;
           &.selected {
             opacity: 1.0 !important;
             cursor: default !important;
             pointer-events: none;
+            color: #fff;
           }
           &:last-child {
             padding: 0 20px;
