@@ -171,10 +171,11 @@ export class QuickPanel extends DaemonAware(React.Component) {
     switch (this.state.state) {
       default:
       case 'DISCONNECTED': connectString = "CONNECT TO"; break;
-      case 'CONNECTING': connectString = "CONNECTING TO"; break;
+      case 'CONNECTING': connectString = "CONNECTING TO..."; break;
       case 'CONNECTED': connectString = "CONNECTED TO"; break;
-      case 'DISCONNECTING': connectString = "DISCONNECTING FROM"; break;
+      case 'DISCONNECTING': connectString = "DISCONNECTING FROM..."; break;
     }
+    if (this.props.expanded) connectString = "CONNECT TO";
     let filterText = this.state.filterText ? this.state.filterText.toLocaleLowerCase() : null;
     let locationList = this.makeRegionList(this.state.regions, filterText ? Object.filter(this.state.locations, (id, location) => {
       if (location.name.toLocaleLowerCase().includes(filterText)) return true;
