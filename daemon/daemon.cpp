@@ -973,7 +973,7 @@ void CypherDaemon::DoConnect()
 					else if (s == "EXITING")
 					{
 						// Do actual reconnect in OnOpenVPNProcessExited (if needed), just set state here
-						if (_state != SWITCHING)
+						if (_state != SWITCHING && _shouldConnect)
 						{
 							_state = CONNECTING;
 							OnStateChanged(STATE);
