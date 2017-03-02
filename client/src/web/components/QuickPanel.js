@@ -49,6 +49,25 @@ export class QuickPanel extends DaemonAware(React.Component) {
         if (locations[id] && locations[id].country.toLowerCase() == 'gb' && (!fastestUK || ping.average < state.pingStats[fastestUK].average)) fastestUK = id;
       }
     });
+    let ping = (l) => state.pingStats[l] && state.pingStats[l].replies && state.pingStats[l].average || 999;
+    let sort = (a, b) => (
+      //(state.favorites[b] - state.favorites[a]) ||
+      (state.lastConnected[b] - state.lastConnected[a]) ||
+      (ping(a) - ping(b))
+    );
+    let custom = Object.keys(state.locations)
+      .filter(l => state.favorites[l] /*|| state.lastConnected[l] || ping(l) != 999*/)
+      .sort(sort);
+    let { custom1, custom2 } = state;
+    if (custom1 === custom[1]) {
+      custom2 = custom[0];
+    } else if (custom2 === custom[0]) {
+      custom1 = custom[1];
+    } else {
+      [ custom1, custom2 ] = custom;
+    }
+    console.log(custom);
+
     let selected = 6; // other
     switch (state.locationFlag) {
       case 'cypherplay': if (state.overrideDNS) { selected = 0; break; } // fallthrough
@@ -60,7 +79,7 @@ export class QuickPanel extends DaemonAware(React.Component) {
         else if (state.location === state.custom2) selected = 5;
         break;
     }
-    return { fastest, fastestUS, fastestUK, selected };
+    return { fastest, fastestUS, fastestUK, custom1, custom2, selected };
   }
 
   onClick(button, event) {
@@ -73,11 +92,11 @@ export class QuickPanel extends DaemonAware(React.Component) {
         case 1: settings.location = this.state.fastest; settings.locationFlag = 'fastest'; break;
         case 2: settings.location = this.state.fastestUS; settings.locationFlag = 'fastest-us'; break;
         case 3: settings.location = this.state.fastestUK; settings.locationFlag = 'fastest-uk'; break;
-        case 4: break;
-        case 5: break;
+        case 4: settings.location = this.state.custom1; break;
+        case 5: settings.location = this.state.custom2; break;
       }
-      if (settings.hasOwnProperty('location') && !location) {
-        console.error("Can't connect - no known fastest server");
+      if (settings.hasOwnProperty('location') && !settings.location) {
+        console.error("Can't connect - no matching server");
         return;
       }
       daemon.call.applySettings(settings).then(() => {
@@ -218,9 +237,11 @@ export class QuickPanel extends DaemonAware(React.Component) {
             <Button index={3} className="fastest" disabled={!this.state.fastest} updating={this.state.pingStats.updating}>
               <Flag country="gb"/><span>Fastest UK</span>
             </Button>
-            <Button index={4} className="favorite" disabled={true}>
+            <Button index={4} className="favorite" disabled={!this.state.custom1}>
+              {this.state.custom1 ? [ <flag country={this.state.locations[this.state.custom1].country.toLowerCase()}/>, <span>{this.state.locations[this.state.custom1].name}</span> ] : null}
             </Button>
-            <Button index={5} className="favorite" disabled={true}>
+            <Button index={5} className="favorite" disabled={!this.state.custom2}>
+              {this.state.custom2 ? [ <flag country={this.state.locations[this.state.custom2].country.toLowerCase()}/>, <span>{this.state.locations[this.state.custom2].name}</span> ] : null}
             </Button>
             <Button index={6} className="other">
               <i className="list layout icon"/><span>Other</span>
