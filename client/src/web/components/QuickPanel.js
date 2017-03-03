@@ -66,7 +66,10 @@ export class QuickPanel extends DaemonAware(React.Component) {
     } else {
       [ custom1, custom2 ] = custom;
     }
-    console.log(custom);
+    if (!custom2) { // right align if only one favorite
+      custom2 = custom1;
+      custom1 = null;
+    }
 
     let selected = 6; // other
     switch (state.locationFlag) {
@@ -179,6 +182,7 @@ export class QuickPanel extends DaemonAware(React.Component) {
     return items;
   }
 
+  Button = ({ className, index, disabled, updating, ...props } = {}) => <div className={classList(className, { "selected": this.state.selected === index, "disabled": disabled, "updating": updating })} tabIndex={disabled || this.props.expanded ? -1 : 0} onClick={e => !disabled && this.onClick(index, e)} {...props}/>;
   render() {
     let cypherPlayDisabledWarning = {};
     if (!this.state.overrideDNS) {
@@ -203,7 +207,7 @@ export class QuickPanel extends DaemonAware(React.Component) {
       if (this.state.regionNames[location.region].toLocaleLowerCase().includes(filterText)) return true;
       return false;
     }) : this.state.locations);
-    let Button = ({ className, index, disabled, updating, ...props } = {}) => <div className={classList(className, { "selected": this.state.selected === index, "disabled": disabled, "updating": updating })} tabIndex={disabled || this.props.expanded ? -1 : 0} onClick={e => !disabled && this.onClick(index, e)} {...props}/>;
+    const Button = this.Button;
     return(
       <div className={classList("quick-panel", { "location-list-open": this.props.expanded })}>
         <div className="drawer">
@@ -238,10 +242,12 @@ export class QuickPanel extends DaemonAware(React.Component) {
               <Flag country="gb"/><span>Fastest UK</span>
             </Button>
             <Button index={4} className="favorite" disabled={!this.state.custom1}>
-              {this.state.custom1 ? [ <flag country={this.state.locations[this.state.custom1].country.toLowerCase()}/>, <span>{this.state.locations[this.state.custom1].name}</span> ] : null}
+              {this.state.custom1 && <Flag country={this.state.locations[this.state.custom1].country.toLowerCase()}/>}
+              {this.state.custom1 && <span>{this.state.locations[this.state.custom1].name.replace(/,[^,]*$/, '')}</span>}
             </Button>
             <Button index={5} className="favorite" disabled={!this.state.custom2}>
-              {this.state.custom2 ? [ <flag country={this.state.locations[this.state.custom2].country.toLowerCase()}/>, <span>{this.state.locations[this.state.custom2].name}</span> ] : null}
+              {this.state.custom2 && <Flag country={this.state.locations[this.state.custom2].country.toLowerCase()}/>}
+              {this.state.custom2 && <span>{this.state.locations[this.state.custom2].name.replace(/,[^,]*$/, '')}</span>}
             </Button>
             <Button index={6} className="other">
               <i className="list layout icon"/><span>Other</span>
