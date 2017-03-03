@@ -258,8 +258,8 @@ public:
 	WinOpenVPNProcess(asio::io_service& io) : OpenVPNProcess(io), WinSubprocess(io) {}
 	~WinOpenVPNProcess()
 	{
-		if (std::this_thread::get_id() != _stderr_read_thread.get_id()) _stderr_read_thread.join();
-		if (std::this_thread::get_id() != _stdout_read_thread.get_id()) _stdout_read_thread.join();
+		_stderr_read_thread.detach();
+		_stdout_read_thread.detach();
 	}
 
 	virtual void Run(const std::vector<std::string>& params) override
