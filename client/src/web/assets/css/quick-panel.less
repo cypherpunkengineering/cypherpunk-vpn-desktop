@@ -319,7 +319,7 @@
     > .drawer {
       transition: transform @listTransitionDuration @gridTransitionDuration;
       transform: translateY(@panelHeight - @fullHeight);
-      > .dimmer { .fadeInTransition(@listTransitionDuration, ease-in); }
+      > .dimmer { .fadeInTransition(@listTransitionDuration, ease-in, @gridTransitionDuration); }
       > .header {
         > .selected-location { .fadeOutTransition(@listTransitionDuration, ease-out, @gridTransitionDuration); }
         > .list-header { .fadeInTransition(@listTransitionDuration, ease-in, @gridTransitionDuration); }
