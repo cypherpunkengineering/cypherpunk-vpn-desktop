@@ -12,7 +12,7 @@
   width: 100vw;
   bottom: 0;
   height: @panelHeight;
-  z-index: 3;
+  z-index: 1003;
 
   > .drawer {
     position: absolute;
@@ -21,6 +21,15 @@
     width: 100%;
     height: @fullHeight;
 
+    > .dimmer {
+      position: absolute;
+      width: 100%;
+      bottom: 100%;
+      height: calc(~"100vh - "@panelHeight);
+      background: linear-gradient(to top, transparent, rgba(0,0,0,0.5) 30px);
+      cursor: pointer;
+      .nondraggable;
+    }
     > .description {
       @descriptionHeight: 17px;
 
@@ -243,6 +252,12 @@
         font-size: 20px;
         line-height: 44px;
       }
+      > span {
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        max-width: 92%;
+      }
       &:not(.disabled), &.other {
         &:hover, &:focus {
           transition: 0.1s;
@@ -252,7 +267,7 @@
             border-color: #8cc;
           }
         }
-        &:focus {
+        &:focus:not(:active) {
           border: 1px dotted fade(#8dfffc, 25%);
         }
         &:active {
@@ -279,6 +294,12 @@
           opacity: 0.25;
         }
       }
+      &.favorite.disabled::before {
+        .semanticIcon('\f006');
+        font-size: 40px;
+        color: fade(#8cc, 8%);
+        margin-bottom: 8px;
+      }
     }
   }
 
@@ -290,6 +311,7 @@
   & {
     > .drawer {
       transition: transform @listTransitionDuration;
+      > .dimmer { .fadeOutTransition(@listTransitionDuration, ease-out); }
       > .header {
         > .selected-location { .fadeInTransition(@listTransitionDuration, ease-in); }
         > .list-header { .fadeOutTransition(@listTransitionDuration, ease-out); }
@@ -303,6 +325,7 @@
     > .drawer {
       transition: transform @listTransitionDuration @gridTransitionDuration;
       transform: translateY(@panelHeight - @fullHeight);
+      > .dimmer { .fadeInTransition(@listTransitionDuration, ease-in, @gridTransitionDuration); }
       > .header {
         > .selected-location { .fadeOutTransition(@listTransitionDuration, ease-out, @gridTransitionDuration); }
         > .list-header { .fadeInTransition(@listTransitionDuration, ease-in, @gridTransitionDuration); }
