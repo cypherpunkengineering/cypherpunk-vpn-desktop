@@ -12,7 +12,7 @@
   width: 100vw;
   bottom: 0;
   height: @panelHeight;
-  z-index: 3;
+  z-index: 1003;
 
   > .drawer {
     position: absolute;
@@ -21,6 +21,15 @@
     width: 100%;
     height: @fullHeight;
 
+    > .dimmer {
+      position: absolute;
+      width: 100%;
+      bottom: 100%;
+      height: calc(~"100vh - "@panelHeight);
+      background: linear-gradient(to top, transparent, rgba(0,0,0,0.5) 30px);
+      cursor: pointer;
+      .nondraggable;
+    }
     > .description {
       @descriptionHeight: 17px;
 
@@ -296,6 +305,7 @@
   & {
     > .drawer {
       transition: transform @listTransitionDuration;
+      > .dimmer { .fadeOutTransition(@listTransitionDuration, ease-out); }
       > .header {
         > .selected-location { .fadeInTransition(@listTransitionDuration, ease-in); }
         > .list-header { .fadeOutTransition(@listTransitionDuration, ease-out); }
@@ -309,6 +319,7 @@
     > .drawer {
       transition: transform @listTransitionDuration @gridTransitionDuration;
       transform: translateY(@panelHeight - @fullHeight);
+      > .dimmer { .fadeInTransition(@listTransitionDuration, ease-in); }
       > .header {
         > .selected-location { .fadeOutTransition(@listTransitionDuration, ease-out, @gridTransitionDuration); }
         > .list-header { .fadeInTransition(@listTransitionDuration, ease-in, @gridTransitionDuration); }

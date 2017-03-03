@@ -211,6 +211,7 @@ export class QuickPanel extends DaemonAware(React.Component) {
     return(
       <div className={classList("quick-panel", { "location-list-open": this.props.expanded })}>
         <div className="drawer">
+          <div className="dimmer" onClick={this.props.onListCloseClick}/>
           <div className="description">{connectString}</div>
           <div className="header">
             <Location className="selected-location" location={this.state.locations[this.state.location]}/>
