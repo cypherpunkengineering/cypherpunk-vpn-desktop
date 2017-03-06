@@ -251,7 +251,7 @@ export class QuickPanel extends DaemonAware(React.Component) {
               {this.state.custom2 && <span>{this.state.locations[this.state.custom2].name.replace(/,[^,]*$/, '')}</span>}
             </Button>
             <Button index={6} className="other">
-              <i className="list layout icon"/><span>Other</span>
+              <i className="world icon"/><span>Other</span>
             </Button>
           </div>
 
