@@ -49,7 +49,7 @@ public:
 	JsonField(bool, allowLAN, true)
 	JsonField(bool, blockIPv6, true)
 	JsonField(bool, overrideDNS, true)
-	//JsonField(bool, optimizeDNS, false) // only usable when overrideDNS == true
+	JsonField(bool, optimizeDNS, false) // only usable when overrideDNS == true
 	JsonField(bool, blockAds, false) // only usable when overrideDNS == true
 	JsonField(bool, blockMalware, true) // only usable when overrideDNS == true
 	JsonField(bool, routeDefault, true) // add a default (or 0/1+1/1) route to the VPN interface
