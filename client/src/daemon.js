@@ -43,6 +43,7 @@ class Daemon extends EventEmitter {
     this.config = {};
     this.settings = {};
     this.state = {};
+    this.setMaxListeners(0);
   }
   registerMethod(method, callback) {
     handlers[method] = callback;
