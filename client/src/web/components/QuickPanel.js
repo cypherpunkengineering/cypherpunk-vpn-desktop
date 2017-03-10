@@ -78,8 +78,8 @@ export class QuickPanel extends DaemonAware(React.Component) {
       case 'fastest-us': selected = 2; break;
       case 'fastest-uk': selected = 3; break;
       default:
-        if (state.location === state.custom1) selected = 4;
-        else if (state.location === state.custom2) selected = 5;
+        if (state.location === custom1) selected = 4;
+        else if (state.location === custom2) selected = 5;
         break;
     }
     return { fastest, fastestUS, fastestUK, custom1, custom2, selected };
