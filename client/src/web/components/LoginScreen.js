@@ -310,7 +310,7 @@ export class ConfirmationStep extends Page {
   }
   onTimer() {
     if (this.attempts++ < 10) {
-      //refreshAccount(); // navigates automatically
+      refreshAccount(); // navigates automatically
     } else {
       this.endPolling();
       this.setState({ timedOut: true });
