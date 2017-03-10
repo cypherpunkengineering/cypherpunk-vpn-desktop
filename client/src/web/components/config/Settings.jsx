@@ -20,8 +20,11 @@ export class CheckboxSetting extends Setting {
   componentDidMount() {
     super.componentDidMount();
     var self = this;
-    $(this.refs.ui).checkbox({ onChange: function() { self.onChange(this.checked); } });
+    $(this.refs.ui).checkbox({ onChange: function() { self.onChange(this.checked); } }).checkbox('set ' + (this.props.disabled ? 'disabled' : 'enabled'));
     this.daemonSettingsChanged(daemon.settings);
+  }
+  componentWillReceiveProps(props) {
+    $(this.refs.ui).checkbox('set ' + (props.disabled ? 'disabled' : 'enabled'));
   }
   daemonSettingsChanged(settings) {
     this.updatingSettings = true;
@@ -55,8 +58,11 @@ export class RadioSetting extends Setting {
   componentDidMount() {
     super.componentDidMount();
     var self = this;
-    $(this.refs.ui).click(this.props.onClick).checkbox({ onChange: this.onChange.bind(this) });
+    $(this.refs.ui).click(this.props.onClick).checkbox({ onChange: this.onChange.bind(this) }).checkbox('set ' + (this.props.disabled ? 'disabled' : 'enabled'));
     this.daemonSettingsChanged(daemon.settings);
+  }
+  componentWillReceiveProps(props) {
+    $(this.refs.ui).checkbox('set ' + (props.disabled ? 'disabled' : 'enabled'));
   }
   daemonSettingsChanged(settings) {
     this.updatingSettings = true;
@@ -109,7 +115,7 @@ export class InputSetting extends Setting {
     return (
       <SettingLine className={this.props.className} hidden={this.props.hidden} indented={this.props.indented} disabled={this.props.disabled} onClick={() => this.refs.input.focus()}>
         <div className="ui input" ref="ui">
-          <input type={this.props.type} size={this.props.size} name={this.props.name} id={this.props.name} ref="input"/>
+          <input type={this.props.type} size={this.props.size} name={this.props.name} id={this.props.name} disabled={this.props.disabled ? 'disabled' : null} ref="input"/>
         </div>
         <label>{this.props.label}{this.props.caption ? <small>{this.props.caption}</small> : null}</label>
       </SettingLine>
@@ -134,7 +140,7 @@ export class LinkSetting extends Setting {
   render() {
     return (
       <SettingLine className={this.props.className} hidden={this.props.hidden} indented={this.props.indented} disabled={this.props.disabled}>
-        <Link to={this.props.to} tabIndex="0" onClick={this.props.onClick} data-value={this.props.formatValue(daemon.settings[this.props.name])} ref="link">{this.props.label}{this.props.caption ? <small>{this.props.caption}</small> : null}</Link>
+        <Link to={this.props.to} tabIndex={this.props.disabled ? "-1" : "0"} onClick={!this.props.disabled && this.props.onClick} data-value={this.props.formatValue(daemon.settings[this.props.name])} ref="link">{this.props.label}{this.props.caption ? <small>{this.props.caption}</small> : null}</Link>
       </SettingLine>
     );
   }

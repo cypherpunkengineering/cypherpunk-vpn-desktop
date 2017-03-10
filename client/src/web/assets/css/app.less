@@ -1645,6 +1645,17 @@ small {
           }
         }
 
+        &.disabled {
+          pointer-events: none !important;
+          > * {
+            opacity: 0.3;
+          }
+          label {
+            color: inherit !important;
+            opacity: 1;
+          }
+        }
+
         &.indented {
           min-height: 40px;
           height: 40px;
