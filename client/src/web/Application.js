@@ -14,6 +14,7 @@ import FirewallScreen from './components/config/FirewallScreen';
 import HelpScreen from './components/account/HelpScreen';
 import PasswordScreen from './components/account/PasswordScreen';
 import AccountScreen from './components/AccountScreen';
+import TutorialScreen from './components/TutorialScreen';
 
 import 'semantic/components/button';
 import 'semantic/components/checkbox';
@@ -182,6 +183,8 @@ export default class Application {
             <IndexRedirect to="check"/>
           </Route>
           <Route path="main" component={ConnectScreen}>
+            <Route path="/tutorial/:page" component={TutorialScreen}/>
+            <Redirect from="/tutorial" to="/tutorial/1"/>
             <Route path="/configuration" component={ConfigurationScreen}>
               <Route path="privacy" component={ProfileScreen}/>
               <Route path="firewall" component={FirewallScreen}/>

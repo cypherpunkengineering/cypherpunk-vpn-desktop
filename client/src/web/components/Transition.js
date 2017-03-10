@@ -24,6 +24,7 @@ const TRANSITION_DURATIONS = {
   'swipeRight': 350,
   'reveal': 350,
   'fadeIn': 350,
+  'tutorial': 1000,
 };
 
 

@@ -207,7 +207,7 @@ export default class ConnectScreen extends React.Component {
               />
           </div>
         </div>
-        <OverlayContainer/>
+        <OverlayContainer key="overlay"/>
       </RouteTransition>
     );
   }

@@ -2050,5 +2050,63 @@ small {
   }
 }
 
+dialog.tutorial-overlay {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background: none !important;
+  z-index: 1009;
+
+  &::backdrop {
+    background: none !important;
+  }
+  .hole {
+    position: absolute;
+    box-sizing: content-box;
+    border-radius: 1000px;
+    margin-left: -600px;
+    margin-top: -600px;
+    border: 600px solid rgba(0,0,0,0.65);
+    transition-duration: 1s;
+    transition-property: left, top, width, height;
+  }
+  .desc {
+    background: rgba(255,255,255,0.75);
+    color: black;
+    font-size: 18px;
+    position: absolute;
+    border-radius: 15px;
+    padding: 15px;
+    &.top {
+      bottom: auto;
+    }
+    &.bottom {
+      top: auto;
+    }
+
+    &.tutorial {
+      @transitionTime: 1s;
+      &-enter {
+        pointer-events: none !important;
+        opacity: 0;
+        &-active {
+          opacity: 1;
+          transition: opacity @transitionTime ease-in;
+        }
+      }
+      &-leave {
+        pointer-events: none !important;
+        opacity: 1;
+        &-active {
+          opacity: 0;
+          transition: opacity @transitionTime ease-out;
+        }
+      }
+    }
+  }
+}
+
 @import "region-selector.less";
 @import "quick-panel.less";

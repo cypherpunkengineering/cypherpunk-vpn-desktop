@@ -76,7 +76,7 @@ function setAccount(data) {
       return Promise.all([ refreshRegionList(), refreshLocationList() ]).then(() => {
         // TODO: Move to Application.onLoginSessionEstablished()
         if (History.getCurrentLocation().pathname.startsWith('/login')) {
-          History.push('/main');
+          History.push('/tutorial');
         }
         if (daemon.settings.autoConnect) {
           daemon.post.connect();
