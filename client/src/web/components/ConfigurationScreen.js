@@ -3,19 +3,31 @@ import { Link } from 'react-router';
 // import { ipcRenderer as ipc } from 'electron';
 // import daemon, { DaemonAware } from './daemon.js';
 import Titlebar, { SecondaryTitlebar } from './Titlebar';
-import GeneralSettings from './config/GeneralSettings.js'
-import AdvancedSettings from './config/AdvancedSettings.js'
 import RouteTransition from './Transition';
 import { PanelTitlebar } from './Titlebar';
 import Modal from './Modal';
 import ReconnectButton from './ReconnectButton';
+import daemon, { DaemonAware } from '../daemon';
+
+import ApplicationSettings from './config/ApplicationSettings';
+import PrivacySettings from './config/PrivacySettings';
+import ConnectionSettings from './config/ConnectionSettings';
+import CompatibilitySettings from './config/CompatibilitySettings';
+
+import { CheckboxSetting } from './config/Settings';
 
 const transitionMap = {
   '': { '*': 'swipeLeft' },
   '*': { '': 'swipeRight', 'configuration/*': 'swipeRight' },
 };
 
-export default class ConfigurationScreen extends React.Component  {
+export default class ConfigurationScreen extends DaemonAware(React.Component) {
+  constructor(props) {
+    super(props);
+    this.daemonSubscribeState({
+      settings: { showAdvancedSettings: true }
+    })
+  }
   getContent() {
     if(this.props.children) {
       return this.props.children
@@ -25,8 +37,13 @@ export default class ConfigurationScreen extends React.Component  {
         <div className="panel" key="self" id="settings-main-panel">
           <PanelTitlebar title="Configuration"/>
           <div className="scrollable content">
-            <GeneralSettings/>
-            <AdvancedSettings/>
+            <ApplicationSettings advanced={this.state.showAdvancedSettings}/>
+            <PrivacySettings advanced={this.state.showAdvancedSettings}/>
+            <ConnectionSettings advanced={this.state.showAdvancedSettings}/>
+            <CompatibilitySettings advanced={this.state.showAdvancedSettings}/>
+            <div className="pane" data-title="Advanced Settings">
+              <CheckboxSetting name="showAdvancedSettings" label="Show Advanced Settings"/>
+            </div>
             <div className="version footer">
               <div><i className="tag icon"/>{"v"+require('electron').remote.app.getVersion()}</div>
             </div>

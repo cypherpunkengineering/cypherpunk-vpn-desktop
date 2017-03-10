@@ -6,7 +6,7 @@ import daemon, { DaemonAware } from '../../daemon.js';
 
 import { CheckboxSetting, LinkSetting, InputSetting } from './Settings';
 
-export default class GeneralSettings extends React.Component  {
+export default class ApplicationSettings extends React.Component {
   constructor(props) {
     super(props);
     this.listeners = {
@@ -32,16 +32,15 @@ export default class GeneralSettings extends React.Component  {
   }
   render() {
     return(
-      <div className="pane" data-title="Basic Settings" ref="root">
-        <LinkSetting name="encryption" to="/configuration/privacy" label="Privacy Mode" formatValue={v => ({ 'default': "Recommended", 'none': "Max Speed", 'strong': "Max Privacy", 'stealth': "Max Stealth" })[v]}/>
+      <div className="pane" data-title="App Settings">
         <div className="setting">
           <div className="ui toggle checkbox" ref="runOnStartup">
             <input type="checkbox" name="runonstartup" id="runonstartup" onChange={event => this.onAutoStartSettingClicked(event)}/>
-            <label>Launch on startup</label>
+            <label>Launch on Startup</label>
           </div>
         </div>
-        <CheckboxSetting name="autoConnect" label="Auto-connect on launch"/>
-        <CheckboxSetting name="showNotifications" label="Show desktop notifications"/>
+        <CheckboxSetting name="autoConnect" label="Connect on Launch"/>
+        <CheckboxSetting name="showNotifications" label="Show Desktop Notifications"/>
       </div>
     );
   }

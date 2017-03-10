@@ -4,7 +4,7 @@ import daemon, { DaemonAware } from '../../daemon.js';
 import { SecondaryTitlebar } from '../Titlebar';
 
 
-export default class FirewallScreen extends DaemonAware(React.Component)  {
+export default class FirewallScreen extends DaemonAware(React.Component) {
   componentDidMount() {
     super.componentDidMount();
     $(this.refs.root).find('.ui.checkbox').click(this.onClick.bind(this)).checkbox({ onChange: this.onChange.bind(this) });
@@ -64,63 +64,5 @@ export default class FirewallScreen extends DaemonAware(React.Component)  {
         </div>
       </div>
     );
-      /*
-      <div ref="root" class="container__comp">
-        <div className="ui fluid inverted borderless icon menu cp_config_header">
-          <Link className="nondraggable item" to="/configuration"><i className="angle left icon"></i></Link>
-          <div className="header item center aligned">Internet Killswitch</div>
-        </div>
-        <div className="ui inverted padded grid">
-          <div className="row">
-            <div className="olive column">
-              Prevent accidental privacy leaks by disabling all internet connectivity if you are disconnected from the Cypherpunk Privacy Network.
-            </div>
-          </div>
-          <div className="row">
-            <div className="olive column">
-              <div className="ui radio checkbox">
-                <input id="firewall-auto" type="radio" name="firewall" value="auto" />
-                <label for="firewall-auto">Automatic (recommended)
-                  <small>
-                    Enable the killswitch while connecting to Cypherpunk Privacy, protecting you in case of accidental disconnections.
-                  </small>
-                </label>
-              </div>
-            </div>
-          </div>
-          <div className="row">
-            <div className="olive column">
-            <div className="ui radio checkbox">
-              <input id="firewall-off" type="radio" name="firewall" value="off" />
-              <label for="firewall-off">Off
-                <small>
-                  Don't use the killswitch feature.
-                </small>
-              </label>
-            </div>
-            </div>
-          </div>
-          <div className="row">
-            <div className="olive column">
-              <div className="ui radio checkbox">
-                <input id="firewall-on" type="radio" name="firewall" value="on" />
-                <label for="firewall-on">Always On
-                  <small>
-                    Keep the killswitch permanently on.
-                  </small>
-                  <small>
-                    <i class="warning icon"></i>WARNING:
-                  </small>
-                  <small>
-                    You will not be able to access the internet while disconnected!
-                  </small>
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    );*/
   }
 }

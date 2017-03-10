@@ -7,7 +7,7 @@ import ConnectScreen from './components/ConnectScreen';
 import ConfigurationScreen from './components/ConfigurationScreen';
 import EmailScreen from './components/account/EmailScreen';
 import ShareScreen from './components/account/ShareScreen';
-import PrivacyScreen from './components/config/PrivacyScreen';
+import ProfileScreen from './components/config/ProfileScreen';
 import TrustedNetworksScreen from './components/config/TrustedNetworks';
 import RemotePortScreen from './components/config/RemotePortScreen';
 import FirewallScreen from './components/config/FirewallScreen';
@@ -183,7 +183,7 @@ export default class Application {
           </Route>
           <Route path="connect" component={ConnectScreen}>
             <Route path="/configuration" component={ConfigurationScreen}>
-              <Route path="privacy" component={PrivacyScreen}/>
+              <Route path="privacy" component={ProfileScreen}/>
               <Route path="firewall" component={FirewallScreen}/>
               <Route path="trustednetworks" component={TrustedNetworksScreen}/>
               <Route path="remoteport" component={RemotePortScreen}/>
