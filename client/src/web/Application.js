@@ -36,22 +36,23 @@ import { compareVersions } from './util.js';
 
 const transitionMap = {
     'login': {
-      'connect': 'fadeIn',
+      'main': 'fadeIn',
+      'tutorial': 'fadeIn',
     },
     'account': {
-      'connect': 'swipeLeft',
+      'main': 'swipeLeft',
     },
-    'connect': {
+    'main': {
       'account': 'swipeRight',
       'configuration': 'swipeLeft',
     },
     'configuration': {
       'configuration/*': 'swipeLeft',
-      'connect': 'swipeRight',
+      'main': 'swipeRight',
     },
     'account': {
       'account/*': 'swipeLeft',
-      'connect': 'swipeRight',
+      'main': 'swipeRight',
     },
     '*': {
       'login': '',
