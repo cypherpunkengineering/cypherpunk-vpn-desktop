@@ -181,7 +181,7 @@ export default class Application {
             <Route path="logout" component={Login.Logout}/>
             <IndexRedirect to="check"/>
           </Route>
-          <Route path="connect" component={ConnectScreen}>
+          <Route path="main" component={ConnectScreen}>
             <Route path="/configuration" component={ConfigurationScreen}>
               <Route path="privacy" component={ProfileScreen}/>
               <Route path="firewall" component={FirewallScreen}/>

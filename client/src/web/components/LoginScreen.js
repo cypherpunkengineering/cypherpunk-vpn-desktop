@@ -76,7 +76,7 @@ function setAccount(data) {
       return Promise.all([ refreshRegionList(), refreshLocationList() ]).then(() => {
         // TODO: Move to Application.onLoginSessionEstablished()
         if (History.getCurrentLocation().pathname.startsWith('/login')) {
-          History.push('/connect');
+          History.push('/main');
         }
         if (daemon.settings.autoConnect) {
           daemon.post.connect();
@@ -147,7 +147,7 @@ export class Check extends Page {
       if (daemon.account.account && daemon.account.account.confirmed && daemon.account.privacy && daemon.config.locations && daemon.config.regions && daemon.config.countryNames && daemon.config.regionNames && daemon.config.regionOrder) {
         // Go straight to main screen and run the check in the background; if it
         // fails, we'll go back to the login screen.
-        History.push('/connect');
+        History.push('/main');
         refreshAccount().catch(err => {
           // ignore errors; 403 will still take us back to the login screen
         });

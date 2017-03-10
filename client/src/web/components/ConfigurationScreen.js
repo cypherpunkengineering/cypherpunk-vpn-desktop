@@ -55,7 +55,7 @@ export default class ConfigurationScreen extends DaemonAware(React.Component) {
   render() {
     var { props } = this;
     return(
-      <Modal className="settings right panel" onClose={() => { History.push('/connect'); }}>
+      <Modal className="settings right panel" onClose={() => { History.push('/main'); }}>
         <RouteTransition transition={transitionMap}>
           {this.getContent()}
         </RouteTransition>

@@ -102,7 +102,7 @@ export default class AccountScreen extends React.Component  {
       }
       return(
         <div>
-        <PanelTitlebar title="My Account" back="/connect"/>
+        <PanelTitlebar title="My Account" back="/main"/>
         <div className="scrollable content">
           <div className="user pane">
             <div className="user"><img src={AccountIcon}/><span className="email">{daemon.account.account.email}</span></div>
@@ -138,7 +138,7 @@ export default class AccountScreen extends React.Component  {
     var transition = transitionMap[currentRoute];
 
     return(
-      <Modal className="account left panel" onClose={() => { History.push('/connect'); }}>
+      <Modal className="account left panel" onClose={() => { History.push('/main'); }}>
         <RouteTransition transition={transitionMap}>
           {this.getContent()}
         </RouteTransition>
