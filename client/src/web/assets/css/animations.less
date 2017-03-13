@@ -78,13 +78,13 @@ body {
     pointer-events: none !important;
     &-active {
       opacity: 0;
-      transition: opacity @transitionTime ease-in !important;
+      transition: opacity @transitionTime ease-out !important;
     }
   }
   &-appear {
     opacity: 0;
     &-active {
-      opacity: 0;
+      opacity: 1;
       transition: opacity @transitionTime ease-in !important;
     }
   }
