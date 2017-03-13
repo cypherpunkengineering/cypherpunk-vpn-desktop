@@ -37,7 +37,6 @@ import { compareVersions } from './util.js';
 const transitionMap = {
     'login': {
       'main': 'fadeIn',
-      'tutorial': 'fadeIn',
     },
     'account': {
       'main': 'swipeLeft',
