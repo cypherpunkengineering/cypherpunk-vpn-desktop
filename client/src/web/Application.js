@@ -185,7 +185,7 @@ export default class Application {
           </Route>
           <Route path="main" component={ConnectScreen}>
             <Route path="/tutorial/:page" component={TutorialScreen}/>
-            <Redirect from="/tutorial" to="/tutorial/1"/>
+            <Redirect from="/tutorial" to="/tutorial/0"/>
             <Route path="/configuration" component={ConfigurationScreen}>
               <Route path="privacy" component={ProfileScreen}/>
               <Route path="firewall" component={FirewallScreen}/>

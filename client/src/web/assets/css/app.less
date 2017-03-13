@@ -2058,6 +2058,7 @@ dialog.tutorial-overlay {
   height: 100vh;
   background: none !important;
   z-index: 1009;
+  cursor: pointer;
 
   &::backdrop {
     background: none !important;
@@ -2070,7 +2071,26 @@ dialog.tutorial-overlay {
     margin-top: -600px;
     border: 600px solid rgba(0,0,0,0.65);
     transition-duration: 1s;
-    transition-property: left, top, width, height;
+    transition-property: left, top, width, height, background-color, border-color;
+  }
+  &.page-0 .hole {
+    background-color: @themeWindowBackground;
+    border-color: @themeWindowBackground;
+  }
+  .welcome {
+    position: absolute;
+    top: 160px;
+    left: 40px;
+    right: 40px;
+    bottom: 60px;
+    text-align: center;
+    color: rgba(255,255,255,0.9);
+    font-size: 16px;
+    > h3 {
+      font-size: 200%;
+      font-weight: 600;
+      margin-bottom: 40px;
+    }
   }
   .desc {
     background: rgba(255,255,255,0.75);
@@ -2085,15 +2105,16 @@ dialog.tutorial-overlay {
     &.bottom {
       top: auto;
     }
-
+  }
+  .welcome, .desc {
     &.tutorial {
-      @transitionTime: 1s;
+      @transitionTime: 700ms;
       &-enter {
         pointer-events: none !important;
         opacity: 0;
         &-active {
           opacity: 1;
-          transition: opacity @transitionTime ease-in;
+          transition: opacity @transitionTime cubic-bezier(.8,0,.9,.4);
         }
       }
       &-leave {
@@ -2101,10 +2122,60 @@ dialog.tutorial-overlay {
         opacity: 1;
         &-active {
           opacity: 0;
-          transition: opacity @transitionTime ease-out;
+          transition: opacity @transitionTime cubic-bezier(.1,.6,.2,1);
         }
       }
     }
+  }
+  .skip {
+    position: absolute;
+    text-align: center;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #488;
+    font-size: 15px;
+    text-decoration: underline;
+    border-radius: 20px 20px 0 0;
+    padding: 15px 20px;
+    background: black;
+    border: 2px solid #488;
+    border-bottom: none;
+    box-shadow: 0 0 30px 10px rgba(0,0,0,0.75);
+    transition-duration: 0.2s;
+    transition-property: color, border-color, background-color, box-shadow, opacity;
+    &:hover, &:focus, &:active {
+      color: white;
+      border-color: white;
+    }
+    &.tutorial {
+      @transitionTime: 700ms;
+      &-enter {
+        pointer-events: none !important;
+        transform: translateX(-50%) translateY(100px);
+        opacity: 0;
+        &-active {
+          transform: translateX(-50%) translateY(0px);
+          opacity: 1;
+          transition: transform @transitionTime ease-in, opacity @transitionTime ease-in;
+        }
+      }
+      &-leave {
+        pointer-events: none !important;
+        transform: translateX(-50%) translateY(0px);
+        opacity: 1;
+        &-active {
+          transform: translateX(-50%) translateY(100px);
+          opacity: 0;
+          transition: transform @transitionTime ease-out, opacity @transitionTime ease-out;
+        }
+      }      
+    }
+  }
+  &.page-0 .skip {
+    background-color: transparent;
+    border-color: transparent;
+    box-shadow: none;
   }
 }
 

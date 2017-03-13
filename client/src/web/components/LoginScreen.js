@@ -77,7 +77,7 @@ function setAccount(data) {
         // TODO: Move to Application.onLoginSessionEstablished()
         if (History.getCurrentLocation().pathname.startsWith('/login')) {
           if (!daemon.settings.seenTutorial) {
-            History.push('/tutorial');
+            History.push('/tutorial/0');
             daemon.post.applySettings({ seenTutorial: true });
           } else {
             History.push('/main');

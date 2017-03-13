@@ -13,6 +13,16 @@ import { OverlayContainer } from './Overlay';
 import RetinaImage from './Image';
 import QuickPanel from './QuickPanel';
 
+const transitionMap = {
+    '/tutorial/*': {
+      null: 'fadeIn',
+    },
+    '*': {
+      '/tutorial/*': 'fadeIn',
+      '*': 'reveal',
+    },
+};
+
 const AccountIcon = { 1: require('../assets/img/account_icon.png'), 2: require('../assets/img/account_icon@2x.png') };
 
 function humanReadableSize(count) {
@@ -167,7 +177,7 @@ export default class ConnectScreen extends React.Component {
     }[this.state.connectionState];
 
     return(
-      <RouteTransition transition="reveal">
+      <RouteTransition transition={transitionMap}>
         <ReconnectButton key="reconnect"/>
         {this.props.children || null}
         <div id="connect-screen" key="self" class="screen">
