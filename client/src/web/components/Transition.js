@@ -417,21 +417,27 @@ export function determineTransition(from, to, spec) {
     } else if (typeof spec === 'object') {
       // Transition specified via two-level glob lookup map
       function lookupMap(key, map) {
-        do {
-          if (key in map) {
-            return map[key];
+        if (key === '' || key === null || key === undefined) {
+          if ('' in map) {
+            return map[''];
           }
-          key = key.replace(/[^/]*\/?$/, '*');
-          if (key in map) {
-            return map[key];
+          if (null in map) {
+            return map[null];
           }
-          key = key.replace(/\/?\*$/, '');
-        } while (key);
-        if ('' in map) {
-          return map[''];
+        } else {
+          do {
+            if (key in map) {
+              return map[key];
+            }
+            key = key.replace(/[^/]*\/?$/, '*');
+            if (key in map) {
+              return map[key];
+            }
+            key = key.replace(/\/?\*$/, '');
+          } while (key);
         }
-        if (null in map) {
-          return map[null];
+        if ('*' in map) {
+          return map['*'];
         }
       }
       var map = lookupMap(from || '', spec);
