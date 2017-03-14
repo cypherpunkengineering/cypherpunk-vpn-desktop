@@ -2059,9 +2059,23 @@ dialog.tutorial-overlay {
   background: none !important;
   z-index: 1009;
   cursor: pointer;
+  pointer-events: none;
 
   &::backdrop {
     background: none !important;
+  }
+  .dragbar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    height: 70px;
+    z-index: 1010;
+    cursor: default;
+    .draggable;
+  }
+  .is-focused & {
+    pointer-events: initial;
   }
   .hole {
     position: absolute;
@@ -2070,7 +2084,7 @@ dialog.tutorial-overlay {
     margin-left: -600px;
     margin-top: -600px;
     border: 600px solid rgba(0,0,0,0.65);
-    transition-duration: 1s;
+    transition-duration: 500ms;
     transition-property: left, top, width, height, background-color, border-color;
   }
   &.page-0 .hole {
@@ -2079,7 +2093,7 @@ dialog.tutorial-overlay {
   }
   .welcome {
     position: absolute;
-    top: 160px;
+    top: 240px;
     left: 40px;
     right: 40px;
     bottom: 60px;
@@ -2091,6 +2105,25 @@ dialog.tutorial-overlay {
       font-weight: 600;
       margin-bottom: 40px;
     }
+    &.tutorial {
+      @transitionTime: 700ms;
+      &-enter {
+        pointer-events: none !important;
+        opacity: 0;
+        &-active {
+          opacity: 1;
+          transition: opacity @transitionTime cubic-bezier(1,0,.5,1);
+        }
+      }
+      &-leave {
+        pointer-events: none !important;
+        opacity: 1;
+        &-active {
+          opacity: 0;
+          transition: opacity @transitionTime cubic-bezier(.5,0,0,1);
+        }
+      }
+    }
   }
   .desc {
     background: rgba(255,255,255,0.75);
@@ -2099,33 +2132,92 @@ dialog.tutorial-overlay {
     position: absolute;
     border-radius: 15px;
     padding: 15px;
-    &.top {
-      bottom: auto;
+    &::before {
+      position: absolute;
+      border: 10px solid transparent;
     }
-    &.bottom {
-      top: auto;
+    &.top::before {
+      content: '';
+      bottom: 100%;
+      transform-origin: 50% bottom;
+      border-top: none;
+      border-bottom: 20px solid rgba(255,255,255,0.75);
     }
-  }
-  .welcome, .desc {
+    &.bottom::before {
+      content: '';
+      top: 100%;
+      transform-origin: 50% top;
+      border-bottom: none;
+      border-top: 20px solid rgba(255,255,255,0.75);
+    }
+    &.left::before { left: 20%; }
+    &.center::before, &:not(.left):not(.right)::before { left: 50%; }
+    &.right::before { right: 20%; }
+    &.top { transform-origin: 50% top; &::before { transform: translateX(-50%); } }
+    &.top.left { transform-origin: 20% top; &::before { transform: translateX(-50%) skewX(50deg); } }
+    &.top.right { transform-origin: 80% top; &::before { transform: translateX(50%) skewX(-50deg); } }
+    &.bottom { transform-origin: 50% bottom; &::before { transform: translateX(-50%); } }
+    &.bottom.left { transform-origin: 20% bottom; &::before { transform: translateX(-50%) skewX(-50deg); } }
+    &.bottom.right { transform-origin: 80% bottom; &::before { transform: translateX(50%) skewX(50deg); } }
     &.tutorial {
       @transitionTime: 700ms;
       &-enter {
         pointer-events: none !important;
         opacity: 0;
+        transform: scale(0);
         &-active {
           opacity: 1;
-          transition: opacity @transitionTime cubic-bezier(.8,0,.9,.4);
+          transform: scale(1);
+          transition: opacity (@transitionTime/2) cubic-bezier(1,0,.5,1) (@transitionTime/2), transform (@transitionTime/2) ease-in (@transitionTime/2);
         }
       }
       &-leave {
         pointer-events: none !important;
         opacity: 1;
+        transform: scale(1);
         &-active {
           opacity: 0;
-          transition: opacity @transitionTime cubic-bezier(.1,.6,.2,1);
+          transform: scale(0);
+          transition: opacity (@transitionTime/2) cubic-bezier(.5,0,0,1), transform (@transitionTime/2) ease-out;
         }
       }
     }
+  }
+  .prev, .next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 30px;
+    color: #488;
+    transition: 0.1s color, 0.2s opacity;
+    opacity: 0.5;
+    line-height: 100px;
+    width: 50px;
+    text-align: center;
+    background: @themeWindowBackground;
+    &:hover {
+      color: white;
+      opacity: 1;
+      &::before {
+        transform: scale(1.2);
+      }
+    }
+    &::before {
+      transition: 0.2s opacity, 0.1s transform;
+      display: block;
+    }
+  }
+  .next {
+    right: 0;
+    border-radius: 50px 0 0 50px;
+    padding-left: 14px;
+    &::before { .semanticIcon('\f054'); }
+  }
+  .prev {
+    left: 0;
+    border-radius: 0 50px 50px 0;
+    padding-right: 14px;
+    &::before { .semanticIcon('\f053'); }
   }
   .skip {
     position: absolute;
@@ -2136,12 +2228,13 @@ dialog.tutorial-overlay {
     color: #488;
     font-size: 15px;
     text-decoration: underline;
-    border-radius: 20px 20px 0 0;
-    padding: 15px 20px;
-    background: black;
+    border-radius: 100px 100px 0 0;
+    width: 200px;
+    height: 44px;
+    line-height: 42px;
+    background: @themeWindowBackground;
     border: 2px solid #488;
     border-bottom: none;
-    box-shadow: 0 0 30px 10px rgba(0,0,0,0.75);
     transition-duration: 0.2s;
     transition-property: color, border-color, background-color, box-shadow, opacity;
     &:hover, &:focus, &:active {
