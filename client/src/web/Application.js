@@ -78,13 +78,13 @@ export default class Application {
     // Listen for daemon state changes
     daemon.on('state', Application.daemonStateChanged);
 
-    History.push('/login');
-    // TODO: Later we'll probably want to run this at a different timing
-    Application.checkForUpdates();
-
     if (daemon.settings.enableAnalytics) {
       analytics.activate();
     }
+
+    History.push('/login');
+    // TODO: Later we'll probably want to run this at a different timing
+    Application.checkForUpdates();
   }
   static checkForUpdates() {
     server.get('/api/v0/app/versions').then(response => {
