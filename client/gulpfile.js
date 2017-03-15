@@ -133,7 +133,12 @@ gulp.task('watch-web', ['watch-webpack']);
  */
 gulp.task('build-webpack', ['build-semantic', 'build-web-libraries', 'build-web-fonts'], function() {
   return new Promise((resolve, reject) => {
-    webpack(webpackConfig).run(webpackLogger(resolve, reject));
+    let logger = webpackLogger(resolve, reject);
+    try {
+      webpack(webpackConfig).run(logger);
+    } catch (e) {
+      logger(e);
+    }
   });
 });
 gulp.task('watch-webpack', function() {
@@ -234,6 +239,7 @@ function ifEmpty(isEmpty, isNotEmpty) {
 function webpackLogger(resolve, reject) {
   return function(err, stats) {
     if (err) {
+      console.dir(err);
       reject(new gutil.PluginError('webpack', { message: 'Fatal error: ' + err.toString() }));
     } else {
       var log = stats.toString({
