@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { Link } from 'react-router';
 import { RouteTransition, TransitionGroup } from './Transition';
 import { classList } from '../util';
+import analytics from '../analytics';
 
 const PAGES = [
   {
@@ -56,6 +57,7 @@ const PAGES = [
 export default class TutorialOverlay extends React.Component {
   componentDidMount() {
     this.dom.showModal();
+    analytics.event('Activity', 'tutorialBegin');
   }
   onClick(event) {
     switch (event.target.className) {
@@ -67,6 +69,7 @@ export default class TutorialOverlay extends React.Component {
         if (PAGES[+this.props.params.page + 1]) {
           History.push('/tutorial/' + (+this.props.params.page + 1));
         } else {
+          analytics.event('Activity', 'tutorialFinish');
           History.push('/main');
         }
         break;
@@ -84,7 +87,7 @@ export default class TutorialOverlay extends React.Component {
         <TransitionGroup key="transition" transition="tutorial">
           {content}
           {this.props.params.page < PAGES.length ? <div key="next" className="next"/> : null}
-          {this.props.params.page < PAGES.length - 1 ? <Link key="skip" to="/main" class="skip" tabIndex="0">Skip tutorial</Link> : null}
+          {this.props.params.page < PAGES.length - 1 ? <Link key="skip" to="/main" class="skip" tabIndex="0" onClick={() => analytics.event('Activity', 'tutorialSkip')}>Skip tutorial</Link> : null}
         </TransitionGroup>
         <div className="dragbar"/>
       </dialog>

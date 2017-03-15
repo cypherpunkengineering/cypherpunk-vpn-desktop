@@ -32,6 +32,7 @@ import './assets/css/main.less';
 import RouteTransition from './components/Transition';
 import daemon from './daemon.js';
 import server from './server.js';
+import analytics from './analytics.js';
 import { compareVersions } from './util.js';
 
 const transitionMap = {
@@ -60,6 +61,8 @@ const transitionMap = {
     },
 };
 
+let lastPath = null;
+
 export default class Application {
   static init() {
     server.refreshSession = () => {
@@ -69,7 +72,7 @@ export default class Application {
       return server.post('/api/v1/account/authenticate/token', { email: daemon.account.account.email, token: daemon.account.account.token }).then(data => true);
     };
     server.onAuthFailure = () => {
-      setImmediate(() => History.push('/login/email'));
+      setImmediate(() => History.push('/login/logout'));
     }
 
     // Listen for daemon state changes
@@ -78,6 +81,10 @@ export default class Application {
     History.push('/login');
     // TODO: Later we'll probably want to run this at a different timing
     Application.checkForUpdates();
+
+    if (daemon.settings.enableAnalytics) {
+      analytics.activate();
+    }
   }
   static checkForUpdates() {
     server.get('/api/v0/app/versions').then(response => {
@@ -150,6 +157,10 @@ export default class Application {
     Application.History.push(location);
   }
   static onNavigation(location, action) {
+    if (lastPath !== location.pathname) {
+      lastPath = location.pathname;
+      analytics.pageview('https://desktop.cypherpunk.com', lastPath, '');
+    }
     ipcRenderer.send('navigate', location);
   }
   static isLoggedIn() {
@@ -215,10 +226,12 @@ window.addEventListener('unhandledrejection', function (event) {
   if (event.reason.handled) {
     // e.g. a 403 which was "handled" by moving to the login screen
     event.preventDefault();
+    analytics.exception(event.reason.toString(), 0);
     return false;
   } else {
     console.error("Unhandled error: " + event.reason.message);
     console.dir(event.reason);
+    analytics.exception(event.reason.toString(), 1);
     alert(event.reason.message);
   }
 });

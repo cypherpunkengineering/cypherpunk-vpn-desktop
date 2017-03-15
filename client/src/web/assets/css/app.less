@@ -855,7 +855,36 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   }
 
   .login-analytics {
-
+    .desc {
+      font-size: 17px;
+    }
+    button.allow {
+      position: relative;
+      margin: 10px;
+      background: #1987bd;
+      border: none;
+      font-size: 18px;
+      font-weight: bold;
+      width: 165px;
+      height: 42px;
+      border-radius: 5px;
+      box-shadow: 2px 2px 0 2px #0d1e26;
+      .nondraggable;
+      cursor: pointer;
+      &:active {
+        left: 1px;
+        top: 1px;
+        box-shadow: 1px 1px 1px 0 #0d1e26;
+      }
+    }
+    a.disallow {
+      padding: 10px;
+      font-size: 14px;
+      text-decoration: underline;
+      color: #50aeb7;
+      .nondraggable;
+      cursor: pointer;
+    }
   }
 
   .login-logout {

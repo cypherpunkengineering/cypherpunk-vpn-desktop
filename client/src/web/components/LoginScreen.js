@@ -6,6 +6,7 @@ import { TransitionGroup, Transition, RouteTransition, ReactCSSTransitionGroup }
 import RetinaImage from './Image.js';
 import daemon from '../daemon.js';
 import server from '../server.js';
+import analytics from '../analytics.js';
 import { DEFAULT_REGION_DATA, classList } from '../util.js';
 const { session } = require('electron').remote;
 
@@ -76,7 +77,7 @@ function setAccount(data) {
       return Promise.all([ refreshRegionList(), refreshLocationList() ]).then(() => {
         // TODO: Move to Application.onLoginSessionEstablished()
         if (History.getCurrentLocation().pathname.startsWith('/login')) {
-          History.push('/tutorial/0'); // FIXME: should go to analytics consent screen instead
+          History.push('/login/analytics');
         }
         if (daemon.settings.autoConnect) {
           daemon.post.connect();
@@ -104,6 +105,8 @@ const LoginImage2x = require('../assets/img/login_illustration2@2x.png');
 
 const DefaultPageBackground = PageBackground({ key: "bg-default", top: 37, src: { 1: LoginImage, 2: LoginImage2x } });
 const DefaultPageElements = [ DefaultPageBackground, PagePipe(), PageHeader() ];
+
+const AnalyticsPageBackground = PageBackground({ key: "bg-analytics", top: 60, src: { 1: require('../assets/img/analytics.png'), 2: require('../assets/img/analytics@2x.png') } });
 
 // Goes into the page itself
 const PageTitle = ({ key = "title", text = null, className = null, children, ...props } = {}) => <div key={key} className={classList('title', className)} {...props}>{text}{children}</div>;
@@ -188,6 +191,8 @@ export class Logout extends Page {
       server.post('/api/v0/account/logout', null, { refreshSessionOnForbidden: false, catchAuthFailure: false })
         .catch(err => console.error("Error while logging out:", err))
         .then(() => daemon.call.setAccount({ account: { email: daemon.account.account.email } }))
+        .then(() => daemon.call.applySettings({ enableAnalytics: false }))
+        .then(() => analytics.deactivate())
         .then(() => { session.defaultSession.clearStorageData({ storages: [ 'cookies' ] }, () => History.push('/login/email')); });
     })
   }
@@ -353,22 +358,20 @@ export class ConfirmationStep extends Page {
 
 
 export class AnalyticsStep extends Page {
-  static elements = [ DefaultPageElements ];
+  static elements = [ AnalyticsPageBackground ];
   onAllow() {
-    console.log("Allow");
+    daemon.call.applySettings({ enableAnalytics: true }).then(() => { analytics.activate(); History.push('/tutorial/0'); });
   }
   onDisallow() {
-    console.log("Don't allow");
+    daemon.post.applySettings({ enableAnalytics: false }).then(() => History.push('/tutorial/0'));
   }
   render() {
     return (
-      <Page className="login-analytics">
+      <Page className="login-analytics" top={260}>
         <div className="desc">
-          <h3>One Final Step</h3>
-          Share anonymized analytics about your VPN connections to help make Cypherpunk Privacy faster and more reliable.
+          Share anonymized analytics about your VPN connections to help make Cypherpunk Privacy faster and more reliable?
         </div>
-        <div className="ui inline active large text loader">Placeholder</div>
-        <button className="allow" onClick={() => this.onAllow()}>Allow</button>
+        <button className="allow" onClick={e => { this.onAllow(); e.preventDefault(); }}>Allow</button>
         <a className="disallow" onClick={() => this.onDisallow()}>Don't allow</a>
       </Page>
     );
