@@ -36,29 +36,29 @@ import analytics from './analytics.js';
 import { compareVersions } from './util.js';
 
 const transitionMap = {
-    'login': {
-      'main': 'fadeIn',
-    },
-    'account': {
-      'main': 'swipeLeft',
-    },
-    'main': {
-      'account': 'swipeRight',
-      'configuration': 'swipeLeft',
-    },
-    'configuration': {
-      'configuration/*': 'swipeLeft',
-      'main': 'swipeRight',
-    },
-    'account': {
-      'account/*': 'swipeLeft',
-      'main': 'swipeRight',
-    },
-    '*': {
-      'login': '',
-      'root': '',
-      '*': 'fadeIn',
-    },
+  'login': {
+    'main': 'fadeIn',
+  },
+  'account': {
+    'main': 'swipeLeft',
+  },
+  'main': {
+    'account': 'swipeRight',
+    'configuration': 'swipeLeft',
+  },
+  'configuration': {
+    'configuration/*': 'swipeLeft',
+    'main': 'swipeRight',
+  },
+  'account': {
+    'account/*': 'swipeLeft',
+    'main': 'swipeRight',
+  },
+  '*': {
+    'login': '',
+    'root': '',
+    '*': 'fadeIn',
+  },
 };
 
 let lastPath = null;
