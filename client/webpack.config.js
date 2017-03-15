@@ -14,11 +14,11 @@ const useWebLibraries = production;
 const libExtension = production ? '.min.js' : '.js';
 
 const devMap = production ? '' : '?sourceMap';
-function cssLoader(a, b) { return extractCss ? ExtractTextPlugin.extract(a, b) : (a + '!' + b); }
+function cssLoader(a, b) { return extractCss ? ExtractTextPlugin.extract({ fallback: a, use: b }) : (a + '!' + b); }
 
 
 var options = {
-  target: 'node',
+  target: 'electron-renderer',
   context: path.resolve(__dirname, 'src/web'),
   entry: {
     'app': [ /*'webpack-dev-server',*/ './index.js' ],
@@ -29,22 +29,27 @@ var options = {
     libraryTarget: 'commonjs2'
   },
   resolve: {
-    modulesDirectories: production ? [] : [
+    modules: production ? [] : [
       path.resolve(__dirname, 'node_modules'),
       'node_modules',
     ],
     alias: {
       'semantic': path.resolve(__dirname, 'src/web/semantic'),
     },
-    extensions: [ '', '.webpack', '.webpack.js', libExtension, '.min.js', '.js', '.jsx' ],
+    extensions: [ '.webpack', '.webpack.js', libExtension, '.min.js', '.js', '.jsx' ],
   },
   externals: [
     Object.keys(pkg.dependencies || {}), // exclude packaged node modules
+    'fs',
   ],
+  resolveLoader: {
+    moduleExtensions: ["-loader"]
+  },
   module: {
     loaders: [
       { test: /./, include: path.resolve(__dirname, 'src/assets'), loader: 'file-loader?emitFile=false&name=../[path][name].[ext]&context=src' },
-      { test: /\.jsx?$/, exclude: /(node_modules|[\/]~[\/]|semantic[\/]|webpack\-dev\-server|socket\.io\-client|\.min\.js$)/, loader: 'babel' },
+      { test: /\.jsx?$/, exclude: /(node_modules|[\/]~[\/]|semantic[\/]|webpack\-dev\-server|socket\.io\-client|[\/]lib[\/]|\.min\.js$)/, loader: 'babel' },
+      { test: /\.json$/, loader: 'json-loader' },
       { test: /\.css$/, loader: cssLoader('style' + devMap, 'css' + devMap) },
       { test: /\.less$/, loader: cssLoader('style' + devMap, 'css' + devMap + '!less' + devMap) },
       { test: /\.scss$/, loader: cssLoader('style' + devMap, 'css' + devMap + '!sass' + devMap) },
@@ -56,11 +61,8 @@ var options = {
   //postcss: function() { return autoprefixer({ browsers: [ 'Chrome >= 52' ] }); },
   plugins: [
     //new webpack.NoErrorsPlugin(),
-    new ExtractTextPlugin('[name].css', { allChunks: true, disable: !extractCss }),
-    new webpack.optimize.DedupePlugin(),
-    new webpack.optimize.OccurenceOrderPlugin(),
+    new ExtractTextPlugin({ filename: '[name].css', allChunks: true, disable: !extractCss }),
     new webpack.DefinePlugin({ 'process.env': { 'NODE_ENV': JSON.stringify(ENV) } }),
-    new webpack.IgnorePlugin(new RegExp("^(fs|ipc)$")), // what is this?
     new webpack.ProvidePlugin({
       $: "jquery",
       jQuery: "jquery",
@@ -98,6 +100,5 @@ if (useWebLibraries) {
   });
 }
 
-options.target = webpackTargetElectronRenderer(options);
 
 module.exports = options;
