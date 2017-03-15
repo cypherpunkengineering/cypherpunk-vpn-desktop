@@ -84,7 +84,7 @@ var options = {
 }
 
 if (useWebLibraries) {
-  options.resolve.modulesDirectories.unshift(path.resolve(__dirname, 'src/web/lib'));
+  options.resolve.modules.unshift(path.resolve(__dirname, 'src/web/lib'));
   Object.assign(options.resolve.alias, {
     'react/addons': 'react',
     'react/lib': 'react',
