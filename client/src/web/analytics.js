@@ -1,5 +1,5 @@
-import Analytics from 'electron-google-analytics';
 import daemon from './daemon';
+import { makeQueryString } from './server';
 import './util';
 
 const electron = require('electron');
@@ -8,15 +8,61 @@ const trackingID = 'UA-80859092-2';
 const userAgent = window.navigator.userAgent;
 const debug = false; //electron.remote.getGlobal('args').debug;
 
-let google = new Analytics(trackingID, { userAgent, debug, version: 1 });
 let enabled = false;
 let clientID = null;
 
 let queue = [];
 
+// useful parameters:
+// qt: queue time, millisecond delay of submission (i.e. nowTimestamp - queuedTimestamp)
+// uip: actual IP address (e.g. naked IP instead of VPN IP?)
+// geoid: geographical location
+// sr: screen resolution
+// ni: non-interactive hit
+
+
+function send(type, payload) {
+  return new Promise(function xhrPromise(resolve, reject) {
+    let xhr = new XMLHttpRequest();
+    let url = 'https://www.google-analytics.com/collect';
+    if (Array.isArray(payload)) { // batch
+      if (payload.length > 20) {
+        return reject(new Error("Too many payloads at once"));
+      }
+      payload = payload.map(p => makeQueryString(Object.assign({ t: type, v: 1, tid: trackingID, cid: clientID, ds: 'electron' }, p))).join('\r\n');
+      url = 'https://www.google-analytics.com/batch';
+    } else if (payload && typeof payload === 'object') {
+      payload = makeQueryString(Object.assign({ t: type, v: 1, tid: trackingID, cid: clientID, ds: 'electron' }, payload));
+    } else {
+      return reject(new Error("Invalid payload"));
+    }
+    xhr.open('POST', url, true);
+    xhr.onload = function() {
+      if (this.status < 200 || this.status >= 300) {
+        let err = new Error("Failed to send analytics");
+        err.handled = true;
+        err.status = this.status;
+        reject(Object.assign(new Error("Failed to send analytics"), { handled: true, status: this.status }));
+      } else {
+        resolve(this.response);
+      }
+    };
+    xhr.onerror = function() {
+      reject(Object.assign(new Error("Failed to send analytics"), { handled: true }));
+    };
+    xhr.onabort = function() {
+      reject(Object.assign(new Error("Failed to send analytics"), { handled: true }));
+    };
+    xhr.send(payload);
+  });
+}
+
+
+
 let analytics = {
   activate() {
     if (!enabled) {
+      daemon.post.applySettings({ enableAnalytics: true });
       enabled = true;
       queue = [];
       if (daemon.settings.analyticsID) {
@@ -44,14 +90,15 @@ let analytics = {
     return clientID;
   },
 
-  pageview(hostname, url, title) {
+  pageview(hostname, path, title) {
     if (!enabled) return Promise.resolve();
-    return google.pageview(hostname, url, title).catch(e => { e.handled = true; throw e; });
+    return send('pageview', { dh: hostname, dp: path, dt: title });
   },
-  event(evCategory, evAction, options = {}) {
+  event(evCategory, evAction, { label, value } = {}) {
     if (!enabled) return Promise.resolve();
-    return google.event(evCategory, evAction, Object.assign({ clientID }, options)).catch(e => { e.handled = true; throw e; });
+    return send('event', { ec: evCategory, ea: evAction, el: label, ev: value });
   },
+  /*
   screen(appName, appVer, appID, appInstallerID, screenName) {
     if (!enabled) return Promise.resolve();
     return google.screen(appName, appVer, appID, appInstallerID, screenName, clientID).catch(e => { e.handled = true; throw e; });
@@ -84,6 +131,7 @@ let analytics = {
     if (!enabled) return Promise.resolve();
     return google.send(hitType, params, clientID).catch(e => { e.handled = true; throw e; });
   }
+  */
 };
 
 window.analytics = analytics;
