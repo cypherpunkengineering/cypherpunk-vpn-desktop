@@ -73,7 +73,7 @@ var options = {
   ],
   node: { console: false, global: false, process: false, Buffer: false, __filename: false, __dirname: false, setImmediate: false },
   stats: { colors: true },
-  devtool: development ? 'inline-source-map' : null,
+  devtool: development ? 'inline-source-map' : false,
   devServer: {
     port: process.env.PORT || 8080,
     contentBase: './build', // TODO: correct?
