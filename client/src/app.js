@@ -117,6 +117,30 @@ eventPromise(app, 'ready').then(() => {
       }
     }
   });
+  let lastState = 'DISCONNECTED';
+  daemon.on('state', state => {
+    if (state.state && state.state !== lastState) {
+      if (daemon.settings.showNotifications) {
+        if (daemon.state.connect) {
+          if (state.state === 'DISCONNECTED') {
+            new Notification("Connection failure", { body: "Your connection to the Cypherpunk network has failed." + ((daemon.settings.firewall !== 'off') ? " Your internet connection has been cut to preventing your traffic from leaking." : "") });
+          } else if (state.state === 'CONNECTED') {
+            new Notification("Connected to Cypherpunk network", { body: "You are now safely connected to the Cypherpunk Privacy network. Enjoy a more free internet!" });
+          } else if (lastState === 'CONNECTED' && state.state === 'CONNECTING') {
+            new Notification("Reconnecting to Cypherpunk network...", { body: "Your connection to the Cypherpunk network has been disrupted, please wait while we try to restore it..." });
+          }
+        } else {
+          if (state.state === 'DISCONNECTED') {
+            new Notification("Disconnected from Cypherpunk network", { body: (daemon.settings.firewall === 'on') ? "Reminder: Leak Protection is active, blocking your internet connection." : "You are now connecting directly to the internet." });
+          }
+        }
+      }
+      lastState = state.state;
+    }
+  });
+  daemon.on('error', error => {
+    // TODO: Not yet used
+  });
   createMainWindow();
   tray.create();
 }).catch(err => {
@@ -124,7 +148,8 @@ eventPromise(app, 'ready').then(() => {
     dialog.showErrorBox("Initialization Error", "An unexpected error happened while launching Cypherpunk Privacy:\n\n" + (err.stack ? err.stack : err));
     app.exit(1);
   } else {
-    app.exit(0);
+    dialog.showErrorBox("Initialization Error", "The Cypherpunk Privacy helper service does not appear to be running. Please try reinstalling the application.");
+    app.exit(1);
   }
 });
 
