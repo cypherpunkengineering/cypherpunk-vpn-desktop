@@ -124,7 +124,8 @@ eventPromise(app, 'ready').then(() => {
     dialog.showErrorBox("Initialization Error", "An unexpected error happened while launching Cypherpunk Privacy:\n\n" + (err.stack ? err.stack : err));
     app.exit(1);
   } else {
-    app.exit(0);
+    dialog.showErrorBox("Initialization Error", "The Cypherpunk Privacy helper service does not appear to be running. Please try reinstalling the application.");
+    app.exit(1);
   }
 });
 
