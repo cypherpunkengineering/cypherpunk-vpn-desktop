@@ -138,6 +138,9 @@ eventPromise(app, 'ready').then(() => {
       lastState = state.state;
     }
   });
+  daemon.on('error', error => {
+    // TODO: Not yet used
+  });
   createMainWindow();
   tray.create();
 }).catch(err => {
