@@ -124,7 +124,14 @@ eventPromise(app, 'ready').then(() => {
         if (daemon.state.connect) {
           if (state.state === 'DISCONNECTED') {
             new Notification("Connection failure", { body: "Your connection to the Cypherpunk network has failed." + ((daemon.settings.firewall !== 'off') ? " Your internet connection has been cut to preventing your traffic from leaking." : "") });
+          } else if (state.state === 'CONNECTED') {
+            new Notification("Connected to Cypherpunk network", { body: "You are now safely connected to the Cypherpunk Privacy network. Enjoy a more free internet!" });
+          } else if (lastState === 'CONNECTED' && state.state === 'CONNECTING') {
+            new Notification("Reconnecting to Cypherpunk network...", { body: "Your connection to the Cypherpunk network has been disrupted, please wait while we try to restore it..." });
           }
+        } else {
+          if (state.state === 'DISCONNECTED') {
+            new Notification("Disconnected from Cypherpunk network", { body: (daemon.settings.firewall === 'on') ? "Reminder: Leak Protection is active, blocking your internet connection." : "You are now connecting directly to the internet." });
           }
         }
       }
