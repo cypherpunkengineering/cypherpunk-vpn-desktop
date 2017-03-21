@@ -117,9 +117,13 @@ eventPromise(app, 'ready').then(() => {
       }
     }
   });
+  let lastState = 'DISCONNECTED';
   daemon.on('state', state => {
-    if (state.state === 'DISCONNECTED') {
-      new Notification("Connection failure", { body: "Your connection to the Cypherpunk network has failed." + ((daemon.settings.firewall !== 'off') ? " Your internet connection has been cut to preventing your traffic from leaking." : "") });
+    if (state.state && state.state !== lastState) {
+      if (state.state === 'DISCONNECTED') {
+        new Notification("Connection failure", { body: "Your connection to the Cypherpunk network has failed." + ((daemon.settings.firewall !== 'off') ? " Your internet connection has been cut to preventing your traffic from leaking." : "") });
+      }
+      lastState = state.state;
     }
   });
   createMainWindow();
