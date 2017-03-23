@@ -26,6 +26,13 @@ const SHORT_TIMEOUT = 1000;
 // ni: non-interactive hit
 
 
+function makeClientID() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+    return v.toString(16);
+  });
+}
+
 function processQueue() {
   queueTimeout = null;
   queueShortTimeout = null;
@@ -96,10 +103,10 @@ let analytics = {
       daemon.post.applySettings({ enableAnalytics: true });
       enabled = true;
       queue = [];
-      if (daemon.settings.analyticsID) {
+      if (daemon.settings.analyticsID && typeof daemon.settings.analyticsID === 'string' && daemon.settings.analyticsID.length == 36) {
         clientID = daemon.settings.analyticsID;
       } else {
-        clientID = Math.floor(Math.random() * (1e12 - 1) + 1);
+        clientID = makeClientID();
         daemon.post.applySettings({ analyticsID: clientID });
       }
       console.log("Enabling Google Analytics with clientID " + clientID);
