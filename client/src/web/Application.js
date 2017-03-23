@@ -159,7 +159,7 @@ export default class Application {
   static onNavigation(location, action) {
     if (lastPath !== location.pathname) {
       lastPath = location.pathname;
-      analytics.pageview('https://desktop.cypherpunk.com', lastPath, '');
+      analytics.pageview('desktop.cypherpunk.com', lastPath, '');
     }
     ipcRenderer.send('navigate', location);
   }

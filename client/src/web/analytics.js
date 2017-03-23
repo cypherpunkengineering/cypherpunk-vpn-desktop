@@ -75,7 +75,7 @@ function send(type, payload) {
     return Promise.all(payload.map(p => send(type, p)));
   } else if (payload && typeof payload === 'object') {
     return new Promise((resolve, reject) => {
-      let props = { t: type, v: 1, tid: trackingID, cid: clientID, ds: 'app', an: 'CypherpunkPrivacy', av: version };
+      let props = { t: type, v: 1, tid: trackingID, cid: clientID, ds: 'electron', an: 'CypherpunkPrivacy', av: version };
       let now = new Date();
       queue.push({ type, time: now, payload: Object.assign(props, payload), resolve, reject });
       if (queue.length == 20) {
@@ -130,7 +130,7 @@ let analytics = {
 
   pageview(hostname, path, title) {
     if (!enabled) return Promise.resolve();
-    return send('pageview', { dh: hostname, dp: path, dt: title });
+    return send('pageview', { dh: hostname, dp: path, dt: title || undefined });
   },
   event(evCategory, evAction, { label, value } = {}) {
     if (!enabled) return Promise.resolve();
