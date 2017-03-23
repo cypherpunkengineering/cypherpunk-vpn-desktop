@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import daemon, { DaemonAware } from '../../daemon.js';
 import { SecondaryTitlebar } from '../Titlebar';
 import '../../util.js';
+import analytics from '../../analytics';
 
 const REMOTE_PORT_ALTERNATIVES = [ [ 'udp', [ 7133, 5060, 53 ] ], [ 'tcp', [ 7133, 5060, 53 ] ] ];
 
@@ -16,6 +17,7 @@ export default class RemotePortScreen extends DaemonAware(React.Component)  {
     if (this.updatingSettings) return;
     var value = $(this.refs.root).find('input[name=remotePort]:checked').val();
     daemon.post.applySettings({ 'remotePort': value });
+    analytics.event('Setting', 'remotePort', { label: value });
   }
   onClick() {
     setImmediate(() => { History.push('/configuration'); });

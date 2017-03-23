@@ -57,7 +57,7 @@ const PAGES = [
 export default class TutorialOverlay extends React.Component {
   componentDidMount() {
     this.dom.showModal();
-    analytics.event('Activity', 'tutorialBegin');
+    analytics.event('Tutorial', 'begin');
   }
   onClick(event) {
     switch (event.target.className) {
@@ -69,7 +69,7 @@ export default class TutorialOverlay extends React.Component {
         if (PAGES[+this.props.params.page + 1]) {
           History.push('/tutorial/' + (+this.props.params.page + 1));
         } else {
-          analytics.event('Activity', 'tutorialFinish');
+          analytics.event('Tutorial', 'finish');
           History.push('/main');
         }
         break;
@@ -86,8 +86,9 @@ export default class TutorialOverlay extends React.Component {
         <div key="hole" className="hole" style={{ left: (x - size / 2) + 'px', top: (y - size / 2) + 'px', width: size + 'px', height: size + 'px' }}/>
         <TransitionGroup key="transition" transition="tutorial">
           {content}
+          {/*this.props.params.page > 0 ? <div key="prev" className="prev"/> : null*/}
           {this.props.params.page < PAGES.length ? <div key="next" className="next"/> : null}
-          {this.props.params.page < PAGES.length - 1 ? <Link key="skip" to="/main" class="skip" tabIndex="0" onClick={() => analytics.event('Activity', 'tutorialSkip')}>Skip tutorial</Link> : null}
+          {this.props.params.page < PAGES.length - 1 ? <Link key="skip" to="/main" class="skip" tabIndex="0" onClick={() => analytics.event('Tutorial', 'skip')}>Skip tutorial</Link> : null}
         </TransitionGroup>
         <div className="dragbar"/>
       </dialog>

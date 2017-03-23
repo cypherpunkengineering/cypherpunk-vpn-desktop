@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router';
 import daemon, { DaemonAware } from '../../daemon.js';
 import { SecondaryTitlebar } from '../Titlebar';
+import analytics from '../../analytics';
 
 
 export default class PrivacyScreen extends DaemonAware(React.Component)  {
@@ -14,6 +15,7 @@ export default class PrivacyScreen extends DaemonAware(React.Component)  {
     if (this.updatingSettings) return;
     var value = $(this.refs.root).find('input[name=encryption]:checked').val();
     daemon.post.applySettings({ 'encryption': value });
+    analytics.event('Setting', 'encryption', { label: value });
   }
   onClick() {
     setImmediate(() => { History.push('/configuration'); });

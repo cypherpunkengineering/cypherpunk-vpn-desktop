@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { Link } from 'react-router';
 import { ipcRenderer as ipc } from 'electron';
 import daemon, { DaemonAware } from '../../daemon.js';
+import analytics from '../../analytics';
 
 import { CheckboxSetting, LinkSetting, InputSetting } from './Settings';
 
@@ -29,6 +30,7 @@ export default class ApplicationSettings extends React.Component {
   }
   onAutoStartSettingClicked(enabled) {
     ipc.send('autostart-set', enabled);
+    analytics.event('Setting', 'autostart', { label: enabled });
   }
   render() {
     return(

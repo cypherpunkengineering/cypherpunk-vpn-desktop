@@ -10,7 +10,7 @@ export function makeQueryString(params) {
       for (let item of params[key]) {
         queryString += '&' + encodeURIComponent(key) + '[]=' + encodeURIComponent(item);
       }
-    } else {
+    } else if (params[key] !== undefined) {
       queryString += '&' + encodeURIComponent(key) + '=' + encodeURIComponent(params[key]);
     }
   }

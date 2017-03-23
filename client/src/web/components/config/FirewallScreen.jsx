@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router';
 import daemon, { DaemonAware } from '../../daemon.js';
 import { SecondaryTitlebar } from '../Titlebar';
+import analytics from '../../analytics';
 
 
 export default class FirewallScreen extends DaemonAware(React.Component) {
@@ -14,6 +15,7 @@ export default class FirewallScreen extends DaemonAware(React.Component) {
     if (this.updatingSettings) return;
     var value = $(this.refs.root).find('input[name=firewall]:checked').val();
     daemon.post.applySettings({ 'firewall': value });
+    analytics.event('Setting', 'firewall', { label: value });
   }
   onClick() {
     setImmediate(() => { History.push('/configuration'); });

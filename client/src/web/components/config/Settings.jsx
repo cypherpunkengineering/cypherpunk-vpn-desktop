@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { Link } from 'react-router';
 import { ipcRenderer as ipc } from 'electron';
 import daemon, { DaemonAware } from '../../daemon.js';
+import analytics from '../../analytics';
 
 import { classList } from '../../util.js';
 
@@ -34,6 +35,7 @@ export class CheckboxSetting extends Setting {
   onChange(value) {
     if (this.updatingSettings) return;
     daemon.post.applySettings({ [this.props.name]: value ? this.props.on : this.props.off });
+    analytics.event('Setting', this.props.name, { label: this.props.value });
     this.props.onChange(value);
   }
   render() {
@@ -73,6 +75,7 @@ export class RadioSetting extends Setting {
     if (this.updatingSettings) return;
     if ($(this.refs.ui).checkbox('is checked')) {
       daemon.post.applySettings({ [this.props.name]: this.props.value });
+      analytics.event('Setting', this.props.name, { label: this.props.value });
       this.props.onChange(value);
     }
   }
@@ -104,6 +107,7 @@ export class InputSetting extends Setting {
   onChange(value) {
     if (this.updatingSettings) return;
     daemon.post.applySettings({ [this.props.name]: parseInt(value, 10) }); // FIXME: format
+    analytics.event('Setting', this.props.name, { label: parseInt(value, 10) });
     this.props.onChange(value);
   }
   daemonSettingsChanged(settings) {
