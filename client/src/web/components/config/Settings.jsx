@@ -35,7 +35,7 @@ export class CheckboxSetting extends Setting {
   onChange(value) {
     if (this.updatingSettings) return;
     daemon.post.applySettings({ [this.props.name]: value ? this.props.on : this.props.off });
-    analytics.event('Setting', this.props.name, { label: this.props.value });
+    analytics.event('Setting', this.props.name, { label: value ? this.props.on : this.props.off });
     this.props.onChange(value);
   }
   render() {
