@@ -17,7 +17,7 @@ export default class ConnectionSettings extends DaemonAware(React.Component) {
   render() {
     return (
       <div className="pane" data-title="Connection Settings">
-        <LinkSetting name="encryption" to="/configuration/privacy" label="Profile" formatValue={v => ({ 'default': "Recommended", 'none': "Max Speed", 'strong': "Max Privacy", 'stealth': "Max Stealth" })[v]}/>
+        <LinkSetting name="encryption" to="/configuration/privacy" label="Tunnel Mode" formatValue={v => ({ 'default': "Recommended", 'none': "Max Speed", 'strong': "Max Privacy", 'stealth': "Max Stealth" })[v]}/>
         <CheckboxSetting name="optimizeDNS" hidden={!this.props.advanced || daemon.account.account.type !== 'developer'} disabled={!this.state.overrideDNS} label="Force CypherPlay&trade;"/>
         <LinkSetting name="remotePort" hidden={!this.props.advanced} to="/configuration/remoteport" label="Remote Port" formatValue={v => v.replace(':', ' ').toUpperCase()}/>
         <InputSetting name="localPort" hidden={!this.props.advanced} label="Local Port"/>

@@ -28,7 +28,7 @@ export default class PrivacyScreen extends DaemonAware(React.Component)  {
   render() {
     return(
       <div className="panel" ref="root" id="settings-privacy-panel">
-        <SecondaryTitlebar title="Privacy Mode" back="/configuration"/>
+        <SecondaryTitlebar title="Tunnel Mode" back="/configuration"/>
         <div className="scrollable content">
           <div className="pane">
             <div className="setting">
