@@ -5,13 +5,18 @@ import './util';
 const electron = require('electron');
 
 const trackingID = 'UA-80859092-2';
-const userAgent = window.navigator.userAgent;
-const debug = false; //electron.remote.getGlobal('args').debug;
+const debug = electron.remote.getGlobal('args').debug;
+const version = electron.remote.app.getVersion();
 
 let enabled = false;
 let clientID = null;
 
 let queue = [];
+let queueTimeout = null;
+let queueShortTimeout = null;
+
+const TIMEOUT = debug ? 10000 : 60000;
+const SHORT_TIMEOUT = 1000;
 
 // useful parameters:
 // qt: queue time, millisecond delay of submission (i.e. nowTimestamp - queuedTimestamp)
@@ -21,40 +26,66 @@ let queue = [];
 // ni: non-interactive hit
 
 
+function processQueue() {
+  queueTimeout = null;
+  queueShortTimeout = null;
+
+  let items = queue.slice(0, 20);
+  queue = queue.slice(20);
+
+  let now = new Date();
+  fetch(items.length == 1 ? 'https://www.google-analytics.com/collect' : 'https://www.google-analytics.com/batch', {
+    method: 'post',
+    mode: 'no-cors',
+    headers: {},
+    body: items.map(i => makeQueryString(Object.assign(i.payload, { qt: (now - i.time) }))).join('\r\n')
+  }).then(response => items.forEach(i => i.resolve(response)), error => items.forEach(i => i.reject(error)));
+
+  if (queue.length >= 20) {
+    queueShortTimeout = setTimeout(processQueue, SHORT_TIMEOUT);
+  } else if (queue.length > 0) {
+    queueTimeout = setTimeout(processQueue, TIMEOUT);
+  }
+}
+
+function cancelQueue() {
+  if (queueTimeout !== null) {
+    cancelTimeout(queueTimeout);
+    queueTimeout = null;
+  }
+  if (queueShortTimeout !== null) {
+    cancelTimeout(queueShortTimeout);
+    queueShortTimeout = null;
+  }
+  let items = queue;
+  queue = [];
+  let err = Object.assign(new Error("Analytics processing terminated"), { handled: true });
+  items.forEach(i => i.reject(err));
+}
+
 function send(type, payload) {
-  return new Promise(function xhrPromise(resolve, reject) {
-    let xhr = new XMLHttpRequest();
-    let url = 'https://www.google-analytics.com/collect';
-    if (Array.isArray(payload)) { // batch
-      if (payload.length > 20) {
-        return reject(new Error("Too many payloads at once"));
+  if (Array.isArray(payload)) {
+    return Promise.all(payload.map(p => send(type, p)));
+  } else if (payload && typeof payload === 'object') {
+    return new Promise((resolve, reject) => {
+      let props = { t: type, v: 1, tid: trackingID, cid: clientID, ds: 'app', an: 'CypherpunkPrivacy', av: version };
+      let now = new Date();
+      queue.push({ type, time: now, payload: Object.assign(props, payload), resolve, reject });
+      if (queue.length == 20) {
+        if (queueTimeout !== null) {
+          cancelTimeout(queueTimeout);
+          queueTimeout = null;
+        }
+        if (queueShortTimeout === null) {
+          queueShortTimeout = setTimeout(processQueue, SHORT_TIMEOUT);
+        }
+      } else if (queueTimeout === null) {
+        queueTimeout = setTimeout(processQueue, TIMEOUT)
       }
-      payload = payload.map(p => makeQueryString(Object.assign({ t: type, v: 1, tid: trackingID, cid: clientID, ds: 'electron' }, p))).join('\r\n');
-      url = 'https://www.google-analytics.com/batch';
-    } else if (payload && typeof payload === 'object') {
-      payload = makeQueryString(Object.assign({ t: type, v: 1, tid: trackingID, cid: clientID, ds: 'electron' }, payload));
-    } else {
-      return reject(new Error("Invalid payload"));
-    }
-    xhr.open('POST', url, true);
-    xhr.onload = function() {
-      if (this.status < 200 || this.status >= 300) {
-        let err = new Error("Failed to send analytics");
-        err.handled = true;
-        err.status = this.status;
-        reject(Object.assign(new Error("Failed to send analytics"), { handled: true, status: this.status }));
-      } else {
-        resolve(this.response);
-      }
-    };
-    xhr.onerror = function() {
-      reject(Object.assign(new Error("Failed to send analytics"), { handled: true }));
-    };
-    xhr.onabort = function() {
-      reject(Object.assign(new Error("Failed to send analytics"), { handled: true }));
-    };
-    xhr.send(payload);
-  });
+    });
+  } else {
+    return Promise.reject(new Error("Invalid analytics payload"));
+  }
 }
 
 
@@ -80,7 +111,7 @@ let analytics = {
       daemon.post.applySettings({ enableAnalytics: false });
       enabled = false;
       clientID = null;
-      queue = [];
+      cancelQueue();
     }
   },
   get enabled() {
