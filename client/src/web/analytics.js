@@ -48,7 +48,9 @@ function processQueue() {
     mode: 'no-cors',
     headers: {},
     body: items.map(i => makeQueryString(Object.assign(i.payload, { qt: (now - i.time) }))).join('\r\n')
-  }).then(response => items.forEach(i => i.resolve(response)), error => items.forEach(i => i.reject(error)));
+  }).then(response => items.forEach(i => i.resolve(response)), error => { error.handled = true; items.forEach(i => i.reject(error)); });
+  // FIXME: Add retries for failed requests
+  // FIXME: Delay requests if we know there's no internet connection (killswitch)
 
   if (queue.length >= 20) {
     queueShortTimeout = setTimeout(processQueue, SHORT_TIMEOUT);
