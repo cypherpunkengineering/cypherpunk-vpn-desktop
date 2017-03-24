@@ -21,8 +21,8 @@ class Tray {
   electronTray = null;
   state = {
     config: { locations: null },
-    settings: { location: null },
-    state: { state: null, needsReconnect: null },
+    settings: { location: null, locationFlag: null, overrideDNS: null },
+    state: { connect: null, state: null, needsReconnect: null, pingStats: null },
     loggedIn: false,
     windowVisible: false,
   };
@@ -108,18 +108,25 @@ class Tray {
           { type: 'separator' }
         );
       }
+      let locationName = location ? location.name : "<unknown>";
+      let locationFlag = (location && location.country) ? getFlag(location.country.toLowerCase()) : null;
+      if (this.state.settings.locationFlag === 'cypherplay') {
+        locationName = "CypherPlay";
+        locationFlag = null;
+      }
       let connectName;
       switch (state) {
-        case 'CONNECTING': connectName = "Connecting to " + location.name + "..."; break;
-        case 'CONNECTED': if (this.state.state.needsReconnect) connectName = "Reconnect (apply changed settings)"; else connectName = "Connected to " + location.name; break;
+        case 'CONNECTING': connectName = "Connecting to " + locationName + "..."; break;
+        case 'CONNECTED': if (this.state.state.needsReconnect) connectName = "Reconnect (apply changed settings)"; else connectName = "Connected to " + locationName; break;
         case 'DISCONNECTING': connectName = "Disconnecting..."; break;
-        case 'DISCONNECTED': connectName = "Connect to " + location.name; break;
-        case 'SWITCHING': connectName = "Switching to " + location.name; break;
+        case 'DISCONNECTED': connectName = "Connect to " + locationName; break;
+        case 'SWITCHING': connectName = "Switching to " + locationName; break;
       }
+      // FIXME: Enable/disable these based on this.state.state.connect
       items.push({
         label: connectName,
-        icon: (state === 'DISCONNECTING' || !location || !location.country) ? null : getFlag(location.country.toLowerCase()),
-        enabled: state === 'DISCONNECTED' || (state === 'CONNECTED' && this.state.state.needsReconnect),
+        icon: (state === 'DISCONNECTING') ? null : locationFlag,
+        enabled: location && (state === 'DISCONNECTED' || (state === 'CONNECTED' && this.state.state.needsReconnect)),
         click: () => { daemon.post.connect(); }
       });
       items.push({
@@ -128,25 +135,48 @@ class Tray {
         click: () => { daemon.post.disconnect(); }
       });
       items.push({ type: 'separator' });
+      let cypherplayLocation;
+      if (hasLocations && this.state.state.pingStats && this.state.settings.overrideDNS) {
+        cypherplayLocation = Object.keys(this.state.state.pingStats).filter(s => this.state.config.locations[s] && this.state.config.locations[s].region !== 'DEV').reduce((min,s) => (this.state.state.pingStats[s] && this.state.state.pingStats[s].replies && (!min || this.state.state.pingStats[s].average < this.state.state.pingStats[min].average)) ? s : min, null);
+      }
       items.push({
         label: state === 'DISCONNECTED' ? "Connect to" : "Switch to",
         enabled: hasLocations && (state === 'CONNECTED' || state === 'DISCONNECTED'),
         submenu:
-          Object.values(this.state.config.locations).map(s => ({
-            label: s.name,
-            icon: getFlag(s.country.toLowerCase()),
-            type: 'checkbox',
-            checked: this.state.settings.location === s.id,
-            enabled: !s.disabled,
-            click: () => {
-              daemon.call.applySettings({ location: s.id })
-                .then(() => {
-                  if (state === 'DISCONNECTED' || this.state.state.needsReconnect) {
-                    daemon.post.connect();
-                  }
-                });
-            }
-          }))
+          [
+            {
+              label: "CypherPlay",
+              enabled: !!cypherplayLocation,
+              click: cypherplayLocation ? () => {
+                daemon.call.applySettings({ location: cypherplayLocation, locationFlag: 'cypherplay' })
+                  .then(() => {
+                    if (state === 'DISCONNECTED' || this.state.state.needsReconnect) {
+                      daemon.post.connect();
+                    }
+                  });
+              } : null
+            },
+            { type: 'separator' }
+          ].concat(
+            Object.values(this.state.config.locations)
+              .filter(s => !s.disabled)
+              .sort((a, b) => a.name.localeCompare(b.name))
+              .map(s => ({
+                label: s.name,
+                icon: getFlag(s.country.toLowerCase()),
+                //type: 'checkbox',
+                //checked: this.state.settings.location === s.id,
+                //enabled: !s.disabled,
+                click: () => {
+                  daemon.call.applySettings({ location: s.id, locationFlag: '' })
+                    .then(() => {
+                      if (state === 'DISCONNECTED' || this.state.state.needsReconnect) {
+                        daemon.post.connect();
+                      }
+                    });
+                }
+              }))
+          )
       });
 
       if (window) {
