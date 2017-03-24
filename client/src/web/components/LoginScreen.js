@@ -190,7 +190,7 @@ export class Logout extends Page {
       daemon.post.disconnect(); // make sure we don't stay connected
       server.post('/api/v0/account/logout', null, { refreshSessionOnForbidden: false, catchAuthFailure: false })
         .catch(err => console.error("Error while logging out:", err))
-        .then(() => daemon.call.setAccount({ account: { email: daemon.account.account.email } }))
+        .then(() => daemon.call.setAccount({ account: { email: daemon.account.account && daemon.account.account.email || '' } }))
         .then(() => daemon.call.applySettings({ enableAnalytics: false }))
         .then(() => analytics.deactivate())
         .then(() => { session.defaultSession.clearStorageData({ storages: [ 'cookies' ] }, () => History.push('/login/email')); });
