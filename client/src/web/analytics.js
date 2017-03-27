@@ -61,11 +61,11 @@ function processQueue() {
 
 function cancelQueue() {
   if (queueTimeout !== null) {
-    cancelTimeout(queueTimeout);
+    clearTimeout(queueTimeout);
     queueTimeout = null;
   }
   if (queueShortTimeout !== null) {
-    cancelTimeout(queueShortTimeout);
+    clearTimeout(queueShortTimeout);
     queueShortTimeout = null;
   }
   let items = queue;
@@ -84,7 +84,7 @@ function send(type, payload) {
       queue.push({ type, time: now, payload: Object.assign(props, payload), resolve, reject });
       if (queue.length == 20) {
         if (queueTimeout !== null) {
-          cancelTimeout(queueTimeout);
+          clearTimeout(queueTimeout);
           queueTimeout = null;
         }
         if (queueShortTimeout === null) {
