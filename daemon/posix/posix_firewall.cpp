@@ -143,6 +143,7 @@ void firewall_disable(const std::string& token)
 
 void firewall_log_status()
 {
+	// FIXME: This doesn't help; it doesn't actually print the stdout, it merely executes the call. Replace with something that actually works if needed.
 #ifdef OS_OSX
 	logged_system("pfctl -sr");
 	logged_system("pfctl -sr -a com.cypherpunk.privacy");
