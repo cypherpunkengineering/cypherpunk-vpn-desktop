@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import '../util';
+import { classList } from '../util';
 
 // Always use this stub to import standard React addons, as we will either use
 // their node module (development) or dig them out of react.min.js (production).
@@ -96,15 +96,7 @@ function mergeChildMappings(prev, next) {
 }
 
 
-export class TransitionContainer extends React.Component {
-  render() {
-    return(
-      <div className="transition-container">
-        {this.props.children}
-      </div>
-    );
-  }
-}
+export const TransitionContainer = ({ className, ...props } = {}) => <div className={classList('transition-container', className)} {...props}/>;
 
 
 class TransitionGroupChild extends React.Component {
