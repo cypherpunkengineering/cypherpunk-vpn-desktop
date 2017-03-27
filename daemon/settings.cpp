@@ -118,3 +118,21 @@ const JsonArray& Config::certificateAuthorities() const
 	return g_certificate_authorities;
 }
 
+
+void Settings::Reset(bool deleteAllValues)
+{
+	if (deleteAllValues)
+	{
+		for (auto it = begin(); it != end(); )
+		{
+			if (_fields.find(it->first) == _fields.end())
+				it = erase(it);
+			else
+				++it;
+		}
+	}
+	for (const auto& p : _fields)
+	{
+		p.second.reset();
+	}
+}

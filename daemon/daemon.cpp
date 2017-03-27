@@ -94,6 +94,7 @@ int CypherDaemon::Run()
 		d.AddMethod("setAccount", &CypherDaemon::RPC_setAccount, *this);
 		d.AddMethod("applyConfig", &CypherDaemon::RPC_applyConfig, *this);
 		d.AddMethod("applySettings", &CypherDaemon::RPC_applySettings, *this);
+		d.AddMethod("resetSettings", &CypherDaemon::RPC_resetSettings, *this);
 		d.AddMethod("ping", [](){});
 	}
 
@@ -583,6 +584,12 @@ void CypherDaemon::RPC_applySettings(const JsonObject& settings)
 	}
 
 	// Immediately apply changes instead of waiting for the next slice.
+	NotifyChanges();
+}
+
+void CypherDaemon::RPC_resetSettings(bool deleteAllValues)
+{
+	g_settings.Reset(deleteAllValues);
 	NotifyChanges();
 }
 

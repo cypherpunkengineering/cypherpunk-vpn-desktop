@@ -89,7 +89,7 @@ void NativeJsonObject::RemoveUnknownFields()
 {
 	for (auto it = JsonObject::begin(); it != JsonObject::end(); )
 	{
-		if (!_fields.count(it->first))
+		if (_fields.find(it->first) != _fields.end())
 			it = erase(it);
 		else
 			++it;

@@ -39,24 +39,33 @@ void WriteJsonFile(const std::string& path, const JsonObject& obj);
 class NativeJsonObject : protected JsonObject
 {
 protected:
-	template<typename T> T& InitializeField(const char* name, const T& default_value)
+	struct FieldDescriptor
+	{
+		std::function<void()> reset;
+	};
+
+	template<typename T> T& InitializeField(const char* name, T default_value)
 	{
 		JsonValue& v = JsonObject::operator[](name);
 		v = JsonValue(default_value);
 		v.Freeze();
-		_fields.insert(name);
+		FieldDescriptor& d = _fields[name];
+		d.reset = [this, &v, name, value = std::move(default_value)]() { v = value; if (_on_changed) _on_changed(name); };
 		return v.AsType<T>();
 	}
+	/*
 	template<typename T> T& InitializeField(const char* name, T&& default_value)
 	{
 		JsonValue& v = JsonObject::operator[](name);
 		v = JsonValue(std::move(default_value));
 		v.Freeze();
-		_fields.insert(name);
+		FieldDescriptor& d = _fields[name];
+		d.reset = [this, value = v, &v, name]() { v = value; if (_on_changed) _on_changed(name); };
 		return v.AsType<T>();
 	}
+	*/
 	std::function<void(const char*)> _on_changed;
-	std::unordered_set<std::string> _fields;
+	std::unordered_map<std::string, FieldDescriptor> _fields;
 public:
 	using JsonObject::JsonObject;
 

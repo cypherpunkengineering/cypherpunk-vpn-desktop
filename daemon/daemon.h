@@ -119,6 +119,8 @@ protected:
 	void RPC_applyConfig(const JsonObject& config);
 	// Apply one or more settings.
 	void RPC_applySettings(const JsonObject& settings);
+	// Reset settings to default values
+	void RPC_resetSettings(bool deleteAllValues = true);
 	// Connect to the currently configured server. Returns false if already
 	// connected and no changes are required.
 	bool RPC_connect();

@@ -37,6 +37,7 @@ class Settings : public NativeJsonObject
 public:
 	bool ReadFromDisk();
 	bool WriteToDisk() const;
+	void Reset(bool deleteAllValues = true);
 
 	JsonField(std::string, remotePort, "udp:7133")
 	JsonField(std::string, location, "tokyodev") // FIXME: don't hardcode
