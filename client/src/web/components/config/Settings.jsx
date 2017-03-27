@@ -7,7 +7,7 @@ import analytics from '../../analytics';
 
 import { classList } from '../../util.js';
 
-const SettingLine = ({ className = null, hidden = false, indented = false, disabled = false, ...props } = {}) => <div className={classList('setting', { 'hidden': hidden, 'indented': indented, 'disabled': disabled })} {...props}/>;
+const SettingLine = ({ className = null, hidden = false, indented = false, disabled = false, ...props } = {}) => <div className={classList('setting', { 'hidden': hidden, 'indented': indented, 'disabled': disabled }, className)} {...props}/>;
 
 const Setting = DaemonAware(React.Component);
 
