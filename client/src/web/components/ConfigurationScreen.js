@@ -45,8 +45,8 @@ export default class ConfigurationScreen extends DaemonAware(React.Component) {
             <PrivacySettings advanced={this.state.showAdvancedSettings}/>
             <ConnectionSettings advanced={this.state.showAdvancedSettings}/>
             <CompatibilitySettings advanced={this.state.showAdvancedSettings}/>
-            <div className="pane" data-title="Advanced Settings">
-              <CheckboxSetting name="showAdvancedSettings" label="Show Advanced Settings"/>
+            <div className="pane advanced" data-title="Advanced Settings">
+              <CheckboxSetting name="showAdvancedSettings" className="advanced" label="Show Advanced Settings"/>
             </div>
             <div className="pane">
               <LinkSetting className="reset" onClick={() => this.resetSettings()} label="Reset Settings to Default"/>
