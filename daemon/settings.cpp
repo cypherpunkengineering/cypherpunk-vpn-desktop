@@ -133,6 +133,7 @@ void Settings::Reset(bool deleteAllValues)
 	}
 	for (const auto& p : _fields)
 	{
-		p.second.reset();
+		if (p.first != "location")
+			p.second.reset();
 	}
 }
