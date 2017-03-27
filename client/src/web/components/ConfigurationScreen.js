@@ -14,7 +14,7 @@ import PrivacySettings from './config/PrivacySettings';
 import ConnectionSettings from './config/ConnectionSettings';
 import CompatibilitySettings from './config/CompatibilitySettings';
 
-import { CheckboxSetting } from './config/Settings';
+import { CheckboxSetting, LinkSetting } from './config/Settings';
 
 const transitionMap = {
   '': { '*': 'swipeLeft' },
@@ -27,6 +27,10 @@ export default class ConfigurationScreen extends DaemonAware(React.Component) {
     this.daemonSubscribeState({
       settings: { showAdvancedSettings: true }
     })
+  }
+  resetSettings() {
+    daemon.post.resetSettings(true);
+    daemon.post.applySettings({ showAdvancedSettings: false });
   }
   getContent() {
     if(this.props.children) {
@@ -43,6 +47,9 @@ export default class ConfigurationScreen extends DaemonAware(React.Component) {
             <CompatibilitySettings advanced={this.state.showAdvancedSettings}/>
             <div className="pane" data-title="Advanced Settings">
               <CheckboxSetting name="showAdvancedSettings" label="Show Advanced Settings"/>
+            </div>
+            <div className="pane">
+              <LinkSetting className="reset" onClick={() => this.resetSettings()} label="Reset Settings to Default"/>
             </div>
             <div className="version footer">
               <div><i className="tag icon"/>{"v"+require('electron').remote.app.getVersion()}</div>
