@@ -34,8 +34,8 @@ INSTALLER_SIGN_IDENTITY ?= "Developer ID Installer: Cypherpunk Engineering K.K. 
 
 
 TMP := $(info $(shell cd "$(ROOT)/client" && npm run build-version 2> /dev/null && npm run apply-version))
-export APP_VER := $(shell cat "$(ROOT)/version.txt")
-
+APP_VER := $(shell cat "$(ROOT)/version.txt")
+export APP_VER
 
 INSTALLER_PKG = cypherpunk-privacy-macos-$(subst +,-,$(APP_VER)).pkg
 
