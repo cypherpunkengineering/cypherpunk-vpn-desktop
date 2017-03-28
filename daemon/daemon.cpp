@@ -773,8 +773,10 @@ void CypherDaemon::WriteOpenVPNProfile(std::ostream& out, const JsonObject& serv
 
 bool CypherDaemon::RPC_connect()
 {
-	// Access the region early, should trigger an exception if it doesn't exist (before we've done any state changes)
+	// Access required data early, should trigger an exception if it doesn't exist (before we've done any state changes)
 	g_settings.currentLocation();
+	g_account.privacy().at("username");
+	g_account.privacy().at("password");
 
 	{
 		std::chrono::duration<double> timestamp = std::chrono::steady_clock::now().time_since_epoch();
