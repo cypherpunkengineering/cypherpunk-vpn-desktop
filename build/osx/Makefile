@@ -33,7 +33,7 @@ APP_SIGN_IDENTITY ?= "Developer ID Application: Cypherpunk Engineering K.K. (S35
 INSTALLER_SIGN_IDENTITY ?= "Developer ID Installer: Cypherpunk Engineering K.K. (S353YJSBDX)"
 
 
-TMP := $(info $(shell cd "$(ROOT)/client" && npm run build-version 2> /dev/null && npm run apply-version))
+$(info $(shell cd "$(ROOT)/client" && npm run build-version 2> /dev/null && npm run apply-version))
 APP_VER := $(shell cat "$(ROOT)/version.txt")
 export APP_VER
 
