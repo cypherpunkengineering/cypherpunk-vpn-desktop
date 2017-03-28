@@ -10,7 +10,7 @@
     "build": "gulp build",
     "clean": "gulp clean",
     "watch": "gulp watch",
-    "version": "gulp version",
+    "version": "gulp new-version",
     "start": "electron ./app --debug",
     "start-no-debug": "electron ./app"
   },
@@ -82,6 +82,7 @@
     "gulp-copy": "^0.0.2",
     "gulp-download-stream": "^0.0.13",
     "gulp-filter": "^4.0.0",
+    "gulp-git": "^2.1.0",
     "gulp-install": "^0.6.0",
     "gulp-json-transform": "^0.4.2",
     "gulp-less": "^3.1.0",
