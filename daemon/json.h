@@ -49,21 +49,11 @@ protected:
 		JsonValue& v = JsonObject::operator[](name);
 		v = JsonValue(default_value);
 		v.Freeze();
+		T& value = v.AsType<T>();
 		FieldDescriptor& d = _fields[name];
-		d.reset = [this, &v, name, value = std::move(default_value)]() { v = value; if (_on_changed) _on_changed(name); };
-		return v.AsType<T>();
+		d.reset = [this, pv = &value, name, def = std::move(default_value)]() { *pv = def; if (_on_changed) _on_changed(name); };
+		return value;
 	}
-	/*
-	template<typename T> T& InitializeField(const char* name, T&& default_value)
-	{
-		JsonValue& v = JsonObject::operator[](name);
-		v = JsonValue(std::move(default_value));
-		v.Freeze();
-		FieldDescriptor& d = _fields[name];
-		d.reset = [this, value = v, &v, name]() { v = value; if (_on_changed) _on_changed(name); };
-		return v.AsType<T>();
-	}
-	*/
 	std::function<void(const char*)> _on_changed;
 	std::unordered_map<std::string, FieldDescriptor> _fields;
 public:
