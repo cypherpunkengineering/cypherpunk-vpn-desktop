@@ -69,7 +69,7 @@ gulp.task('build-version', function(done) {
   });
 });
 
-const VERSION_FILES = { 'client/package.json': 1, 'daemon/version.h': 1, 'build/win/setup.iss': 2 };
+const VERSION_FILES = { 'client/package.json': 1, 'daemon/version.h': 1, 'build/win/setup.iss': 3 };
 
 gulp.task('apply-version', function() {
   // The package.json version number has been changed; propagate to
