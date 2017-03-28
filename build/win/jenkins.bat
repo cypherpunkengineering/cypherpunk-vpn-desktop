@@ -4,9 +4,6 @@ setlocal
 
 pushd %~dp0
 
-set BUILD_NUMBER=00000%BUILD_NUMBER%
-set BUILD_NUMBER=%BUILD_NUMBER:~-5%
-
 set CODESIGNCERT="C:\cypherpunk\cyp-codesign.p12"
 
 git submodule update --recursive --init
@@ -18,6 +15,8 @@ if %errorlevel% neq 0 goto error
 echo cd to output dir
 cd ..\..\out\win
 
+set /p APP_VERSION=<..\..\version.txt
+
 echo Save build artifacts
 for %%f in (cypherpunk-*.exe) do set ARTIFACT=%%~nxf
 echo Uploading build to builds repo...
@@ -25,7 +24,7 @@ scp -scp -P 92 -i "%USERPROFILE%\.ssh\pscp.ppk" "%ARTIFACT%" "upload@builds-uplo
 echo Uploading build to GCS bucket...
 call "C:\Program Files (x86)\Google\Cloud SDK\google-cloud-sdk\bin\gsutil" cp "%ARTIFACT%" gs://builds.cypherpunk.com/builds/windows/
 echo Sending notification to slack...
-curl -X POST --data "payload={\"text\": \"cypherpunk-privacy-windows build %BUILD_NUMBER% is now available from https://download.cypherpunk.com/builds/windows/%ARTIFACT%\"}" https://hooks.slack.com/services/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
+curl -X POST --data "payload={\"text\": \"cypherpunk-privacy-windows build %APP_VERSION% is now available from https://download.cypherpunk.com/builds/windows/%ARTIFACT%\"}" https://hooks.slack.com/services/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
 
 echo done
 

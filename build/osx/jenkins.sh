@@ -5,9 +5,6 @@ cd "$( dirname "${BASH_SOURCE[0]}" )"
 # Initialize and update submodules
 git submodule update --init --recursive
 
-# Pad the build number to five digits
-export BUILD_NUMBER="$(printf '%05d' "${BUILD_NUMBER}")"
-
 # Fix path
 export PATH=$PATH:/usr/local/bin
 export PATH=$PATH:$HOME/Library/google-cloud-sdk/bin
@@ -42,7 +39,7 @@ scp -P92 "${ARTIFACT}" upload@builds-upload.cypherpunk.engineering:/data/builds/
 echo "Uploading build to GCS bucket..."
 gsutil cp "${ARTIFACT}" gs://builds.cypherpunk.com/builds/macos/
 echo "Sending notification to slack..."
-curl -X POST --data "payload={\"text\": \"cypherpunk-privacy-macos build ${BUILD_NUMBER} is now available from https://download.cypherpunk.com/builds/macos/${ARTIFACT}\"}" https://hooks.slack.com/services/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
+curl -X POST --data "payload={\"text\": \"cypherpunk-privacy-macos build $(cat ../../version.txt) is now available from https://download.cypherpunk.com/builds/macos/${ARTIFACT}\"}" https://hooks.slack.com/services/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
 
 # Done
 exit 0

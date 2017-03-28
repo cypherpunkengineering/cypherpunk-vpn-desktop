@@ -32,17 +32,12 @@ PF_ANCHORS = $(shell find $(ROOT)/res/osx/pf.anchors -type f -name 'com.cypherpu
 APP_SIGN_IDENTITY ?= "Developer ID Application: Cypherpunk Engineering K.K. (S353YJSBDX)"
 INSTALLER_SIGN_IDENTITY ?= "Developer ID Installer: Cypherpunk Engineering K.K. (S353YJSBDX)"
 
-# BUILD_NUMBER is provided on Jenkins builds, or can be specified explicitly.
-# If BUILD_NAME is specified (e.g. for special/branch builds), it is prepended to the build number.
-ifeq ($(BUILD_NUMBER),)
-BUILD_NUMBER := $(BUILD_NAME)-$(shell git --git-dir="$(ROOT)/.git" describe --always --match=nosuchtagpattern --dirty=-p)
-BUILD_NUMBER := $(BUILD_NUMBER:-%=%)
-endif
-ORIGINAL_APP_VER := $(shell node -e "console.log(require('$(ROOT)/client/package.json').version);")
-export APP_VER := $(shell echo "$(ORIGINAL_APP_VER)" | sed -E 's/^([^-+]*)(-[^+]*)?(\+.*)?/\1\2+$(BUILD_NUMBER)/')
+
+TMP := $(info $(shell cd "$(ROOT)/client" && npm run build-version 2> /dev/null && npm run apply-version))
+export APP_VER := $(shell cat "$(ROOT)/version.txt")
+
 
 INSTALLER_PKG = cypherpunk-privacy-macos-$(subst +,-,$(APP_VER)).pkg
-
 
 
 all: package
@@ -82,17 +77,7 @@ update-node-modules:
 
 check-node-modules: $(if $(wildcard $(ROOT)/client/node_modules/.),,update-node-modules)
 
-#ifeq ($(APP_VER),$(ORIGINAL_APP_VER))
-#version:
-#	$(ECHO) "* Building version $(APP_VER)..."
-#else
-version: check-node-modules
-	$(ECHO) "* Setting version number to $(APP_VER)..."
-	$(HUSH) cd "$(ROOT)/client" && ./node_modules/.bin/json -I -f package.json -e 'this.version=this.version.replace(/(\+.*)?$$/,"+$(BUILD_NUMBER)")' && npm run version
-## We'd run npm version $(APP_VER) instead but that doesn't work with build numbers
-#endif
-
-client: check-node-modules version
+client: check-node-modules
 	$(ECHO) "* Building client..."
 	$(HUSH) cd "$(ROOT)/client" && npm --production run build
 	$(ECHO) "* Rebuilding Electron modules..."

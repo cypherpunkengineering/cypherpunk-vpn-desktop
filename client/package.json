@@ -10,6 +10,8 @@
     "build": "gulp build",
     "clean": "gulp clean",
     "watch": "gulp watch",
+    "build-version": "gulp build-version",
+    "apply-version": "gulp apply-version",
     "version": "gulp new-version",
     "start": "electron ./app --debug",
     "start-no-debug": "electron ./app"

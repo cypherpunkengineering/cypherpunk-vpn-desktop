@@ -33,26 +33,9 @@ echo * Updating Node modules...
 call npm --loglevel=silent install
 if %errorlevel% neq 0 goto error
 
-node -e "console.log(require('./package.json').version);" > .tmp.version.txt
+call npm run build-version
 if %errorlevel% neq 0 goto error
-set /p ORIGINAL_APP_VER=<.tmp.version.txt
-del .tmp.version.txt
-
-if NOT [%BUILD_NUMBER%] == [] goto has_build_number
-git describe --always --match=nosuchtagpattern --dirty=-p > .tmp.version.txt
-if %errorlevel% neq 0 goto error
-set /p BUILD_NUMBER=<.tmp.version.txt
-del .tmp.version.txt
-if [%BUILD_NAME%] == [] goto no_build_name
-set BUILD_NUMBER=%BUILD_NAME%-%BUILD_NUMBER%
-:no_build_name
-:has_build_number
-for /f "tokens=1,2 delims=+" %%a in ("%ORIGINAL_APP_VER%") do set APP_VER=%%a+%BUILD_NUMBER%
-
-echo * Setting version to %APP_VER%...
-call node_modules\.bin\json -I -f package.json -e "this.version=this.version.replace(/(\+.*)?$/,'+%BUILD_NUMBER%')"
-if %errorlevel% neq 0 goto error
-call npm run version
+call npm run apply-version
 if %errorlevel% neq 0 goto error
 
 echo * Building client...
