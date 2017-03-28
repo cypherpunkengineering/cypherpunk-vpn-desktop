@@ -98,14 +98,15 @@ gulp.task('new-version', [ 'apply-version' ], function(done) {
     if (files.length > Object.keys(versionFiles).length) {
       gutil.log("Warning: Additional changed files found when updating versions; it is safer to start with a clean tree");
     }
-    gulp.src(Object.keys(VERSION_FILES).map(f => '../' + f))
+    gulp.src(Object.keys(VERSION_FILES), { cwd: '..' })
+      .pipe(git.add())
       .pipe(git.commit("Bump version to " + packageJson.version, { disableAppendPaths: true }))
       .on('end', function(err) {
         if (err) throw err;
-        git.tag('v' + packageJson.version, function(err) {
+        git.exec({ args: `tag -f v${packageJson.version} HEAD` }, function(err) {
           if (err) throw err;
           done();
-        })
+        });
       });
   });
 });
