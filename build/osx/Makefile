@@ -33,9 +33,11 @@ APP_SIGN_IDENTITY ?= "Developer ID Application: Cypherpunk Engineering K.K. (S35
 INSTALLER_SIGN_IDENTITY ?= "Developer ID Installer: Cypherpunk Engineering K.K. (S353YJSBDX)"
 
 
-$(info $(shell cd "$(ROOT)/client" && npm run build-version 2> /dev/null && npm run apply-version))
-APP_VER := $(shell cat "$(ROOT)/version.txt")
-export APP_VER
+$(info $(shell cd "$(ROOT)/client" && npm run build-version && npm run apply-version))
+export APP_VER := $(shell cat "$(ROOT)/version.txt")
+ifeq ($(APP_VER),)
+	fatalError() // should never be reached
+endif
 
 INSTALLER_PKG = cypherpunk-privacy-macos-$(subst +,-,$(APP_VER)).pkg
 
