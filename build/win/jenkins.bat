@@ -7,10 +7,10 @@ pushd %~dp0
 set CODESIGNCERT="C:\cypherpunk\cyp-codesign.p12"
 
 git submodule update --recursive --init
-if %errorlevel% neq 0 goto error
+if errorlevel 1 goto error
 
 cmd /c build.bat clean
-if %errorlevel% neq 0 goto error
+if errorlevel 1 goto error
 
 echo cd to output dir
 cd ..\..\out\win
@@ -28,7 +28,7 @@ curl -X POST --data "payload={\"text\": \"cypherpunk-privacy-windows build %APP_
 
 echo done
 
-if %errorlevel% equ 0 goto upload_success
+if not errorlevel 1 goto upload_success
 echo * Warning: failed to upload build
 set errorlevel=0
 :upload_success
