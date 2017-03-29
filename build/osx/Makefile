@@ -37,8 +37,7 @@ ifneq ($(MAKECMDGOALS),clean)
 
 ifeq ($(wildcard $(ROOT)/client/node_modules/.),)
 $(info * Initializing node modules...)
-$(info $(shell cd "$(ROOT)/client" && npm install 1>&2))
-ifeq ($(wildcard $(ROOT)/client/node_modules/.),)
+ifneq ($(shell cd "$(ROOT)/client" && npm install 1>&2 || echo FAIL),)
 $(error Failed to initialize node modules!)
 endif
 endif
