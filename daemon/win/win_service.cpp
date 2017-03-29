@@ -433,9 +433,13 @@ public:
 		allow_lan_ipv6_linklocal,
 		allow_lan_ipv6_multicast,
 
+		block_dns_ipv4,
+		block_dns_ipv6,
+
 		allow_client,
 		allow_daemon,
 		allow_openvpn,
+		allow_cypherpunk_dns,
 		allow_localhost_ipv4,
 		allow_localhost_ipv6,
 		allow_dhcp_ipv4,
@@ -494,6 +498,17 @@ public:
 						TURN_OFF(i);
 				}
 
+				if (g_settings.overrideDNS())
+				{
+					TURN_ON(block_dns_ipv4, BlockDNSFilter<IPv4>());
+					TURN_ON(block_dns_ipv6, BlockDNSFilter<IPv4>());
+				}
+				else
+				{
+					TURN_OFF(block_dns_ipv4);
+					TURN_OFF(block_dns_ipv6);
+				}
+
 				std::set<uint64_t> tap_filters_to_remove;
 				for (auto& p : _tap_filters)
 					tap_filters_to_remove.insert(p.first);
@@ -517,6 +532,7 @@ public:
 				TURN_ON(allow_client,         AllowAppFilter<Outgoing, IPv4>(GetFile(ClientExecutable)));
 				TURN_ON(allow_daemon,         AllowAppFilter<Outgoing, IPv4>(GetFile(DaemonExecutable)));
 				TURN_ON(allow_openvpn,        AllowAppFilter<Outgoing, IPv4>(GetFile(OpenVPNExecutable)));
+				TURN_ON(allow_cypherpunk_dns, AllowIPRangeFilter<Outgoing, IPv4>("10.10.8.0", 21, 14));
 				TURN_ON(allow_localhost_ipv4, AllowLocalHostFilter<Outgoing, IPv4>());
 				TURN_ON(allow_localhost_ipv6, AllowLocalHostFilter<Outgoing, IPv6>());
 				TURN_ON(allow_dhcp_ipv4,      AllowDHCPFilter<IPv4>());

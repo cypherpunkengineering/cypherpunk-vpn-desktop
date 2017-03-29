@@ -464,7 +464,7 @@ void CypherDaemon::NotifyChanges()
 	if (config.count("locations"))
 		PingServers();
 
-	if (state & (STATE | CONNECT) || settings.count("firewall") || settings.count("allowLAN"))
+	if (state & (STATE | CONNECT) || settings.count("firewall") || settings.count("allowLAN") || settings.count("overrideDNS"))
 		ApplyFirewallSettings();
 }
 

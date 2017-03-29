@@ -139,19 +139,20 @@ struct FWConditionFilter : public FWBasicFilter<ACTION, DIRECTION, VERSION>
 };
 
 
+// Allow specific IP ranges (e.g. LAN traffic), optionally at higher precedence (e.g. whitelist Cypherpunk DNS)
 template<FWDirection DIRECTION, FWIPVersion VERSION> struct AllowIPRangeFilter;
 
 template<FWDirection DIRECTION>
 struct AllowIPRangeFilter<DIRECTION, IPv4> : FWConditionFilter<1, FWP_ACTION_PERMIT, DIRECTION, IPv4>
 {
 	FWP_V4_ADDR_AND_MASK _addr;
-	AllowIPRangeFilter(const char* addr, int prefix = 32)
+	AllowIPRangeFilter(const char* addr, int prefix = 32, uint8_t weight = 10)
 	{
 		inet_pton(AF_INET, addr, &_addr.addr);
 		_addr.addr = ntohl(_addr.addr);
 		_addr.mask = ~0UL << (32 - prefix);
 		SetCondition<FWP_V4_ADDR_MASK>(0, FWPM_CONDITION_IP_REMOTE_ADDRESS, FWP_MATCH_EQUAL, &_addr);
-		weight.uint8 = 10;
+		weight.uint8 = weight;
 	}
 };
 
@@ -159,15 +160,16 @@ template<FWDirection DIRECTION>
 struct AllowIPRangeFilter<DIRECTION, IPv6> : FWConditionFilter<1, FWP_ACTION_PERMIT, DIRECTION, IPv6>
 {
 	FWP_V6_ADDR_AND_MASK _addr;
-	AllowIPRangeFilter(const char* addr, int prefix = 128)
+	AllowIPRangeFilter(const char* addr, int prefix = 128, uint8_t weight = 10)
 	{
 		inet_pton(AF_INET6, addr, &_addr.addr);
 		_addr.prefixLength = prefix;
 		SetCondition<FWP_V6_ADDR_MASK>(0, FWPM_CONDITION_IP_REMOTE_ADDRESS, FWP_MATCH_EQUAL, &_addr);
-		weight.uint8 = 10;
+		weight.uint8 = weight;
 	}
 };
 
+// Always allow loopback traffic
 template<FWDirection DIRECTION, FWIPVersion VERSION> struct AllowLocalHostFilter;
 
 template<FWDirection DIRECTION>
@@ -182,6 +184,7 @@ struct AllowLocalHostFilter<DIRECTION, IPv6> : public AllowIPRangeFilter<DIRECTI
 	AllowLocalHostFilter() : AllowIPRangeFilter("::1") {}
 };
 
+// Always allow DHCP traffic, or the user's uplink might go down
 template<FWIPVersion VERSION> struct AllowDHCPFilter;
 
 template<>
@@ -206,16 +209,18 @@ struct AllowDHCPFilter<IPv6> : public FWConditionFilter<2, FWP_ACTION_PERMIT, Ou
 	}
 };
 
+// Block DNS traffic (even on the VPN interface)
 template<FWIPVersion VERSION>
-struct AllowDNSFilter : public FWConditionFilter<1, FWP_ACTION_PERMIT, Outgoing, VERSION>
+struct BlockDNSFilter : public FWConditionFilter<1, FWP_ACTION_BLOCK, Outgoing, VERSION>
 {
-	AllowDNSFilter()
+	BlockDNSFilter()
 	{
 		SetCondition<FWP_UINT16>(0, FWPM_CONDITION_IP_REMOTE_PORT, FWP_MATCH_EQUAL, 53);
 		weight.uint8 = 10;
 	}
 };
 
+// Always allow traffic from whitelisted apps (highest precedence)
 template<FWDirection DIRECTION, FWIPVersion VERSION>
 struct AllowAppFilter : public FWConditionFilter<1, FWP_ACTION_PERMIT, DIRECTION, VERSION>
 {
@@ -224,7 +229,7 @@ struct AllowAppFilter : public FWConditionFilter<1, FWP_ACTION_PERMIT, DIRECTION
 	{
 		WIN_CHECK_RESULT(FwpmGetAppIdFromFileName, (convert<wchar_t>(app_path).c_str(), &_appBlob));
 		SetCondition<FWP_BYTE_BLOB_TYPE>(0, FWPM_CONDITION_ALE_APP_ID, FWP_MATCH_EQUAL, _appBlob);
-		weight.uint8 = 11;
+		weight.uint8 = 15;
 	}
 	~AllowAppFilter()
 	{
@@ -232,6 +237,8 @@ struct AllowAppFilter : public FWConditionFilter<1, FWP_ACTION_PERMIT, DIRECTION
 	}
 };
 
+// Allow any traffic on the specific (VPN) interface, with only possibly DNS and
+// other leak-prone traffic being blocked at a higher precedence
 template<FWDirection DIRECTION, FWIPVersion VERSION>
 struct AllowInterfaceFilter : public FWConditionFilter<1, FWP_ACTION_PERMIT, DIRECTION, VERSION>
 {
