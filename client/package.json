@@ -111,7 +111,7 @@
     "rimraf": "^2.5.2",
     "run-sequence": "^1.2.2",
     "sass-loader": "^4.0.0",
-    "semantic-ui": "^2.2.8",
+    "semantic-ui": "^2.2.10",
     "style-loader": "^0.13.1",
     "through": "^2.3.8",
     "utf-8-validate": "^1.2 .1",
