@@ -6,7 +6,7 @@ umask 022
 
 # change pwd to folder containing this file
 cd "$( dirname "${BASH_SOURCE[0]}" )"
-cd ../
+cd ../../
 
 # app vars
 APP_NAME="Cypherpunk Privacy"
