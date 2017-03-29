@@ -47,6 +47,7 @@ gulp.task('build-version', function(done) {
   var version = packageJson.version;
   var baseVersion = version.replace(/\+.*/,'');
   var buildName = process.env.BUILD_NAME || 'dev';
+  var inJenkins = !!process.env.JENKINS_URL;
 
   var date = new Date().toISOString().replace(/[^0-9]/g,'').slice(0,12);
   git.exec({ args: 'describe --always --match=nosuchtagpattern' }, function(err, stdout) {
@@ -57,7 +58,7 @@ gulp.task('build-version', function(done) {
         var master = !err;
         git.exec({ args: 'diff-index --quiet HEAD' }, function(err, stdout) {
           var clean = !err;
-          var newVersion = (master && clean) ? `${baseVersion}+${count}` : `${baseVersion}+${buildName}-${date}-g${hash}`;
+          var newVersion = (master && (clean || inJenkins)) ? `${baseVersion}+${count}` : `${baseVersion}+${buildName}-${date}-g${hash}`;
           spawn('"./node_modules/.bin/json"', [ '-I', '-f', 'package.json', '-e', `'this.version="${newVersion}"'` ], { cwd: '.', shell: true, stdio: 'inherit' }).on('exit', function() {
             fs.writeFileSync('../version.txt', newVersion);
             gutil.log("Generated version: " + newVersion);
