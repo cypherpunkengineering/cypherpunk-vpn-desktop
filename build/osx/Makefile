@@ -37,13 +37,13 @@ ifneq ($(MAKECMDGOALS),clean)
 
 ifeq ($(wildcard $(ROOT)/client/node_modules/.),)
 $(info * Initializing node modules...)
-$(info $(shell cd "$(ROOT)/client" && npm install))
+$(info $(shell cd "$(ROOT)/client" && npm install 1>&2))
 ifeq ($(wildcard $(ROOT)/client/node_modules/.),)
 $(error Failed to initialize node modules!)
 endif
 endif
 $(info * Generating version number...)
-$(info $(shell rm -f "$(ROOT)/version.txt" && cd "$(ROOT)/client" && npm run build-version && npm run apply-version))
+$(info $(shell rm -f "$(ROOT)/version.txt" && cd "$(ROOT)/client" && npm run build-version 1>&2 && npm run apply-version 1>&2))
 export APP_VER := $(shell cat "$(ROOT)/version.txt")
 ifeq ($(APP_VER),)
 $(error Failed to generate version number!)

@@ -33,6 +33,7 @@ echo * Updating Node modules...
 call npm --loglevel=silent install
 if errorlevel 1 goto error
 
+echo * Generating version...
 call npm run build-version
 if errorlevel 1 goto error
 call npm run apply-version
