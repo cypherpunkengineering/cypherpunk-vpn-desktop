@@ -501,7 +501,7 @@ public:
 				if (g_settings.overrideDNS())
 				{
 					TURN_ON(block_dns_ipv4, BlockDNSFilter<IPv4>());
-					TURN_ON(block_dns_ipv6, BlockDNSFilter<IPv4>());
+					TURN_ON(block_dns_ipv6, BlockDNSFilter<IPv6>());
 				}
 				else
 				{
