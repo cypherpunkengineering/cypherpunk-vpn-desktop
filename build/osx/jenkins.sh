@@ -28,9 +28,6 @@ security set-keychain-settings -u -t 3600 "${KEYCHAIN}"
 export APP_SIGN_IDENTITY='"Developer ID Application: Cypherpunk Partners, slf. (3498MVRSX2)"'
 export INSTALLER_SIGN_IDENTITY='"Developer ID Installer: Cypherpunk Partners, slf. (3498MVRSX2)"'
 
-# run npm install for makefile
-(cd ../../client/ && npm install)
-
 # Invoke build script
 make vpn great again
 

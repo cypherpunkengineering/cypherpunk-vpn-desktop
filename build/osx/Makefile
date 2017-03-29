@@ -33,10 +33,22 @@ APP_SIGN_IDENTITY ?= "Developer ID Application: Cypherpunk Engineering K.K. (S35
 INSTALLER_SIGN_IDENTITY ?= "Developer ID Installer: Cypherpunk Engineering K.K. (S353YJSBDX)"
 
 
-$(info $(shell cd "$(ROOT)/client" && npm run build-version && npm run apply-version))
+ifneq ($(MAKECMDGOALS),clean)
+
+ifeq ($(wildcard $(ROOT)/client/node_modules/.),)
+$(info * Initializing node modules...)
+$(info $(shell cd "$(ROOT)/client" && npm install))
+ifeq ($(wildcard $(ROOT)/client/node_modules/.),)
+$(error Failed to initialize node modules!)
+endif
+endif
+$(info * Generating version number...)
+$(info $(shell rm -f "$(ROOT)/version.txt" && cd "$(ROOT)/client" && npm run build-version && npm run apply-version))
 export APP_VER := $(shell cat "$(ROOT)/version.txt")
 ifeq ($(APP_VER),)
-	fatalError() // should never be reached
+$(error Failed to generate version number!)
+endif
+
 endif
 
 INSTALLER_PKG = cypherpunk-privacy-macos-$(subst +,-,$(APP_VER)).pkg
@@ -73,13 +85,7 @@ stop-daemon:
 
 # Source building
 
-update-node-modules:
-	$(ECHO) "* Updating node modules..."
-	$(HUSH) cd "$(ROOT)/client" && npm install
-
-check-node-modules: $(if $(wildcard $(ROOT)/client/node_modules/.),,update-node-modules)
-
-client: check-node-modules
+client:
 	$(ECHO) "* Building client..."
 	$(HUSH) cd "$(ROOT)/client" && npm --production run build
 	$(ECHO) "* Rebuilding Electron modules..."
