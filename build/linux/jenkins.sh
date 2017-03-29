@@ -9,7 +9,7 @@ git submodule update --init --recursive
 export PATH=$PATH:/usr/local/bin
 
 # Invoke build script
-../build_linux.sh
+./build.sh
 
 # Archive build artifacts
 cd ../../out/
