@@ -59,7 +59,7 @@ gulp.task('build-version', function(done) {
         git.exec({ args: 'diff-index --quiet HEAD' }, function(err, stdout) {
           var clean = !err;
           var newVersion = (master && (clean || inJenkins)) ? `${baseVersion}+${count}` : `${baseVersion}+${buildName}-${date}-g${hash}`;
-          spawn('"./node_modules/.bin/json"', [ '-I', '-f', 'package.json', '-e', `this.version='${newVersion}';` ], { cwd: '.', shell: true, stdio: 'inherit' }).on('exit', function() {
+          spawn('"./node_modules/.bin/json"', [ '-I', '-f', 'package.json', '-e', `"this.version='${newVersion}'"` ], { cwd: '.', shell: true, stdio: 'inherit' }).on('exit', function() {
             fs.writeFileSync('../version.txt', newVersion);
             gutil.log("Generated version: " + newVersion);
             done();
@@ -80,8 +80,14 @@ gulp.task('apply-version', function() {
     return operations.reduce((a, b) => a.pipe(b), gulp.src(filename, { base: './' })).pipe(gulp.dest('.'));
   }
   return es.merge(
-    replaceVersion('../daemon/version.h', replace(/^(#define VERSION ).*/m, `$1"${version}"`)),
-    replaceVersion('../build/win/setup.iss', replace(/^(#define MyAppVersion ).*/m, `$1"${version}"`), replace(/^(#define MyAppNumericVersion ).*/m, `$1"${version.replace(/[-+].*/,'')}"`), replace(/^(#define MyInstallerSuffix ).*/m, `$1"-${version.replace('+','-')}"`))
+    replaceVersion('../daemon/version.h',
+      replace(/^(#define VERSION ).*/m, `$1"${version}"`)
+    ),
+    replaceVersion('../build/win/setup.iss',
+      replace(/^(#define MyAppVersion ).*/m, `$1"${version}"`),
+      replace(/^(#define MyAppNumericVersion ).*/m, `$1"${version.replace(/[-+].*/,'')}"`),
+      replace(/^(#define MyInstallerSuffix ).*/m, `$1"-${version.replace('+','-')}"`)
+    )
   );
 });
 
