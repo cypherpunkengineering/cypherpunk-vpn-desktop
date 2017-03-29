@@ -53,7 +53,7 @@ gulp.task('build-version', function(done) {
   git.exec({ args: 'describe --always --match=nosuchtagpattern' }, function(err, stdout) {
     var hash = stdout.trim();
     git.exec({ args: 'rev-list --count HEAD' }, function(err, stdout) {
-      var count = stdout.trim();
+      var count = ('00000' + stdout.trim()).replace(/0*(.{5,})$/, '$1');
       git.exec({ args: 'merge-base --is-ancestor HEAD origin/master' }, function(err, stdout) {
         var master = !err;
         git.exec({ args: 'diff-index --quiet HEAD' }, function(err, stdout) {
