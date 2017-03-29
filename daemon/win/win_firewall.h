@@ -152,7 +152,7 @@ struct AllowIPRangeFilter<DIRECTION, IPv4> : FWConditionFilter<1, FWP_ACTION_PER
 		_addr.addr = ntohl(_addr.addr);
 		_addr.mask = ~0UL << (32 - prefix);
 		SetCondition<FWP_V4_ADDR_MASK>(0, FWPM_CONDITION_IP_REMOTE_ADDRESS, FWP_MATCH_EQUAL, &_addr);
-		weight.uint8 = weight;
+		this->weight.uint8 = weight;
 	}
 };
 
