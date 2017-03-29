@@ -31,9 +31,6 @@ export INSTALLER_SIGN_IDENTITY='"Developer ID Installer: Cypherpunk Partners, sl
 # Invoke build script
 make vpn great again
 
-echo "Finished bulding $(cat ../../version.txt)"
-exit 0
-
 # Archive build artifacts
 cd ../../out/osx/
 ARTIFACT=$(echo cypherpunk-*.pkg)
