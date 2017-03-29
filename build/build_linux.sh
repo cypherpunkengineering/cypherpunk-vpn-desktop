@@ -35,14 +35,22 @@ nvm alias default "${NODE_VER}"
 nvm use "${NODE_VER}"
 set -x
 
+# Generate version number
+cd client
+npm install
+npm run build-version
+npm run apply-version
+cd ..
+
 # Extract the short build number for packaging purposes
-APP_VERSION_SHORT="$(node -e "console.log(require('$(ROOT)/client/package.json').version.replace(/\+.*/,''));")"
+APP_VERSION="$(cat version.txt)"
+APP_VERSION_SHORT="${APP_VERSION%%+*}"
 
 # pkg vars
 PKG_NAME="cypherpunk-privacy-${PLATFORM}-${ARCH}"
 PKG_MAINTAINER="Cypherpunk Privacy <debian-maintainer@cypherpunk.com>"
-PKG_STR="${PKG_NAME}_${APP_VERSION}"
-PKG_STR_MINUS=`echo "${PKG_STR}"|sed -e 's/+/-/g'`
+PKG_STR="${PKG_NAME}-${APP_VERSION}"
+PKG_STR_MINUS="${PKG_STR//+/-}"
 PKG_FILE="${PKG_STR_MINUS}.deb"
 PKG_PATH="out/${PKG_FILE}"
 
@@ -59,9 +67,6 @@ mkdir -p "${OUT_PATH}"
 
 # build client app
 cd client
-npm install
-npm run build-version
-npm run apply-version
 npm --production run build
 
 # rebuild electron stuff in case outdated cached stuff from before
