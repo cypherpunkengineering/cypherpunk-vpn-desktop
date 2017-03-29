@@ -9,6 +9,7 @@ var less = require('gulp-less');
 var filter = require('gulp-filter');
 var clean = require('gulp-clean');
 var shell = require('gulp-shell');
+var git = require('gulp-git');
 var sourcemaps = require('gulp-sourcemaps');
 var newer = require('gulp-newer');
 var jsonTransform = require('gulp-json-transform');
@@ -42,7 +43,35 @@ gulp.task('watch', ['build'], function() {
   ]);
 });
 
-gulp.task('version', function() {
+gulp.task('build-version', function(done) {
+  var version = packageJson.version;
+  var baseVersion = version.replace(/\+.*/,'');
+  var buildName = process.env.BUILD_NAME || 'dev';
+
+  var date = new Date().toISOString().replace(/[^0-9]/g,'').slice(0,12);
+  git.exec({ args: 'describe --always --match=nosuchtagpattern' }, function(err, stdout) {
+    var hash = stdout.trim();
+    git.exec({ args: 'rev-list --count HEAD' }, function(err, stdout) {
+      var count = stdout.trim();
+      git.exec({ args: 'merge-base --is-ancestor HEAD origin/master' }, function(err, stdout) {
+        var master = !err;
+        git.exec({ args: 'diff-index --quiet HEAD' }, function(err, stdout) {
+          var clean = !err;
+          var newVersion = (master && clean) ? `${baseVersion}+${count}` : `${baseVersion}+${buildName}-${date}-g${hash}`;
+          spawn('"./node_modules/.bin/json"', [ '-I', '-f', 'package.json', '-e', `'this.version="${newVersion}"'` ], { cwd: '.', shell: true, stdio: 'inherit' }).on('exit', function() {
+            fs.writeFileSync('../version.txt', newVersion);
+            gutil.log("Generated version: " + newVersion);
+            done();
+          });
+        })
+      })
+    })
+  });
+});
+
+const VERSION_FILES = { 'client/package.json': 1, 'daemon/version.h': 1, 'build/win/setup.iss': 3 };
+
+gulp.task('apply-version', function() {
   // The package.json version number has been changed; propagate to
   // all other locations that don't automatically pick it up.
   var version = packageJson.version;
@@ -53,6 +82,33 @@ gulp.task('version', function() {
     replaceVersion('../daemon/version.h', replace(/^(#define VERSION ).*/m, `$1"${version}"`)),
     replaceVersion('../build/win/setup.iss', replace(/^(#define MyAppVersion ).*/m, `$1"${version}"`), replace(/^(#define MyAppNumericVersion ).*/m, `$1"${version.replace(/[-+].*/,'')}"`), replace(/^(#define MyInstallerSuffix ).*/m, `$1"-${version.replace('+','-')}"`))
   );
+});
+
+gulp.task('new-version', [ 'apply-version' ], function(done) {
+  // Craft a git commit of the affected files and tag it
+  git.exec({ args: 'diff-index --numstat HEAD'}, function(err, stdout) {
+    var files = stdout.trim().split('\n').map(l => l.split(/[ \t]+/).slice(-3));
+    var versionFiles = files.filter(f => VERSION_FILES[f[2]]);
+    if (versionFiles.length != Object.keys(VERSION_FILES).length) {
+      throw new gutil.PluginError('version', `Expected ${Object.keys(VERSION_FILES).length} files to update, found only ${versionFiles.length}`);
+    }
+    if (versionFiles.some(f => f[0] != VERSION_FILES[f[2]] || f[1] != VERSION_FILES[f[2]])) {
+      throw new gutil.PluginError('version', "Additional changes found in version files to be updated, aborting");
+    }
+    if (files.length > Object.keys(versionFiles).length) {
+      gutil.log("Warning: Additional changed files found when updating versions; it is safer to start with a clean tree");
+    }
+    gulp.src(Object.keys(VERSION_FILES), { cwd: '..' })
+      .pipe(git.add())
+      .pipe(git.commit("Bump version to " + packageJson.version, { disableAppendPaths: true }))
+      .on('end', function(err) {
+        if (err) throw err;
+        git.exec({ args: `tag -f v${packageJson.version} HEAD` }, function(err) {
+          if (err) throw err;
+          done();
+        });
+      });
+  });
 });
 
 

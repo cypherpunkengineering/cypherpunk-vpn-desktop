@@ -31,59 +31,44 @@ cd ..
 cd ..\client
 echo * Updating Node modules...
 call npm --loglevel=silent install
-if %errorlevel% neq 0 goto error
+if errorlevel 1 goto error
 
-node -e "console.log(require('./package.json').version);" > .tmp.version.txt
-if %errorlevel% neq 0 goto error
-set /p ORIGINAL_APP_VER=<.tmp.version.txt
-del .tmp.version.txt
-
-if NOT [%BUILD_NUMBER%] == [] goto has_build_number
-git describe --always --match=nosuchtagpattern --dirty=-p > .tmp.version.txt
-if %errorlevel% neq 0 goto error
-set /p BUILD_NUMBER=<.tmp.version.txt
-del .tmp.version.txt
-if [%BUILD_NAME%] == [] goto no_build_name
-set BUILD_NUMBER=%BUILD_NAME%-%BUILD_NUMBER%
-:no_build_name
-:has_build_number
-for /f "tokens=1,2 delims=+" %%a in ("%ORIGINAL_APP_VER%") do set APP_VER=%%a+%BUILD_NUMBER%
-
-echo * Setting version to %APP_VER%...
-call node_modules\.bin\json -I -f package.json -e "this.version=this.version.replace(/(\+.*)?$/,'+%BUILD_NUMBER%')"
-if %errorlevel% neq 0 goto error
-call npm run version
-if %errorlevel% neq 0 goto error
+echo * Generating version...
+call npm run build-version
+if errorlevel 1 goto error
+call npm run apply-version
+if errorlevel 1 goto error
 
 echo * Building client...
 call npm --production run build
-if %errorlevel% neq 0 goto error
+if errorlevel 1 goto error
 
 echo * Rebuilding Electron modules...
 if exist node_modules\nslog\build\Release\nslog.node del /f node_modules\nslog\build\Release\nslog.node
 call node_modules\.bin\electron-rebuild.cmd --arch=ia32
-if %errorlevel% neq 0 goto error
+if errorlevel 1 goto error
 
 echo * Packaging Electron app...
-call node_modules\.bin\electron-packager.cmd .\app\ CypherpunkPrivacy --overwrite --platform=win32 --arch=ia32 --icon=..\res\win\logo2.ico --out=..\out\win\client\ --prune --asar --version-string.FileDescription="Cypherpunk Privacy" --version-string.CompanyName="Cypherpunk Partners, slf." --version-string.LegalCopyright="Copyright (C) 2016 Cypherpunk Partners, slf. All rights reserved." --version-string.OriginalFilename="CypherpunkPrivacy.exe" --version-string.ProductName="Cypherpunk Privacy" --version-string.InternalName="CypherpunkPrivacy"
-if %errorlevel% neq 0 goto error
+call node_modules\.bin\electron-packager.cmd .\app\ CypherpunkPrivacy --overwrite --platform=win32 --arch=ia32 --icon=..\res\win\logo2.ico --out=..\out\win\client\ --prune --asar --version-string.FileDescription="Cypherpunk Privacy" --version-string.CompanyName="Cypherpunk Partners, slf." --version-string.LegalCopyright="Copyright (C) 2017 Cypherpunk Partners, slf. All rights reserved." --version-string.OriginalFilename="CypherpunkPrivacy.exe" --version-string.ProductName="Cypherpunk Privacy" --version-string.InternalName="CypherpunkPrivacy"
+if errorlevel 1 goto error
 
 cd ..\daemon
 echo * Building 32-bit service...
 %MSBUILD% daemon.vcxproj /nologo /v:q /p:Configuration=Release /p:Platform=Win32
-if %errorlevel% neq 0 goto error
+if errorlevel 1 goto error
 echo * Building 64-bit service...
 %MSBUILD% daemon.vcxproj /nologo /v:q /p:Configuration=Release /p:Platform=x64
-if %errorlevel% neq 0 goto error
+if errorlevel 1 goto error
 
 cd ..\build\win
 echo * Creating installer...
 if [%ENABLE_SIGNING%] == [] (
   %ISCC% /Q setup.iss
+  if errorlevel 1 goto error
 ) else (
   %ISCC% /Q /DENABLE_SIGNING=1 /Sstandard="%SIGNTOOL:"=$q% sign /f %CODESIGNCERT:"=$q% /p %CODESIGNPW:"=$q% $f" setup.iss
+  if errorlevel 1 goto error
 )
-if %errorlevel% neq 0 goto error
 
 echo.
 echo Build successful!

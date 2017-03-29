@@ -3,7 +3,7 @@
 #define MyAppPublisher "Cypherpunk Partners, slf."
 #define MyAppURL "https://cypherpunk.com/"
 #define MyAppExeName "CypherpunkPrivacy.exe"
-#define MyAppCopyright "Copyright © 2016 " + MyAppPublisher
+#define MyAppCopyright "Copyright © 2017 " + MyAppPublisher
 #define MyInstallerName "cypherpunk-privacy-windows"
 
 #define MyAppVersion "0.6.2-beta"

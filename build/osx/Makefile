@@ -32,17 +32,25 @@ PF_ANCHORS = $(shell find $(ROOT)/res/osx/pf.anchors -type f -name 'com.cypherpu
 APP_SIGN_IDENTITY ?= "Developer ID Application: Cypherpunk Engineering K.K. (S353YJSBDX)"
 INSTALLER_SIGN_IDENTITY ?= "Developer ID Installer: Cypherpunk Engineering K.K. (S353YJSBDX)"
 
-# BUILD_NUMBER is provided on Jenkins builds, or can be specified explicitly.
-# If BUILD_NAME is specified (e.g. for special/branch builds), it is prepended to the build number.
-ifeq ($(BUILD_NUMBER),)
-BUILD_NUMBER := $(BUILD_NAME)-$(shell git --git-dir="$(ROOT)/.git" describe --always --match=nosuchtagpattern --dirty=-p)
-BUILD_NUMBER := $(BUILD_NUMBER:-%=%)
+
+ifneq ($(MAKECMDGOALS),clean)
+
+ifeq ($(wildcard $(ROOT)/client/node_modules/.),)
+$(info * Initializing node modules...)
+ifneq ($(shell cd "$(ROOT)/client" && npm install 1>&2 || echo FAIL),)
+$(error Failed to initialize node modules!)
 endif
-ORIGINAL_APP_VER := $(shell node -e "console.log(require('$(ROOT)/client/package.json').version);")
-export APP_VER := $(shell echo "$(ORIGINAL_APP_VER)" | sed -E 's/^([^-+]*)(-[^+]*)?(\+.*)?/\1\2+$(BUILD_NUMBER)/')
+endif
+$(info * Generating version number...)
+$(info $(shell rm -f "$(ROOT)/version.txt" && cd "$(ROOT)/client" && npm run build-version 1>&2 && npm run apply-version 1>&2))
+export APP_VER := $(shell cat "$(ROOT)/version.txt")
+ifeq ($(APP_VER),)
+$(error Failed to generate version number!)
+endif
+
+endif
 
 INSTALLER_PKG = cypherpunk-privacy-macos-$(subst +,-,$(APP_VER)).pkg
-
 
 
 all: package
@@ -76,23 +84,7 @@ stop-daemon:
 
 # Source building
 
-update-node-modules:
-	$(ECHO) "* Updating node modules..."
-	$(HUSH) cd "$(ROOT)/client" && npm install
-
-check-node-modules: $(if $(wildcard $(ROOT)/client/node_modules/.),,update-node-modules)
-
-#ifeq ($(APP_VER),$(ORIGINAL_APP_VER))
-#version:
-#	$(ECHO) "* Building version $(APP_VER)..."
-#else
-version: check-node-modules
-	$(ECHO) "* Setting version number to $(APP_VER)..."
-	$(HUSH) cd "$(ROOT)/client" && ./node_modules/.bin/json -I -f package.json -e 'this.version=this.version.replace(/(\+.*)?$$/,"+$(BUILD_NUMBER)")' && npm run version
-## We'd run npm version $(APP_VER) instead but that doesn't work with build numbers
-#endif
-
-client: check-node-modules version
+client:
 	$(ECHO) "* Building client..."
 	$(HUSH) cd "$(ROOT)/client" && npm --production run build
 	$(ECHO) "* Rebuilding Electron modules..."

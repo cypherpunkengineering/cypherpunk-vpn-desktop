@@ -7,3 +7,4 @@
 *.VC.db
 /out/
 .DS_Store
+/version.txt

@@ -6,7 +6,7 @@ umask 022
 
 # change pwd to folder containing this file
 cd "$( dirname "${BASH_SOURCE[0]}" )"
-cd ../
+cd ../../
 
 # app vars
 APP_NAME="Cypherpunk Privacy"
@@ -35,24 +35,22 @@ nvm alias default "${NODE_VER}"
 nvm use "${NODE_VER}"
 set -x
 
-# get app version, and git hash or build number
-APP_VERSION_SHORT="$(grep version client/package.json|head -1|cut -d \" -f4)"
-if [ -z "${BUILD_NUMBER}" ];then
-	GIT_HASH=$(git --git-dir="./.git" describe --always --match=nosuchtagpattern --dirty=-p)
-	BUILD_NUMBER="${BUILD_NAME}-${GIT_HASH}"
-	APP_VERSION=$(echo "${APP_VERSION_SHORT}" | sed -E "s/^([^-+]*)(-[^+]*)?(\+.*)?/\1\2${BUILD_NUMBER}/")
-else
-	APP_VERSION=$(echo "${APP_VERSION_SHORT}" | sed -E "s/^([^-+]*)(-[^+]*)?(\+.*)?/\1\2+${BUILD_NUMBER}/")
-fi
+# Generate version number
+cd client
+npm install
+npm run build-version
+npm run apply-version
+cd ..
 
-# export app version so electron can build it into app UI
-export APP_VERSION
+# Extract the short build number for packaging purposes
+APP_VERSION="$(cat version.txt)"
+APP_VERSION_SHORT="${APP_VERSION%%+*}"
 
 # pkg vars
 PKG_NAME="cypherpunk-privacy-${PLATFORM}-${ARCH}"
 PKG_MAINTAINER="Cypherpunk Privacy <debian-maintainer@cypherpunk.com>"
-PKG_STR="${PKG_NAME}_${APP_VERSION}"
-PKG_STR_MINUS=`echo "${PKG_STR}"|sed -e 's/+/-/g'`
+PKG_STR="${PKG_NAME}-${APP_VERSION}"
+PKG_STR_MINUS="${PKG_STR//+/-}"
 PKG_FILE="${PKG_STR_MINUS}.deb"
 PKG_PATH="out/${PKG_FILE}"
 
@@ -69,8 +67,6 @@ mkdir -p "${OUT_PATH}"
 
 # build client app
 cd client
-npm install
-./node_modules/.bin/json -I -f package.json -e "this.version=this.version.replace(/(\+.*)?\$\$/,\"+${BUILD_NUMBER}\")" && npm run version
 npm --production run build
 
 # rebuild electron stuff in case outdated cached stuff from before
