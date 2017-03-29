@@ -165,7 +165,7 @@ struct AllowIPRangeFilter<DIRECTION, IPv6> : FWConditionFilter<1, FWP_ACTION_PER
 		inet_pton(AF_INET6, addr, &_addr.addr);
 		_addr.prefixLength = prefix;
 		SetCondition<FWP_V6_ADDR_MASK>(0, FWPM_CONDITION_IP_REMOTE_ADDRESS, FWP_MATCH_EQUAL, &_addr);
-		weight.uint8 = weight;
+		this->weight.uint8 = weight;
 	}
 };
 
