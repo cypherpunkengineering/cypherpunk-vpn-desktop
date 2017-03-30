@@ -77,105 +77,50 @@ class FirewallWarning extends DaemonAware(React.Component) {
   }
 }
 
-export default class ConnectScreen extends React.Component {
+const PIPE_UPPER_TEXT = 'x`8 0 # = v 7 mb" | y 9 # 8 M } _ + kl $ #mn x -( }e f l]> ! 03 @jno x~`.xl ty }[sx k j';
+const PIPE_LOWER_TEXT = 'dsK 7 & [*h ^% u x 5 8 00 M< K! @ &6^d jkn 70 :93jx p0 bx, 890 Qw ;é " >?7 9 3@ { 5x3 >';
+
+class ConnectButton extends React.Component {
+  static defaultProps = {
+    upper: PIPE_UPPER_TEXT,
+    lower: PIPE_LOWER_TEXT,
+    on: false,
+    connectionState: 'disconnected',
+    onClick: function() {}
+  }
+  render() {
+    return (
+      <div className={classList("connect-button", { 'on': this.props.on, 'off': !this.props.on }, this.props.connectionState)} onClick={this.props.onClick}>
+        <div className="bg">
+          <div className="pipe"/>
+          <div className="dot"/>
+          <div className="row1" style={{ animationDuration: (this.props.upper.length*300)+'ms' }}>{this.props.upper}{this.props.upper}</div>
+          <div className="row2" style={{ animationDuration: (this.props.lower.length*300)+'ms' }}>{this.props.lower}{this.props.lower}</div>
+          <div className="frame"/>
+        </div>
+        <div className="slider"/>
+        <div className="knob"/>
+      </div>
+    );
+  }
+}
+
+export default class ConnectScreen extends DaemonAware(React.Component) {
   constructor(props) {
     super(props);
-    Object.assign(this.state, this.translateDaemonState(daemon.state));
-
-    this.handleConnectClick = this.handleConnectClick.bind(this);
-    this.handleDaemonSettingsChange = this.handleDaemonSettingsChange.bind(this);
-    this.handleDaemonStateChange = this.handleDaemonStateChange.bind(this);
+    this.daemonSubscribeState({
+      config: { locations: true, regions: true, countryNames: true, regionNames: true, regionOrder: true },
+      settings: { location: true, locationFlag: true, favorites: v => ({ favorites: Array.toDict(v, f => f, f => true) }), lastConnected: true, overrideDNS: true },
+      state: { state: v => ({ connectionState: v.toLowerCase().replace('switching', 'connecting') }), connect: true, pingStats: true, bytesReceived: true, bytesSent: true },
+    });
   }
 
   state = {
-    regions: daemon.config.regions,
-    selectedRegion: daemon.settings.location,
-    receivedBytes: 0,
-    sentBytes: 0,
     connectionState: 'disconnected',
     locationListOpen: false,
   }
 
-  translateDaemonState(state) {
-    var newState = {};
-    var stateString = {
-      'CONNECTING': 'connecting',
-      'CONNECTED': 'connected',
-      'DISCONNECTING': 'disconnecting',
-      'DISCONNECTED': 'disconnected',
-      'SWITCHING': 'connecting',
-    }[state.state];
-    if (stateString)
-      newState.connectionState = stateString;
-    if (state.bytesReceived !== undefined)
-      newState.receivedBytes = state.bytesReceived;
-    if (state.bytesSent !== undefined)
-      newState.sentBytes = state.bytesSent;
-    return newState;
-  }
-  handleDaemonSettingsChange(settings) {
-    if (settings.location) {
-      this.setState({ selectedRegion: settings.location });
-      $(this.refs.regionDropdown).dropdown('set selected', settings.location);
-    }
-  }
-  handleDaemonStateChange(state) {
-    this.setState(this.translateDaemonState(state));
-  }
-  componentDidMount() {
-    daemon.on('settings', this.handleDaemonSettingsChange);
-    daemon.on('state', this.handleDaemonStateChange);
-  }
-  componentWillUnmount() {
-    daemon.removeListener('state', this.handleDaemonStateChange);
-    daemon.removeListener('settings', this.handleDaemonSettingsChange);
-  }
-  componentWillUpdate(nextProps, nextState) {
-    if (this.state.connectionState !== nextState.connectionState) {
-      $(document.body).removeClass(this.state.connectionState).addClass(nextState.connectionState);
-      if (nextState.connectionState === 'disconnected')
-        $('#main-background').removeClass('animating');
-      else
-        $('#main-background').addClass('animating');
-    }
-  }
   render() {
-    var connectCircleStyle = {
-      stroke: (this.state.connectionState === 'connected' ? '#6ec90a' : this.state.connectionState == 'disconnected' ? '#cc0000' : '#d29f00'),
-      opacity: (this.state.connectionState === 'connected' ? '1' : this.state.connectionState == 'disconnected' ? '1' : '0.75'),
-      strokeWidth: '20',
-      strokeDasharray: '314.16',
-      strokeDashoffset: '78.54',
-      strokeLinecap: 'round',
-      transform: 'rotate3d(0,0,1,-45deg)',
-      transformOrigin: '50% 200px',
-      fill: 'none'
-    }
-    var connectLineStyle = {
-      stroke: (this.state.connectionState === 'connected' ? '#6ec90a' : this.state.connectionState == 'disconnected' ? '#cc0000' : '#d29f00'),
-      opacity: (this.state.connectionState === 'connected' ? '1' : this.state.connectionState == 'disconnected' ? '1' : '0.75'),
-      strokeWidth: '20',
-      strokeDasharray: '83',
-      strokeDashoffset: (this.state.connectionState === 'connected' ? '0' : this.state.connectionState == 'disconnected' ? '127' : '83'),
-      strokeLinecap: 'round',
-      fill: 'none'
-    }
-    var connectSmallLineStyle = {
-      stroke: (this.state.connectionState === 'connected' ? '#6ec90a' : this.state.connectionState == 'disconnected' ? '#cc0000' : '#d29f00'),
-      opacity: '1',
-      strokeWidth: '20',
-      strokeDasharray: '20',
-      strokeDashoffset: (this.state.connectionState === 'connected' ? '0' : this.state.connectionState == 'disconnected' ? '20' : '20'),
-      strokeLinecap: 'round',
-      fill: 'none'
-    }
-    var buttonLabel = {
-      'disconnected': "Tap to protect",
-      'connecting': "Connecting...",
-      'connected': "You are protected",
-      'disconnecting': "Disconnecting...",
-    }[this.state.connectionState];
-
     return(
       <RouteTransition transition={transitionMap}>
         <ReconnectButton key="reconnect"/>
@@ -186,28 +131,16 @@ export default class ConnectScreen extends React.Component {
               <Title/>
             </Titlebar>
             <OneZeros/>
-            {/* <MainBackground/> */}
-            <div id="connect-container" onClick={this.handleConnectClick} className={classList({ "hidden": this.state.locationListOpen })}>
+            <ConnectButton on={this.state.connect} connectionState={this.state.connectionState} onClick={() => this.handleConnectClick()}/>
 
-              <svg viewBox="-40 60 200 240" preserveAspectRatio="xMidYMid meet" width="160px" height="200px" ref="connectButton">
-                <circle class="ring" cx="60" cy="200" r="50" style={connectCircleStyle} />
-                <line x1="60" y1="98" x2="60" y2="181" style={connectLineStyle} />
-                <line x1="60" y1="111" x2="80" y2="111"  style={connectSmallLineStyle} />
-                <line x1="60" y1="137" x2="80" y2="137"  style={connectSmallLineStyle} />
-              </svg>
-
-              {/*<i id="connect" class={"ui fitted massive power link icon" + (this.state.connectionState === 'connected' ? " green" : this.state.connectionState == 'disconnected' ? " red" : " orange disabled")} ref="connectButton" onClick={this.handleConnectClick}></i>*/}
-            </div>
             <Link className="left account page-link" to="/account" tabIndex="0" data-tooltip="My Account" data-position="bottom left"><RetinaImage src={AccountIcon}/></Link>
             <Link className="right settings page-link" to="/configuration" tabIndex="0" data-tooltip="Configuration" data-position="bottom right"><i className="settings icon"/></Link>
             
-            <div id="connect-status" ref="connectStatus">{buttonLabel}</div>
             <div id="connection-stats" class="ui two column center aligned grid">
-              <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.receivedBytes)}</div><div class="label">Received</div></div></div>
-              <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.sentBytes)}</div><div class="label">Sent</div></div></div>
+              <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.bytesReceived)}</div><div class="label">Received</div></div></div>
+              <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.bytesSent)}</div><div class="label">Sent</div></div></div>
             </div>
             <FirewallWarning/>
-            {/*<RegionSelector/>*/}
             <QuickPanel
               expanded={this.state.locationListOpen}
               onOtherClick={() => this.setState({ locationListOpen: true })}
@@ -239,9 +172,6 @@ export default class ConnectScreen extends React.Component {
         });
         break;
     }
-  }
-  getSelectedRegion() {
-    return $(this.refs.regionDropdown).dropdown('get value');
   }
 
   onLocationClick(value) {
