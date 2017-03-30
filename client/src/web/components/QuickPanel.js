@@ -42,7 +42,7 @@ export class QuickPanel extends DaemonAware(React.Component) {
     let fastest = null, fastestUS = null, fastestUK = null;
     let locations = state.locations;
     Object.forEach(state.pingStats, (id, ping) => {
-      if (id === 'updating' || locations[id].region === 'DEV') return;
+      if (id === 'updating' || !locations[id] || locations[id].region === 'DEV') return;
       if (ping.replies) {
         if (locations[id] && (!fastest || ping.average < state.pingStats[fastest].average)) fastest = id;
         if (locations[id] && locations[id].country.toLowerCase() == 'us' && (!fastestUS || ping.average < state.pingStats[fastestUS].average)) fastestUS = id;
