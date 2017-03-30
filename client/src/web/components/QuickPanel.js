@@ -195,6 +195,7 @@ export class QuickPanel extends DaemonAware(React.Component) {
     switch (this.state.state) {
       default:
       case 'DISCONNECTED': connectString = "CONNECT TO"; break;
+      case 'SWITCHING':
       case 'CONNECTING': connectString = "CONNECTING TO..."; break;
       case 'CONNECTED': connectString = "CONNECTED TO"; break;
       case 'DISCONNECTING': connectString = "DISCONNECTING FROM..."; break;
