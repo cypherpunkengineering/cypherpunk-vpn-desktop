@@ -23,7 +23,7 @@ const transitionMap = {
     },
 };
 
-const AccountIcon = { 1: require('../assets/img/account_icon.png'), 2: require('../assets/img/account_icon@2x.png') };
+const AccountIcon = { [1]: require('../assets/img/account_icon.png'), [2]: require('../assets/img/account_icon@2x.png') };
 
 function humanReadableSize(count) {
   if (count >= 1024 * 1024 * 1024 * 1024) {
