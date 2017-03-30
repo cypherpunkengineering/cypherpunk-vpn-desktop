@@ -363,7 +363,7 @@ export class AnalyticsStep extends Page {
     daemon.call.applySettings({ enableAnalytics: true }).then(() => { analytics.activate(); History.push('/tutorial/0'); });
   }
   onDisallow() {
-    daemon.post.applySettings({ enableAnalytics: false }).then(() => History.push('/tutorial/0'));
+    daemon.call.applySettings({ enableAnalytics: false }).then(() => History.push('/tutorial/0'));
   }
   render() {
     return (
