@@ -186,6 +186,18 @@
     }
   }
 
+  &.connected {
+    > .drawer {
+      > .description {
+        border-bottom-color: rgba(50,190,200,0.75);
+        color: white;
+      }
+      > .header {
+        background: linear-gradient(to bottom, rgba(50,190,200,0.75), @headerColor);
+      }
+    }
+  }
+
   .grid {
     position: absolute;
     left: 0;
