@@ -89,9 +89,19 @@ class ConnectButton extends React.Component {
     hidden: false,
     onClick: function() {}
   }
+  onKeyDown(e) {
+    switch (e.key) {
+      case 'ArrowLeft': case 'ArrowRight':
+        if (!this.props.on == (e.key === 'ArrowLeft')) break;
+        // fallthrough
+      case ' ': case 'Enter':
+        this.props.onClick();
+        break;
+    }
+  }
   render() {
     return (
-      <div className={classList("connect-button", { 'on': this.props.on, 'off': !this.props.on, 'hidden': this.props.hidden }, this.props.connectionState)} onClick={this.props.onClick}>
+      <div className={classList("connect-button", { 'on': this.props.on, 'off': !this.props.on, 'hidden': this.props.hidden }, this.props.connectionState)} onClick={this.props.onClick} onKeyDown={e => this.onKeyDown(e)} tabIndex={this.props.hidden ? -1 : 0}>
         <div className="bg">
           <div className="pipe"/>
           <div className="dot"/>
@@ -132,11 +142,12 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
               <Title/>
             </Titlebar>
             <OneZeros/>
-            <ConnectButton on={this.state.connect} connectionState={this.state.connectionState} onClick={() => this.handleConnectClick()} hidden={this.state.locationListOpen}/>
 
             <Link className="left account page-link" to="/account" tabIndex="0" data-tooltip="My Account" data-position="bottom left"><RetinaImage src={AccountIcon}/></Link>
             <Link className="right settings page-link" to="/configuration" tabIndex="0" data-tooltip="Configuration" data-position="bottom right"><i className="settings icon"/></Link>
             
+            <ConnectButton on={this.state.connect} connectionState={this.state.connectionState} onClick={() => this.handleConnectClick()} hidden={this.state.locationListOpen}/>
+
             <div id="connection-stats" class="ui two column center aligned grid">
               <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.bytesReceived)}</div><div class="label">Received</div></div></div>
               <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.bytesSent)}</div><div class="label">Sent</div></div></div>
