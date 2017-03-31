@@ -89,6 +89,10 @@ class ConnectButton extends React.Component {
     hidden: false,
     onClick: function() {}
   }
+  onClick(e) {
+    this.props.onClick();
+    this.dom.blur();
+  }
   onKeyDown(e) {
     switch (e.key) {
       case 'ArrowLeft': case 'ArrowRight':
@@ -101,7 +105,7 @@ class ConnectButton extends React.Component {
   }
   render() {
     return (
-      <div className={classList("connect-button", { 'on': this.props.on, 'off': !this.props.on, 'hidden': this.props.hidden }, this.props.connectionState)} onClick={this.props.onClick} onKeyDown={e => this.onKeyDown(e)} tabIndex={this.props.hidden ? -1 : 0}>
+      <div className={classList("connect-button", { 'on': this.props.on, 'off': !this.props.on, 'hidden': this.props.hidden }, this.props.connectionState)} onClick={e => this.onClick(e)} onKeyDown={e => this.onKeyDown(e)} tabIndex={this.props.hidden ? -1 : 0}>
         <div className="bg">
           <div className="pipe"/>
           <div className="dot"/>
