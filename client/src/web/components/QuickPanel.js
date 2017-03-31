@@ -89,7 +89,7 @@ export class QuickPanel extends DaemonAware(React.Component) {
     if (button === 6) {
       this.props.onOtherClick();
     } else {
-      let settings = { locationFlag: '' };
+      let settings = { locationFlag: '', suppressReconnectWarning: true };
       switch (button) {
         case 0: settings.location = this.state.fastest; settings.locationFlag = 'cypherplay'; break;
         case 1: settings.location = this.state.fastest; settings.locationFlag = 'fastest'; break;

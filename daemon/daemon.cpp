@@ -560,10 +560,15 @@ void CypherDaemon::RPC_applySettings(const JsonObject& settings)
 	// before we actually make any changes
 	//for (auto& p : settings) g_settings.map().at(p.first);
 
-	bool neededReconnect = _needsReconnect;
+	bool suppressReconnectWarning = false;
 
 	for (auto& p : settings)
 	{
+		if (p.first == "suppressReconnectWarning" && p.second.IsTruthy())
+		{
+			suppressReconnectWarning = true;
+			continue;
+		}
 		if (g_settings[p.first] != p.second)
 		{
 			try
@@ -577,7 +582,7 @@ void CypherDaemon::RPC_applySettings(const JsonObject& settings)
 		}
 	}
 
-	if ((_state == CONNECTING || _state == CONNECTED) && !_process->CompareSettings())
+	if (!suppressReconnectWarning && (_state == CONNECTING || _state == CONNECTED) && !_process->CompareSettings())
 	{
 		_needsReconnect = true;
 		OnStateChanged(NEEDSRECONNECT);

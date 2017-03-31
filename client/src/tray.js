@@ -168,7 +168,7 @@ class Tray {
                 //checked: this.state.settings.location === s.id,
                 //enabled: !s.disabled,
                 click: () => {
-                  daemon.call.applySettings({ location: s.id, locationFlag: '' })
+                  daemon.call.applySettings({ location: s.id, locationFlag: '', suppressReconnectWarning: true })
                     .then(() => {
                       if (state === 'DISCONNECTED' || this.state.state.needsReconnect) {
                         daemon.post.connect();
