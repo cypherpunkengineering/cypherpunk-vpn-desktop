@@ -809,20 +809,24 @@ bool CypherDaemon::RPC_connect()
 			_process->stale = true;
 			_bytesReceived = _bytesSent = 0;
 			_state = SWITCHING;
-			OnStateChanged(STATE | BYTECOUNT);
+			_needsReconnect = false;
+			OnStateChanged(STATE | BYTECOUNT | NEEDSRECONNECT);
 			_process->SendManagementCommand("signal SIGTERM");
 			break;
 
 		case SWITCHING:
 			// Already switching; make sure connection is marked as stale
 			_process->stale = true;
+			_needsReconnect = false;
+			OnStateChanged(NEEDSRECONNECT);
 			break;
 
 		case DISCONNECTED:
 			// Connect normally.
 			_bytesReceived = _bytesSent = 0;
 			_state = CONNECTING;
-			OnStateChanged(STATE | BYTECOUNT);
+			_needsReconnect = false;
+			OnStateChanged(STATE | BYTECOUNT | NEEDSRECONNECT);
 			_io.post([this](){ DoConnect(); });
 			break;
 
