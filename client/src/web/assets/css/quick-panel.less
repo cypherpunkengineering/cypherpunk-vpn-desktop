@@ -45,6 +45,8 @@
       padding: 0 10px;
       border-bottom-color: @headerColor;
       color: #8cc;
+
+      transition: border-bottom-color 0.5s, color 0.5s;
     }
     > .header {
       width: 100%;
@@ -104,6 +106,17 @@
             opacity: 0.75;
           }
         }
+      }
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to bottom, rgba(50,190,200,1), transparent);
+        opacity: 0;
+        transition: opacity 0.5s;
       }
       &::after {
         content: '';
@@ -189,11 +202,15 @@
   &.connected {
     > .drawer {
       > .description {
-        border-bottom-color: rgba(50,190,200,0.75);
+        border-bottom-color: rgba(50,190,200,1);
         color: white;
+        transition-delay: 0.5s;
       }
       > .header {
-        background: linear-gradient(to bottom, rgba(50,190,200,0.75), @headerColor);
+        &::before {
+          opacity: 1;
+          transition-delay: 0.5s;
+        }
       }
     }
   }
