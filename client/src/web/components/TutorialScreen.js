@@ -19,7 +19,7 @@ const PAGES = [
   {
     x: 350/2,
     y: 180,
-    size: 150,
+    size: 170,
     content:
       <div key="page-1" className="desc top center" style={{ left: '60px', right: '60px', top: '280px' }}>
         Connect to the Cypherpunk network by clicking here.
