@@ -86,11 +86,12 @@ class ConnectButton extends React.Component {
     lower: PIPE_LOWER_TEXT,
     on: false,
     connectionState: 'disconnected',
+    hidden: false,
     onClick: function() {}
   }
   render() {
     return (
-      <div className={classList("connect-button", { 'on': this.props.on, 'off': !this.props.on }, this.props.connectionState)} onClick={this.props.onClick}>
+      <div className={classList("connect-button", { 'on': this.props.on, 'off': !this.props.on, 'hidden': this.props.hidden }, this.props.connectionState)} onClick={this.props.onClick}>
         <div className="bg">
           <div className="pipe"/>
           <div className="dot"/>
@@ -131,7 +132,7 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
               <Title/>
             </Titlebar>
             <OneZeros/>
-            <ConnectButton on={this.state.connect} connectionState={this.state.connectionState} onClick={() => this.handleConnectClick()}/>
+            <ConnectButton on={this.state.connect} connectionState={this.state.connectionState} onClick={() => this.handleConnectClick()} hidden={this.state.locationListOpen}/>
 
             <Link className="left account page-link" to="/account" tabIndex="0" data-tooltip="My Account" data-position="bottom left"><RetinaImage src={AccountIcon}/></Link>
             <Link className="right settings page-link" to="/configuration" tabIndex="0" data-tooltip="Configuration" data-position="bottom right"><i className="settings icon"/></Link>
