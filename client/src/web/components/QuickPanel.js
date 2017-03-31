@@ -187,7 +187,7 @@ export class QuickPanel extends DaemonAware(React.Component) {
     let cypherPlayDisabledWarning = {};
     if (!this.state.overrideDNS) {
       cypherPlayDisabledWarning = {
-        'data-tooltip': "CypherPlay is unavailable due to compatibility settings",
+        'data-tooltip': "CypherPlay is unavailable due to expert settings",
         'data-position': "top left"
       };
     }
