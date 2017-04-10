@@ -145,7 +145,7 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
             <Titlebar>
               <Title/>
             </Titlebar>
-            <OneZeros/>
+            {/*<OneZeros/>*/}
 
             <Link className="left account page-link" to="/account" tabIndex="0" data-tooltip="My Account" data-position="bottom left"><RetinaImage src={AccountIcon}/></Link>
             <Link className="right settings page-link" to="/configuration" tabIndex="0" data-tooltip="Configuration" data-position="bottom right"><i className="settings icon"/></Link>
