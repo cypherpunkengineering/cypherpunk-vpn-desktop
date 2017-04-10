@@ -12,7 +12,7 @@ function reactAddon(module, name) {
 const ReactCSSTransitionGroup = reactAddon(require('react-addons-css-transition-group'), 'CSSTransitionGroup');
 
 
-export const Location = ({ location, className, selected = false, favorite = null, ping = null, onClick, ...props } = {}) => {
+export const Location = ({ location, className, selected = false, favorite = null, ping = null, hideTag = false, onClick, ...props } = {}) => {
   if (!location) return null;
   let classes = [ 'location' ];
   let tag = null;
@@ -53,7 +53,7 @@ export const Location = ({ location, className, selected = false, favorite = nul
   return (
     <div className={classList(classes, className)} data-value={location.id} onClick={onClick} {...props}>
       {location.country ? <img className="flag" src={flag()} srcSet={`${flag()} 1x, ${flag('@2x')} 2x`} alt=""/> : null}
-      <span data-tag={tag}>{location.name}</span>
+      <span data-tag={hideTag ? null : tag}>{location.name}</span>
       {ping ? <span className="ping-time">{ping}</span> : null}
       {favorite !== null ? <i className="cp-fav icon"></i> : null}
     </div>
