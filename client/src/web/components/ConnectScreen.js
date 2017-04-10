@@ -7,11 +7,12 @@ import OneZeros from './OneZeros';
 import daemon, { DaemonAware } from '../daemon';
 import { REGION_GROUP_NAMES, REGION_GROUP_ORDER, classList } from '../util';
 import RouteTransition from './Transition';
-import RegionSelector from './RegionSelector';
+import RegionSelector, { Location } from './RegionSelector';
 import ReconnectButton from './ReconnectButton';
 import { OverlayContainer } from './Overlay';
 import RetinaImage from './Image';
 import QuickPanel from './QuickPanel';
+import WorldMap from './WorldMap';
 
 const transitionMap = {
     '/tutorial/*': {
@@ -149,8 +150,19 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
 
             <Link className="left account page-link" to="/account" tabIndex="0" data-tooltip="My Account" data-position="bottom left"><RetinaImage src={AccountIcon}/></Link>
             <Link className="right settings page-link" to="/configuration" tabIndex="0" data-tooltip="Configuration" data-position="bottom right"><i className="settings icon"/></Link>
-            
+
+            <WorldMap/>
+
             <ConnectButton on={this.state.connect} connectionState={this.state.connectionState} onClick={() => this.handleConnectClick()} hidden={this.state.locationListOpen}/>
+
+            <div className="connect-status">
+              <span>Status</span>
+              <span>{this.state.connectionState}</span>
+            </div>
+
+            <div className="location-selector">
+              <Location location={this.state.locations[this.state.location]} hideTag={true}/>
+            </div>
 
             <div id="connection-stats" class="ui two column center aligned grid">
               <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.bytesReceived)}</div><div class="label">Received</div></div></div>

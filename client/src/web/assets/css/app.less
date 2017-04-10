@@ -591,6 +591,73 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
       right: 10px;
     }
   }
+
+  .worldmap {
+    position: absolute;
+    top: 360px;
+  }
+
+  .connect-status {
+    position: absolute;
+    top: 260px;
+    display: flex;
+    flex-direction: column;
+    z-index: 1;
+    > span {
+      &:first-child {
+        font-size: 10px;
+        color: rgba(0,255,255,0.5);
+        overflow-x: visible;
+      }
+      font-size: 16px;
+      text-transform: uppercase;
+    }
+  }
+
+  .location-selector {
+    @horizontalPadding: 18px;
+    @height: 48px;
+    @borderWidth: 4px;
+    position: absolute;
+    top: 400px;
+    display: flex;
+    align-items: center;
+    border-radius: 100px;
+    background: rgba(80,255,255,0.15);
+    padding: 0px @horizontalPadding;
+    border: @borderWidth solid rgba(0,0,0,0.25);
+    height: @height;
+    z-index: 1;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.4s, color 0.4s;
+    color: rgba(255,255,255,0.75);
+    &::after {
+      .semanticIcon('\f021');
+      margin-left: 10px;
+      border-radius: 100px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      align-self: stretch;
+      margin-right: (-@horizontalPadding);
+      width: (@height - 2 * @borderWidth);
+      height: (@height - 2 * @borderWidth);
+      background: linear-gradient(to right, rgba(0,0,0,0.25), transparent 50%);
+      font-size: 16px;
+      color: rgba(200,255,255,0.75);
+      transition: color 0.2s;
+    }
+    &:hover {
+      background: rgba(80,255,255,0.25);
+      color: white;
+      transition: background 0.16s, color 0.16s;
+      &::after {
+        color: white;
+      }
+    }
+  }
+
 }
 
 #login-screen {
@@ -2368,4 +2435,5 @@ dialog.tutorial-overlay {
 
 @import "region-selector.less";
 @import "quick-panel.less";
+@import "worldmap.less";
 @import "connect-button.less";
