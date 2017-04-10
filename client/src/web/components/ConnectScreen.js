@@ -157,6 +157,7 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
               <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.bytesSent)}</div><div class="label">Sent</div></div></div>
             </div>
             <FirewallWarning/>
+            {/*
             <QuickPanel
               expanded={this.state.locationListOpen}
               onOtherClick={() => this.setState({ locationListOpen: true })}
@@ -164,6 +165,7 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
               onLocationClick={value => this.onLocationClick(value)}
               onLocationFavoriteClick={value => this.onLocationFavoriteClick(value)}
               />
+            */}
           </div>
         </div>
         <OverlayContainer key="overlay"/>
