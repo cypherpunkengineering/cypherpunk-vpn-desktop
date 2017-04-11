@@ -594,7 +594,13 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 
   .worldmap {
     position: absolute;
+    left: 50%;
     top: 360px;
+    transform: left 0.8s ease-in-out, top 0.8s ease-in-out;
+    &.side {
+      top: 60%;
+      left: 75%;
+    }
   }
 
   .connect-status {
@@ -658,6 +664,57 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     }
   }
 
+  .location-list {
+    position: absolute;
+    top: 70px; // edge of titlebar
+    left: 0;
+    width: 100%;
+    bottom: 0;
+    z-index: 3;
+    background: linear-gradient(to bottom, rgba(0,40,40,0.5), rgba(0,255,255,0.15));
+    border-bottom: 1px solid rgba(0,80,80,0.25);
+    padding-bottom: 60px;
+    > div {
+      width: 100%;
+      height: 100%;
+      padding: 30px 0 5px;
+      overflow-y: overlay;
+      padding-bottom: 10px;
+      > .location {
+        padding: 0 15px;
+        cursor: pointer;
+        height: 28px;
+        &:hover {
+          background: linear-gradient(to right, rgba(0,255,255,0.2), transparent);
+        }
+        &.disabled {
+          opacity: 0.3;
+        }
+      }
+    }
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 25px;
+      z-index: 4;
+      background: linear-gradient(to bottom, rgba(0,30,30,0.75), transparent);
+      pointer-events: none;
+    }
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      height: 80px;
+      margin-bottom: -10px;
+      background: linear-gradient(to top, transparent, rgba(0,0,0,0.25) 10px, rgba(16,64,64,0.5) 10px, rgba(0,80,80,0.75) 70px, transparent);
+      pointer-events: none;
+    }
+  }
 }
 
 #login-screen {
