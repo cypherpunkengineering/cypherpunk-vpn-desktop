@@ -2,12 +2,13 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { classList } from '../util';
 
-import WorldMapImage from '../assets/img/worldmap.png';
+import WorldMapImage from '../assets/img/worldmap_2000.png';
+const MAP_SIZE = 2000;
 
 
 const GPS = {
-  'honolulu': { lat: -21.3069, long: -157.8533, scale: 2.0 },
-  'stockholm': { lat: -59.3293, long: 18.0686, scale: 0.5 },
+  'honolulu': { lat: -21.3069, long: -157.8533, scale: 4.0 },
+  'stockholm': { lat: -59.3293, long: 18.0686, scale: 1.5 },
 }
 
 
@@ -38,8 +39,8 @@ vanDerGrinten3Raw.invert = function(x, y) {
 
 function transformToXY(lat, long) {
   var coords = vanDerGrinten3Raw((long - 11) * pi / 180, lat * pi / 180);
-  coords[0] = (coords[0] * 150 + (920 / 2)) * (8000 / 920);
-  coords[1] = (coords[1] * 150 + (500 / 2 + 500 * 0.15)) * (8000 / 920);
+  coords[0] = (coords[0] * 150 + (920 / 2)) * (MAP_SIZE / 920);
+  coords[1] = (coords[1] * 150 + (500 / 2 + 500 * 0.15)) * (MAP_SIZE / 920);
   return coords;
 }
 
@@ -75,13 +76,11 @@ export class WorldMap extends React.Component {
   }
   render() {
     var { lat, long, scale = 1.0 } = GPS[this.state.location];
-    var [ x, y ] = vanDerGrinten3Raw((long - 11) * pi / 180, lat * pi / 180);
-    x = (x * 150 + (920 / 2)) * (8000 / 920);
-    y = (y * 150 + (500 / 2 + 500 * 0.15)) * (8000 / 920);
+    var [ x, y ] = transformToXY(lat, long);
     return (
       <div className="worldmap" onClick={() => this.move(this.state.location === 'honolulu' ? 'stockholm' : 'honolulu')}>
         <div className="world" style={{ transform: `scale(${scale}) translate(${-x}px,${-y}px)` }}>
-          <img src={WorldMapImage}/>
+          <img src={WorldMapImage} width={MAP_SIZE}/>
         </div>
         <i className={classList("marker icon", { up: this.state.up })}/>
       </div>
