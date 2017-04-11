@@ -153,6 +153,12 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
 
             <WorldMap/>
 
+            <div className="location-list">
+              <div>
+                {Object.mapToArray(this.state.locations, (id, l) => <Location key={id} location={l} onClick={() => daemon.post.applySettings({ location: id })}/>)}
+              </div>
+            </div>
+
             <ConnectButton on={this.state.connect} connectionState={this.state.connectionState} onClick={() => this.handleConnectClick()} hidden={this.state.locationListOpen}/>
 
             <div className="connect-status">
