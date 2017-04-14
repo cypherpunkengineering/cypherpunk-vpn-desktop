@@ -83,7 +83,7 @@ export class WorldMap extends React.Component {
   }
   translateLocation(props, state) {
     if (!state) state = {};
-    var { lat = null, long = null, scale = 1.0 } = (props.locations && props.location) ? props.locations[props.location] : props;
+    var { lat = null, long = null, scale = 1.0 } = (props.locations && props.location) ? props.locations[props.location] || {} : props;
     var [ x, y ] = (lat !== null && long !== null) ? transformToXY(lat, long) : [ null, null ];
     state.x = x;
     state.y = y;
@@ -130,10 +130,10 @@ export class WorldMap extends React.Component {
         <div className="world" style={{ transform: (this.state.x !== null && this.state.y !== null) ? `scale(${this.state.scale}) translate(${-this.state.x}px,${-this.state.y}px)` : `scale(0.25) translate(-50%,-65%)` }}>
           <img src={WorldMapImage} width={MAP_SIZE}/>
           {Object.mapToArray(this.state.locations, (id, gps) => {
-            return <div key={id} className={classList("point", { 'selected': this.props.location === id })} style={{ left: `${gps.x}px`, top: `${gps.y}px`, transform: `translate(-50%,-50%) scale(${1/*/gps.scale*/})` }}/>;
+            return id === 'cypherplay' ? null : <div key={id} className={classList("point", { 'selected': this.props.location === id })} style={{ left: `${gps.x}px`, top: `${gps.y}px`, transform: `translate(-50%,-50%) scale(${1/*/gps.scale*/})` }}/>;
           }).filter(x => x)}
         </div>
-        <i className={classList("marker icon", { up: this.state.up, hidden: (this.state.x === null || this.state.y === null) })}/>
+        <i className={classList("marker icon", { up: this.state.up, hidden: (this.state.x === null || this.state.y === null || this.props.location === 'cypherplay') })}/>
       </div>
     );
   }

@@ -600,6 +600,9 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     &.side {
       top: 60%;
       left: 75%;
+      .marker::before {
+        color: #488;
+      }
     }
   }
 
@@ -638,6 +641,12 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     font-size: 16px;
     transition: background 0.4s, color 0.4s;
     color: rgba(255,255,255,0.75);
+    &::before {
+      content: 'Connect to';
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
     &::after {
       .semanticIcon('\f021');
       margin-left: 10px;
@@ -665,7 +674,16 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   }
 
   .location-list {
+    @headerGradientTop: rgba(10,40,40,0.5);
+    @headerGradientBottom: rgba(12,48,48,0.75);
+    @footerGradientTop: rgba(0,80,80,0.75);
+    @footerGradientBottom: rgba(16,64,64,0.5);
+
     position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+
     top: 70px; // edge of titlebar
     left: 0;
     width: 100%;
@@ -673,45 +691,169 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     z-index: 3;
     background: linear-gradient(to bottom, rgba(0,40,40,0.5), rgba(0,255,255,0.15));
     border-bottom: 1px solid rgba(0,80,80,0.25);
-    padding-bottom: 60px;
-    > div {
-      width: 100%;
-      height: 100%;
-      padding: 30px 0 5px;
+    > .list {
+      @leftPadding: 20px;
+
+      flex: 1 1 auto; // stretch
+      padding: 10px 0;
       overflow-y: overlay;
-      padding-bottom: 10px;
+      &::-webkit-scrollbar-thumb {
+        background: rgba(80,255,255,0.175);
+        &:hover {
+          background: rgba(80,255,255,0.3);
+        }
+      }
+      > .header {
+        position: relative;
+        line-height: 28px;
+        padding-top: 10px;
+        padding-left: @leftPadding;
+        background: linear-gradient(7deg, rgba(0,0,0,0.3), transparent 50%);
+        color: rgba(200,255,255,0.6);
+        font-weight: 500;
+        font-size: 13px;
+        text-transform: uppercase;
+        border-bottom: 2px solid rgba(80,255,255,0.07);
+        margin-bottom: 4px;
+      }
       > .location {
-        padding: 0 15px;
+        position: relative;
+        width: 100%;
+        padding: 0 15px 0 @leftPadding;
         cursor: pointer;
         height: 28px;
         &:hover {
           background: linear-gradient(to right, rgba(0,255,255,0.2), transparent);
+          color: white;
         }
         &.disabled {
           opacity: 0.3;
         }
+        > span:first-of-type {
+          flex: 1 0 auto;
+        }
+        > .ping-time {
+          color: rgba(200,255,255,0.3);
+        }
+      }
+      > .cypherplay {
+        position: relative;
+        font-size: 16px;
+        font-weight: 500;
+        padding: 10px 0 9px;
+        cursor: pointer;
+        color: rgba(250,120,60,0.8);
+        margin-top: -5px;
+        background-clip: padding-box;
+        line-height: 18px;
+        > img {
+          height: 18px;
+          margin-right: 10px;
+          width: (@leftPadding + 24px);
+          object-fit: contain;
+          object-position: right center;
+          vertical-align: top;
+        }
+        > span {
+          text-transform: uppercase;
+          font-size: 10px;
+          margin-left: 0.5em;
+          color: rgba(255,255,255,0.5);
+        }
+        &:hover {
+          color: rgb(250,120,60);
+          background-image: linear-gradient(to right, rgba(250,120,60,0.25), transparent);
+          > span {
+            color: #fff;
+          }
+        }
       }
     }
-    &::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 25px;
-      z-index: 4;
-      background: linear-gradient(to bottom, rgba(0,30,30,0.75), transparent);
-      pointer-events: none;
+    > .header {
+      flex: 0 0 auto;
+      position: relative;
+      z-index: 2; // above list
+      min-height: 40px;
+      background: linear-gradient(to bottom, @headerGradientTop, @headerGradientBottom);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      > .title {
+        text-align: center;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: auto;
+        font-size: 12px;
+        line-height: 16px;
+        padding: 20px 10px 2px;
+        text-transform: uppercase;
+        font-weight: 600;
+      }
+      > .location {
+        margin: 5px 0 -5px;
+        width: 100%;
+        justify-content: center;
+        height: 30px;
+        background: rgba(80,255,255,0.1);
+      }
+      &::after { // list scroll fadeout
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 100%;
+        width: 100%;
+        height: 10px;
+        background: linear-gradient(to bottom, @headerGradientBottom, transparent);
+        pointer-events: none;
+      }
     }
-    &::after {
+    > .footer {
+      flex: 0 0 auto;
+      position: relative;
+      z-index: 2; // above list
+      min-height: 50px;
+      background: linear-gradient(to bottom, @footerGradientTop, @footerGradientBottom);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 600;
+      > .back {
+        font-size: 16px;
+        font-weight: 400;
+        align-self: stretch;
+        line-height: 50px;
+        padding-left: 12px;
+        padding-right: 20px;
+        cursor: pointer;
+        color: rgba(220,255,255,0.6);
+        transition: color 0.3s;
+        &:hover {
+          transition: color 0.1s;
+          color: rgba(220,255,255,1.0);
+        }
+      }
+      &::before { // list scroll fadeout
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 100%;
+        width: 100%;
+        height: 10px;
+        background: linear-gradient(to top, @footerGradientTop, transparent);
+        pointer-events: none;
+      }
+    }
+    &::after { // drop shadow
       content: '';
       position: absolute;
       left: 0;
-      bottom: 0;
-      width: 100%;
-      height: 80px;
-      margin-bottom: -10px;
-      background: linear-gradient(to top, transparent, rgba(0,0,0,0.25) 10px, rgba(16,64,64,0.5) 10px, rgba(0,80,80,0.75) 70px, transparent);
+      top: 100%;
+      height: 10px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.25), transparent);
       pointer-events: none;
     }
   }
