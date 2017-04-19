@@ -67,7 +67,7 @@
           transition-duration: 0.1s;
         }
       }
-      &.disabled {
+      &.disabled, &.selected {
         opacity: 0.3;
       }
       > span:first-of-type {
@@ -96,6 +96,9 @@
         > span {
           color: #fff;
         }
+      }
+      &.selected, &.disabled {
+        opacity: 0.5;
       }
     }
   }
