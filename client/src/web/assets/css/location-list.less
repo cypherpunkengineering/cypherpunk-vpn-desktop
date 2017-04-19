@@ -59,7 +59,7 @@
         transition: transform 0.3s ease, opacity 0.3s ease;
         pointer-events: none;
       }
-      &:hover {
+      &.selected, &:hover {
         background: linear-gradient(to right, rgba(0,255,255,0.2), transparent);
         color: white;
         &::before {
@@ -90,7 +90,7 @@
         width: (@leftPadding + 24px);
         margin-left: (-@leftPadding);
       }
-      &:hover {
+      &.selected, &:hover {
         color: rgb(250,120,60);
         background-image: linear-gradient(to right, rgba(250,120,60,0.25), transparent);
         > span {
@@ -127,6 +127,8 @@
       justify-content: center;
       height: 32px;
       background: rgba(80,255,255,0.1);
+      display: flex;
+      align-items: center;
     }
     &::after { // list scroll fadeout
       content: '';
