@@ -46,7 +46,7 @@ export class RetinaImage extends React.Component {
 export const Flag = ({ country, size = 24, className, ...props } = {}) => {
   country = country.toLowerCase();
   const flag = (dpi = '') => `../assets/img/flags/${size}/${country}${dpi}.png`;
-  const src = { 1: flag(), 2: flag('@2x') };
+  const src = { [1]: flag(), [2]: flag('@2x') };
   return country ? <RetinaImage src={src} className={classList('flag', className)} {...props} /> : null;
 };
 
