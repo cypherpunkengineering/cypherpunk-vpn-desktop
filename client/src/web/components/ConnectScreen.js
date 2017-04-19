@@ -7,12 +7,13 @@ import OneZeros from './OneZeros';
 import daemon, { DaemonAware } from '../daemon';
 import { REGION_GROUP_NAMES, REGION_GROUP_ORDER, classList } from '../util';
 import RouteTransition from './Transition';
-import RegionSelector, { Location } from './RegionSelector';
+import RegionSelector from './RegionSelector';
 import ReconnectButton from './ReconnectButton';
 import { OverlayContainer } from './Overlay';
 import RetinaImage from './Image';
 import QuickPanel from './QuickPanel';
 import WorldMap from './WorldMap';
+import LocationList, { Location, CypherPlayItem } from './LocationList';
 
 const transitionMap = {
     '/tutorial/*': {
