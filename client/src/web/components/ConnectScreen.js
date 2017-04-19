@@ -69,86 +69,7 @@ const GPS = {
 const AccountIcon = { [1]: require('../assets/img/account_icon.png'), [2]: require('../assets/img/account_icon@2x.png') };
 const CypherPlayIcon = { [1]: require('../assets/img/icon_cypherplay.png'), [2]: require('../assets/img/icon_cypherplay@2x.png') };
 
-const Header = ({ name, count = null, ...props }) => <div className="header" data-count={count} {...props}>{name}</div>;
 
-const Server = ({ location, type, selected = false, favorites = null, pingStats = null, onLocationClick = null, onLocationFavoriteClick = null, onMouseEnter = null }) => {
-  const clickable = type !== 'header';
-  const key = type + '-' + location.id;
-  const ping = pingStats && pingStats[location.id];
-  var onclick = event => {
-    var value = event.currentTarget.getAttribute('data-value');
-    if (event.target.className.indexOf('cp-fav') != -1) {
-      onLocationFavoriteClick && onLocationFavoriteClick(value);
-    } else if (event.currentTarget.className.indexOf('disabled') == -1) {
-      onLocationClick && onLocationClick(value);
-    }
-  };
-  if (clickable)
-    return <Location location={location} key={key} onMouseEnter={onMouseEnter} onClick={onclick} selected={selected} favorite={favorites && !!favorites[location.id]} ping={ping}/>;
-  else
-    return <Location location={location} key={key} onMouseEnter={onMouseEnter}/>;
-};
-
-const mapSort = (a, b, map) => map(a).localeCompare(map(b));
-
-export function makeRegionList({ regions, locations, regionOrder, regionNames, countryNames, favorites = null, lastConnected = null, location = null, pingStats = null, sortOrder = null, onLocationClick = null, onLocationFavoriteClick = null, onMouseEnter = null }) {
-  let items;
-  let sorter = (a, b) => mapSort(a, b, v => v.name);
-  let ping = l => pingStats && pingStats[l.id] && pingStats[l.id].average || 999;
-  if (sortOrder === 'alphabetical') {
-    items = Object.values(locations)
-      .sort(sorter)
-      .map(l => Server({ location: l, type: 'location', selected: location === l.id, pingStats, onLocationClick, onLocationFavoriteClick, onMouseEnter }));
-    if (items.length > 0) items.unshift(<Header key="alphabetical" name="Alphabetical"/>);
-  } else if (sortOrder === 'bypingtime') {
-    sorter = (a, b) => (ping(a) - ping(b)) || mapSort(a, b, v => v.name);
-    items = Object.values(locations)
-      .sort(sorter)
-      .map(l => Server({ location: l, type: 'location', selected: location === l.id, pingStats, onLocationClick, onLocationFavoriteClick, onMouseEnter }));
-    if (items.length > 0) items.unshift(<Header key="bypingtimes" name="Fastest"/>);
-  } else { // sortOrder === 'geographical'
-    items = Array.flatten(
-      regionOrder.map(g => ({
-        id: g,
-        name: regionNames[g],
-        locations:
-          Array.flatten(
-            Object.mapToArray(regions[g], (c,l) => [c,l]) // get all countries of region as well as list of location IDs for each
-              .sort((a, b) => mapSort(a, b, v => countryNames[v[0]])) // sort by country name
-              .map(([country, locs]) => // project to list of <Location> elements, sorted by name
-                locs
-                  .map(l => locations[l])
-                  .filter(l => l)
-                  .sort((a, b) => mapSort(a, b, v => v.name))
-                  .map(l => Server({ location: l, type: 'location', selected: location === l.id, pingStats, onLocationClick, onLocationFavoriteClick, onMouseEnter }))
-              )
-              .filter(l => l && l.length > 0) // filter out empty countries
-          )
-      }))
-        .filter(r => r.locations && r.locations.length > 0) // filter out empty regions
-        .map(r => [ <Header key={'region-' + r.id.toLowerCase()} name={r.name} data-value={'region-' + r.id.toLowerCase()} onMouseEnter={onMouseEnter}/> ].concat(r.locations)) // project to element list containing region header and locations
-    );
-  }
-  if (lastConnected) {
-    let recent = Object.keys(lastConnected).filter(l => (!favorites || !favorites[l]) && locations[l] && lastConnected[l]).sort((a, b) => (lastConnected[b] - lastConnected[a]) || mapSort(a, b, v => locations[v]));
-    if (recent.length > 0) {
-      // Prepend recent list
-      items = [ <Header key="recent" name="Recent"/> ].concat(recent.slice(0, 3).map(l => Server({ location: locations[l], type: 'recent', selected: location === l.id, pingStats, onLocationClick, onLocationFavoriteClick, onMouseEnter })), items);
-    }
-  }
-  if (favorites) {
-    let favItems = Object.keys(favorites).filter(f => favorites[f] && locations[f]);
-    if (favItems.length > 0) {
-      // Prepend favorites list
-      items = [ <Header key="favorites" name="Favorites"/> ].concat(favItems.map(f => locations[f]).sort(sorter).map(l => Server({ location: l, type: 'favorite', selected: location === l.id, pingStats, onLocationClick, onLocationFavoriteClick, onMouseEnter })), items);
-    }
-  }
-  // Return placeholder if empty list
-  if (items.length == 0) {
-    items = [ <div key="empty" className="empty">No locations found.</div> ];
-  }
-  return items;
-}
 
 
 function humanReadableSize(count) {
@@ -263,7 +184,6 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
   }
 
   render() {
-    let connectedLocation = 'stockholm';
     return(
       <RouteTransition transition={transitionMap}>
         <ReconnectButton key="reconnect"/>
@@ -278,56 +198,58 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
             <Link className="left account page-link" to="/account" tabIndex="0" data-tooltip="My Account" data-position="bottom left"><RetinaImage src={AccountIcon}/></Link>
             <Link className="right settings page-link" to="/configuration" tabIndex="0" data-tooltip="Configuration" data-position="bottom right"><i className="settings icon"/></Link>
 
-            <WorldMap locations={GPS} location={this.state.mapLocation || connectedLocation || this.state.location} className="side"/>
+            <WorldMap locations={GPS} location={this.state.mapLocation || (this.state .locationFlag === 'cypherplay' ? 'cypherplay' : this.state.location)} className={classList({ "side": this.state.locationListOpen })}/>
 
-            <div className="location-list">
-              <div className="header">
-                { (connectedLocation) && <div className="title">Connected to</div> }
-                { (connectedLocation) && <Location location={this.state.locations[connectedLocation]} hideTag={true}/> }
-                { (connectedLocation) && <div className="title">Switch to</div> }
-                { (!connectedLocation) && <div className="title">Connect to</div> }
-              </div>
-              <div className="list" onMouseLeave={() => { if (connectedLocation && this.state.mapLocation !== connectedLocation) this.setState({ mapLocation: connectedLocation }); }}>
-                <div className="cypherplay" onMouseEnter={() => { if (this.state.mapLocation !== 'cypherplay') this.setState({ mapLocation: 'cypherplay' }); }}><RetinaImage src={CypherPlayIcon}/>CypherPlay&trade;<span>AUTO</span></div>
-                {makeRegionList({
-                  regions: this.state.regions,
-                  locations: this.state.locations,
-                  regionOrder: this.state.regionOrder,
-                  regionNames: this.state.regionNames,
-                  countryNames: this.state.countryNames,
-                  favorites: this.state.favorites,
-                  lastConnected: this.state.lastConnected,
-                  location: this.state.location,
-                  pingStats: this.state.pingStats,
-                  onMouseEnter: e => {
-                    let id = e.currentTarget.getAttribute('data-value');
-                    if (id && !id.startsWith('region-') && this.state.mapLocation !== id) this.setState({ mapLocation: id });
-                  }
-                })}
-              </div>
-              <div className="footer">
-                <span className="back"><i className="chevron left icon"/>Back</span>
-              </div>
-            </div>
+            <LocationList
+              open={this.state.locationListOpen}
+              onClick={id => this.onLocationClick(id)}
+              onHover={id => (this.state.mapLocation !== id && this.setState({ mapLocation: id }))}
+              onBack={() => this.setState({ locationListOpen: false, mapLocation: null })}
+            />
+            
+            <ConnectButton
+              on={this.state.connect}
+              connectionState={this.state.connectionState}
+              onClick={() => this.handleConnectClick()}
+              hidden={this.state.locationListOpen}
+            />
 
-            {/*
-            <ConnectButton on={this.state.connect} connectionState={this.state.connectionState} onClick={() => this.handleConnectClick()} hidden={this.state.locationListOpen}/>
-
-            <div className="connect-status">
+            <div className={classList("connect-status", { "hidden": this.state.locationListOpen })}>
               <span>Status</span>
               <span>{this.state.connectionState}</span>
             </div>
 
-            <div className="location-selector">
-              <Location location={this.state.locations[this.state.location]} hideTag={true}/>
+            <div className={classList("location-selector", { "hidden": this.state.locationListOpen })} onClick={() => this.setState({ locationListOpen: true })}>
+              { this.state.locationFlag === 'cypherplay' ? <CypherPlayItem hideTag={true}/> : <Location location={this.state.locations[this.state.location]} hideTag={true}/> }
             </div>
-            */}
 
+            {/*}
+            <div className="info-button"/>
+            <div className="info-panel">
+              <div className="graph">
+                <svg width="100%" height="100%" viewBox="0 0 200 50" preserveAspectRatio="xMaxYMax meet">
+                  <g id="graph-lines" transform="translate(200,50)">
+                    <path id="graph-line-up" d={"M" + [54,36,75,74,72,68,58,60,40,36,20,32,34,37,42,40,32,21,18,16,16,16,9,6,3,0,0,0].map((x, i) => (-i*10)+","+(-x/2)).join("L")}/>
+                    <path id="graph-line-down" d={"M" + [64,53,88,86,80,78,61,73,52,38,24,16,12,40,54,63,58,54,37,36,29,45,20,17,9,6,1,0].map((x, i) => (-i*10)+","+(-x/2)).join("L")}/>
+                  </g>
+                </svg>
+              </div>
+              <div className="stats">
+                <span className="title">Down</span>
+                <span className="down value">1.24 Mbps</span>
+                <span className="title">Up</span>
+                <span className="up value">560 kbps</span>
+              </div>
+            </div>
+            {*/}
+
+            {/*}
             <div id="connection-stats" class="ui two column center aligned grid">
               <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.bytesReceived)}</div><div class="label">Received</div></div></div>
               <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.bytesSent)}</div><div class="label">Sent</div></div></div>
             </div>
             <FirewallWarning/>
+            {*/}
             {/*
             <QuickPanel
               expanded={this.state.locationListOpen}
@@ -343,31 +265,34 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
       </RouteTransition>
     );
   }
+
   handleConnectClick() {
-    switch (this.state.connectionState) {
-      case 'disconnected':
-        // Fake a connection state for now, as the daemon is too busy to report it back
-        daemon.call.connect().catch(() => {
-          alert("Connect failed; did you select a region?");
-          daemon.post.get('state');
-        });
-        break;
-      case 'connecting':
-      case 'connected':
-      case 'disconnecting':
-        // Fake a connection state for now, as the daemon is too busy to report it back
-        daemon.call.disconnect().catch(() => {
-          daemon.post.get('state');
-        });
-        break;
+    if (!this.state.connect && this.state.connectionState === 'disconnected') {
+      daemon.call.connect().catch(() => {
+        alert("Connection failed; did you select a region?");
+        daemon.post.get('state');
+      });
+    } else {
+      daemon.call.disconnect().catch(() => {
+        daemon.post.get('state');
+      });
     }
   }
 
-  onLocationClick(value) {
-    daemon.call.applySettings({ location: value, locationFlag: '' }).then(() => {
+  onCypherPlayClick(fastest) {
+    daemon.call.applySettings({ location: fastest, locationFlag: 'cypherplay', suppressReconnectWarning: true }).then(() => {
       daemon.post.connect();
     });
-    this.setState({ locationListOpen: false });
+    this.setState({ locationListOpen: false, mapLocation: null });
+  }
+  onLocationClick(location) {
+    if (location.startsWith('cypherplay:')) {
+      return this.onCypherPlayClick(location.slice(11));
+    }
+    daemon.call.applySettings({ location: location.id, locationFlag: '', suppressReconnectWarning: true }).then(() => {
+      daemon.post.connect();
+    });
+    this.setState({ locationListOpen: false, mapLocation: null });
   }
   onLocationFavoriteClick(value) {
     if (daemon.settings.favorites.includes(value))
