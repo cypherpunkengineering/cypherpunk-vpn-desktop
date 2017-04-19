@@ -289,7 +289,7 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
     if (location.startsWith('cypherplay:')) {
       return this.onCypherPlayClick(location.slice(11));
     }
-    daemon.call.applySettings({ location: location.id, locationFlag: '', suppressReconnectWarning: true }).then(() => {
+    daemon.call.applySettings({ location: location, locationFlag: '', suppressReconnectWarning: true }).then(() => {
       daemon.post.connect();
     });
     this.setState({ locationListOpen: false, mapLocation: null });
