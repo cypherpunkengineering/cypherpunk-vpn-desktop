@@ -40,13 +40,8 @@
   }
   */
 
-  opacity: 1;
-  transition: 0.5s opacity;
-
-  &.hidden {
-    opacity: 0;
-    pointer-events: none;
-  }
+  .fadeInTransition(0.5s, ease-in, 0.3s);
+  &.hidden { .fadeOutTransition(0.5s, ease-out); }
 
   .bg {
     opacity: 0.25;
