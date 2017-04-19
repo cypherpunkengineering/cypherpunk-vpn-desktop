@@ -26,7 +26,7 @@ const transitionMap = {
 };
 
 const GPS = {
-  'cypherplay': { lat: -30, long: 45, scale: 0.25 },
+  'cypherplay': { lat: -30, long: 0, scale: 0.25 },
   'amsterdam': { lat: -52.3702, long: 4.8952, scale: 1.5 },
   'atlanta': { lat: -33.7490, long: -84.3880, scale: 1 },
   'chennai': { lat: -13.0827, long: 80.2707, scale: 1 },
