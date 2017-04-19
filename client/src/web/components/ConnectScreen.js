@@ -180,6 +180,7 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
   state = {
     connectionState: 'disconnected',
     locationListOpen: false,
+    locationListSelection: null,
     mapLocation: null,
   }
 
@@ -202,6 +203,7 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
 
             <LocationList
               open={this.state.locationListOpen}
+              selected={this.state.locationListSelection}
               onClick={id => this.onLocationClick(id)}
               onHover={id => (this.state.mapLocation !== id && this.setState({ mapLocation: id }))}
               onBack={() => this.setState({ locationListOpen: false, mapLocation: null })}
@@ -219,7 +221,7 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
               <span>{this.state.connectionState}</span>
             </div>
 
-            <div className={classList("location-selector", { "hidden": this.state.locationListOpen })} onClick={() => this.setState({ locationListOpen: true })}>
+            <div className={classList("location-selector", { "hidden": this.state.locationListOpen })} onClick={() => this.setState({ locationListOpen: true, locationListSelection: this.state.connect && (this.state.locationFlag === 'cypherplay' ? 'cypherplay' : this.state.location) || null })}>
               { this.state.locationFlag === 'cypherplay' ? <CypherPlayItem hideTag={true}/> : <Location location={this.state.locations[this.state.location]} hideTag={true}/> }
             </div>
 

@@ -107,13 +107,14 @@ export class LocationList extends DaemonAware(React.Component) {
     onHover: function(location) {},
     onBack: function() {},
     open: true,
+    selected: null,
   }
   constructor(props) {
     super(props);
     this.daemonSubscribeState({
       config: { locations: true, regions: true, regionOrder: true, regionNames: true, countryNames: true },
-      settings: { location: true, locationFlag: true, lastConnected: true },
-      state: { connect: true, pingStats: true },
+      settings: { lastConnected: true },
+      state: { pingStats: true },
     });
     this.state.fastest = this.recalculateFastestServer(this.state);
   }
@@ -137,18 +138,17 @@ export class LocationList extends DaemonAware(React.Component) {
     return fastest.length ? fastest[0] : null;
   }
   render() {
-    let connectedLocation = this.state.connect ? this.state.location : null;
     let grouping = groupLocationsByRegion(this.state.locations, this.state.regions, this.state.regionOrder, this.state.countryNames);
     return (
       <div className={classList("location-list", { "hidden": !this.props.open })}>
         <div className="header">
-          { (connectedLocation) && <div className="title">Connected to</div> }
-          { (connectedLocation) && (this.state.locationFlag === 'cypherplay' ? <CypherPlayItem hideTag={true}/> : <Location location={this.state.locations[connectedLocation]} hideTag={true}/>) }
-          { (connectedLocation) && <div className="title">Switch to</div> }
-          { (!connectedLocation) && <div className="title">Connect to</div> }
+          { (this.props.selected) && <div className="title">Connected to</div> }
+          { (this.props.selected) && (this.props.selected === 'cypherplay' ? <CypherPlayItem hideTag={true}/> : <Location location={this.state.locations[this.props.selected]} hideTag={true}/>) }
+          { (this.props.selected) && <div className="title">Switch to</div> }
+          { (!this.props.selected) && <div className="title">Connect to</div> }
         </div>
-        <div ref="list" className="list" onMouseLeave={() => { if (connectedLocation && this.state.mapLocation !== connectedLocation) this.setState({ mapLocation: connectedLocation }); }}>
-          <CypherPlayItem key="cypherplay" disabled={!this.state.fastest} selected={this.state.locationFlag === 'cypherplay'} onMouseEnter={() => this.props.onHover('cypherplay')} onClick={() => this.state.fastest && this.props.onClick('cypherplay:' + this.state.fastest)}/>
+        <div ref="list" className="list" onMouseLeave={() => { if (this.props.selected) this.props.onHover(this.props.selected); }}>
+          <CypherPlayItem key="cypherplay" disabled={!this.state.fastest} selected={this.props.selected === 'cypherplay'} onMouseEnter={() => this.props.onHover('cypherplay')} onClick={() => this.state.fastest && this.props.onClick('cypherplay:' + this.state.fastest)}/>
           {
             Array.flatten(Object.mapToArray(grouping, (region, countries) => 
               [ <Header key={`header-${region}`} name={this.state.regionNames[region]}/> ]
@@ -156,7 +156,7 @@ export class LocationList extends DaemonAware(React.Component) {
                   <Location
                     key={`location-${l.id}`}
                     location={l}
-                    selected={this.state.locationFlag !== 'cypherplay' && this.state.location === l.id}
+                    selected={this.props.selected === l.id}
                     ping={this.state.pingStats ? this.state.pingStats[l.id] : null}
                     onMouseEnter={() => this.props.onHover(l.id)}
                     onClick={() => this.props.onClick(l.id)}
