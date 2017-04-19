@@ -12,54 +12,12 @@ function reactAddon(module, name) {
 const ReactCSSTransitionGroup = reactAddon(require('react-addons-css-transition-group'), 'CSSTransitionGroup');
 
 
-export const Location = ({ location, className, selected = false, favorite = null, ping = null, onClick, ...props } = {}) => {
-  if (!location) return null;
-  let classes = [ 'location' ];
-  let tag = null;
-  if (location.disabled) {
-    classes.push('disabled');
-    tag = 'UNAVAILABLE';
-  }
-  switch (location.level) {
-    case 'free':
-      if (!location.disabled) {
-        classes.push('free');
-        tag = 'FREE';
-      }
-      break;
-    case 'premium':
-      if (!location.authorized || !location.disabled) {
-        classes.push('premium');
-        tag = 'PREMIUM';
-      }
-      break;
-    case 'developer':
-      classes.push('developer');
-      tag = 'DEV';
-      break;
-  }
-  if (selected) {
-    classes.push('selected');
-  }
-  if (favorite) {
-    classes.push('favorite');
-  }
-  if (ping) {
-    if (!ping.replies) return null;
-    ping = (ping.average * 1000).toFixed(0);
-    ping = (ping === "0") ? "<1ms" : (ping + "ms");
-  }
-  var flag = (dpi = '') => `../assets/img/flags/24/${location.country.toLowerCase()}${dpi}.png`;
-  return (
-    <div className={classList(classes, className)} data-value={location.id} onClick={onClick} {...props}>
-      {location.country ? <img className="flag" src={flag()} srcSet={`${flag()} 1x, ${flag('@2x')} 2x`} alt=""/> : null}
-      <span data-tag={tag}>{location.name}</span>
-      {ping ? <span className="ping-time">{ping}</span> : null}
-      {favorite !== null ? <i className="cp-fav icon"></i> : null}
-    </div>
-  );
-}
 
+export { Location } from './LocationList';
+
+export function getSortedLocations() {
+
+}
 
 
 

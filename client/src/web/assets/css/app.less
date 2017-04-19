@@ -434,7 +434,7 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 #connect-screen {
   .screen;
   > div {
-    background: @themeMainBackground;
+    background: linear-gradient(to bottom, @themeMainBackground, #044);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -452,6 +452,7 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     }
   }
   #matrix {
+    display: none;
     position: absolute;
     top: 70px;
     width: 100%;
@@ -589,6 +590,161 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
       white-space: normal;
       width: 75vw;
       right: 10px;
+    }
+  }
+
+  .worldmap {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transition: transform 0.8s ease-in-out;
+    transform: translate(50vw, 360px);
+    &.side {
+      transform: translate(75vw, 60vh);
+      .marker::before {
+        color: #488;
+      }
+    }
+  }
+
+  .connect-status {
+    position: absolute;
+    top: 260px;
+    display: flex;
+    flex-direction: column;
+    z-index: 1;
+    > span {
+      &:first-child {
+        font-size: 10px;
+        color: rgba(0,255,255,0.5);
+        overflow-x: visible;
+      }
+      font-size: 16px;
+      text-transform: uppercase;
+    }
+    .fadeInTransition(0.5s, ease-in, 0.3s);
+    &.hidden { .fadeOutTransition(0.5s, ease-out); }
+  }
+
+  .location-selector {
+    @horizontalPadding: 18px;
+    @height: 48px;
+    @borderWidth: 4px;
+    position: absolute;
+    top: 400px;
+    display: flex;
+    align-items: center;
+    border-radius: 100px;
+    background: rgba(80,255,255,0.15);
+    padding: 0px @horizontalPadding;
+    border: @borderWidth solid rgba(0,0,0,0.25);
+    height: @height;
+    z-index: 1;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.4s, color 0.4s;
+    color: rgba(255,255,255,0.75);
+    &::after {
+      .semanticIcon('\f021');
+      margin-left: 10px;
+      border-radius: 100px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      align-self: stretch;
+      margin-right: (-@horizontalPadding);
+      width: (@height - 2 * @borderWidth);
+      height: (@height - 2 * @borderWidth);
+      background: linear-gradient(to right, rgba(0,0,0,0.25), transparent 50%);
+      font-size: 16px;
+      color: rgba(200,255,255,0.75);
+      transition: color 0.2s;
+    }
+    &:hover {
+      background: rgba(80,255,255,0.25);
+      color: white;
+      transition: background 0.16s, color 0.16s;
+      &::after {
+        color: white;
+      }
+    }
+    .cypherplay {
+      > img {
+        margin-left: -5px;
+      }
+    }
+    .fadeInTransition(0.5s, ease-in, 0.3s);
+    &.hidden { .fadeOutTransition(0.5s, ease-out); }
+  }
+
+  .info-button {
+    position: absolute;
+    font-size: 20px;
+    right: 10px;
+    bottom: 10px;
+    width: auto;
+    height: auto;
+    cursor: pointer;
+    color: rgba(80,255,255,0.5);
+    padding: 2px 5px;
+    z-index: 10;
+    &::before {
+      .semanticIcon('\f05a');
+    }
+    &:hover {
+      color: white;
+    }
+  }
+  .info-panel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: auto;
+    display: flex;
+    align-items: stretch;
+    background: linear-gradient(to bottom, transparent, rgba(16,64,64,0.9) 5px, rgba(24,96,96,0.5));
+    padding: 10px 60px 10px 0;
+    > .graph {
+      flex: 1 1 auto;
+      margin-right: 5px;
+      background: linear-gradient(to top, rgba(80,255,255,0.1), transparent);
+      border-bottom: 1px solid rgba(160,255,255,0.5);
+      background-clip: padding-box;
+      #graph-lines {
+        stroke-opacity: 0.5;
+        stroke-width: 2.5px;
+        fill: none;
+      }
+      #graph-line-up {
+        stroke: #f82;
+      }
+      #graph-line-down {
+        stroke: #4fc;
+      }
+    }
+    > .stats {
+      align-self: flex-end;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      white-space: nowrap;
+      > .title {
+        margin-top: 5px;
+        font-size: 10px;
+        text-transform: uppercase;
+        color: rgba(0,255,255,0.5);
+      }
+      > .value {
+        font-size: 14px;
+        color: rgba(200,255,255,0.75);
+        &.up {
+          color: fade(lighten(#f82, 20%), 75%);
+        }
+        &.down {
+          color: fade(lighten(#4fc, 20%), 75%);
+        }
+      }
     }
   }
 }
@@ -2367,5 +2523,7 @@ dialog.tutorial-overlay {
 }
 
 @import "region-selector.less";
+@import "location-list.less";
 @import "quick-panel.less";
+@import "worldmap.less";
 @import "connect-button.less";

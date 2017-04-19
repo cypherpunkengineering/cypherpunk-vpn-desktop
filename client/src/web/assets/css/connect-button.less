@@ -26,7 +26,7 @@
 .connect-button {
   position: absolute;
   left: 50%;
-  top: 180px;
+  top: 200px;
   transform: translate(-50%,-50%);
   width: @frameWidth;
   height: @frameHeight;
@@ -40,13 +40,8 @@
   }
   */
 
-  opacity: 1;
-  transition: 0.5s opacity;
-
-  &.hidden {
-    opacity: 0;
-    pointer-events: none;
-  }
+  .fadeInTransition(0.5s, ease-in, 0.3s);
+  &.hidden { .fadeOutTransition(0.5s, ease-out); }
 
   .bg {
     opacity: 0.25;
@@ -114,7 +109,7 @@
     width: @frameWidth;
     height: @frameHeight;
     padding: @framePadding;
-    transition: padding 1s ease, border 0.5s ease-in, width 1s, margin 1s;
+    transition: padding 1s ease, border 0.5s ease-in, width 1s, margin 1s, box-shadow 1s;
   }
 
   .slider {
@@ -198,7 +193,8 @@
       opacity: 1;
       margin: 0 8px;
       width: (@sliderWidth + @framePadding * 2);
-      transition: border-color 0.5s 0.2s ease-out, border-width 0.35s 0.1s cubic-bezier(0, 0.2, 0.5, 0.4), width 0.4s 0.1s ease-in-out, margin 0.4s 0.1s ease-in-out;
+      box-shadow: 0 0 6px -1px white;
+      transition: border-color 0.5s 0.2s ease-out, border-width 0.35s 0.1s cubic-bezier(0, 0.2, 0.5, 0.4), width 0.4s 0.1s ease-in-out, margin 0.4s 0.1s ease-in-out, box-shadow 1s;
     }
     .slider {
       background: rgba(0,128,128,0.5);
