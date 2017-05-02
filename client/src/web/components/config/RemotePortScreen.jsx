@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import daemon, { DaemonAware } from '../../daemon.js';
 import { SecondaryTitlebar } from '../Titlebar';
 import '../../util.js';
+import { Subpanel, PanelContent } from '../Panel';
 import analytics from '../../analytics';
 
 const REMOTE_PORT_ALTERNATIVES = [ [ 'udp', [ 7133, 5060, 53 ] ], [ 'tcp', [ 7133, 5060, 53 ] ] ];
@@ -29,27 +30,29 @@ export default class RemotePortScreen extends DaemonAware(React.Component)  {
   }
   render() {
     return(
-      <div className="panel" ref="root" id="settings-remotePort-panel">
-        <SecondaryTitlebar title="Remote Port" back="/configuration"/>
-        <div className="scrollable content">
-          {
-            REMOTE_PORT_ALTERNATIVES.map(([protocol, ports]) =>
-              <div className="pane" data-title={protocol.toUpperCase()} key={protocol}>
-                {
-                  ports.map(port =>
-                    <div className="setting" key={port}>
-                      <div className="ui left top radio checkbox">
-                        <input type="radio" name="remotePort" value={`${protocol}:${port}`} id={`remotePort-${protocol}-${port}`}/>
-                        <label>{port}</label>
+      <Subpanel>
+        <PanelContent>
+          <SecondaryTitlebar title="Remote Port" back="/configuration"/>
+          <div className="scrollable content" ref="root">
+            {
+              REMOTE_PORT_ALTERNATIVES.map(([protocol, ports]) =>
+                <div className="pane" data-title={protocol.toUpperCase()} key={protocol}>
+                  {
+                    ports.map(port =>
+                      <div className="setting" key={port}>
+                        <div className="ui left top radio checkbox">
+                          <input type="radio" name="remotePort" value={`${protocol}:${port}`} id={`remotePort-${protocol}-${port}`}/>
+                          <label>{port}</label>
+                        </div>
                       </div>
-                    </div>
-                  )
-                }
-              </div>
-            )
-          }
-        </div>
-      </div>
+                    )
+                  }
+                </div>
+              )
+            }
+          </div>
+        </PanelContent>
+      </Subpanel>
     );
   }
 }

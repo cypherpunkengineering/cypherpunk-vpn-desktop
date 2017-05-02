@@ -9,21 +9,12 @@ import { REGION_GROUP_NAMES, REGION_GROUP_ORDER, classList } from '../util';
 import RouteTransition from './Transition';
 import RegionSelector from './RegionSelector';
 import ReconnectButton from './ReconnectButton';
-import { OverlayContainer } from './Overlay';
 import RetinaImage from './Image';
 import QuickPanel from './QuickPanel';
 import WorldMap from './WorldMap';
 import LocationList, { Location, CypherPlayItem } from './LocationList';
+import { Panel, PanelContent, PanelOverlay } from './Panel';
 
-const transitionMap = {
-    '/tutorial/*': {
-      null: 'fadeIn',
-    },
-    '*': {
-      '/tutorial/*': 'fadeIn',
-      '*': 'reveal',
-    },
-};
 
 const GPS = {
   'cypherplay': { lat: -30, long: 0, scale: 0.5 },
@@ -167,6 +158,13 @@ class ConnectButton extends React.Component {
   }
 }
 
+function getTransition(diff) {
+  return Object.mapValues(diff, (key, type) => {
+    if (key.startsWith('/tutorial')) return 'fadeIn';
+    return 'reveal';
+  });
+}
+
 export default class ConnectScreen extends DaemonAware(React.Component) {
   constructor(props) {
     super(props);
@@ -185,86 +183,47 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
   }
 
   render() {
+    let panelOpen = !!this.props.children;
+    let tabIndex = panelOpen ? "-1" : "0";
     return(
-      <RouteTransition transition={transitionMap}>
+      <Panel id="main-screen-container" transition={getTransition}>
         <ReconnectButton key="reconnect"/>
         {this.props.children || null}
-        <div id="connect-screen" key="self" class="screen">
-          <div>
-            <Titlebar>
-              <Title/>
-            </Titlebar>
-            {/*<OneZeros/>*/}
+        <PanelContent key="self" id="connect-screen" className={classList({ "inert": panelOpen })}>
+          <Titlebar><Title/></Titlebar>
 
-            <Link className="left account page-link" to="/account" tabIndex="0" data-tooltip="My Account" data-position="bottom left"><RetinaImage src={AccountIcon}/></Link>
-            <Link className="right settings page-link" to="/configuration" tabIndex="0" data-tooltip="Configuration" data-position="bottom right"><i className="settings icon"/></Link>
+          <Link className="left account page-link" to={panelOpen?"/main":"/account"} tabIndex={tabIndex} data-tooltip="My Account" data-position="bottom left"><RetinaImage src={AccountIcon}/></Link>
+          <Link className="right settings page-link" to={panelOpen?"/main":"/configuration"} tabIndex={tabIndex} data-tooltip="Configuration" data-position="bottom right"><i className="settings icon"/></Link>
 
-            <WorldMap locations={GPS} location={this.state.mapLocation || (this.state .locationFlag === 'cypherplay' ? 'cypherplay' : this.state.location)} className={classList({ "side": this.state.locationListOpen })}/>
+          <WorldMap locations={GPS} location={this.state.mapLocation || (this.state.locationFlag === 'cypherplay' ? 'cypherplay' : this.state.location)} className={classList({ "side": this.state.locationListOpen })}/>
 
-            <LocationList
-              open={this.state.locationListOpen}
-              selected={this.state.locationListSelection}
-              onClick={id => this.onLocationClick(id)}
-              onHover={id => (this.state.mapLocation !== id && this.setState({ mapLocation: id }))}
-              onBack={() => this.setState({ locationListOpen: false, mapLocation: null })}
-            />
-            
-            <ConnectButton
-              on={this.state.connect}
-              connectionState={this.state.connectionState}
-              onClick={() => this.handleConnectClick()}
-              hidden={this.state.locationListOpen}
-            />
+          <LocationList
+            open={this.state.locationListOpen}
+            selected={this.state.locationListSelection}
+            onClick={id => this.onLocationClick(id)}
+            onHover={id => (this.state.mapLocation !== id && this.setState({ mapLocation: id }))}
+            onBack={() => this.setState({ locationListOpen: false, mapLocation: null })}
+          />
 
-            <div className={classList("connect-status", { "hidden": this.state.locationListOpen })}>
-              <span>Status</span>
-              <span>{this.state.connectionState}</span>
-            </div>
+          <ConnectButton
+            on={this.state.connect}
+            connectionState={this.state.connectionState}
+            onClick={() => this.handleConnectClick()}
+            hidden={this.state.locationListOpen}
+          />
 
-            <div className={classList("location-selector", { "hidden": this.state.locationListOpen })} onClick={() => this.setState({ locationListOpen: true, locationListSelection: this.state.connect && (this.state.locationFlag === 'cypherplay' ? 'cypherplay' : this.state.location) || null })}>
-              { this.state.locationFlag === 'cypherplay' ? <CypherPlayItem hideTag={true}/> : <Location location={this.state.locations[this.state.location]} hideTag={true}/> }
-            </div>
-
-            {/*}
-            <div className="info-button"/>
-            <div className="info-panel">
-              <div className="graph">
-                <svg width="100%" height="100%" viewBox="0 0 200 50" preserveAspectRatio="xMaxYMax meet">
-                  <g id="graph-lines" transform="translate(200,50)">
-                    <path id="graph-line-up" d={"M" + [54,36,75,74,72,68,58,60,40,36,20,32,34,37,42,40,32,21,18,16,16,16,9,6,3,0,0,0].map((x, i) => (-i*10)+","+(-x/2)).join("L")}/>
-                    <path id="graph-line-down" d={"M" + [64,53,88,86,80,78,61,73,52,38,24,16,12,40,54,63,58,54,37,36,29,45,20,17,9,6,1,0].map((x, i) => (-i*10)+","+(-x/2)).join("L")}/>
-                  </g>
-                </svg>
-              </div>
-              <div className="stats">
-                <span className="title">Down</span>
-                <span className="down value">1.24 Mbps</span>
-                <span className="title">Up</span>
-                <span className="up value">560 kbps</span>
-              </div>
-            </div>
-            {*/}
-
-            {/*}
-            <div id="connection-stats" class="ui two column center aligned grid">
-              <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.bytesReceived)}</div><div class="label">Received</div></div></div>
-              <div class="column"><div class="ui mini statistic"><div class="value">{humanReadableSize(this.state.bytesSent)}</div><div class="label">Sent</div></div></div>
-            </div>
-            <FirewallWarning/>
-            {*/}
-            {/*
-            <QuickPanel
-              expanded={this.state.locationListOpen}
-              onOtherClick={() => this.setState({ locationListOpen: true })}
-              onListCloseClick={() => this.setState({ locationListOpen: false })}
-              onLocationClick={value => this.onLocationClick(value)}
-              onLocationFavoriteClick={value => this.onLocationFavoriteClick(value)}
-              />
-            */}
+          <div className={classList("connect-status", { "hidden": this.state.locationListOpen })}>
+            <span>Status</span>
+            <span>{this.state.connectionState}</span>
           </div>
-        </div>
-        <OverlayContainer key="overlay"/>
-      </RouteTransition>
+
+          <div className={classList("location-selector", { "hidden": this.state.locationListOpen })} onClick={() => this.setState({ locationListOpen: true, locationListSelection: this.state.connect && (this.state.locationFlag === 'cypherplay' ? 'cypherplay' : this.state.location) || null })}>
+            { this.state.locationFlag === 'cypherplay' ? <CypherPlayItem hideTag={true}/> : <Location location={this.state.locations[this.state.location]} hideTag={true}/> }
+          </div>
+
+        </PanelContent>
+        <PanelOverlay key="overlay" onClick={() => History.push('/main')}/>
+      </Panel>
     );
   }
 
@@ -288,6 +247,7 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
     this.setState({ locationListOpen: false, mapLocation: null });
   }
   onLocationClick(location) {
+    // FIXME: don't respond to clicks on disabled items
     if (location.startsWith('cypherplay:')) {
       return this.onCypherPlayClick(location.slice(11));
     }

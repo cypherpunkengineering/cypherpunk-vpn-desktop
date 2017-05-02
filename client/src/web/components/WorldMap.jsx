@@ -4,6 +4,7 @@ import { classList } from '../util';
 
 import WorldMapImage from '../assets/img/worldmap_2000.png';
 const MAP_SIZE = 2000;
+const LONG_OFFSET = 11;
 
 
 
@@ -36,7 +37,7 @@ vanDerGrinten3Raw.invert = function(x, y) {
 };
 
 function transformToXY(lat, long) {
-  var coords = vanDerGrinten3Raw((long - 11) * pi / 180, lat * pi / 180);
+  var coords = vanDerGrinten3Raw((long - LONG_OFFSET) * pi / 180, lat * pi / 180);
   coords[0] = (coords[0] * 150 + (920 / 2)) * (MAP_SIZE / 920);
   coords[1] = (coords[1] * 150 + (500 / 2 + 500 * 0.15)) * (MAP_SIZE / 920);
   return coords;

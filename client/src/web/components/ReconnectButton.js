@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import daemon, { DaemonAware } from '../daemon';
-import { Overlay } from './Overlay';
 
 export default class ReconnectButton extends DaemonAware(React.Component) {
   state = {
@@ -18,7 +17,7 @@ export default class ReconnectButton extends DaemonAware(React.Component) {
       return null;
     }
     return (
-      <Overlay name="reconnect"><a className="reconnect-button" onClick={() => this.onClick()}><i className="refresh icon"/><span>Reconnect</span> to apply changes</a></Overlay>
+      <a className="reconnect-button" onClick={() => this.onClick()}><i className="refresh icon"/><span>Reconnect</span> to apply changes</a>
     );
   }
 }

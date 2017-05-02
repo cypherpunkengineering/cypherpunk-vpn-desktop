@@ -5,8 +5,7 @@ import { Link } from 'react-router';
 import Titlebar, { SecondaryTitlebar } from './Titlebar';
 import RouteTransition from './Transition';
 import { PanelTitlebar } from './Titlebar';
-import Modal from './Modal';
-import ReconnectButton from './ReconnectButton';
+import { Subpanel, PanelContent } from './Panel';
 import daemon, { DaemonAware } from '../daemon';
 
 import ApplicationSettings from './config/ApplicationSettings';
@@ -16,10 +15,8 @@ import CompatibilitySettings from './config/CompatibilitySettings';
 
 import { CheckboxSetting, LinkSetting } from './config/Settings';
 
-const transitionMap = {
-  '': { '*': 'swipeLeft' },
-  '*': { '': 'swipeRight', 'configuration/*': 'swipeRight' },
-};
+const fullVersion = require('electron').remote.app.getVersion();
+const shortVersion = fullVersion.replace(/\+.*$/, '');
 
 export default class ConfigurationScreen extends DaemonAware(React.Component) {
   constructor(props) {
@@ -32,13 +29,11 @@ export default class ConfigurationScreen extends DaemonAware(React.Component) {
     daemon.post.resetSettings(true);
     daemon.post.applySettings({ showAdvancedSettings: false });
   }
-  getContent() {
-    if(this.props.children) {
-      return this.props.children
-    }
-    else {
-      return(
-        <div className="panel" key="self" id="settings-main-panel">
+  render() {
+    return(
+      <Subpanel>
+        {this.props.children}
+        <PanelContent key="self" className="settings">
           <PanelTitlebar title="Configuration"/>
           <div className="scrollable content">
             <ApplicationSettings advanced={this.state.showAdvancedSettings}/>
@@ -52,21 +47,11 @@ export default class ConfigurationScreen extends DaemonAware(React.Component) {
               <LinkSetting className="reset" onClick={() => this.resetSettings()} label="Reset Settings to Default"/>
             </div>
             <div className="version footer">
-              <div><i className="tag icon"/>{"v"+require('electron').remote.app.getVersion()}</div>
+              <div><i className="tag icon"/>{`v${this.state.showAdvancedSettings ? fullVersion : shortVersion}`}</div>
             </div>
           </div>
-        </div>
-      );
-    }
-  }
-  render() {
-    var { props } = this;
-    return(
-      <Modal className="settings right panel" onClose={() => { History.push('/main'); }}>
-        <RouteTransition transition={transitionMap}>
-          {this.getContent()}
-        </RouteTransition>
-      </Modal>
+        </PanelContent>
+      </Subpanel>
     );
   }
 }

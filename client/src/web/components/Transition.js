@@ -96,7 +96,7 @@ function mergeChildMappings(prev, next) {
 }
 
 
-export const TransitionContainer = ({ className, ...props } = {}) => <div className={classList('transition-container', className)} {...props}/>;
+export const TransitionContainer = ({ className, location, params, route, routes, router, routeParams, ...props } = {}) => <div className={classList('transition-container', className)} {...props}/>;
 
 
 class TransitionGroupChild extends React.Component {
@@ -257,7 +257,7 @@ export class TransitionGroup extends React.Component {
         result = { '*': this.props.transition };
         break;
       case 'object':
-        result = this.props.transition || { '*': null };
+        result = this.props.transition ? Object.assign({}, this.props.transition) : { '*': null };
         break;
       default:
         result = { '*': null };

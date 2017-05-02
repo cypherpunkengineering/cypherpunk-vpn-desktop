@@ -3,12 +3,12 @@ import ReactDOM from 'react-dom';
 import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, browserHistory, hashHistory } from 'react-router';
 import { ipcRenderer, remote } from 'electron';
 import LoginScreen, * as Login from './components/LoginScreen';
-import ConnectScreen from './components/ConnectScreen';
+import MainScreen from './components/MainScreen';
 import ConfigurationScreen from './components/ConfigurationScreen';
 import EmailScreen from './components/account/EmailScreen';
 import ShareScreen from './components/account/ShareScreen';
 import ProfileScreen from './components/config/ProfileScreen';
-import TrustedNetworksScreen from './components/config/TrustedNetworks';
+import TrustedNetworksScreen from './components/config/TrustedNetworksScreen';
 import RemotePortScreen from './components/config/RemotePortScreen';
 import FirewallScreen from './components/config/FirewallScreen';
 import HelpScreen from './components/account/HelpScreen';
@@ -29,39 +29,21 @@ import 'semantic/components/popup';
 import './assets/css/main.less';
 
 // import { configureStore } from './store/configureStore';
-import RouteTransition from './components/Transition';
+import { TransitionGroup } from './components/Transition';
 import daemon from './daemon.js';
 import server from './server.js';
 import analytics from './analytics.js';
 import { compareVersions } from './util.js';
 
-const transitionMap = {
-  'login': {
-    'main': 'fadeIn',
-  },
-  'account': {
-    'main': 'swipeLeft',
-  },
-  'main': {
-    'account': 'swipeRight',
-    'configuration': 'swipeLeft',
-  },
-  'configuration': {
-    'configuration/*': 'swipeLeft',
-    'main': 'swipeRight',
-  },
-  'account': {
-    'account/*': 'swipeLeft',
-    'main': 'swipeRight',
-  },
-  '*': {
-    'login': '',
-    'root': '',
-    '*': 'fadeIn',
-  },
-};
+function getTransition(diff) {
+  if (diff.login === 'leave' && diff.main === 'enter') return 'fadeIn';
+  if (diff.login === 'enter' || diff.root === 'enter') return null;
+  return 'fadeIn';
+}
 
 let lastPath = null;
+
+export const RootContainer = (props) => <TransitionGroup transition={getTransition} {...props}/>;
 
 export default class Application {
   static init() {
@@ -181,7 +163,7 @@ export default class Application {
   static render() {
     return (
       <Router history={window.History}>
-        <Route path="/" component={RouteTransition} transition={transitionMap}>
+        <Route path="/" component={RootContainer}>
           {/*<IndexRoute component={LoginScreen}/>*/}
           <Route path="login" component={LoginScreen}>
             <Route path="check" component={Login.Check}/>
@@ -193,7 +175,7 @@ export default class Application {
             <Route path="logout" component={Login.Logout}/>
             <IndexRedirect to="check"/>
           </Route>
-          <Route path="main" component={ConnectScreen}>
+          <Route path="main" component={MainScreen}>
             <Route path="/tutorial/:page" component={TutorialScreen}/>
             <Redirect from="/tutorial" to="/tutorial/0"/>
             <Route path="/configuration" component={ConfigurationScreen}>
