@@ -1,0 +1,11 @@
+foreground = yes
+setuid = nobody
+setgid = nobody
+#debug = debug
+#output = ./stunnel.log
+client = yes
+
+[openvpn]
+accept = 127.0.0.1:9336
+connect = 185.176.52.35:443
+

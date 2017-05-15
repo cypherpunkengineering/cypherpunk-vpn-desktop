@@ -642,6 +642,11 @@ void CypherDaemon::WriteOpenVPNProfile(std::ostream& out, const JsonObject& serv
 		}
 	}
 
+	if (use_stunnel)
+	{
+		protocol = "tcp";
+	}
+
 	// Basic settings
 	out << "client" << endl;
 	out << "dev tun" << endl;
@@ -718,16 +723,28 @@ void CypherDaemon::WriteOpenVPNProfile(std::ostream& out, const JsonObject& serv
 
 
 	// Connection remotes; must come after generic connection settings
-	std::string ipKey = "ov" + encryption;
-	ipKey[2] = std::toupper(ipKey[2]);
-	const auto& serverIPs = server.at(ipKey).AsArray();
-	for (const auto& ip : serverIPs)
+	if (use_stunnel)
 	{
+		// stunnel mode
 		out << "<connection>" << endl;
-		out << "  remote " << ip.AsString() << ' ' << remotePort << endl;
+		out << "  remote 127.0.0.1 9336" << endl;
 		out << "</connection>" << endl;
+		out << "route 185.176.52.35 255.255.255.255 net_gateway" << endl;
+		_connection_retries_left = 0;
 	}
-	_connection_retries_left = serverIPs.size() - 1;
+	else
+	{
+		std::string ipKey = "ov" + encryption;
+		ipKey[2] = std::toupper(ipKey[2]);
+		const auto& serverIPs = server.at(ipKey).AsArray();
+		for (const auto& ip : serverIPs)
+		{
+			out << "<connection>" << endl;
+			out << "  remote " << ip.AsString() << ' ' << remotePort << endl;
+			out << "</connection>" << endl;
+		}
+		_connection_retries_left = serverIPs.size() - 1;
+	}
 
 	// Extra routes; currently only used by the "exempt Apple services" setting
 #if OS_OSX
@@ -862,6 +879,11 @@ void CypherDaemon::DoConnect()
 	int port = _process->StartManagementInterface();
 
 	std::vector<std::string> args;
+
+	if (use_stunnel)
+	{
+		args.push_back(GetPath(BaseDir, "daemon", "third_party", "stunnel", "macos", "profile"));
+	}
 
 	args.push_back("--management");
 	args.push_back("127.0.0.1");

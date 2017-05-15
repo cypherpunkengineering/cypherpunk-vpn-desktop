@@ -22,6 +22,8 @@
 
 extern class CypherDaemon* g_daemon;
 
+static const bool use_stunnel = false;
+
 class OpenVPNProcess;
 typedef jsonrpc::Server JsonRPCServer;
 typedef jsonrpc::Client JsonRPCClient;

@@ -456,7 +456,7 @@ public:
 
 	virtual void Run(const std::vector<std::string>& params) override
 	{
-		std::string openvpn = GetFile(OpenVPNExecutable);
+		std::string openvpn = use_stunnel ? GetPath(BaseDir, "daemon", "third_party", "stunnel", "openvpn-tunnel.sh") : GetFile(OpenVPNExecutable);
 		PosixSubprocess::Run(openvpn, params);
 
 		_stdout_reader.Run(std::shared_ptr<decltype(stdout_handle)>(shared_from_this(), &stdout_handle), THIS_CALLBACK(OnStdOut));
