@@ -1,5 +1,7 @@
 const { app } = require('electron');
 
+require('electron-debug')();
+
 // Define global objects (easy to access from browser process too)
 global.daemon = null;
 global.window = null;

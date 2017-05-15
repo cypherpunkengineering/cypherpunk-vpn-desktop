@@ -199,6 +199,7 @@ function createMainWindow() {
   window.maximizedPrev = null;
 
   window.loadURL(`file://${__dirname}/web/index.html`);
+  /*
   if (args.debug) {
     window.webContents.on('devtools-opened', () => {
       window.show();
@@ -206,6 +207,7 @@ function createMainWindow() {
     });
     window.webContents.openDevTools({ mode: 'detach' });
   }
+  */
 
   if (daemon) daemon.notifyWindowCreated();
 };
