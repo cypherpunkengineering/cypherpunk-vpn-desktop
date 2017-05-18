@@ -40,53 +40,16 @@ void firewall_set_anchor_enabled(const std::string& anchor, bool enable);
 
 std::unordered_map<pid_t, PosixSubprocess*> PosixSubprocess::_map;
 
-
-class PosixOpenVPNProcess : public OpenVPNProcess
+std::shared_ptr<Subprocess> Subprocess::Create(asio::io_service& io)
 {
-	std::shared_ptr<PosixSubprocess> _process;
+	return std::make_shared<PosixSubprocess>(io);
+}
 
-public:
-	PosixOpenVPNProcess(asio::io_service& io)
-		: OpenVPNProcess(io), _process(std::make_shared<PosixSubprocess>(io))
-	{
-		_process->SetStdOutListener([this](const asio::error_code& error, std::string line) { g_daemon->OnOpenVPNStdOut(this, error, std::move(line)); });
-		_process->SetStdErrListener([this](const asio::error_code& error, std::string line) { g_daemon->OnOpenVPNStdErr(this, error, std::move(line)); });
-	}
-	~PosixOpenVPNProcess()
-	{
-		_process->Kill();
-	}
-
-	virtual void Run(const std::vector<std::string>& params) override
-	{
-		std::string openvpn = use_stunnel ? GetPath(BaseDir, "daemon", "third_party", "stunnel", "openvpn-tunnel.sh") : GetFile(OpenVPNExecutable);
-		_process->Run(openvpn, params);
-	}
-
-	virtual void Kill() override
-	{
-		_process->Kill();
-	}
-
-	virtual void AsyncWait(std::function<void(const asio::error_code& error)> cb) override
-	{
-		_process->AsyncWait([cb = std::move(cb)](const asio::error_code& error, PosixSubprocess::Result result) { cb(error); });
-	}
-
-	void WriteLineToStdIn(std::string line)
-	{
-		_process->WriteToStdIn(std::move(line) + '\n');
-	}
-	void WriteToStdIn(std::string text)
-	{
-		_process->WriteToStdIn(std::move(text));
-	}
-};
 
 class PosixCypherDaemon : public CypherDaemon
 {
 	asio::signal_set _signals;
-	std::unordered_map<pid_t, PosixOpenVPNProcess*> _process_map;
+
 public:
 	PosixCypherDaemon()
 		: _signals(_io)
@@ -102,7 +65,7 @@ public:
 	}
 	virtual OpenVPNProcess* CreateOpenVPNProcess(asio::io_service& io) override
 	{
-		return new PosixOpenVPNProcess(io);
+		return new OpenVPNProcess(io);
 	}
 	virtual int GetAvailablePort(int hint) override
 	{

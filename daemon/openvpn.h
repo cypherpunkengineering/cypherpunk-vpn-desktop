@@ -2,6 +2,7 @@
 
 #include "config.h"
 #include "settings.h"
+#include "subprocess.h"
 
 #include <asio.hpp>
 
@@ -18,9 +19,8 @@ class OpenVPNProcess : public std::enable_shared_from_this<OpenVPNProcess>
 	friend class CypherDaemon;
 
 protected:
-	OpenVPNProcess(asio::io_service& io);
-
 	asio::io_service& _io;
+	std::shared_ptr<Subprocess> _process;
 	asio::ip::tcp::acceptor _management_acceptor;
 	asio::ip::tcp::socket _management_socket;
 	std::deque<std::string> _management_write_queue;
@@ -43,6 +43,7 @@ protected:
 	virtual void OnManagementInterfaceResponse(const std::string& line);
 
 public:
+	OpenVPNProcess(asio::io_service& io);
 	virtual ~OpenVPNProcess();
 
 public:
@@ -57,11 +58,12 @@ public:
 	// Request clean shutdown (first via management interface, calls Kill if that fails)
 	void Shutdown();
 
-	virtual void Run(const std::vector<std::string>& params) = 0;
-	virtual void Kill() = 0;
+	virtual void Run(const std::vector<std::string>& params);
+	virtual void Kill();
 	// Asynchronously wait for process termination
-	virtual void AsyncWait(std::function<void(const asio::error_code&)> cb) = 0;
+	virtual void AsyncWait(std::function<void(const asio::error_code&)> cb);
 
 	// Flag to indicate the user should reconnect to a new server for their settings to take effect.
 	bool stale;
 };
+

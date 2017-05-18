@@ -11,6 +11,10 @@
 
 class Subprocess : public std::enable_shared_from_this<Subprocess>
 {
+private:
+	Subprocess(const Subprocess&) = delete;
+	Subprocess& operator=(const Subprocess&) = delete;
+
 public:
 	enum SubprocessFlags {
 		RunAsNetworkUser = 0x100,

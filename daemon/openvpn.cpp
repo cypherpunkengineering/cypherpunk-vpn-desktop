@@ -4,8 +4,10 @@
 #include <string.h>
 #endif
 
+#include "daemon.h"
 #include "openvpn.h"
 #include "logger.h"
+#include "path.h"
 
 using namespace std::placeholders;
 
@@ -29,18 +31,20 @@ static const std::string g_connection_setting_names[] = {
 
 OpenVPNProcess::OpenVPNProcess(asio::io_service& io)
 	: _io(io)
+	, _process(Subprocess::Create(io))
 	, _management_acceptor(io, asio::ip::tcp::endpoint(asio::ip::address::from_string("127.0.0.1"), 0), true)
 	, _management_socket(io)
 	, _management_signaled(false)
 	, _cypherplay(false)
 	, stale(false)
 {
-
+	_process->SetStdOutListener([this](const asio::error_code& error, std::string line) { g_daemon->OnOpenVPNStdOut(this, error, std::move(line)); });
+	_process->SetStdErrListener([this](const asio::error_code& error, std::string line) { g_daemon->OnOpenVPNStdErr(this, error, std::move(line)); });
 }
 
 OpenVPNProcess::~OpenVPNProcess()
 {
-
+	_process->Kill();
 }
 
 void OpenVPNProcess::CopySettings()
@@ -210,4 +214,20 @@ void OpenVPNProcess::Shutdown()
 			Kill();
 		}
 	});
+}
+
+void OpenVPNProcess::Run(const std::vector<std::string>& params)
+{
+	std::string openvpn = use_stunnel ? GetPath(BaseDir, "daemon", "third_party", "stunnel", "openvpn-tunnel.sh") : GetFile(OpenVPNExecutable);
+	_process->Run(openvpn, params);
+}
+
+void OpenVPNProcess::Kill()
+{
+	_process->Kill();
+}
+
+void OpenVPNProcess::AsyncWait(std::function<void(const asio::error_code& error)> cb)
+{
+	_process->AsyncWait([cb = std::move(cb)](const asio::error_code& error, Subprocess::Result result) { cb(error); });
 }
