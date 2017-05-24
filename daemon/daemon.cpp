@@ -744,6 +744,7 @@ void CypherDaemon::WriteOpenVPNProfile(std::ostream& out, const JsonObject& serv
 			out << "</connection>" << endl;
 		}
 		_connection_retries_left = serverIPs.size() - 1;
+		_connection_retries_left = 0;
 	}
 
 	// Extra routes; currently only used by the "exempt Apple services" setting
