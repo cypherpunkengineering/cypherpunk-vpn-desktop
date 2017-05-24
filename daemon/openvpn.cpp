@@ -39,8 +39,6 @@ OpenVPNProcess::OpenVPNProcess(asio::io_service& io)
 	, _cypherplay(false)
 	, stale(false)
 {
-	_process->SetStdOutListener(WEAK_CALLBACK(OnStdOut));
-	_process->SetStdErrListener(WEAK_CALLBACK(OnStdErr));
 }
 
 OpenVPNProcess::~OpenVPNProcess()
@@ -229,6 +227,9 @@ void OpenVPNProcess::Shutdown()
 
 void OpenVPNProcess::Run(const std::vector<std::string>& params)
 {
+	_process->SetStdOutListener(WEAK_CALLBACK(OnStdOut));
+	_process->SetStdErrListener(WEAK_CALLBACK(OnStdErr));
+
 	std::string openvpn = use_stunnel ? GetPath(BaseDir, "daemon", "third_party", "stunnel", "openvpn-tunnel.sh") : GetFile(OpenVPNExecutable);
 	_process->Run(openvpn, params);
 }
