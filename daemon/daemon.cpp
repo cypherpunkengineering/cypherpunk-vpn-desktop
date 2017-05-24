@@ -874,7 +874,7 @@ void CypherDaemon::DoConnect()
 	_needsReconnect = false;
 	OnStateChanged(NEEDSRECONNECT);
 
-	_process = std::shared_ptr<OpenVPNProcess>(CreateOpenVPNProcess(_ws_server.get_io_service()));
+	_process = CreateOpenVPNProcess(_ws_server.get_io_service());
 	_process->CopySettings();
 
 	int port = _process->StartManagementInterface();

@@ -63,10 +63,6 @@ public:
 
 		firewall_install();
 	}
-	virtual OpenVPNProcess* CreateOpenVPNProcess(asio::io_service& io) override
-	{
-		return new OpenVPNProcess(io);
-	}
 	virtual int GetAvailablePort(int hint) override
 	{
 		return hint;

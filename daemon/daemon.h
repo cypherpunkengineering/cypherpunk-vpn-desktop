@@ -181,7 +181,7 @@ protected:
 protected:
 	// Create a platform-specific handler around an OpenVPN process.
 	// Note: the process isn't actually started until 'Run' is called on it.
-	virtual OpenVPNProcess* CreateOpenVPNProcess(asio::io_service& io) = 0;
+	virtual std::shared_ptr<OpenVPNProcess> CreateOpenVPNProcess(asio::io_service& io) { return std::make_shared<OpenVPNProcess>(io); }
 	// Ask the system for an available TCP port (for listening), preferably >= 'hint'.
 	virtual int GetAvailablePort(int hint);
 	// Get the identifier (for --dev) for an available TAP adapter to use.
