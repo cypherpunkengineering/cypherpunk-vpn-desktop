@@ -18,6 +18,16 @@ class OpenVPNProcess : public std::enable_shared_from_this<OpenVPNProcess>
 	OpenVPNProcess& operator=(const OpenVPNProcess&) = delete;
 	friend class CypherDaemon;
 
+public:
+	enum State
+	{
+		CREATED,
+		CONNECTING,
+		CONNECTED,
+		EXITING,
+		EXITED,
+	};
+
 protected:
 	asio::io_service& _io;
 	std::shared_ptr<Subprocess> _process;
@@ -32,6 +42,8 @@ protected:
 
 	std::string _username;
 	std::string _password;
+
+	State _state;
 
 	bool _management_signaled, _cypherplay;
 
