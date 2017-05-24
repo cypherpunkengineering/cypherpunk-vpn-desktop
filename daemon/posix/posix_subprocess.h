@@ -98,7 +98,7 @@ public:
 };
 
 template<class AsyncReadStream>
-class ASIOLineReader
+class ASIOLineReader : public std::enable_shared_from_this<ASIOLineReader<AsyncReadStream>>
 {
 public:
 	typedef void callback_t(const asio::error_code& error, std::string line);
@@ -116,7 +116,7 @@ public:
 private:
 	void AsyncReadLine()
 	{
-		asio::async_read_until(*_stream, _readbuf, '\n', THIS_CALLBACK(HandleLine));
+		asio::async_read_until(*_stream, _readbuf, '\n', SHARED_CALLBACK(HandleLine));
 	}
 	void HandleLine(const asio::error_code& error, std::size_t bytes_transferred)
 	{
@@ -139,6 +139,13 @@ private:
 	}
 };
 
+template<class AsyncReadStream>
+void AsyncReadAllLines(std::shared_ptr<AsyncReadStream> stream, std::function<void(const asio::error_code& error, std::string line)> callback)
+{
+	auto reader = std::make_shared<ASIOLineReader<AsyncReadStream>>();
+	reader->Run(std::move(stream), std::move(callback));
+}
+
 class PosixSubprocess : public Subprocess
 {
 	static std::unordered_map<pid_t, PosixSubprocess*> _map;
@@ -154,8 +161,6 @@ public:
 
 private:
 	std::deque<std::string> _stdin_write_queue;
-	ASIOLineReader<decltype(stdout_handle)> _stdout_reader;
-	ASIOLineReader<decltype(stderr_handle)> _stderr_reader;
 
 private:
 	static Result MakeResult(int code)
@@ -207,9 +212,8 @@ protected:
 		{
 			RunInternal(executable.c_str(), MakeArgVector(executable, args).data(), cwd.empty() ? NULL : cwd.c_str(), NULL, flags);
 		}
-
-		_stdout_reader.Run(std::shared_ptr<decltype(stdout_handle)>(shared_from_this(), &stdout_handle), THIS_CALLBACK(OnStdOut));
-		_stderr_reader.Run(std::shared_ptr<decltype(stderr_handle)>(shared_from_this(), &stderr_handle), THIS_CALLBACK(OnStdErr));
+		AsyncReadAllLines(SHARED_MEMBER(stdout_handle), SHARED_CALLBACK(OnStdOut));
+		AsyncReadAllLines(SHARED_MEMBER(stderr_handle), SHARED_CALLBACK(OnStdErr));
 	}
 
 private:
@@ -219,7 +223,7 @@ private:
 		{
 			_stdin_write_queue.pop_front();
 			if (!_stdin_write_queue.empty())
-				asio::async_write(stdin_handle, asio::buffer(_stdin_write_queue.front()), THIS_CALLBACK(HandleStdInWritten));
+				asio::async_write(stdin_handle, asio::buffer(_stdin_write_queue.front()), SHARED_CALLBACK(HandleStdInWritten));
 		}
 	}
 	void OnStdOut(const asio::error_code& error, std::string line)
@@ -238,7 +242,7 @@ public:
 			bool was_empty = _stdin_write_queue.empty();
 			_stdin_write_queue.push_back(std::move(d));
 			if (was_empty)
-				asio::async_write(stdin_handle, asio::buffer(_stdin_write_queue.front()), THIS_CALLBACK(HandleStdInWritten));
+				asio::async_write(stdin_handle, asio::buffer(_stdin_write_queue.front()), SHARED_CALLBACK(HandleStdInWritten));
 		});
 	}
 
@@ -305,23 +309,23 @@ public:
 	}
 
 public:
-	static void NotifyTerminated(pid_t pid, int result)
+	static void NotifyTerminated(pid_t pid, int code)
 	{
 		auto it = _map.find(pid);
 		if (it != _map.end())
 		{
 			auto instance = it->second;
 			_map.erase(it);
-			instance->NotifyTerminated(result);
+			instance->NotifyTerminated(code);
 		}
 		else
-			LOG(WARNING) << "Unknown child " << pid << " terminated with status " << result;
+			LOG(WARNING) << "Unknown child " << pid << " terminated with status " << MakeResult(code);
 	}
-	void NotifyTerminated(int result)
+	void NotifyTerminated(int code)
 	{
-		LOG(INFO) << "Subprocess " << _pid << " terminated with status " << result;
-		_result = Result(result);
+		_result = MakeResult(code);
 		_exited = true;
+		LOG(INFO) << "Subprocess " << _pid << " terminated with status " << _result;
 		_io.dispatch([cbs = std::move(_waiters), result = _result]() {
 			for (const auto& cb : cbs)
 				cb(asio::error_code(), result);

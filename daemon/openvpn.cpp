@@ -38,8 +38,8 @@ OpenVPNProcess::OpenVPNProcess(asio::io_service& io)
 	, _cypherplay(false)
 	, stale(false)
 {
-	_process->SetStdOutListener([this](const asio::error_code& error, std::string line) { g_daemon->OnOpenVPNStdOut(this, error, std::move(line)); });
-	_process->SetStdErrListener([this](const asio::error_code& error, std::string line) { g_daemon->OnOpenVPNStdErr(this, error, std::move(line)); });
+	_process->SetStdOutListener(WEAK_CALLBACK(OnStdOut));
+	_process->SetStdErrListener(WEAK_CALLBACK(OnStdErr));
 }
 
 OpenVPNProcess::~OpenVPNProcess()
@@ -91,44 +91,44 @@ int OpenVPNProcess::StartManagementInterface()
 {
 	int port = _management_acceptor.local_endpoint().port();
 
-	_io.post([this]() {
+	_io.post(WEAK_LAMBDA([this]() {
 		_management_write_queue.emplace_back("\n\n\n");
 		_management_acceptor.set_option(asio::ip::tcp::acceptor::reuse_address(true));
 		_management_acceptor.set_option(asio::ip::tcp::acceptor::linger(false, 0));
 		_management_acceptor.listen(1);
-		_management_acceptor.async_accept(_management_socket, [this](const asio::error_code& error) {
+		_management_acceptor.async_accept(_management_socket, WEAK_LAMBDA([this](const asio::error_code& error) {
 			if (!error)
 			{
-				asio::async_read_until(_management_socket, _management_readbuf, '\n', THIS_CALLBACK(HandleManagementReadLine));
-				asio::async_write(_management_socket, asio::buffer(_management_write_queue.front()), THIS_CALLBACK(HandleManagementWrite));
+				asio::async_read_until(_management_socket, _management_readbuf, '\n', WEAK_CALLBACK(HandleManagementReadLine));
+				asio::async_write(_management_socket, asio::buffer(_management_write_queue.front()), WEAK_CALLBACK(HandleManagementWrite));
 			}
 			else
 				LOG(WARNING) << error << " : " << error.message();
-		});
-	});
+		}));
+	}));
 
 	return port;
 }
 
 void OpenVPNProcess::StopManagementInterface()
 {
-	_io.post([this]() {
+	_io.post(WEAK_LAMBDA([this]() {
 		_management_socket.shutdown(asio::ip::tcp::socket::shutdown_both);
 		_management_socket.close();
-	});
+	}));
 }
 
 void OpenVPNProcess::SendManagementCommand(std::string cmd)
 {
 	cmd.push_back('\n');
-	_io.post([this, cmd = std::move(cmd)]() {
+	_io.post(WEAK_LAMBDA([this, cmd = std::move(cmd)]() {
 		bool first = _management_write_queue.empty();
 		_management_write_queue.push_back(std::move(cmd));
 		if (first && _management_socket.is_open())
 		{
-			asio::async_write(_management_socket, asio::buffer(_management_write_queue.front()), THIS_CALLBACK(HandleManagementWrite));
+			asio::async_write(_management_socket, asio::buffer(_management_write_queue.front()), WEAK_CALLBACK(HandleManagementWrite));
 		}
-	});
+	}));
 }
 
 void OpenVPNProcess::OnManagementResponse(const std::string& prefix, std::function<void(const std::string&)> callback)
@@ -143,7 +143,7 @@ void OpenVPNProcess::HandleManagementWrite(const asio::error_code& error, std::s
 		_management_write_queue.pop_front();
 		if (!_management_write_queue.empty() && _management_socket.is_open())
 		{
-			asio::async_write(_management_socket, asio::buffer(_management_write_queue.front()), THIS_CALLBACK(HandleManagementWrite));
+			asio::async_write(_management_socket, asio::buffer(_management_write_queue.front()), WEAK_CALLBACK(HandleManagementWrite));
 		}
 	}
 	else
@@ -163,7 +163,7 @@ void OpenVPNProcess::HandleManagementReadLine(const asio::error_code& error, std
 
 		if (_management_socket.is_open())
 		{
-			asio::async_read_until(_management_socket, _management_readbuf, '\n', THIS_CALLBACK(HandleManagementReadLine));
+			asio::async_read_until(_management_socket, _management_readbuf, '\n', WEAK_CALLBACK(HandleManagementReadLine));
 		}
 	}
 	else
@@ -198,9 +198,19 @@ void OpenVPNProcess::OnManagementInterfaceResponse(const std::string& line)
 	}
 }
 
+void OpenVPNProcess::OnStdOut(const asio::error_code& error, std::string line)
+{
+	g_daemon->OnOpenVPNStdOut(this, error, std::move(line));
+}
+
+void OpenVPNProcess::OnStdErr(const asio::error_code& error, std::string line)
+{
+	g_daemon->OnOpenVPNStdErr(this, error, std::move(line));
+}
+
 void OpenVPNProcess::Shutdown()
 {
-	_io.dispatch([this]() {
+	_io.dispatch(SHARED_LAMBDA([this]() {
 		if (!_management_signaled)
 		{
 			if (_management_socket.is_open())
@@ -213,7 +223,7 @@ void OpenVPNProcess::Shutdown()
 		{
 			Kill();
 		}
-	});
+	}));
 }
 
 void OpenVPNProcess::Run(const std::vector<std::string>& params)

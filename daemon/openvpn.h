@@ -39,6 +39,9 @@ private:
 	void HandleManagementWrite(const asio::error_code& error, std::size_t bytes_transferred);
 	void HandleManagementReadLine(const asio::error_code& error, std::size_t bytes_transferred);
 
+	void OnStdOut(const asio::error_code& error, std::string line);
+	void OnStdErr(const asio::error_code& error, std::string line);
+
 protected:
 	virtual void OnManagementInterfaceResponse(const std::string& line);
 
