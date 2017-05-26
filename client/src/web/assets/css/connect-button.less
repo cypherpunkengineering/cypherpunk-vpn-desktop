@@ -13,10 +13,10 @@
   background: linear-gradient(to right,
     @color,
     fade(@color,25%) (@pipeWidth / 2 - @frameWidth / 2 - 100px),
-    @color (@pipeWidth / 2 - @frameWidth / 2 + @frameEdge),
+    @color (@pipeWidth / 2 - @frameWidth / 2 + @frameEdge - 0.5px),
     transparent (@pipeWidth / 2 - @frameWidth / 2 + @frameEdge),
     transparent (@pipeWidth / 2 + @frameWidth / 2 - @frameEdge),
-    @color (@pipeWidth / 2 + @frameWidth / 2 - @frameEdge),
+    @color (@pipeWidth / 2 + @frameWidth / 2 - @frameEdge + 0.5px),
     fade(@color,25%) (@pipeWidth / 2 + @frameWidth / 2 + 100px),
     @color
   );
