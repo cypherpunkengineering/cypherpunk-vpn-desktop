@@ -29,6 +29,7 @@ export default class Notification
         if (options[attr] && options[attr].indexOf(':') < 0)
           options[attr] = '../' + options[attr];
       });
+      options.silent = true;
       window.webContents.executeJavaScript(`new Notification(${JSON.stringify(title)}, ${JSON.stringify(options)});`);
     }
   }
