@@ -39,9 +39,15 @@ export const Location = ({ location, className, selected = false, favorite = nul
     classes.push('favorite');
   }
   if (ping) {
-    if (!ping.replies) return null;
-    ping = (ping.average * 1000).toFixed(0);
-    ping = (ping === "0") ? "<1ms" : (ping + "ms");
+    if (ping.replies) {
+      ping = (ping.average * 1000).toFixed(0);
+      ping = (ping === "0") ? "<1ms" : (ping + "ms");
+      ping = <span className="ping-time">{ping}</span>;
+    } else if (ping.timeouts) {
+      ping = <span className="ping-time"><i className="warning icon"/></span>;
+    } else {
+      ping = null;
+    }
   }
   var flag = (dpi = '') => `../assets/img/flags/24/${location.country.toLowerCase()}${dpi}.png`;
   return (
