@@ -142,7 +142,7 @@ cat > "./usr/share/applications/${APP_NS}.desktop" << _EOF_
 Version=${APP_VERSION_SHORT}
 Name=${APP_NAME}
 Comment=${APP_DESC}
-Exec=${APP_PATH_ABSOLUTE}/${APP_NAME_NOSPACE}
+Exec=env XDG_CURRENT_DESKTOP=Unity ${APP_PATH_ABSOLUTE}/${APP_NAME_NOSPACE}
 Icon=${APP_PATH_ABSOLUTE}/launcher_linux_512.png
 Terminal=false
 Type=Application
