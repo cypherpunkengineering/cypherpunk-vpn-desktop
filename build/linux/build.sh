@@ -134,7 +134,7 @@ Architecture: ${LINUX_ARCH}
 Maintainer: ${PKG_MAINTAINER}
 Installed-Size: ${APP_SIZE_KB}
 Homepage: ${APP_HOMEPAGE}
-Depends: python-appindicator
+Depends: libappindicator1
 _EOF_
 
 cat > "./usr/share/applications/${APP_NS}.desktop" << _EOF_
