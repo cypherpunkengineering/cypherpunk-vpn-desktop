@@ -47,7 +47,7 @@ APP_VERSION="$(cat version.txt)"
 APP_VERSION_SHORT="${APP_VERSION%%+*}"
 
 # pkg vars
-PKG_NAME="cypherpunk-privacy-${PLATFORM}-${ARCH}"
+PKG_NAME="cypherpunk-privacy"
 PKG_MAINTAINER="Cypherpunk Privacy <debian-maintainer@cypherpunk.com>"
 PKG_STR="${PKG_NAME}-${APP_VERSION}"
 PKG_STR_MINUS="${PKG_STR//+/-}"
@@ -125,11 +125,14 @@ install -c -m 755 "../../res/${PLATFORM}/install-scripts/postrm" "./${OS}/"
 # Copy OpenVPN scripts to app bundle
 install -c -m 755 "../../res/${PLATFORM}/openvpn-scripts/updown.sh" "${APP_PATH_RELATIVE}/etc/scripts/"
 
+# Calculate package size in KB
+APP_SIZE_KB="`du -s ${PKG_NAME}|awk '{print $1}'`"
+
 # write debian package control file
 cat > "./${OS}/control" << _EOF_
 Package: ${PKG_NAME}
 Description: ${APP_DESC}
-Version: ${APP_VERSION_SHORT}
+Version: ${APP_VERSION}
 Architecture: ${LINUX_ARCH}
 Maintainer: ${PKG_MAINTAINER}
 Installed-Size: ${APP_SIZE_KB}
