@@ -26,7 +26,7 @@ export default class ApplicationSettings extends React.Component {
     ipc.removeListener('autostart-value', this.listeners.autostart);
   }
   onAutoStartSettingChanged(enabled) {
-    $(this.refs.runonstartup).parent().checkbox('set ' + (enabled ? 'checked' : enabled === null ? 'indeterminate' : 'unchecked'));
+    $(this.refs.runOnStartup).checkbox('set ' + (enabled ? 'checked' : enabled === null ? 'indeterminate' : 'unchecked'));
   }
   onAutoStartSettingClicked(enabled) {
     ipc.send('autostart-set', enabled);
