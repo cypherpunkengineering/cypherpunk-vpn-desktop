@@ -56,6 +56,7 @@ void firewall_install()
 	logged_system("iptables -A cypherpunk.500.killswitch -o lo+ -j ACCEPT");
 	logged_system("iptables -A cypherpunk.500.killswitch -m owner --gid-owner cypherpunk -j ACCEPT");
 	logged_system("iptables -A cypherpunk.500.killswitch ! -o tun+ -j DROP");
+	logged_system("iptables -A cypherpunk.500.killswitch -p udp --sport 68 --dport 67 -j ACCEPT");
 
 	// ipv6 killswitch
 	logged_system("ip6tables --new-chain cypherpunk.500.killswitch");
@@ -63,6 +64,7 @@ void firewall_install()
 	logged_system("ip6tables -A cypherpunk.500.killswitch -o lo+ -j ACCEPT");
 	logged_system("ip6tables -A cypherpunk.500.killswitch -m owner --gid-owner cypherpunk -j ACCEPT");
 	logged_system("ip6tables -A cypherpunk.500.killswitch ! -o tun+ -j DROP");
+	logged_system("ip6tables -A cypherpunk.500.killswitch -p udp --sport 546 --dport 547 -j ACCEPT");
 #endif
 }
 
