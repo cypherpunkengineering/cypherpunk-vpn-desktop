@@ -49,7 +49,7 @@ APP_VERSION_SHORT="${APP_VERSION%%+*}"
 # pkg vars
 PKG_NAME="cypherpunk-privacy"
 PKG_MAINTAINER="Cypherpunk Privacy <debian-maintainer@cypherpunk.com>"
-PKG_STR="${PKG_NAME}-${APP_VERSION}"
+PKG_STR="${PKG_NAME}-${PLATFORM}-${APP_VERSION}"
 PKG_STR_MINUS="${PKG_STR//+/-}"
 PKG_FILE="${PKG_STR_MINUS}.deb"
 PKG_PATH="out/${PKG_FILE}"
