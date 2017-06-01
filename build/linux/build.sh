@@ -79,7 +79,7 @@ npm --production run build
 --app-bundle-id="${APP_NS}.app" \
 --platform="${PLATFORM}" \
 --arch="${ARCH}" \
---icon="../res/osx/logo3.icns" \
+--icon="../res/osx/logo4.icns" \
 --out="../${OUT_PATH}"
 
 # build daemon
