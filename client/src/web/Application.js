@@ -69,7 +69,7 @@ export default class Application {
     Application.checkForUpdates();
   }
   static checkForUpdates() {
-    server.get('/api/v0/app/versions').then(response => {
+    server.get('/api/v1/app/versions').then(response => {
       var version = response.data[({ 'darwin':'macos', 'win32':'windows', 'linux':'debian' })[process.platform]];
       if (version !== undefined) {
         function downloadAndInstall() {

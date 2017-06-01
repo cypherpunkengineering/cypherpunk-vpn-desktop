@@ -24,7 +24,7 @@ function refreshRegionList() {
       return daemon.call.applyConfig({ countryNames, regionNames, regionOrder });
     }
   }).then(() => {
-    return server.get('/api/v0/location/world').then(response => {
+    return server.get('/api/v1/location/world').then(response => {
       if (response.data.country) countryNames = Object.assign({}, countryNames, response.data.country);
       if (response.data.region) regionNames = Object.assign({}, regionNames, response.data.region);
       if (response.data.regionOrder) regionOrder = response.data.regionOrder;
@@ -61,7 +61,7 @@ function refreshLocationList() {
 
 // Refresh the current account by querying the server
 function refreshAccount() {
-  return server.get('/api/v0/account/status').then(response => setAccount(response.data));
+  return server.get('/api/v1/account/status').then(response => setAccount(response.data));
 }
 
 // Updates the application state after any new account data has been received
@@ -188,7 +188,7 @@ export class Logout extends Page {
   componentDidMount() {
     setImmediate(() => { // need to use setImmediate since we might modify History
       daemon.post.disconnect(); // make sure we don't stay connected
-      server.post('/api/v0/account/logout', null, { refreshSessionOnForbidden: false, catchAuthFailure: false })
+      server.post('/api/v1/account/logout', null, { refreshSessionOnForbidden: false, catchAuthFailure: false })
         .catch(err => console.error("Error while logging out:", err))
         .then(() => daemon.call.setAccount({ account: { email: daemon.account.account && daemon.account.account.email || '' } }))
         .then(() => daemon.call.applySettings({ enableAnalytics: false }))
@@ -210,7 +210,7 @@ export class EmailStep extends Page {
   onSubmit() {
     var email = this.refs.email.value;
     $(this.refs.email).prop('disabled', true).parent().addClass('loading');
-    server.post('/api/v0/account/identify/email', { email: email }).then({
+    server.post('/api/v1/account/identify/email', { email: email }).then({
       200: response => History.push({ pathname: '/login/password', query: { email: email }}),
       401: response => History.push({ pathname: '/login/register', query: { email: email }})
     }).catch(err => {
@@ -239,7 +239,7 @@ export class PasswordStep extends Page {
   onSubmit() {
     var password = this.refs.password.value;
     $(this.refs.password).prop('disabled', true).parent().addClass('loading');
-    server.post('/api/v0/account/authenticate/password', { /*email: this.props.location.query.email,*/ password: password }).then(response => {
+    server.post('/api/v1/account/authenticate/password', { /*email: this.props.location.query.email,*/ password: password }).then(response => {
       return setAccount(response.data);
     }).catch(err => {
       if (!err.handled) {
@@ -274,7 +274,7 @@ export class RegisterStep extends Page {
     $(this.refs.password).prop('disabled', true);
     $(this.refs.register).hide();
     $(this.refs.loader).addClass('active');
-    server.post('/api/v0/account/register/signup', { email: this.props.location.query.email, password: password }).then(response => {
+    server.post('/api/v1/account/register/signup', { email: this.props.location.query.email, password: password }).then(response => {
       return setAccount(response.data);
     }).catch(err => {
       if (!err.handled) {
