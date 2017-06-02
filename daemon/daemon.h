@@ -163,9 +163,6 @@ protected:
 	bool _notify_scheduled;
 	//std::map<std::string, ServerInfo> _servers;
 
-	// Number of reconnection to tolerate before we should treat as disconnected. Initally set to the number of <connection> entries
-	size_t _connection_retries_left;
-	bool _was_ever_connected;
 	size_t _valid_client_count;
 	asio::basic_waitable_timer<std::chrono::steady_clock> _ping_timer;
 	std::chrono::steady_clock::time_point _last_ping_round;
