@@ -787,6 +787,11 @@ void Connection::WriteOpenVPNProfile(std::ostream& out)
 	// which is simply there as a sensible default for dumb clients.
 	out << "pull-filter ignore \"dhcp-option DNS 10.10.10.10\"" << endl;
 	out << "pull-filter ignore \"route 10.10.10.10 255.255.255.255\"" << endl;
+	
+	// Ignore ping settings pushed from the server.
+	out << "pull-filter ignore \"ping \"" << endl;
+	out << "pull-filter ignote \"ping-restart \"" << endl;
+	out << "pull-filter ignote \"ping-exit \"" << endl;
 
 	if (g_settings.overrideDNS())
 	{
