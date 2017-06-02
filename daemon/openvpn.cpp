@@ -12,12 +12,12 @@
 using namespace std::placeholders;
 
 
-OpenVPNProcess::OpenVPNProcess(asio::io_service& io, OpenVPNListener* listener)
+OpenVPNProcess::OpenVPNProcess(asio::io_service& io, std::shared_ptr<OpenVPNListener> listener)
 	: _io(io)
 	, _process(Subprocess::Create(io))
 	, _management_acceptor(io, asio::ip::tcp::endpoint(asio::ip::address::from_string("127.0.0.1"), 0), true)
 	, _management_socket(io)
-	, _listener(listener)
+	, _listener(std::move(listener))
 	, _management_signaled(false)
 {
 }

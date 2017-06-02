@@ -28,7 +28,7 @@ private:
 	std::deque<std::string> _management_write_queue;
 	asio::streambuf _management_readbuf;
 
-	OpenVPNListener* _listener;
+	std::shared_ptr<OpenVPNListener> _listener;
 
 	bool _management_signaled;
 
@@ -40,7 +40,7 @@ private:
 	void OnStdErr(const asio::error_code& error, std::string line);
 
 public:
-	OpenVPNProcess(asio::io_service& io, OpenVPNListener* listener);
+	OpenVPNProcess(asio::io_service& io, std::shared_ptr<OpenVPNListener> listener);
 	virtual ~OpenVPNProcess();
 
 public:

@@ -504,7 +504,7 @@ void Connection::DoConnect()
 	}
 
 	CopySettings();
-	_openvpn_process = std::make_shared<OpenVPNProcess>(_io, this);
+	_openvpn_process = std::make_shared<OpenVPNProcess>(_io, std::shared_ptr<OpenVPNListener>(shared_from_this(), this));
 
 	++_connection_attempts;
 
