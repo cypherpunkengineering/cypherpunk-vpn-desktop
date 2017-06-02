@@ -12,40 +12,25 @@
 #include <memory>
 #include <thread>
 
+class OpenVPNListener;
+
 class OpenVPNProcess : public std::enable_shared_from_this<OpenVPNProcess>
 {
 	OpenVPNProcess(const OpenVPNProcess&) = delete;
 	OpenVPNProcess& operator=(const OpenVPNProcess&) = delete;
 	friend class CypherDaemon;
 
-public:
-	enum State
-	{
-		CREATED,
-		CONNECTING,
-		CONNECTED,
-		EXITING,
-		EXITED,
-	};
-
-protected:
+private:
 	asio::io_service& _io;
 	std::shared_ptr<Subprocess> _process;
 	asio::ip::tcp::acceptor _management_acceptor;
 	asio::ip::tcp::socket _management_socket;
 	std::deque<std::string> _management_write_queue;
 	asio::streambuf _management_readbuf;
-	std::map<std::string, std::function<void(const std::string&)>> _on_management_response;
 
-	JsonObject _connection;
-	JsonObject _connection_server;
+	OpenVPNListener* _listener;
 
-	std::string _username;
-	std::string _password;
-
-	State _state;
-
-	bool _management_signaled, _cypherplay;
+	bool _management_signaled;
 
 private:
 	void HandleManagementWrite(const asio::error_code& error, std::size_t bytes_transferred);
@@ -54,11 +39,8 @@ private:
 	void OnStdOut(const asio::error_code& error, std::string line);
 	void OnStdErr(const asio::error_code& error, std::string line);
 
-protected:
-	virtual void OnManagementInterfaceResponse(const std::string& line);
-
 public:
-	OpenVPNProcess(asio::io_service& io);
+	OpenVPNProcess(asio::io_service& io, OpenVPNListener* listener);
 	virtual ~OpenVPNProcess();
 
 public:
@@ -68,7 +50,7 @@ public:
 	int StartManagementInterface();
 	void StopManagementInterface();
 	void SendManagementCommand(std::string cmd);
-	void OnManagementResponse(const std::string& prefix, std::function<void(const std::string&)> callback);
+	void OnManagementResponse(const std::string& prefix, std::function<void(std::string)> callback);
 
 	// Request clean shutdown (first via management interface, calls Kill if that fails)
 	void Shutdown();
@@ -76,9 +58,14 @@ public:
 	virtual void Run(const std::vector<std::string>& params);
 	virtual void Kill();
 	// Asynchronously wait for process termination
-	virtual void AsyncWait(std::function<void(const asio::error_code&)> cb);
-
-	// Flag to indicate the user should reconnect to a new server for their settings to take effect.
-	bool stale;
+	//virtual void AsyncWait(std::function<void(const asio::error_code&)> cb);
 };
 
+class OpenVPNListener
+{
+public:
+	virtual void OnOpenVPNStdOut(OpenVPNProcess* process, const asio::error_code& error, std::string line) {}
+	virtual void OnOpenVPNStdErr(OpenVPNProcess* process, const asio::error_code& error, std::string line) {}
+	virtual void OnOpenVPNManagement(OpenVPNProcess* process, const asio::error_code& error, std::string line) {}
+	virtual void OnOpenVPNExited(OpenVPNProcess* process, const asio::error_code& error) {}
+};
