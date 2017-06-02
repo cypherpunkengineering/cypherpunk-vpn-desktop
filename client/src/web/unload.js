@@ -22,13 +22,13 @@ function performCloseChain() {
 // Hook the window.onbeforeunload event (in case the window itself is closed)
 window.addEventListener('beforeunload', e => {
   if (overrideClose) {
-    ipc.send('close');
+    setImmediate(() => ipc.send('close'));
     e.returnValue = false;
     return false;
   } else if (!exiting) {
     exiting = true;
     if (unloadHandlers) {
-      setTimeout(performCloseChain, 0);
+      setImmediate(performCloseChain);
       e.returnValue = false;
       return false;
     }
@@ -38,18 +38,18 @@ window.addEventListener('beforeunload', e => {
 // Hook the window.close function too, to do programmatic shutdown more cleanly
 window.close = function close() {
   if (overrideClose) {
-    ipc.send('close');
+    setImmediate(() => ipc.send('close'));
   } else if (!exiting) {
     exiting = true;
     if (unloadHandlers) {
-      setTimeout(performCloseChain, 0);
+      setImmediate(performCloseChain);
     } else {
-      doClose();
+      setImmediate(doClose);
     }
   }
 };
 
 ipc.on('close', function() {
   overrideClose = false;
-  window.close();
+  setImmediate(() => window.close());
 });
