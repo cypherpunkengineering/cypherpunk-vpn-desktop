@@ -77,7 +77,6 @@ void OpenVPNProcess::HandleManagementWrite(const asio::error_code& error, std::s
 {
 	if (!error)
 	{
-		LOG(INFO) << "Wrote management line: " << _management_write_queue.front();
 		_management_write_queue.pop_front();
 		if (!_management_write_queue.empty() && _management_socket.is_open())
 		{

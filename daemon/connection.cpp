@@ -178,12 +178,10 @@ void Connection::OnOpenVPNManagement(OpenVPNProcess* process, const asio::error_
 		LOG(WARNING) << "Management line error " << error;
 		return;
 	}
-	LOG(DEBUG) << line;
 	if (line[0] != '>')
 		return;
 	if (StartsWith(line, ">STATE:"))
 	{
-		LOG(DEBUG) << "Received OpenVPN state update";
 		line.erase(0, 7);
 		auto params = SplitToVector(line, ',');
 		if (params.size() < 2) { LOG(WARNING) << "Unrecognized OpenVPN state"; return; }
@@ -199,12 +197,10 @@ void Connection::OnOpenVPNManagement(OpenVPNProcess* process, const asio::error_
 	}
 	else if (StartsWith(line, ">HOLD:"))
 	{
-		LOG(DEBUG) << "Received OpenVPN hold notificatoin";
 		process->SendManagementCommand("hold release");
 	}
 	else if (StartsWith(line, ">PASSWORD:"))
 	{
-		LOG(DEBUG) << "Received OpenVPN password request";
 		size_t q1 = line.find('\'', 10);
 		if (q1 == line.npos) { LOG(ERROR) << "Invalid password request"; return; }
 		size_t q2 = line.find('\'', q1 + 1);
@@ -216,7 +212,6 @@ void Connection::OnOpenVPNManagement(OpenVPNProcess* process, const asio::error_
 	}
 	else if (StartsWith(line, ">BYTECOUNT:"))
 	{
-		LOG(DEBUG) << "Received OpenVPN bytecount notification";
 		line.erase(0, 11);
 		try
 		{
