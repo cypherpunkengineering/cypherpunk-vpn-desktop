@@ -149,8 +149,7 @@ void OpenVPNProcess::Run(const std::vector<std::string>& params)
 	_process->SetStdOutListener(WEAK_CALLBACK(OnStdOut));
 	_process->SetStdErrListener(WEAK_CALLBACK(OnStdErr));
 
-	std::string openvpn = GetFile(OpenVPNExecutable);
-	_process->Run(openvpn, params);
+	_process->Run(GetFile(OpenVPNExecutable), params, GetPath(OpenVPNDir));
 
 	_process->AsyncWait(WEAK_LAMBDA([this](const asio::error_code& error, Subprocess::Result result) { if (_listener) _listener->OnOpenVPNExited(this, error); }));
 }
