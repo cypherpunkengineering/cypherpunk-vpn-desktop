@@ -109,7 +109,7 @@ stage-client: client
 		--app-bundle-id="$(APP_NS).app" \
 		--platform=darwin \
 		--arch=x64 \
-		--icon="$(ROOT)/res/osx/logo4.icns" \
+		--icon="$(ROOT)/res/osx/logo3.icns" \
 		--out="$(OUT)"
 	$(HUSH) sync; sleep 1
 	$(HUSH) codesign --force --deep --sign $(APP_SIGN_IDENTITY) "$(OUT)/$(APP_SIG)/$(APP_BUNDLE)"
