@@ -182,6 +182,16 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
     mapLocation: null,
   }
 
+  componentDidMount() {
+    super.componentDidMount();
+    this.tabBlocker = function(e) { if (e.key === 'Tab') { e.preventDefault(); e.stopPropagation(); return false; } };
+    this.dom.addEventListener('keydown', this.tabBlocker, false);
+  }
+  componentWillUnmount() {
+    super.componentWillUnmount();
+    this.dom.removeEventListener('keydown', this.tabBlocker, false);
+  }
+
   render() {
     let panelOpen = !!this.props.children;
     let tabIndex = panelOpen ? "-1" : "0";
