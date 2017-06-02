@@ -169,7 +169,7 @@ protected:
 	bool _next_ping_scheduled;
 
 
-protected:
+public:
 	// Ask the system for an available TCP port (for listening), preferably >= 'hint'.
 	virtual int GetAvailablePort(int hint);
 	// Get the identifier (for --dev) for an available TAP adapter to use.

@@ -541,7 +541,7 @@ void Connection::DoConnect()
 
 #if OS_WIN
 	args.push_back("--dev-node");
-	args.push_back(GetAvailableAdapter(index));
+	args.push_back(g_daemon->GetAvailableAdapter(index));
 #elif OS_OSX
 	args.push_back("--dev-node");
 	args.push_back("utun");
