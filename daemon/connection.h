@@ -76,8 +76,15 @@ public:
 	};
 
 	// Maximum connection attempts until switching to 'slow' mode
-	static const int MAX_CONNECTION_ATTEMPTS = 3;
-	static const int MAX_RECONNECTION_ATTEMPTS = 3;
+	enum Limits
+	{
+		MAX_CONNECTION_ATTEMPTS = 3,
+		MAX_RECONNECTION_ATTEMPTS = 3,
+		MAX_CONNECTION_TIME = 15,
+		MAX_RECONNECTION_TIME = 60,
+		SLOW_CONNECTION_ATTEMPT_INTERVAL = 10,
+		SLOW_RECONNECTION_ATTEMPT_INTERVAL = 10,
+	};
 
 private:
 	enum OpenVPNState
@@ -113,6 +120,9 @@ private:
 
 	// Timeout timer for triggering the 'STILL_[RE]CONNECTING' states
 	timer _slow_connection_timer;
+	// Time of last launched OpenVPN process
+	time_point _last_openvpn_launch;
+	timer _connection_interval_timer;
 
 	// Saved settings
 	JsonObject _settings;

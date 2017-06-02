@@ -34,6 +34,7 @@ Connection::Connection(asio::io_service& io, ConnectionListener* listener)
 	, _state(CREATED)
 	, _connection_attempts(0)
 	, _slow_connection_timer(io)
+	, _connection_interval_timer(io)
 	, _needsReconnect(false)
 	, _cypherplay(false)
 {
@@ -338,6 +339,7 @@ void Connection::SetState(State new_state)
 			case DISCONNECTED:
 				_connection_attempts = 0;
 				_slow_connection_timer.cancel();
+				_connection_interval_timer.cancel();
 				break;
 			default:
 				break;
@@ -498,10 +500,29 @@ void Connection::DoConnect()
 			SetState(CONNECTING);
 			break;
 		case CONNECTING:
-		case STILL_CONNECTING:
 		case RECONNECTING:
-		case STILL_RECONNECTING:
 			break;
+		case STILL_CONNECTING:
+			if (clock::now() - _last_openvpn_launch < std::chrono::seconds(SLOW_CONNECTION_ATTEMPT_INTERVAL))
+			{
+				_connection_interval_timer.cancel();
+				_connection_interval_timer.expires_at(_last_openvpn_launch + std::chrono::seconds(SLOW_CONNECTION_ATTEMPT_INTERVAL));
+				_connection_interval_timer.async_wait(WEAK_LAMBDA([this](const asio::error_code& error) { if (!error) DoConnect(); }));
+				return;
+			}
+			break;
+		case STILL_RECONNECTING:
+			if (clock::now() - _last_openvpn_launch < std::chrono::seconds(SLOW_RECONNECTION_ATTEMPT_INTERVAL))
+			{
+				_connection_interval_timer.cancel();
+				_connection_interval_timer.expires_at(_last_openvpn_launch + std::chrono::seconds(SLOW_RECONNECTION_ATTEMPT_INTERVAL));
+				_connection_interval_timer.async_wait(WEAK_LAMBDA([this](const asio::error_code& error) { if (!error) DoConnect(); }));
+				return;
+			}
+			break;
+		case CONNECTED:
+			LOG(INFO) << "Already connected - DoConnect ignored";
+			return;
 		default:
 			LOG(ERROR) << "DoConnect called in bad state " << EnumToString(_state);
 			return;
@@ -515,6 +536,16 @@ void Connection::DoConnect()
 
 	CopySettings();
 	_openvpn_process = std::make_shared<OpenVPNProcess>(_io, std::shared_ptr<OpenVPNListener>(shared_from_this(), this));
+
+	_last_openvpn_launch = clock::now();
+
+	if (_connection_attempts == 0)
+	{
+		if (_state == CONNECTING)
+			StartConnectionTimer(std::chrono::seconds(MAX_CONNECTION_TIME));
+		else if (_state == RECONNECTING)
+			StartConnectionTimer(std::chrono::seconds(MAX_RECONNECTION_TIME));
+	}
 
 	++_connection_attempts;
 
