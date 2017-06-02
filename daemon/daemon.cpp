@@ -38,8 +38,6 @@ CypherDaemon::CypherDaemon()
 	, _shouldConnect(false)
 	, _needsReconnect(false)
 	, _notify_scheduled(false)
-	, _connection_retries_left(0)
-	, _was_ever_connected(false)
 	, _valid_client_count(0)
 	, _ping_timer(_io)
 	, _next_ping_scheduled(false)
@@ -52,13 +50,13 @@ int CypherDaemon::Run()
 	LOG(INFO) << "Running CypherDaemon version v" VERSION " built on " __TIMESTAMP__;
 
 	_ws_server.set_message_handler(std::bind(&CypherDaemon::OnReceiveMessage, this, _1, _2));
-	_ws_server.set_open_handler([this](Connection c) {
+	_ws_server.set_open_handler([this](ClientConnection c) {
 		bool first = _connections.empty();
 		_connections.insert(std::make_pair(c, false));
 		if (first) OnFirstClientConnected();
 		OnClientConnected(c);
 	});
-	_ws_server.set_close_handler([this](Connection c) {
+	_ws_server.set_close_handler([this](ClientConnection c) {
 		try
 		{
 			if (_connections.at(c))
@@ -106,6 +104,8 @@ int CypherDaemon::Run()
 	g_account.SetOnChangedHandler(THIS_CALLBACK(OnAccountChanged));
 	g_settings.SetOnChangedHandler(THIS_CALLBACK(OnSettingsChanged));
 
+	_connection = std::make_shared<Connection>(_io, this);
+
 	_state = INITIALIZED;
 
 	_ws_server.run(); // internally calls _io.run()
@@ -115,32 +115,46 @@ int CypherDaemon::Run()
 
 void CypherDaemon::RequestShutdown()
 {
-	_io.post([this]() {
-		if (_process)
-		{
-			try
-			{
-				// Shut down any OpenVPN process first.
-				_process->Shutdown();
-				_process->AsyncWait([p = _process, this](const asio::error_code& error) {
-					LOG(INFO) << "Stopping message loop";
-					if (!_ws_server.stopped())
-						_ws_server.stop();
-				});
-				return;
-			}
-			catch (const SystemException& e)
-			{
-				LOG(ERROR) << e;
-			}
-		}
-		// Either no process is running, or something went wrong above.
-		if (!_ws_server.stopped())
-			_ws_server.stop();
-	});
+	if (_state < EXITING)
+		_state = EXITING;
+	if (_connection->GetState() != Connection::DISCONNECTED)
+		_connection->Disconnect();
+	else
+		_io.post([this]() { DoShutdown(); });
 }
 
-void CypherDaemon::SendToClient(Connection connection, const std::shared_ptr<jsonrpc::FormattedData>& data)
+void CypherDaemon::DoShutdown()
+{
+	LOG(INFO) << "Stopping message loop";
+	if (!_ws_server.stopped())
+		_ws_server.stop();
+}
+
+void CypherDaemon::OnConnectionStateChanged(Connection* connection, Connection::State state)
+{
+	if (_state == INITIALIZED)
+		OnStateChanged(STATE);
+	else if (_state == EXITING && state == Connection::DISCONNECTED)
+		_io.post([this]() { DoShutdown(); });
+}
+
+void CypherDaemon::OnTrafficStatsUpdated(Connection* connection, uint64_t downloaded, uint64_t uploaded)
+{
+	_bytesReceived = downloaded;
+	_bytesSent = uploaded;
+	OnStateChanged(BYTECOUNT);
+}
+
+void CypherDaemon::OnConnectionAttempt(Connection* connection, int attempt)
+{
+	if (_needsReconnect)
+	{
+		_needsReconnect = false;
+		OnStateChanged(NEEDSRECONNECT);
+	}
+}
+
+void CypherDaemon::SendToClient(ClientConnection connection, const std::shared_ptr<jsonrpc::FormattedData>& data)
 {
 	LOG(DEBUG) << "Sending RPC message: " << std::string(data->GetData(), data->GetSize());
 	_ws_server.send(connection, data->GetData(), data->GetSize(), websocketpp::frame::opcode::TEXT);
@@ -165,7 +179,7 @@ void CypherDaemon::OnFirstClientConnected()
 	PingServers();
 }
 
-void CypherDaemon::OnClientConnected(Connection c)
+void CypherDaemon::OnClientConnected(ClientConnection c)
 {
 	JsonObject data;
 	data["config"] = MakeConfigObject();
@@ -175,7 +189,7 @@ void CypherDaemon::OnClientConnected(Connection c)
 	SendToClient(c, _rpc_client.BuildNotificationData("data", std::move(data)));
 }
 
-void CypherDaemon::OnClientDisconnected(Connection c)
+void CypherDaemon::OnClientDisconnected(ClientConnection c)
 {
 
 }
@@ -183,27 +197,19 @@ void CypherDaemon::OnClientDisconnected(Connection c)
 void CypherDaemon::OnLastClientDisconnected()
 {
 	_shouldConnect = false;
-	switch (_state)
-	{
-		case CONNECTED:
-		case CONNECTING:
-		case SWITCHING:
-			_state = DISCONNECTING;
-			OnStateChanged(STATE);
-			_process->SendManagementCommand("signal SIGTERM");
-			break;
-		default:
-			// If the kill-switch is set to always on, trigger it here so it can be disabled when
-			// the last client disconnects (this also happens above inside OnStateChanged(STATE))
-			if (g_settings.firewall() == "on")
-				ApplyFirewallSettings();
-			break;
-	}
+	if (_state == INITIALIZED)
+		_connection->Disconnect();
+
 	_ping_timer.cancel();
 	_next_ping_scheduled = false;
+
+	// If the kill-switch is set to always on, trigger it here so it can be disabled when
+	// the last client disconnects (this also happens above inside OnStateChanged(STATE))
+	if (g_settings.firewall() == "on")
+		ApplyFirewallSettings();
 }
 
-void CypherDaemon::OnReceiveMessage(Connection connection, WebSocketServer::message_ptr msg)
+void CypherDaemon::OnReceiveMessage(ClientConnection connection, WebSocketServer::message_ptr msg)
 {
 	LOG(DEBUG) << "Received RPC message: " << msg->get_payload();
 	try
@@ -246,87 +252,6 @@ void CypherDaemon::OnReceiveMessage(Connection connection, WebSocketServer::mess
 		SendToClient(connection, data);
 }
 
-void CypherDaemon::OnOpenVPNStdOut(OpenVPNProcess* process, const asio::error_code& error, std::string line)
-{
-	//if (process == _process.get())
-	{
-		if (!error)
-		{
-			if (line.compare(0, 14, "****** DAEMON ") == 0)
-			{
-				line.erase(0, 14);
-				OnOpenVPNCallback(process, std::move(line));
-			}
-			else
-			{
-				LOG_EX(LogLevel::VERBOSE, true, Location("OpenVPN:STDOUT")) << line;
-			}
-		}
-		else
-			LOG(WARNING) << "OpenVPN:STDOUT error: " << error;
-	}
-}
-
-void CypherDaemon::OnOpenVPNStdErr(OpenVPNProcess* process, const asio::error_code& error, std::string line)
-{
-	//if (process == _process.get())
-	{
-		if (!error)
-		{
-			LOG_EX(LogLevel::WARNING, true, Location("OpenVPN:STDERR")) << line;
-		}
-		else
-			LOG(WARNING) << "OpenVPN:STDERR error: " << error;
-	}
-}
-
-void CypherDaemon::OnOpenVPNCallback(OpenVPNProcess* process, std::string args)
-{
-	LOG(INFO) << "DAEMON CALLBACK: " << args;
-}
-
-void CypherDaemon::OnOpenVPNProcessExited(OpenVPNProcess* process)
-{
-	if (process == _process.get())
-	{
-		_process.reset();
-		switch (_state)
-		{
-		case CONNECTING:
-		case CONNECTED:
-			if (_shouldConnect && _connection_retries_left > 0) // TODO: Only retry up to N times
-			{
-				--_connection_retries_left;
-		case SWITCHING:
-				_io.post([this]() { DoConnect(); });
-				if (_state != SWITCHING)
-				{
-					_state = CONNECTING;
-					OnStateChanged(STATE);
-				}
-				break;
-			}
-			// TODO: Report error to client?
-			// fallthrough
-		case DISCONNECTING:
-		case DISCONNECTED:
-		default:
-			_was_ever_connected = false;
-			if (_state != DISCONNECTED)
-			{
-				_state = DISCONNECTED;
-				OnStateChanged(STATE);
-			}
-			if (_needsReconnect)
-			{
-				_needsReconnect = false;
-				OnStateChanged(NEEDSRECONNECT);
-			}
-			break;
-		}
-	}
-}
-
 int CypherDaemon::GetAvailablePort(int hint)
 {
 	return hint;
@@ -338,11 +263,7 @@ static inline const char* GetStateString(CypherDaemon::State state)
 	{
 #define CASE(n) case CypherDaemon::n: return #n;
 	CASE(STARTING)
-	CASE(DISCONNECTED)
-	CASE(CONNECTING)
-	CASE(CONNECTED)
-	CASE(SWITCHING)
-	CASE(DISCONNECTING)
+	CASE(INITIALIZED)
 	CASE(EXITING)
 	CASE(EXITED)
 #undef CASE
@@ -489,14 +410,35 @@ JsonObject CypherDaemon::MakeSettingsObject(const std::unordered_set<std::string
 JsonObject CypherDaemon::MakeStateObject(int flags)
 {
 	JsonObject state;
-	if (flags & CONNECT)        state["connect"]        = _shouldConnect;
-	if (flags & STATE)          state["state"]          = GetStateString(_state);
-	if (flags & NEEDSRECONNECT) state["needsReconnect"] = _needsReconnect;
-	if (flags & IPADDRESS)      state["localIP"]        = (_state == CONNECTED) ? JsonValue(_localIP) : nullptr;
-	if (flags & IPADDRESS)      state["remoteIP"]       = (_state == CONNECTED) ? JsonValue(_remoteIP) : nullptr;
-	if (flags & BYTECOUNT)      state["bytesReceived"]  = (_state == CONNECTED) ? JsonValue(_bytesReceived) : nullptr;
-	if (flags & BYTECOUNT)      state["bytesSent"]      = (_state == CONNECTED) ? JsonValue(_bytesSent) : nullptr;
-	if (flags & PING_STATS)     state["pingStats"]      = _ping_stats;
+	if (flags & CONNECT)
+	{
+		state["connect"] = _shouldConnect;
+	}
+	if (flags & STATE)
+	{
+		state["state"] = (_state == INITIALIZED) ? _connection->GetStateString() : GetStateString(_state);
+	}
+	if (flags & NEEDSRECONNECT)
+	{
+		state["needsReconnect"] = _needsReconnect;
+	}
+	if (flags & BYTECOUNT)
+	{
+		if (_state == INITIALIZED && _connection->GetState() == Connection::CONNECTED)
+		{
+			state["bytesReceived"]  = JsonValue(_bytesReceived);
+			state["bytesSent"]      = JsonValue(_bytesSent);
+		}
+		else
+		{
+			state["bytesReceived"]  = nullptr;
+			state["bytesSent"]      = nullptr;			
+		}
+	}
+	if (flags & PING_STATS)
+	{
+		state["pingStats"] = _ping_stats;
+	}
 	return state;
 }
 
@@ -582,7 +524,7 @@ void CypherDaemon::RPC_applySettings(const JsonObject& settings)
 		}
 	}
 
-	if (!suppressReconnectWarning && (_state == CONNECTING || _state == CONNECTED) && !_process->CompareSettings())
+	if (!_needsReconnect && !suppressReconnectWarning && _state == INITIALIZED && _connection->NeedsReconnect())
 	{
 		_needsReconnect = true;
 		OnStateChanged(NEEDSRECONNECT);
@@ -598,191 +540,17 @@ void CypherDaemon::RPC_resetSettings(bool deleteAllValues)
 	NotifyChanges();
 }
 
-
-void CypherDaemon::WriteOpenVPNProfile(std::ostream& out, const JsonObject& server, OpenVPNProcess* process)
-{
-	using namespace std;
-
-	// Parse out protocol and remote port from remotePort setting
-	std::string protocol;
-	std::string remotePort;
-	{
-		auto both = SplitToVector(g_settings.remotePort(), ':', 1);
-		protocol = std::move(both[0]);
-		if (protocol == "tcp")
-			protocol = "tcp-client";
-		else if (protocol != "udp")
-		{
-			LOG(WARNING) << "Unrecognized 'remotePort' protocol '" << protocol << "', defaulting to 'udp'";
-			protocol = "udp";
-		}
-		if (both.size() == 2)
-		{
-			remotePort = std::move(both[1]);
-			if (remotePort == "auto")
-				remotePort = "7133";
-			else
-			{
-				try
-				{
-					size_t pos;
-					unsigned long port = std::stoul(remotePort, &pos);
-					if (pos != remotePort.size())
-					{
-						LOG(WARNING) << "Failed to fully parse 'remotePort' port '" << remotePort << "', using '" << port << "'";
-						remotePort = std::to_string(port);
-					}
-				}
-				catch (...)
-				{
-					LOG(WARNING) << "Unrecognized 'remotePort' port '" << remotePort << "', defaulting to '7133'";
-					remotePort = "7133";
-				}
-			}
-		}
-	}
-
-	// Basic settings
-	out << "client" << endl;
-	out << "dev tun" << endl;
-	out << "proto " << protocol << endl;
-
-	// MTU settings
-	const int mtu = g_settings.mtu();
-	out << "tun-mtu " << mtu << endl;
-	//out << "fragment" << (mtu - 100) << endl;
-	out << "mssfix " << (mtu - 220) << endl;
-
-	// Default connection settings
-	out << "ping 10" << endl;
-	out << "ping-exit 60" << endl;
-	out << "resolv-retry 0" << endl;
-	out << "persist-remote-ip" << endl;
-	//out << "persist-tun" << endl;
-	out << "route-delay 0" << endl;
-
-	// Default security settings
-	out << "tls-cipher TLS-DHE-RSA-WITH-AES-256-GCM-SHA384:TLS-DHE-RSA-WITH-AES-256-CBC-SHA256:TLS-DHE-RSA-WITH-AES-128-GCM-SHA256:TLS-DHE-RSA-WITH-AES-128-CBC-SHA256" << endl;
-	out << "auth SHA256" << endl;
-	out << "tls-version-min 1.2" << endl;
-	out << "remote-cert-eku \"TLS Web Server Authentication\"" << endl;
-	out << "verify-x509-name " << server.at("ovHostname").AsString() << " name" << endl;
-	out << "auth-user-pass" << endl;
-	out << "ncp-disable" << endl;
-
-	// Default route setting
-	if (g_settings.routeDefault())
-	{
-		out << "redirect-gateway def1 bypass-dhcp";
-		if (!g_settings.overrideDNS())
-			out << " bypass-dns";
-		// TODO: one day, redirect ipv6 traffic as well
-		// out << " ipv6";
-		out << endl;
-	}
-
-	// Local port setting
-	if (g_settings.localPort() == 0)
-		out << "nobind" << endl;
-	else
-		out << "lport " << g_settings.localPort() << endl;
-
-	// Overridden encryption settings
-	const auto& encryption = g_settings.encryption();
-	if (encryption == "stealth")
-	{
-		out << "cipher AES-128-GCM" << endl;
-		out << "scramble obfuscate cypherpunk-xor-key" << endl;
-	}
-	else if (encryption == "strong")
-	{
-		out << "cipher AES-256-GCM" << endl;
-	}
-	else if (encryption == "none")
-	{
-		out << "cipher none" << endl;
-	}
-	else // encryption == "default"
-	{
-		out << "cipher AES-128-GCM" << endl;
-	}
-
-	if (protocol == "udp")
-	{
-		// Always try to send the server a courtesy exit notification in UDP mode
-		out << "explicit-exit-notify" << endl;
-	}
-
-	// Wait 15s before giving up on a connection and trying the next one
-	out << "server-poll-timeout 10s" << endl;
-
-
-	// Connection remotes; must come after generic connection settings
-	std::string ipKey = "ov" + encryption;
-	ipKey[2] = std::toupper(ipKey[2]);
-	const auto& serverIPs = server.at(ipKey).AsArray();
-	for (const auto& ip : serverIPs)
-	{
-		out << "<connection>" << endl;
-		out << "  remote " << ip.AsString() << ' ' << remotePort << endl;
-		out << "</connection>" << endl;
-	}
-	_connection_retries_left = serverIPs.size() - 1;
-
-	// Extra routes; currently only used by the "exempt Apple services" setting
-#if OS_OSX
-	if (g_settings.exemptApple())
-	{
-		out << "route 17.0.0.0 255.0.0.0 net_gateway" << endl;
-	}
-#endif
-
-	// Output DNS settings; these are done via dhcp-option switches,
-	// and depend on the "Use Cypherpunk DNS" and related settings.
-
-	// Tell OpenVPN to always ignore the pushed DNS (10.10.10.10),
-	// which is simply there as a sensible default for dumb clients.
-	out << "pull-filter ignore \"dhcp-option DNS 10.10.10.10\"" << endl;
-	out << "pull-filter ignore \"route 10.10.10.10 255.255.255.255\"" << endl;
-
-	if (g_settings.overrideDNS())
-	{
-		int dns_index = 10
-			+ (g_settings.blockAds() ? 1 : 0)
-			+ (g_settings.blockMalware() ? 2 : 0)
-			+ (g_settings.optimizeDNS() || g_settings.locationFlag() == "cypherplay" ? 4 : 0);
-		std::string dns_string = std::to_string(dns_index);
-		out << "dhcp-option DNS 10.10.10." << dns_string << endl;
-		out << "route 10.10.10." << dns_string << endl;
-#if OS_LINUX
-		// On Linux, simulate secondary/tertiary DNS servers in order to push any prior DNS out of the list
-		out << "dhcp-option DNS 10.10.11." << dns_string << endl;
-		out << "dhcp-option DNS 10.10.12." << dns_string << endl;
-		out << "route 10.10.11." << dns_string << endl;
-		out << "route 10.10.12." << dns_string << endl;
-#elif OS_WIN
-		// On Windows, add some additional convenience/robustness switches
-		out << "register-dns" << endl;
-		if (g_settings.routeDefault())
-			out << "block-outside-dns" << endl;
-#endif
-	}
-
-	// Include hardcoded certificate authority
-	out << "<ca>" << endl;
-	for (auto& ca : g_config.certificateAuthorities())
-		for (auto& line : ca.AsArray())
-			out << line.AsString() << endl;
-	out << "</ca>" << endl;
-}
-
 bool CypherDaemon::RPC_connect()
 {
+	if (_state != INITIALIZED)
+		return false;
+
 	// Access required data early, should trigger an exception if it doesn't exist (before we've done any state changes)
 	g_settings.currentLocation();
 	g_account.privacy().at("username");
 	g_account.privacy().at("password");
 
+	// Update the lastConnected field of current location
 	{
 		std::chrono::duration<double> timestamp = std::chrono::steady_clock::now().time_since_epoch();
 		g_settings.lastConnected()[g_settings.location()] = JsonValue(timestamp.count());
@@ -798,257 +566,39 @@ bool CypherDaemon::RPC_connect()
 		g_settings.recent(recent);
 	}
 
-	switch (_state)
-	{
-		case CONNECTED:
-		case CONNECTING:
-			// Reconnect only if settings have changed
-			if (!_needsReconnect && _process->CompareSettings())
-			{
-				LOG(INFO) << "No need to reconnect; new server is the same as old";
-				break;
-			}
-			// fallthrough
-		case DISCONNECTING:
-			// Reconnect
-			_process->stale = true;
-			_bytesReceived = _bytesSent = 0;
-			_state = SWITCHING;
-			_needsReconnect = false;
-			OnStateChanged(STATE | BYTECOUNT | NEEDSRECONNECT);
-			_process->SendManagementCommand("signal SIGTERM");
-			break;
-
-		case SWITCHING:
-			// Already switching; make sure connection is marked as stale
-			_process->stale = true;
-			_needsReconnect = false;
-			OnStateChanged(NEEDSRECONNECT);
-			break;
-
-		case DISCONNECTED:
-			// Connect normally.
-			_bytesReceived = _bytesSent = 0;
-			_state = CONNECTING;
-			_needsReconnect = false;
-			OnStateChanged(STATE | BYTECOUNT | NEEDSRECONNECT);
-			_io.post([this](){ DoConnect(); });
-			break;
-
-		default:
-			// Can't connect under other circumstances.
-			return false;
-	}
 	if (!_shouldConnect)
 	{
 		_shouldConnect = true;
 		OnStateChanged(CONNECT);
 	}
+
+	bool result = _connection->Connect(_needsReconnect);
+
+	if (_needsReconnect)
+	{
+		_needsReconnect = false;
+		OnStateChanged(NEEDSRECONNECT);
+	}
+
 	NotifyChanges();
-	return true;
+
+	return result;
 }
 
-void CypherDaemon::DoConnect()
-{
-	static int index = 0;
-	//index++; // FIXME: Just make GetAvailablePort etc. work properly instead
-
-	_needsReconnect = false;
-	OnStateChanged(NEEDSRECONNECT);
-
-	_process = std::shared_ptr<OpenVPNProcess>(CreateOpenVPNProcess(_ws_server.get_io_service()));
-	_process->CopySettings();
-
-	int port = _process->StartManagementInterface();
-
-	std::vector<std::string> args;
-
-	args.push_back("--management");
-	args.push_back("127.0.0.1");
-	args.push_back(std::to_string(port));
-	args.push_back("--management-hold");
-	args.push_back("--management-client");
-	args.push_back("--management-query-passwords");
-
-	args.push_back("--verb");
-	args.push_back("4");
-
-#if OS_WIN
-	args.push_back("--dev-node");
-	args.push_back(GetAvailableAdapter(index));
-#elif OS_OSX
-	args.push_back("--dev-node");
-	args.push_back("utun");
-#endif
-
-#if OS_OSX
-	args.push_back("--script-security");
-	args.push_back("2");
-
-	args.push_back("--up");
-	args.push_back(GetPath(ScriptsDir, "up.sh") + " -9 -d -f -m -w -pradsgnwADSGNW");
-	args.push_back("--down");
-	args.push_back(GetPath(ScriptsDir, "down.sh") + " -9 -d -f -m -w -pradsgnwADSGNW");
-	args.push_back("--route-pre-down");
-	args.push_back(GetPath(ScriptsDir, "route-pre-down.sh"));
-	args.push_back("--tls-verify");
-	args.push_back(GetPath(ScriptsDir, "tls-verify.sh"));
-	args.push_back("--ipchange");
-	args.push_back(GetPath(ScriptsDir, "ipchange.sh"));
-	args.push_back("--route-up");
-	args.push_back(GetPath(ScriptsDir, "route-up.sh"));
-#elif OS_LINUX
-	args.push_back("--script-security");
-	args.push_back("2");
-
-	args.push_back("--up");
-	args.push_back(GetPath(ScriptsDir, "updown.sh"));
-	args.push_back("--down");
-	args.push_back(GetPath(ScriptsDir, "updown.sh"));
-#elif OS_WIN
-	args.push_back("--script-security");
-	args.push_back("1");
-#else
-	args.push_back("--script-security");
-	args.push_back("1");
-#endif
-
-	args.push_back("--config");
-
-	char profile_filename_tmp[32];
-	snprintf(profile_filename_tmp, sizeof(profile_filename_tmp), "profile%d.ovpn", index);
-	std::string profile_filename = GetPath(ProfileDir, EnsureExists, profile_filename_tmp);
-	{
-		std::ofstream f(profile_filename.c_str());
-		WriteOpenVPNProfile(f, g_settings.currentLocation(), _process.get());
-		f.close();
-	}
-	args.push_back(profile_filename);
-
-	{
-		// Naked pointer ONLY for OnManagementResponse and other callbacks
-		OpenVPNProcess* p = _process.get();
-
-		p->OnManagementResponse("HOLD", [this, p](const std::string& line) {
-			p->SendManagementCommand("hold release");
-		});
-		p->OnManagementResponse("PASSWORD", [this, p](const std::string& line) {
-			LOG(INFO) << line;
-			size_t q1 = line.find('\'');
-			size_t q2 = line.find('\'', q1 + 1);
-			auto id = line.substr(q1 + 1, q2 - q1 - 1);
-			p->SendManagementCommand(
-				"username \"" + id + "\" \"" + p->_username + "\"\n"
-				"password \"" + id + "\" \"" + p->_password + "\"");
-		});
-		p->OnManagementResponse("STATE", [this, p](const std::string& line) {
-			try
-			{
-				auto params = SplitToVector(line, ',');
-				if (params.size() >= 2)
-				{
-					const auto& s = params[1];
-					if (s == "CONNECTED")
-					{
-						_was_ever_connected = true;
-						_connection_retries_left = 5;
-						if (_state == DISCONNECTING)
-						{
-							p->SendManagementCommand("signal SIGTERM");
-							return;
-						}
-						if (params.size() >= 5)
-						{
-							_localIP = params.at(3);
-							_remoteIP = params.at(4);
-						}
-						_state = CONNECTED;
-						OnStateChanged(STATE | IPADDRESS);
-					}
-					else if (s == "RECONNECTING")
-					{
-						if (_state == CONNECTED)
-						{
-							// Connection dropped, OpenVPN is trying to reconnect
-							_state = CONNECTING;
-							OnStateChanged(STATE);
-						}
-						else if (_state == CONNECTING && _connection_retries_left > 0)
-						{
-							// Reconnection attempt N
-							--_connection_retries_left;
-						}
-						else
-						{
-							// Reconnection has failed; stop retrying
-							_state = DISCONNECTING;
-							OnStateChanged(STATE);
-							p->SendManagementCommand("signal SIGTERM");
-							// TODO: Send an error message to the client
-							// TODO: Implement a way to send error messages to the client
-						}
-					}
-					else if (s == "EXITING")
-					{
-						// Do actual reconnect in OnOpenVPNProcessExited (if needed), just set state here
-						if (_state != SWITCHING && _shouldConnect)
-						{
-							_state = CONNECTING;
-							OnStateChanged(STATE);
-						}
-					}
-				}
-			}
-			catch (const std::exception& e)
-			{
-				LOG(ERROR) << "Failed to parse management interface response: " << e;
-				p->Shutdown();
-			}
-		});
-		p->OnManagementResponse("BYTECOUNT", [this](const std::string& line) {
-			try
-			{
-				auto params = SplitToVector(line, ',');
-				_bytesReceived = std::stoll(params[0]);
-				_bytesSent = std::stoll(params[1]);
-				OnStateChanged(BYTECOUNT);
-			}
-			catch (const std::exception& e) { LOG(WARNING) << e; }
-		});
-		p->OnManagementResponse("LOG", [this](const std::string& line) {
-			auto params = SplitToVector(line, ',', 2);
-			LogLevel level;
-			if (params[1] == "F") level = LogLevel::CRITICAL;
-			else if (params[1] == "N") level = LogLevel::ERROR;
-			else if (params[1] == "W") level = LogLevel::WARNING;
-			else if (params[1] == "I") level = LogLevel::INFO;
-			else /*if (params[1] == "D")*/ level = LogLevel::VERBOSE;
-			LOG_EX(level, true, Location("openvpn")) << params[2];
-		});
-
-		p->Run(args);
-		p->AsyncWait([this, p = p->shared_from_this()](const asio::error_code& error) {
-			OnOpenVPNProcessExited(p.get());
-		});
-	}
-
-	_process->SendManagementCommand("state on\nbytecount 5\nhold release");
-}
 
 void CypherDaemon::RPC_disconnect()
 {
+	if (_state != INITIALIZED)
+		return;
+
 	if (_shouldConnect)
 	{
 		_shouldConnect = false;
 		OnStateChanged(CONNECT);
 	}
-	if (_state == CONNECTING || _state == CONNECTED || _state == SWITCHING)
-	{
-		_state = DISCONNECTING;
-		OnStateChanged(STATE);
-		if (_process)
-			_process->SendManagementCommand("signal SIGTERM");
-	}
+
+	_connection->Disconnect();
+
 	NotifyChanges();
 }
 

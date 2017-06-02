@@ -92,7 +92,7 @@ public:
 		if (_destinations.size() > 0)
 		{
 			_global_timeout_timer.expires_at(std::chrono::time_point_cast<clock::duration>(clock::now() + std::chrono::duration<double>(timeout)));
-			_global_timeout_timer.async_wait(THIS_CALLBACK(HandleGlobalTimeout));
+			_global_timeout_timer.async_wait(SHARED_CALLBACK(HandleGlobalTimeout));
 			_resolve_iterator = _destinations.begin();
 			StartNextResolve();
 			StartReceive();
@@ -129,7 +129,7 @@ private:
 		if (_resolve_iterator != _destinations.end())
 		{
 			asio::ip::icmp::resolver::query query(asio::ip::icmp::v4(), _resolve_iterator->ip, std::string());
-			_resolver.async_resolve(query, THIS_CALLBACK(HandleResolve));
+			_resolver.async_resolve(query, SHARED_CALLBACK(HandleResolve));
 		}
 	}
 	void HandleResolve(const asio::error_code& error, asio::ip::icmp::resolver::iterator it)
@@ -180,7 +180,7 @@ private:
 		std::ostream(&ping).write(reinterpret_cast<const char*>(req.raw), sizeof(req));
 
 		dest.send_time = clock::now();
-		_socket.async_send_to(ping.data(), dest.endpoint, THIS_CALLBACK(HandleWrite));
+		_socket.async_send_to(ping.data(), dest.endpoint, SHARED_CALLBACK(HandleWrite));
 
 		_wait_map[dest.sequence_number] = &dest;
 
@@ -205,7 +205,7 @@ private:
 	void StartReceive()
 	{
 		_reply_buffer.commit(_reply_buffer.size());
-		_socket.async_receive(_reply_buffer.prepare(65536), THIS_CALLBACK(HandleReceive));
+		_socket.async_receive(_reply_buffer.prepare(65536), SHARED_CALLBACK(HandleReceive));
 	}
 	void HandleReceive(const asio::error_code& error, size_t bytes_received)
 	{
@@ -264,7 +264,7 @@ private:
 									if (MINIMUM_PING_INTERVAL_MS > 0)
 									{
 										dest.timeout_timer.expires_at(dest.send_time + std::chrono::milliseconds(MINIMUM_PING_INTERVAL_MS));
-										dest.timeout_timer.async_wait(std::bind(THIS_CALLBACK(QueueSend), &dest));
+										dest.timeout_timer.async_wait(std::bind(SHARED_CALLBACK(QueueSend), &dest));
 									}
 									else
 										QueueSend(&dest);
@@ -305,7 +305,7 @@ private:
 					if (MINIMUM_PING_INTERVAL_MS > 0)
 					{
 						dest.timeout_timer.expires_at(dest.send_time + std::chrono::milliseconds(MINIMUM_PING_INTERVAL_MS));
-						dest.timeout_timer.async_wait(std::bind(THIS_CALLBACK(QueueSend), &dest));
+						dest.timeout_timer.async_wait(std::bind(SHARED_CALLBACK(QueueSend), &dest));
 					}
 					else
 						QueueSend(&dest);
