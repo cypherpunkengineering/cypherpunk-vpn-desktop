@@ -45,6 +45,8 @@ Connection::~Connection()
 {
 	if (_openvpn_process)
 		_openvpn_process->Shutdown();
+	_slow_connection_timer.cancel();
+	_connection_interval_timer.cancel();
 }
 
 bool Connection::EnumFromString(const std::string& str, State& value)
@@ -292,15 +294,19 @@ void Connection::SetOpenVPNState(OpenVPNState new_openvpn_state)
 				case DISCONNECTING_TO_RECONNECT:
 					new_state = CONNECTING;
 				case CONNECTING:
+					ScheduleConnect(std::chrono::seconds(CONNECTION_ATTEMPT_INTERVAL));
+					break;
 				case STILL_CONNECTING:
-					_io.post(WEAK_CALLBACK(DoConnect));
+					ScheduleConnect(std::chrono::seconds(SLOW_CONNECTION_ATTEMPT_INTERVAL));
 					break;
 
 				case INTERRUPTED:
 					new_state = RECONNECTING;
 				case RECONNECTING:
+					ScheduleConnect(std::chrono::seconds(RECONNECTION_ATTEMPT_INTERVAL));
+					break;
 				case STILL_RECONNECTING:
-					_io.post(WEAK_CALLBACK(DoConnect));
+					ScheduleConnect(std::chrono::seconds(SLOW_RECONNECTION_ATTEMPT_INTERVAL));
 					break;
 
 				case DISCONNECTING:
@@ -364,6 +370,18 @@ void Connection::OnSlowConnectionTimeout(const asio::error_code& error)
 		default:
 			break;
 	}
+}
+
+void Connection::ScheduleConnect(duration minimum_interval)
+{
+	if (clock::now() - _last_openvpn_launch < minimum_interval)
+	{
+		_connection_interval_timer.cancel();
+		_connection_interval_timer.expires_at(_last_openvpn_launch + minimum_interval);
+		_connection_interval_timer.async_wait(WEAK_LAMBDA([this](const asio::error_code& error) { if (!error) DoConnect(); }));
+	}
+	else
+		_io.post(WEAK_CALLBACK(DoConnect));
 }
 
 void Connection::OnOpenVPNExited(OpenVPNProcess* process, const asio::error_code& error)
@@ -498,22 +516,7 @@ void Connection::DoConnect()
 		case RECONNECTING:
 			break;
 		case STILL_CONNECTING:
-			if (clock::now() - _last_openvpn_launch < std::chrono::seconds(SLOW_CONNECTION_ATTEMPT_INTERVAL))
-			{
-				_connection_interval_timer.cancel();
-				_connection_interval_timer.expires_at(_last_openvpn_launch + std::chrono::seconds(SLOW_CONNECTION_ATTEMPT_INTERVAL));
-				_connection_interval_timer.async_wait(WEAK_LAMBDA([this](const asio::error_code& error) { if (!error) DoConnect(); }));
-				return;
-			}
-			break;
 		case STILL_RECONNECTING:
-			if (clock::now() - _last_openvpn_launch < std::chrono::seconds(SLOW_RECONNECTION_ATTEMPT_INTERVAL))
-			{
-				_connection_interval_timer.cancel();
-				_connection_interval_timer.expires_at(_last_openvpn_launch + std::chrono::seconds(SLOW_RECONNECTION_ATTEMPT_INTERVAL));
-				_connection_interval_timer.async_wait(WEAK_LAMBDA([this](const asio::error_code& error) { if (!error) DoConnect(); }));
-				return;
-			}
 			break;
 		case CONNECTED:
 			LOG(INFO) << "Already connected - DoConnect ignored";
@@ -533,6 +536,7 @@ void Connection::DoConnect()
 	_openvpn_process = std::make_shared<OpenVPNProcess>(_io, std::shared_ptr<OpenVPNListener>(shared_from_this(), this));
 
 	_last_openvpn_launch = clock::now();
+	_connection_interval_timer.cancel();
 
 	if (_connection_attempts == 0)
 	{

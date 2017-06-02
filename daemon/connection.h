@@ -79,9 +79,11 @@ public:
 	enum Limits
 	{
 		MAX_CONNECTION_ATTEMPTS = 3,
-		MAX_RECONNECTION_ATTEMPTS = 3,
+		MAX_RECONNECTION_ATTEMPTS = 10,
 		MAX_CONNECTION_TIME = 15,
 		MAX_RECONNECTION_TIME = 60,
+		CONNECTION_ATTEMPT_INTERVAL = 1,
+		RECONNECTION_ATTEMPT_INTERVAL = 1,
 		SLOW_CONNECTION_ATTEMPT_INTERVAL = 10,
 		SLOW_RECONNECTION_ATTEMPT_INTERVAL = 10,
 	};
@@ -143,8 +145,9 @@ private:
 	void SetState(State new_state);
 	void SetOpenVPNState(OpenVPNState new_openvpn_state);
 
-	void StartConnectionTimer(std::chrono::steady_clock::duration timeout);
+	void StartConnectionTimer(duration timeout);
 	void OnSlowConnectionTimeout(const asio::error_code& error);
+	void ScheduleConnect(duration minimum_interval);
 	void WriteOpenVPNProfile(std::ostream& out);
 
 	void DoConnect();
