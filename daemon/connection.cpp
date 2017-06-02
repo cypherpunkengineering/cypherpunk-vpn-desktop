@@ -1,6 +1,7 @@
 #include "config.h"
 
 #include "connection.h"
+#include "daemon.h"
 #include "path.h"
 
 #include <fstream>
@@ -24,7 +25,7 @@ static const std::string g_connection_setting_names[] = {
 	"runOpenVPNAsRoot",
 };
 
-static const bool use_stunnel = false;
+static const bool use_stunnel = false; // NOTE: not implemented, just placeholder
 
 
 Connection::Connection(asio::io_service& io, ConnectionListener* listener)
@@ -262,7 +263,8 @@ void Connection::SetOpenVPNState(OpenVPNState new_openvpn_state)
 					break;
 				case DISCONNECTING:
 				case DISCONNECTED:
-					_openvpn_process->Shutdown();
+					if (_openvpn_process)
+						_openvpn_process->Shutdown();
 					break;
 			}
 			break;
@@ -331,6 +333,9 @@ void Connection::SetState(State new_state)
 		switch (new_state)
 		{
 			case CONNECTED:
+			case DISCONNECTING_TO_RECONNECT:
+			case DISCONNECTING:
+			case DISCONNECTED:
 				_connection_attempts = 0;
 				_slow_connection_timer.cancel();
 				break;
@@ -393,6 +398,12 @@ void Connection::CopySettings()
 
 bool Connection::NeedsReconnect()
 {
+	if (!_openvpn_process)
+	{
+		_needsReconnect = false;
+		return false;
+	}
+
 	if (_needsReconnect)
 		return true;
 
@@ -459,7 +470,6 @@ void Connection::Disconnect()
 {
 	switch (_state)
 	{
-		case DISCONNECTING:
 		case DISCONNECTED:
 			return;
 		default:
