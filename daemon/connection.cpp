@@ -686,8 +686,8 @@ void Connection::WriteOpenVPNProfile(std::ostream& out)
 	out << "mssfix " << (mtu - 220) << endl;
 
 	// Default connection settings
-	out << "ping 10" << endl;
-	out << "ping-exit 60" << endl;
+	out << "ping 4" << endl;
+	out << "ping-exit 15" << endl;
 	out << "resolv-retry 0" << endl;
 	out << "persist-remote-ip" << endl;
 	//out << "persist-tun" << endl;
