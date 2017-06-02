@@ -45,36 +45,14 @@ ipc.on('navigate', (event, loc) => {
   }
 });
 
-// This event is received when the user attempts to close the window
-ipc.on('close', event => {
-  if (exiting) {
-    // Respond by telling the window to actually close.
-    event.sender.send('close');
-  } else {
-    // FIXME: If we have a dock/taskbar button, minimize.
-    // if (...) { window.minimize(); } else
-    // Otherwise, just hide the window.
-    {
-      window.hide();
-
-      // However, the first time the window is "closed" (and we're not exiting),
-      // we should display a desktop notification to remind the user that the
-      // application is still running, at least on Windows since that's not
-      // common to all applications.
-      new Notification({ body: "Cypherpunk Privacy will keep running in the background - control it from the system tray." });
-    }
-  }
-});
-
 // This event is received when someone is attempting to kill the main process.
 app.on('before-quit', event => {
   exiting = true;
-  // Tell the window to close.
-  if (window) window.webContents.send('close');
 });
 
 // This event is received at the start of the main process quit sequence.
 app.on('will-quit', event => {
+  exiting = true;
   if (daemon) {
     // Cancel the event since we need an asynchronous quit sequence.
     event.preventDefault();
@@ -181,6 +159,13 @@ function createMainWindow() {
   window.on('close', () => {
     window.webContents.closeDevTools();
   });
+  window.on('hide', () => {
+    // However, the first time the window is "closed" (and we're not exiting),
+    // we should display a desktop notification to remind the user that the
+    // application is still running, at least on Windows since that's not
+    // common to all applications.
+    new Notification({ body: "Cypherpunk Privacy will keep running in the background - control it from the system tray." });
+  });
   window.on('closed', () => {
     window = null;
   });
@@ -210,11 +195,11 @@ function createMainWindow() {
   if (daemon) daemon.notifyWindowCreated();
 };
 
-app.on('window-all-closed', function() {
+//app.on('window-all-closed', function() {
   // On OSX, an application stays alive even after all windows have been
   // closed (in the dock and/or tray), so don't exit.
 
   // On Windows, the taskbar button goes away if the window is closed,
   // and as a result we currently don't support taskbar-only mode, as
   // the application should keep running even with the Window closed.
-});
+//});
