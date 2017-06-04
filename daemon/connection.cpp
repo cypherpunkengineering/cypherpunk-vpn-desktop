@@ -790,8 +790,8 @@ void Connection::WriteOpenVPNProfile(std::ostream& out)
 
 	// Ignore ping settings pushed from the server.
 	out << "pull-filter ignore \"ping \"" << endl;
-	out << "pull-filter ignote \"ping-restart \"" << endl;
-	out << "pull-filter ignote \"ping-exit \"" << endl;
+	out << "pull-filter ignore \"ping-restart \"" << endl;
+	out << "pull-filter ignore \"ping-exit \"" << endl;
 
 	if (g_settings.overrideDNS())
 	{
