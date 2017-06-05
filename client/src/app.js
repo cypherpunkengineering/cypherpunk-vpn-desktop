@@ -143,7 +143,7 @@ function createMainWindow() {
     width: 350,
     height: 530,
     resizable: false,
-    minimizable: false,
+    minimizable: process.platform === 'darwin',
     maximizable: false,
     minWidth: 350,
     minHeight: 530,
