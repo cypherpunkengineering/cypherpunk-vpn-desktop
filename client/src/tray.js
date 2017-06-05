@@ -168,9 +168,7 @@ class Tray {
               click: cypherplayLocation ? () => {
                 daemon.call.applySettings({ location: cypherplayLocation, locationFlag: 'cypherplay' })
                   .then(() => {
-                    if (state === 'DISCONNECTED' || this.state.state.needsReconnect) {
-                      daemon.post.connect();
-                    }
+                    daemon.post.connect();
                   });
               } : null
             },
