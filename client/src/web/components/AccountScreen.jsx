@@ -82,8 +82,8 @@ export default class AccountScreen extends React.Component  {
     var transition = transitionMap[currentRoute];
 
     var renewal = this.isPremium() ? <div className="period">{this.getRenewalString()}</div> : null;
-    var upgradeString = "Manage Account";
-    var upgradeURL = '/account';
+    var upgradeString = null;
+    var upgradeURL = null;
     switch (daemon.account.account.type) {
       case 'free':
         upgradeString = "Upgrade to Premium";
@@ -116,9 +116,12 @@ export default class AccountScreen extends React.Component  {
               {renewal}
             </div>
             <div className="pane" data-title="Account Settings">
-              <div className="setting"><ExternalLink href={'https://cypherpunk.com' + upgradeURL + '?user=' + encodeURIComponent(daemon.account.account.email) + '&secret=' + encodeURIComponent(daemon.account.secret)}>{upgradeString}</ExternalLink></div>
+              { upgradeUrl && <div className="setting"><ExternalLink href={'https://cypherpunk.com' + upgradeURL + '?user=' + encodeURIComponent(daemon.account.account.email) + '&secret=' + encodeURIComponent(daemon.account.secret)}>{upgradeString}</ExternalLink></div> }
+              <div className="setting"><ExternalLink href={'https://cypherpunk.com/account?user=' + encodeURIComponent(daemon.account.account.email) + '&secret=' + encodeURIComponent(daemon.account.secret)}>Manage Account</ExternalLink></div>
+              {/*
               <div className="setting"><Link to="/account/email" tabIndex="0"><div>Email<small>{daemon.account.account.email}</small></div></Link></div>
               <div className="setting"><Link to="/account/password" tabIndex="0">Password</Link></div>
+              */}
             </div>
             <div className="pane" data-title="More">
               <div className="setting"><ExternalLink href="https://cypherpunk.com/account/refer-a-friend"><div>Refer a Friend</div></ExternalLink></div>
