@@ -116,11 +116,29 @@ class Tray {
       }
       let connectName;
       switch (state) {
-        case 'CONNECTING': connectName = "Connecting to " + locationName + "..."; break;
-        case 'CONNECTED': if (this.state.state.needsReconnect) connectName = "Reconnect (apply changed settings)"; else connectName = "Connected to " + locationName; break;
-        case 'DISCONNECTING': connectName = "Disconnecting..."; break;
-        case 'DISCONNECTED': connectName = "Connect to " + locationName; break;
-        case 'SWITCHING': connectName = "Switching to " + locationName; break;
+        case 'CONNECTING':
+        case 'STILL_CONNECTING':
+          connectName = "Connecting to " + locationName + "...";
+          break;
+        case 'INTERRUPTED':
+        case 'RECONNECTING':
+        case 'STILL_RECONNECTING':
+        case 'DISCONNECTING_TO_RECONNECT':
+          connectName = "Reconnecting to " + locationName + "...";
+          break;
+        case 'CONNECTED':
+          if (this.state.state.needsReconnect)
+            connectName = "Reconnect (apply changed settings)";
+          else
+            connectName = "Connected to " + locationName;
+          break;
+        case 'DISCONNECTING':
+          connectName = "Disconnecting...";
+          break;
+        default:
+        case 'DISCONNECTED':
+          connectName = "Connect to " + locationName;
+          break;
       }
       // FIXME: Enable/disable these based on this.state.state.connect
       items.push({

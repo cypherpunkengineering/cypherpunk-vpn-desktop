@@ -165,13 +165,54 @@ function getTransition(diff) {
   });
 }
 
+
+function simplifyConnectionState(state) {
+  switch (state) {
+    case 'CONNECTING':
+    case 'STILL_CONNECTING':
+      return 'connecting';
+    case 'CONNECTED':
+      return 'connected';
+    case 'INTERRUPTED':
+    case 'RECONNECTING':
+    case 'STILL_RECONNECTING':
+    case 'DISCONNECTING_TO_RECONNECT':
+      return 'reconnecting';
+    case 'DISCONNECTING':
+      return 'disconnecting';
+    case 'DISCONNECTED':
+      return 'disconnected';
+  }
+}
+
+function describeConnectionState(state) {
+  switch (state) {
+    case 'CONNECTING':
+    case 'STILL_CONNECTING':
+      return "Connecting...";
+    case 'CONNECTED':
+      return "Connected";
+    case 'INTERRUPTED':
+      return "Interrupted";
+    case 'RECONNECTING':
+    case 'STILL_RECONNECTING':
+    case 'DISCONNECTING_TO_RECONNECT':
+      return "Reconnecting...";
+    case 'DISCONNECTING':
+      return "Disconnecting...";
+    case 'DISCONNECTED':
+      return "Disconnected";
+  }
+}
+
+
 export default class ConnectScreen extends DaemonAware(React.Component) {
   constructor(props) {
     super(props);
     this.daemonSubscribeState({
       config: { locations: true, regions: true, countryNames: true, regionNames: true, regionOrder: true },
       settings: { location: true, locationFlag: true, favorites: v => ({ favorites: Array.toDict(v, f => f, f => true) }), lastConnected: true, overrideDNS: true },
-      state: { state: v => ({ connectionState: v.toLowerCase().replace('switching', 'connecting') }), connect: true, pingStats: true, bytesReceived: true, bytesSent: true },
+      state: { state: v => ({ state: v, connectionState: simplifyConnectionState(v) }), connect: true, pingStats: true, bytesReceived: true, bytesSent: true },
     });
   }
 
@@ -224,7 +265,7 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
 
           <div className={classList("connect-status", { "hidden": this.state.locationListOpen })}>
             <span>Status</span>
-            <span>{this.state.connectionState}</span>
+            <span>{describeConnectionState(this.state.state)}</span>
           </div>
 
           <div className={classList("location-selector", { "hidden": this.state.locationListOpen })} onClick={() => this.setState({ locationListOpen: true, locationListSelection: this.state.connect && (this.state.locationFlag === 'cypherplay' ? 'cypherplay' : this.state.location) || null })}>
