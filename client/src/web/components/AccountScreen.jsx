@@ -116,7 +116,7 @@ export default class AccountScreen extends React.Component  {
               {renewal}
             </div>
             <div className="pane" data-title="Account Settings">
-              { upgradeUrl && <div className="setting"><ExternalLink href={'https://cypherpunk.com' + upgradeURL + '?user=' + encodeURIComponent(daemon.account.account.email) + '&secret=' + encodeURIComponent(daemon.account.secret)}>{upgradeString}</ExternalLink></div> }
+              { upgradeURL && <div className="setting"><ExternalLink href={'https://cypherpunk.com' + upgradeURL + '?user=' + encodeURIComponent(daemon.account.account.email) + '&secret=' + encodeURIComponent(daemon.account.secret)}>{upgradeString}</ExternalLink></div> }
               <div className="setting"><ExternalLink href={'https://cypherpunk.com/account?user=' + encodeURIComponent(daemon.account.account.email) + '&secret=' + encodeURIComponent(daemon.account.secret)}>Manage Account</ExternalLink></div>
               {/*
               <div className="setting"><Link to="/account/email" tabIndex="0"><div>Email<small>{daemon.account.account.email}</small></div></Link></div>
