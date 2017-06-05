@@ -7,7 +7,7 @@ window.addEventListener('beforeunload', e => {
   if (exiting || (exiting = remote.getGlobal('exiting'))) {
     // Do nothing, allow window to close
   } else {
-    remote.getCurrentWindow().hide();
+    ipc.send('hide-window');
     e.returnValue = false;
     return false;
   }

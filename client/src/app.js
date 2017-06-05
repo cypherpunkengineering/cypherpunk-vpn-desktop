@@ -45,6 +45,16 @@ ipc.on('navigate', (event, loc) => {
   }
 });
 
+let displayedHideNotification = false;
+ipc.on('hide-window', (event) => {
+  if (window) {
+    window.hide();
+    if (!displayedHideNotification) {
+      displayedHideNotification = new Notification({ body: "Cypherpunk Privacy will keep running in the background - control it from the system tray." }).success;
+    }
+  }
+});
+
 // This event is received when someone is attempting to kill the main process.
 app.on('before-quit', event => {
   exiting = true;
@@ -158,13 +168,6 @@ function createMainWindow() {
   window.setMenu(null);
   window.on('close', () => {
     window.webContents.closeDevTools();
-  });
-  window.on('hide', () => {
-    // However, the first time the window is "closed" (and we're not exiting),
-    // we should display a desktop notification to remind the user that the
-    // application is still running, at least on Windows since that's not
-    // common to all applications.
-    new Notification({ body: "Cypherpunk Privacy will keep running in the background - control it from the system tray." });
   });
   window.on('closed', () => {
     window = null;
