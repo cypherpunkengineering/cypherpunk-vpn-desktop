@@ -244,11 +244,16 @@
   color: #fff;
   display: flex;
   flex-direction: column;
+  background: linear-gradient(-39deg, #033, #255);
 
   .titlebar {
     flex: 0 0 auto;
     text-align: center;
     z-index: 4;
+    &.secondary {
+      background: linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.1)) !important;
+      border-bottom: 2px solid #255;
+    }
   }
 
   .content {
@@ -258,6 +263,9 @@
     &.scrollable {
       overflow-x: hidden;
       overflow-y: auto;
+      &::-webkit-scrollbar-thumb {
+        background: rgba(220, 245, 255, 0.3);
+      }
     }
 
     @leftPadding: 15px;
@@ -509,9 +517,9 @@
         }
 
         &:not(.hidden) ~ .setting {
-          background-image+: linear-gradient(to bottom, rgba(255,255,255,0.3) 1px, transparent 1px);
+          background-image+: linear-gradient(to bottom, rgba(255,255,255,0.2) 1px, transparent 1px);
           &:hover {
-            background-image: linear-gradient(to bottom, rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(to left, rgba(255,255,255,0.1), transparent);
+            background-image: linear-gradient(to bottom, rgba(255,255,255,0.2) 1px, transparent 1px), linear-gradient(to left, rgba(255,255,255,0.1), transparent);
           }
         }
         &:hover {
