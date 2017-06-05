@@ -203,3 +203,7 @@ function createMainWindow() {
   // and as a result we currently don't support taskbar-only mode, as
   // the application should keep running even with the Window closed.
 //});
+
+app.on('activate', function() {
+  if (window) window.show();
+});
