@@ -39,6 +39,33 @@
       background: black;
       opacity: 0;
       //transition: transform @transitionTime, opacity @transitionTime;
+
+      &::before, &::after {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 60px;
+        color: rgba(140,255,255,0.3);
+        font-size: 80px;
+        line-height: 100vh;
+        transition: opacity 0.3s, color 0.2s, text-shadow 0.3s;
+        opacity: 0;
+        text-align: center;
+      }
+      &:hover {
+        &::before, &::after {
+          color: rgba(200,255,255,0.8);
+          text-shadow: 0 0 40px rgba(140,255,255,0.5);
+        }
+      }
+      &::before {
+        .semanticIcon('\f105');
+        left: 0;
+      }
+      &::after {
+        .semanticIcon('\f104');
+        right: 0;
+      }
     }
   }
 
@@ -118,6 +145,13 @@
         opacity: @overlayOpacity;
         //transition: transform @transitionTime, opacity @transitionTime;
         transform: translateX(-@rightPanelWidth);
+        &::after {
+          transition: opacity 1s, color 0.2s, text-shadow 0.3s;
+          opacity: 1;
+        }
+        &::before {
+          opacity: 0;
+        }
       }
     }
   }
@@ -155,6 +189,13 @@
     }
     ~ .panel-content, ~ .panel-content ~ .overlay {
       transform: translateX(@leftPanelWidth);
+      &::after {
+        opacity: 0;
+      }
+      &::before {
+        transition: opacity 1s, color 0.2s, text-shadow 0.3s;
+        opacity: 1;
+      }
     }
   }
 
