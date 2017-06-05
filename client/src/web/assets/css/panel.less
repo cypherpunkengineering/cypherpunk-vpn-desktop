@@ -56,6 +56,7 @@
       &-enter {
         pointer-events: none !important;
         transform: translateX(@rightPanelWidth);
+        filter: brightness(40%);
         will-change: transform;
         ~ .panel-content { display: flex; }
         ~ .panel-content, ~ .panel-content ~ .overlay {
@@ -68,7 +69,8 @@
         }
         &-active {
           transform: translateX(0);
-          transition: transform @transitionTime ease-out;
+          filter: brightness(100%);
+          transition: transform @transitionTime ease-out, filter @transitionTime cubic-bezier(.5,0,.8,1);
           ~ .panel-content, ~ .panel-content ~ .overlay {
             transform: translateX(-@rightPanelWidth);
             transition: transform @transitionTime ease-out, opacity @transitionTime;
@@ -81,6 +83,7 @@
       &-leave {
         pointer-events: none !important;
         transform: translateX(0);
+        filter: brightness(100%);
         ~ .panel-content { display: flex; }
         ~ .panel-content, ~ .panel-content ~ .overlay {
           pointer-events: none !important;
@@ -91,7 +94,8 @@
         }
         &-active {
           transform: translateX(@rightPanelWidth);
-          transition: transform @transitionTime ease-out;
+          filter: brightness(40%);
+          transition: transform @transitionTime ease-out, filter @transitionTime cubic-bezier(.2,0,.5,1);
           ~ .panel-content, ~ .panel-content ~ .overlay {
             transform: translateX(0);
             transition: transform @transitionTime ease-out, opacity @transitionTime;
