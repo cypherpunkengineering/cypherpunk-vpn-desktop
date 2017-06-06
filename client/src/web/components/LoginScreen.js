@@ -91,19 +91,19 @@ function setAccount(data) {
 const PIPE_UPPER_TEXT = 'x`8 0 # = v 7 mb" | y 9 # 8 M } _ + kl $ #mn x -( }e f l]> ! 03 @jno x~`.xl ty }[sx k j';
 const PIPE_LOWER_TEXT = 'dsK 7 & [*h ^% u x 5 8 00 M< K! @ &6^d jkn 70 :93jx p0 bx, 890 Qw ;é " >?7 9 3@ { 5x3 >';
 
-const PageHeader = ({ key = "header", top = 224, className = null, ...props } = {}) => <div key={key} className={classList('header', className)} style={{ top: top + 'px' }} {...props}></div>;
-const PagePipe = ({ key = "pipe", top = 190, className = null, upper = PIPE_UPPER_TEXT, lower = PIPE_LOWER_TEXT, ...props } = {}) =>
+const PageHeader = ({ key = "header", top = 160, className = null, ...props } = {}) => <div key={key} className={classList('header', className)} style={{ top: top + 'px' }} {...props}></div>;
+const PagePipe = ({ key = "pipe", top = 126, className = null, upper = PIPE_UPPER_TEXT, lower = PIPE_LOWER_TEXT, ...props } = {}) =>
   <div key={key} className={classList('pipe', className)} style={{ top: top + 'px' }} {...props}>
     <div style={{ animationDuration: (upper.length*300)+'ms' }}>{upper}{upper}</div>
     <div style={{ animationDuration: (lower.length*300)+'ms' }}>{lower}{lower}</div>
   </div>;
-const PageBackground = ({ key, src, top = 0, ...props } = {}) => <RetinaImage key={key} className="background" src={src} style={{ top: top + 'px' }} {...props}/>;
+const PageBackground = ({ key, src, top = 0, right = null, ...props } = {}) => <RetinaImage key={key} className="background" src={src} style={{ top: top + 'px', right: typeof(right) === 'number' ? right + 'px' : null }} {...props}/>;
 const BackLink = ({ key = "back", to, text = "Back", icon = 'undo', ...props } = {}) => <Link key={key} className="back link" to={to} tabIndex="0" {...props}><i className={classList("icon", icon)}/>{text}</Link>;
 
 const LoginImage = require('../assets/img/login_illustration3.png');
 const LoginImage2x = require('../assets/img/login_illustration3@2x.png');
 
-const DefaultPageBackground = PageBackground({ key: "bg-default", top: 10, src: { 1: LoginImage, 2: LoginImage2x } });
+const DefaultPageBackground = PageBackground({ key: "bg-default", top: 30, right: 70, src: { 1: LoginImage, 2: LoginImage2x } });
 const DefaultPageElements = [ DefaultPageBackground, PagePipe(), PageHeader() ];
 
 const AnalyticsPageBackground = PageBackground({ key: "bg-analytics", top: 60, src: { 1: require('../assets/img/analytics.png'), 2: require('../assets/img/analytics@2x.png') } });
@@ -129,12 +129,14 @@ function pageValue(pageType, member) {
 class Page extends React.Component {
   static elements = [ DefaultPageElements ];
   static defaultProps = {
-    top: 299,
+    top: 235,
   };
   render() {
     return (
       <form className={classList("cp ui form", this.props.className)} style={{ top: this.props.top + 'px' }}>
+        <div class="padding"/>
         {this.props.children}
+        <div class="padding"/>
       </form>
     );
   }

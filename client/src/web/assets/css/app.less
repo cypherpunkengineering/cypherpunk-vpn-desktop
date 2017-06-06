@@ -703,8 +703,16 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
     flex-direction: column;
     //justify-content: center;
     align-items: center;
-    padding: 30px 2.5em 40px;
+    padding: 20px 2.5em 60px;
     z-index: 2;
+
+    .padding {
+      visibility: hidden;
+      pointer-events: none;
+      &:first-child { flex: 1 0 0; }
+      &:last-child { flex: 2 0 0; }
+    }
+
     input {
       .nondraggable;
       border: none;
@@ -769,7 +777,6 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   }
 
   .login-password {
-    padding-top: 50px;
     > .name {
       margin: 5px -100px 15px;
       background: rgba(255,255,255,0.07);
@@ -790,7 +797,6 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   }
 
   .login-register {
-    padding-top: 25px;
     .loader {
       margin-top: 30px;
     }
@@ -804,7 +810,6 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
   }
 
   .login-confirm {
-    padding-top: 20px;
     .link {
       font-size: 18px;
     }
