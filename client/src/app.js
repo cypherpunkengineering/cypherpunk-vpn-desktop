@@ -100,18 +100,26 @@ eventPromise(app, 'ready').then(() => {
   daemon.on('state', state => {
     if (state.state && state.state !== lastState) {
       if (daemon.settings.showNotifications) {
-        if (daemon.state.connect) {
-          if (state.state === 'DISCONNECTED') {
-            new Notification("Connection failure", { body: "Your connection to the Cypherpunk network has failed." + ((daemon.settings.firewall !== 'off') ? " Your internet connection has been cut to preventing your traffic from leaking." : "") });
-          } else if (state.state === 'CONNECTED') {
-            new Notification("Connected to Cypherpunk network", { body: "You are now safely connected to the Cypherpunk Privacy network. Enjoy a more free internet!" });
-          } else if (lastState === 'CONNECTED' && state.state === 'CONNECTING') {
-            new Notification("Reconnecting to Cypherpunk network...", { body: "Your connection to the Cypherpunk network has been disrupted, please wait while we try to restore it..." });
-          }
-        } else {
-          if (state.state === 'DISCONNECTED') {
-            new Notification("Disconnected from Cypherpunk network", { body: (daemon.settings.firewall === 'on') ? "Reminder: Leak Protection is active, blocking your internet connection." : "You are now connecting directly to the internet." });
-          }
+        switch (state.state) {
+          case 'CONNECTED':
+            if (lastState === 'RECONNECTING' || lastState === 'STILL_RECONNECTING') {
+              new Notification("Reconnected to Cypherpunk network", { body: "You are once again safely connected to the Cypherpunk Privacy network." });
+            } else {
+              new Notification("Connected to Cypherpunk network", { body: "You are now safely connected to the Cypherpunk Privacy network. Enjoy a more free internet!" });
+            }
+            break;
+          case 'RECONNECTING':
+            if (lastState === 'CONNECTED') {
+              new Notification("Reconnecting to Cypherpunk network...", { body: "Your connection to the Cypherpunk network has been disrupted, please wait while we try to restore it..." });
+            }
+            break;
+          case 'DISCONNECTED':
+            if (daemon.settings.firewall == 'on') {
+              new Notification("Disconnected from Cypherpunk network", { body: "Reminder: Leak Protection is active, blocking your internet connection." });
+            } else {
+              new Notification("Disconnected from Cypherpunk network", { body: "You are now connecting directly to the internet." });
+            }
+            break;
         }
       }
       lastState = state.state;
