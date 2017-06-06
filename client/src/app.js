@@ -45,15 +45,6 @@ ipc.on('navigate', (event, loc) => {
   }
 });
 
-let displayedHideNotification = false;
-ipc.on('hide-window', (event) => {
-  if (window) {
-    window.hide();
-    if (!displayedHideNotification) {
-      displayedHideNotification = new Notification({ body: "Cypherpunk Privacy will keep running in the background - control it from the system tray." }).success;
-    }
-  }
-});
 
 // This event is received when someone is attempting to kill the main process.
 app.on('before-quit', event => {
@@ -166,9 +157,25 @@ function createMainWindow() {
   });
 
   window.setMenu(null);
-  window.on('close', () => {
-    window.webContents.closeDevTools();
+
+  let displayedHideNotification = false;
+  window.on('close', event => {
+    if (!exiting) {
+      event.preventDefault();
+      window.hide();
+      onHideWindow();
+      if (!displayedHideNotification) {
+        displayedHideNotification = new Notification({ body: "Cypherpunk Privacy will keep running in the background - control it from the system tray." }).success;
+      }
+    }
   });
+
+  window.on('show', () => {
+    if (!exiting) {
+      onShowWindow();
+    }
+  });
+
   window.on('closed', () => {
     window = null;
   });
@@ -183,20 +190,39 @@ function createMainWindow() {
     };
     window.once('ready-to-show', show);
     showTimeout = setTimeout(show, 500);
+  } else {
+    window.hide();
+    onHideWindow();
   }
-  window.maximizedPrev = null;
 
   window.loadURL(`file://${__dirname}/web/index.html`);
   if (args.debug) {
     window.webContents.on('devtools-opened', () => {
-      window.show();
-      window.focus();
+      if (!exiting) {
+        window.show();
+        window.focus();
+      }
     });
     window.webContents.openDevTools({ mode: 'detach' });
   }
 
   if (daemon) daemon.notifyWindowCreated();
 };
+
+
+function onHideWindow() {
+  window.setSkipTaskbar(true);
+  if (app.dock && app.dock.hide) {
+    app.dock.hide();
+  }
+}
+
+function onShowWindow() {
+  window.setSkipTaskbar(false);
+  if (app.dock && app.dock.show) {
+    app.dock.show();
+  }
+}
 
 //app.on('window-all-closed', function() {
   // On OSX, an application stays alive even after all windows have been

@@ -2,7 +2,6 @@ import { ipcRenderer } from 'electron';
 import EventEmitter from 'events';
 import { RPC, IPCImpl } from '../rpc.js';
 import Loader from './loader.js';
-import './unload.js';
 import './util.js';
 
 var ipc, rpc, daemon;
