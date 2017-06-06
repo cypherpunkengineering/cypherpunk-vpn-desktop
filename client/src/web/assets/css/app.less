@@ -333,6 +333,16 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
       &:before { right: 1.5em; }
       &:after { right: 0.7em; transform-origin: right top; }
     }
+
+    // Reapply default styles when the settings or account menu is open
+    .subpanel ~ & {
+      color: saturate(screen(@themeMainBackground, #ccc), 40%) !important;
+      background-image: linear-gradient(to bottom, transparent 50%, transparent) !important;
+      img { opacity: 0.8 !important; }
+    }
+    .subpanel ~ &[data-tooltip] {
+      &::before, &::after { display: none !important; }
+    }
   }
   #connect-container {
     z-index: 1;
