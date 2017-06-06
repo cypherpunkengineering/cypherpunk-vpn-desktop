@@ -8,6 +8,10 @@ import AutoLaunch from './autostart.js';
 
 // Hardcode DNS resolution for API requests
 app.commandLine.appendSwitch('host-resolver-rules', 'MAP cypherpunk.privacy.network 216.239.32.21');
+// Disable ClearType on Windows, as it tends to look bad
+if (process.platform === 'win32') {
+  app.commandLine.appendSwitch('disable-lcd-text');
+}
 
 // Initialize the tray manager
 tray = require('./tray.js');
