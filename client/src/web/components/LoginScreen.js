@@ -100,10 +100,10 @@ const PagePipe = ({ key = "pipe", top = 190, className = null, upper = PIPE_UPPE
 const PageBackground = ({ key, src, top = 0, ...props } = {}) => <RetinaImage key={key} className="background" src={src} style={{ top: top + 'px' }} {...props}/>;
 const BackLink = ({ key = "back", to, text = "Back", icon = 'undo', ...props } = {}) => <Link key={key} className="back link" to={to} tabIndex="0" {...props}><i className={classList("icon", icon)}/>{text}</Link>;
 
-const LoginImage = require('../assets/img/login_illustration2.png');
-const LoginImage2x = require('../assets/img/login_illustration2@2x.png');
+const LoginImage = require('../assets/img/login_illustration3.png');
+const LoginImage2x = require('../assets/img/login_illustration3@2x.png');
 
-const DefaultPageBackground = PageBackground({ key: "bg-default", top: 37, src: { 1: LoginImage, 2: LoginImage2x } });
+const DefaultPageBackground = PageBackground({ key: "bg-default", top: 10, src: { 1: LoginImage, 2: LoginImage2x } });
 const DefaultPageElements = [ DefaultPageBackground, PagePipe(), PageHeader() ];
 
 const AnalyticsPageBackground = PageBackground({ key: "bg-analytics", top: 60, src: { 1: require('../assets/img/analytics.png'), 2: require('../assets/img/analytics@2x.png') } });
