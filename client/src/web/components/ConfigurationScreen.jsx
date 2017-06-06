@@ -2,11 +2,13 @@ import React from 'react';
 import { Link } from 'react-router';
 // import { ipcRenderer as ipc } from 'electron';
 // import daemon, { DaemonAware } from './daemon.js';
+import { ipcRenderer as ipc } from 'electron';
 import Titlebar, { SecondaryTitlebar } from './Titlebar';
 import RouteTransition from './Transition';
 import { PanelTitlebar } from './Titlebar';
 import { Subpanel, PanelContent } from './Panel';
 import daemon, { DaemonAware } from '../daemon';
+import { classList } from '../util';
 
 import ApplicationSettings from './config/ApplicationSettings';
 import PrivacySettings from './config/PrivacySettings';
@@ -25,9 +27,20 @@ export default class ConfigurationScreen extends DaemonAware(React.Component) {
       settings: { showAdvancedSettings: true }
     })
   }
+  componentWillUnmount() {
+    super.componentWillUnmount();
+    if (this.state.resetAnimation) {
+      clearTimeout(this.state.resetAnimation);
+      this.setState({ resetAnimation: null });
+    }
+  }
   resetSettings() {
     daemon.post.resetSettings(true);
     daemon.post.applySettings({ showAdvancedSettings: false });
+    ipc.send('autostart-set', true);
+    if (!this.state.resetAnimation) {
+      this.setState({ resetAnimation: setTimeout(() => this.setState({ resetAnimation: null }), 700) });
+    }
   }
   render() {
     return(
@@ -44,7 +57,7 @@ export default class ConfigurationScreen extends DaemonAware(React.Component) {
               <CheckboxSetting name="showAdvancedSettings" className="advanced" label="Show Advanced Settings"/>
             </div>
             <div className="pane">
-              <LinkSetting className="reset" onClick={() => this.resetSettings()} label="Reset Settings to Default"/>
+              <LinkSetting className={classList("reset",{ "animating": this.state.resetAnimation })} onClick={() => this.resetSettings()} label="Reset Settings to Default"/>
             </div>
             <div className="version footer">
               <div><i className="tag icon"/>{`v${this.state.showAdvancedSettings ? fullVersion : shortVersion}`}</div>

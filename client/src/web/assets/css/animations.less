@@ -183,3 +183,20 @@ body {
     transform: translateX(-50%);
   }
 }
+
+@keyframes rotate-clockwise {
+  0% { transform: rotate(0deg); }
+  //50% { transform: rotate(180deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes rotate-counter-clockwise {
+  0% { transform: rotate(0deg); }
+  //50% { transform: rotate(180deg); }
+  100% { transform: rotate(-360deg); }
+}
+
+@keyframes horizontal-sweep-background {
+  0% { background-position: -100vw 0; }
+  100% { background-position: 100vw 0; }
+}
