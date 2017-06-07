@@ -77,6 +77,8 @@ int CypherDaemon::Run()
 		_ws_server.set_access_channels(alevel::access_core);
 		_ws_server.set_error_channels(elevel::info | elevel::library);
 #endif
+		_ws_server.set_access_channels(alevel::all);
+		_ws_server.set_error_channels(alevel::all);
 	}
 
 	_ws_server.init_asio(&_io);
