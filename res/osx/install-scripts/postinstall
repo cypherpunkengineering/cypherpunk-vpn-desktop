@@ -18,7 +18,8 @@ fi
 # with +setgid owned by the cypherpunk group (this does not affect everyone's traffic)
 dseditgroup -o edit -a everyone -t group $GROUP
 
-# Run 'id' command to help flush group changes so they're visible to posix commands
+# Run some commands to help flush group changes so they're visible to posix commands
+dscacheutil -flushcache
 id
 
 # Update permissions on the client executable to exempt it from the killswitch
