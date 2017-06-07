@@ -98,7 +98,7 @@ const PagePipe = ({ key = "pipe", top = 126, className = null, upper = PIPE_UPPE
     <div style={{ animationDuration: (lower.length*300)+'ms' }}>{lower}{lower}</div>
   </div>;
 const PageBackground = ({ key, src, top = 0, right = null, ...props } = {}) => <RetinaImage key={key} className="background" src={src} style={{ top: top + 'px', right: typeof(right) === 'number' ? right + 'px' : null }} {...props}/>;
-const BackLink = ({ key = "back", to, text = "Back", icon = 'undo', ...props } = {}) => <Link key={key} className="back link" to={to} tabIndex="0" {...props}><i className={classList("icon", icon)}/>{text}</Link>;
+const BackLink = ({ key = "back", to, text = "Back", icon = 'left chevron', ...props } = {}) => <Link key={key} className="back link" to={to} tabIndex="0" {...props}><i className={classList("icon", icon)}/>{text}</Link>;
 
 const LoginImage = require('../assets/img/login_illustration3.png');
 const LoginImage2x = require('../assets/img/login_illustration3@2x.png');
