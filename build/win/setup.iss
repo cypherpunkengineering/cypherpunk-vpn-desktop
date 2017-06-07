@@ -101,7 +101,7 @@ Type: filesandordirs; Name: "{app}"
 Filename: "{app}\cypherpunk-privacy-service.exe"; Parameters: "addtap 2"; WorkingDir: "{app}"; Flags: runhidden; StatusMsg: "Installing network adapter..."
 Filename: "{app}\cypherpunk-privacy-service.exe"; Parameters: "install"; WorkingDir: "{app}"; Flags: runhidden; StatusMsg: "Installing background service..."
 Filename: "{app}\cypherpunk-privacy-service.exe"; Parameters: "start"; WorkingDir: "{app}"; Flags: runhidden; StatusMsg: "Starting background service..."
-Filename: "{app}\{#MyAppExeName}"; Parameters: "--first"; WorkingDir: "{app}"; Flags: postinstall, skipifsilent; Description: "Launch Cypherpunk Privacy"
+Filename: "{app}\{#MyAppExeName}"; Parameters: "--first"; WorkingDir: "{app}"; Flags: postinstall skipifsilent; Description: "Launch Cypherpunk Privacy"
 
 [UninstallRun]
 Filename: "taskkill.exe"; Parameters: "/im {#MyAppExeName} /f"; WorkingDir: "{app}"; Flags: runhidden
