@@ -81,7 +81,7 @@ eventPromise(app, 'ready').then(() => {
 }).then(status => {
   if (status === 'installed') {
     daemon = require('./daemon.js');
-    var next = timeoutPromise(Promise.all(['up', 'config', 'account', 'settings', 'state'].map(e => eventPromise(daemon, e))), 2000);
+    var next = timeoutPromise(Promise.all(['up', 'data'].map(e => eventPromise(daemon, e))), 5000);
     return next;
   } else {
     console.log("Installation status: " + status);
