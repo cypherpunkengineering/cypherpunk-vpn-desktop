@@ -47,6 +47,12 @@ export APP_VER := $(shell cat "$(ROOT)/version.txt")
 ifeq ($(APP_VER),)
 $(error Failed to generate version number!)
 endif
+export APP_SHORT_VER := $(shell echo "$(APP_VER)" | cut -d. -f1-2)
+define COPYRIGHT_STRING
+Copyright $(shell date +%Y) Cypherpunk Partners, slf.
+All rights reserved.
+endef
+export COPYRIGHT_STRING
 
 endif
 
@@ -107,6 +113,9 @@ stage-client: client
 	$(HUSH) rm -rf "$(OUT)/$(APP_SIG)"
 	$(HUSH) cd "$(ROOT)/client" && ./node_modules/.bin/electron-packager ./app/ "$(APP_NAME)" \
 		--app-bundle-id="$(APP_NS).app" \
+		--app-version="Version $(APP_SHORT_VER)" \
+		--build-version="v$(APP_VER)" \
+		--app-copyright="$$COPYRIGHT_STRING" \
 		--platform=darwin \
 		--arch=x64 \
 		--icon="$(ROOT)/res/osx/logo5.icns" \
