@@ -12,10 +12,14 @@ if ! dscl . -read /Groups/$GROUP ; then
 	GID=$(dscl . -list /Groups PrimaryGroupID | awk '{g[$2]=1}END{for(i=333;i<500;i++)if(!g[i]){print i;exit 0}exit 1}')
 	# Create group
 	dscl . -create /Groups/$GROUP gid $GID
-	# Add 'everyone' to the group as a nested group, otherwise users will not be able to run binaries
-	# with +setgid owned by the cypherpunk group (this does not affect everyone's traffic)
-	dseditgroup -o edit -a everyone -t group $GROUP
 fi
+
+# Add 'everyone' to the group as a nested group, otherwise users will not be able to run binaries
+# with +setgid owned by the cypherpunk group (this does not affect everyone's traffic)
+dseditgroup -o edit -a everyone -t group $GROUP
+
+# Run 'id' command to help flush group changes so they're visible to posix commands
+id
 
 # Update permissions on the client executable to exempt it from the killswitch
 chgrp $GROUP "$3/Applications/Cypherpunk Privacy.app/Contents/MacOS/Cypherpunk Privacy"
