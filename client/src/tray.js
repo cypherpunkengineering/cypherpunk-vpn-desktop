@@ -17,6 +17,25 @@ function getFlag(country) {
   return getResource(`assets/img/flags/16/${country.toLowerCase()}.png`);
 }
 
+
+function navigateHandler(path) {
+  return function() {
+    if (window) {
+      window.webContents.send('navigate', { pathname: path });
+      window.show();
+    }
+  };
+}
+function reconnectHandler(settings) {
+  return function() {
+    daemon.call.applySettings(Object.assign(settings, { suppressReconnectWarning: true }))
+      .then(() => {
+        daemon.post.connect();
+      });
+  };
+}
+
+
 class Tray {
   electronTray = null;
   state = {
@@ -44,7 +63,9 @@ class Tray {
     // Create elements
     this.electronTray = new ElectronTray(this.getIcon());
     this.electronTray.setToolTip(this.getToolTip());
-    this.electronTray.setContextMenu(this.createMenu());
+    let menuItems = this.createMenuItems();
+    this.electronTray.setContextMenu(this.createTrayMenu(menuItems));
+    if (process.platform === 'darwin') app.setApplicationMenu(this.createApplicationMenu(menuItems));
     // Set up handlers
     if (process.platform === 'win32') {
       this.electronTray.on('click', (evt, bounds) => window && window.show());
@@ -59,7 +80,9 @@ class Tray {
     if (this.electronTray) {
       this.electronTray.setImage(this.getIcon());
       this.electronTray.setToolTip(this.getToolTip());
-      this.electronTray.setContextMenu(this.createMenu());
+      let menuItems = this.createMenuItems();
+      this.electronTray.setContextMenu(this.createTrayMenu(menuItems));
+      if (process.platform === 'darwin') app.setApplicationMenu(this.createApplicationMenu(menuItems));
     }
   }
   updateState(name, params) {
@@ -95,27 +118,37 @@ class Tray {
   getToolTip() {
     return "Cypherpunk Privacy";
   }
-  createMenu() {
+  createMenuItems() {
+    let result = {};
+
     const hasLocations = typeof this.state.config.locations === 'object' && Object.keys(this.state.config.locations).length > 0;
     const location = hasLocations && this.state.config.locations[this.state.settings.location];
-    const state = this.state.state.state;
-    const connected = state !== 'DISCONNECTED';
-    let items = [];
+    const connectionState = this.state.state.state;
+    const connected = connectionState !== 'DISCONNECTED';
+
     if (this.state.loggedIn) {
-      /*if (!window || !window.isVisible())*/ {
-        items.push(
-          { label: "Show window", click: () => { if (window) window.show(); }},
-          { type: 'separator' }
-        );
-      }
       let locationName = location ? location.name : "<unknown>";
       let locationFlag = (location && location.country) ? getFlag(location.country.toLowerCase()) : null;
-      if (this.state.settings.locationFlag === 'cypherplay') {
-        locationName = "CypherPlay";
-        locationFlag = null;
+
+      let connectEnabled = location && (connectionState === 'DISCONNECTED' || (connectionState === 'CONNECTED' && this.state.state.needsReconnect));
+      let cypherplayLocation = null;
+      const cypherplayName = "CypherPlay\u2122";
+      if (hasLocations && this.state.state.pingStats) {
+        cypherplayLocation = Object.keys(this.state.state.pingStats)
+          .filter(s => this.state.config.locations[s] && this.state.config.locations[s].enabled && !this.state.config.locations[s].disabled && this.state.config.locations[s].region !== 'DEV')
+          .reduce((min,s) => (this.state.state.pingStats[s] && this.state.state.pingStats[s].replies && (!min || this.state.state.pingStats[s].average < this.state.state.pingStats[min].average)) ? s : min, null);
       }
+      if (this.state.settings.locationFlag === 'cypherplay') {
+        locationName = cypherplayName;
+        locationFlag = null;
+        if (!cypherplayLocation) {
+          locationName += " (calculating...)";
+          connectEnabled = false;
+        }
+      }
+
       let connectName;
-      switch (state) {
+      switch (connectionState) {
         case 'CONNECTING':
         case 'STILL_CONNECTING':
           connectName = "Connecting to " + locationName + "...";
@@ -140,37 +173,27 @@ class Tray {
           connectName = "Connect to " + locationName;
           break;
       }
-      // FIXME: Enable/disable these based on this.state.state.connect
-      items.push({
+      result.connect = {
         label: connectName,
-        icon: (state === 'DISCONNECTING') ? null : locationFlag,
-        enabled: location && (state === 'DISCONNECTED' || (state === 'CONNECTED' && this.state.state.needsReconnect)),
+        icon: connectEnabled ? locationFlag : null,
+        enabled: connectEnabled,
         click: () => { daemon.post.connect(); }
-      });
-      items.push({
+      };
+      result.disconnect = {
         label: "Disconnect",
-        enabled: state === 'CONNECTING' || state === 'CONNECTED' || state === 'SWITCHING',
+        enabled: this.state.state.connect,
         click: () => { daemon.post.disconnect(); }
-      });
-      items.push({ type: 'separator' });
-      let cypherplayLocation;
-      if (hasLocations && this.state.state.pingStats && this.state.settings.overrideDNS) {
-        cypherplayLocation = Object.keys(this.state.state.pingStats).filter(s => this.state.config.locations[s] && this.state.config.locations[s].region !== 'DEV').reduce((min,s) => (this.state.state.pingStats[s] && this.state.state.pingStats[s].replies && (!min || this.state.state.pingStats[s].average < this.state.state.pingStats[min].average)) ? s : min, null);
-      }
-      items.push({
-        label: state === 'DISCONNECTED' ? "Connect to" : "Switch to",
-        enabled: hasLocations && (state === 'CONNECTED' || state === 'DISCONNECTED'),
+      };
+
+      result.connectTo = {
+        label: connectionState === 'DISCONNECTED' ? "Connect to" : "Switch to",
+        enabled: hasLocations,
         submenu:
           [
             {
-              label: "CypherPlay",
+              label: cypherplayName,
               enabled: !!cypherplayLocation,
-              click: cypherplayLocation ? () => {
-                daemon.call.applySettings({ location: cypherplayLocation, locationFlag: 'cypherplay' })
-                  .then(() => {
-                    daemon.post.connect();
-                  });
-              } : null
+              click: cypherplayLocation ? reconnectHandler({ location: cypherplayLocation, locationFlag: 'cypherplay' }) : null
             },
             { type: 'separator' }
           ].concat(
@@ -183,33 +206,79 @@ class Tray {
                 //type: 'checkbox',
                 //checked: this.state.settings.location === s.id,
                 //enabled: !s.disabled,
-                click: () => {
-                  daemon.call.applySettings({ location: s.id, locationFlag: '', suppressReconnectWarning: true })
-                    .then(() => {
-                      if (state === 'DISCONNECTED' || this.state.state.needsReconnect) {
-                        daemon.post.connect();
-                      }
-                    });
-                }
+                click: reconnectHandler({ location: s.id, locationFlag: '', suppressReconnectWarning: true })
               }))
           )
-      });
-
-      if (window) {
-        items.push({ type: 'separator' });
-        items.push({ label: "My Account", click: () => { if (window) { window.webContents.send('navigate', { pathname: '/account' }); window.show(); } }});
-        items.push({ label: "Configuration", click: () => { if (window) { window.webContents.send('navigate', { pathname: '/configuration' }); window.show(); } }});
-      }
-    } else {
-      items.push({ label: "Sign in", click: () => { if (window) window.show(); }});
+      };
     }
-    items.push(
+
+    return result;
+  }
+  createApplicationMenu(items) {
+    if (!items) items = this.createMenuItems();
+
+    let template = [
+      { label: "Cypherpunk Privacy", id: 'main', submenu: [
+        { role: 'about' },
+        { type: 'separator' },
+        { label: this.state.loggedIn ? "Sign Out" : "Sign In", click: navigateHandler(this.state.loggedIn ? '/login/logout' : '/login/email') },
+        { type: 'separator' },
+        { label: 'Preferences', enabled: this.state.loggedIn, submenu: this.state.loggedIn ? [ { label: "My Account", accelerator: 'CommandOrControl+Alt+,', click: navigateHandler('/account') }, { label: "Configuration", accelerator: 'CommandOrControl+,', click: navigateHandler('/configuration') } ] : null },
+        { type: 'separator' },
+        { role: 'hide' },
+        { role: 'hideothers' },
+        { role: 'unhide' },
+        { type: 'separator' },
+        { role: 'quit' },
+      ] },
+      { role: 'editMenu' },
+      { role: 'windowMenu' },
+    ];
+
+    if (this.state.loggedIn) {
+      template.push({
+        label: "Connection",
+        position: 'after=main',
+        submenu: [
+          items.connect,
+          { type: 'separator' },
+          items.connectTo,
+          { type: 'separator' },
+          items.disconnect,
+        ]
+      })
+    }
+
+    return Menu.buildFromTemplate(template);
+  }
+  createTrayMenu(items) {
+    if (!items) items = this.createMenuItems();
+
+    let template = [];
+    
+    if (this.state.loggedIn) {
+      template.push(
+        { label: "Show window", click: () => { if (window) window.show(); }},
+        { type: 'separator' },
+        items.connect,
+        items.disconnect,
+        { type: 'separator' },
+        items.connectTo,
+        { type: 'separator' },
+        { label: "My Account", click: navigateHandler('/account') },
+        { label: "Configuration", click: navigateHandler('/configuration') },
+      );
+    } else {
+      template.push(
+        { label: "Sign In", click: navigateHandler('/login/email') },
+      );
+    }
+    template.push(
       { type: 'separator' },
-      { label: "Quit Cypherpunk Privacy", click: () => { app.quit(); } }
+      { role: 'quit' },
     );
-    // Windows fix: hidden separators don't work, so manually strip out hidden items entirely
-    items = items.filter(i => !i.hasOwnProperty('visible') || i.visible);
-    return Menu.buildFromTemplate(items);
+
+    return Menu.buildFromTemplate(template);
   }
 }
 
