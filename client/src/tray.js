@@ -40,15 +40,18 @@ class Tray {
   electronTray = null;
   state = {
     config: { locations: null },
-    settings: { location: null, locationFlag: null, overrideDNS: null },
+    settings: { location: null, locationFlag: null, overrideDNS: null, firewall: null },
     state: { connect: null, state: null, needsReconnect: null, pingStats: null },
     loggedIn: false,
     windowVisible: false,
   };
   constructor() {
     this.icons = {
-      connected: NativeImage.createFromPath(getOSResource('assets/img/tray.png')),
+      connecting: NativeImage.createFromPath(getOSResource('assets/img/tray_connecting.png')),
+      connected: NativeImage.createFromPath(getOSResource('assets/img/tray_connected.png')),
       disconnected: NativeImage.createFromPath(getOSResource('assets/img/tray_disconnected.png')),
+      killswitch: NativeImage.createFromPath(getOSResource('assets/img/tray_killswitch.png')),
+      error: NativeImage.createFromPath(getOSResource('assets/img/tray_error.png')),
     };
     if (process.platform === 'darwin') {
       Object.keys(this.icons).forEach(k => this.icons[k].setTemplateImage(true));
@@ -113,7 +116,26 @@ class Tray {
     }
   }
   getIcon() {
-    return this.state.state.state == 'CONNECTED' ? this.icons.connected : this.icons.disconnected;
+    // TODO: In case of any error, return this.icons.error
+    switch (this.state.state.state)
+    {
+      case 'INTERRUPTED':
+        return this.icons.error;
+      case 'CONNECTING':
+      case 'STILL_CONNECTING':
+      case 'RECONNECTING':
+      case 'STILL_RECONNECTING':
+      case 'DISCONNECTING_TO_RECONNECT':
+        return this.icons.connecting;
+      case 'CONNECTED':
+        return this.icons.connected;
+      case 'DISCONNECTING':
+      case 'DISCONNECTED':
+        if (this.state.settings.firewall === 'on') return this.icons.killswitch;
+        // fallthrough
+      default:
+        return this.icons.disconnected;
+    }
   }
   getToolTip() {
     return "Cypherpunk Privacy";
