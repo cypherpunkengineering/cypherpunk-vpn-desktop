@@ -1,8 +1,12 @@
-const { ipcMain } = require('electron');
+const { ipcMain, app } = require('electron');
 const EventEmitter = require('events');
 const { RPC, WebSocketImpl, ERROR_METHOD_NOT_FOUND } = require('./rpc.js');
 const WebSocket = require('ws');
 //const WebSocket = require('websocket').client;
+
+if (!app.isReady()) {
+  throw new Error('Initialization order error');
+}
 
 var callbacks = {};
 var handlers = {};
