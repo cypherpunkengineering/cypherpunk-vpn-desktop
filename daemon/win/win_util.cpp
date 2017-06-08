@@ -58,35 +58,42 @@ std::vector<win_tap_adapter> win_get_tap_adapters()
 {
 	std::vector<win_tap_adapter> result;
 
+	int iterations = 0;
+
 	ULONG error;
 	ULONG flags = GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_INCLUDE_WINS_INFO | GAA_FLAG_INCLUDE_GATEWAYS;
-	ULONG size = 0;
-	if ((error = GetAdaptersAddresses(AF_UNSPEC, flags, NULL, NULL, &size)) == ERROR_BUFFER_OVERFLOW)
+	ULONG size = 15000;
+
+	IP_ADAPTER_ADDRESSES* addresses = NULL;
+
+	do
 	{
-		if (auto addresses = (IP_ADAPTER_ADDRESSES*)malloc(size))
+		if (NULL == (addresses = (IP_ADAPTER_ADDRESSES*)malloc(size)))
+			THROW_WIN32EXCEPTION(ERROR_NOT_ENOUGH_MEMORY, malloc);
+		
+		if ((error = GetAdaptersAddresses(AF_UNSPEC, flags, NULL, addresses, &size)) != ERROR_BUFFER_OVERFLOW)
+			break;
+
+		free(addresses);
+		addresses = NULL;
+
+	} while (++iterations < 3);
+
+	if (error != ERROR_SUCCESS)
+		THROW_WIN32EXCEPTION(error, GetAdaptersAddresses);
+	
+	for (auto address = addresses; address; address = address->Next)
+	{
+		if (address->Description && wcsstr(address->Description, L"TAP-Windows Adapter") != NULL)
 		{
-			if ((error = GetAdaptersAddresses(AF_UNSPEC, flags, NULL, addresses, &size)) == ERROR_SUCCESS)
-			{
-				for (auto address = addresses; address; address = address->Next)
-				{
-					if (address->Description && wcsstr(address->Description, L"TAP-Windows Adapter") != NULL)
-					{
-						win_tap_adapter adapter;
-						adapter.guid = address->AdapterName;
-						adapter.luid = address->Luid.Value;
-						result.push_back(std::move(adapter));
-					}
-				}
-			}
-			else
-				PrintError(GetAdaptersAddresses, error);
-			free(addresses);
+			win_tap_adapter adapter;
+			adapter.guid = address->AdapterName;
+			adapter.luid = address->Luid.Value;
+			result.push_back(std::move(adapter));
 		}
-		else
-			PrintError("malloc", 0);
 	}
-	else
-		PrintError(GetAdaptersAddresses, error);
+
+	free(addresses);
 
 	return std::move(result);
 }
