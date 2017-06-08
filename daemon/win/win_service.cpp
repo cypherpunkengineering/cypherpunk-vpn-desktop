@@ -570,7 +570,10 @@ static BOOL win_start_service(PCTSTR service_name, DWORD argc = 0, PCTSTR* argv 
 				{
 					DWORD error = GetLastError();
 					if (error == ERROR_SERVICE_ALREADY_RUNNING)
+					{
 						_tcprintf(_T("%s is already running.\n"), service_name);
+						result = TRUE;
+					}
 					else
 						PrintError(StartService, error);
 				}
