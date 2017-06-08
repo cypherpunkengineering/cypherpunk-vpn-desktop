@@ -89,12 +89,14 @@ ipcMain.on('daemon-open', (event) => {
 
 function onopen() {
   isopen = true;
+  console.log('daemon.emit:', 'up');
   daemon.emit('up');
   if (window) window.webContents.send('daemon-up', buildStatusReply());
 }
 
 function onerror() {
   isopen = false;
+  console.log('daemon.emit:', 'down');
   daemon.emit('down');
   if (window) window.webContents.send('daemon-down', buildStatusReply());
   return true;
@@ -120,6 +122,7 @@ function oncall(method, params, id) {
 }
 
 function onpost(method, params) {
+  console.log('daemon.onpost:', method, params);
   if (window) window.webContents.send('daemon-post', method, params);
   switch (method) {
     case 'data':
@@ -127,7 +130,10 @@ function onpost(method, params) {
         if (params[0].hasOwnProperty(type)) {
           filterChanges(daemon[type], params[0][type]);
           Object.assign(daemon[type], params[0][type]);
-          daemon.emit(type, params[0][type]); // deprecated
+          try {
+            console.log('daemon.emit:', type, params[0][type]);
+            daemon.emit(type, params[0][type]); // deprecated
+          } catch(e) {}
         }
       });
       break;
@@ -140,7 +146,10 @@ function onpost(method, params) {
       Object.assign(daemon[method], params[0]);
       break;
   }
-  daemon.emit(method, ...params);
+  try {
+    console.log('daemon.emit:', method, ...params);
+    daemon.emit(method, ...params);
+  } catch(e) {}
 }
 
 // Finally put everything together and export the daemon instance

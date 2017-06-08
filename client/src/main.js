@@ -13,6 +13,14 @@ global.args = {
   showWindowOnStart: true,
 };
 
+process.on('uncaughtException', function(err) {
+  console.log('Uncaught exception:', err);
+  app.exit(1);
+});
+process.on('unhandledrejection', function (err, promise) {
+  console.log('Unhandled rejection:', err, promise);
+});
+
 process.argv.forEach(arg => {
   if (arg === "--debug") {
     args.debug = true;

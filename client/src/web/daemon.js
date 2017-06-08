@@ -58,7 +58,9 @@ function onpost(method, params) {
         if (params[0].hasOwnProperty(type)) {
           filterChanges(daemon[type], params[0][type]);
           Object.assign(daemon[type], params[0][type]);
-          if (opened) daemon.emit(type, params[0][type]); // deprecated
+          try {
+            if (opened) daemon.emit(type, params[0][type]); // deprecated
+          } catch(e) {}
         }
       });
       break;
@@ -71,7 +73,9 @@ function onpost(method, params) {
       daemon[method] = Object.assign(daemon[method], params[0]);
       break;
   }
-  if (opened) daemon.emit(method, ...params);
+  try {
+    if (opened) daemon.emit(method, ...params);
+  } catch(e) {}
 }
 
 function up(event, data) {
