@@ -1,4 +1,3 @@
-import daemon from './daemon.js';
 import tray from './tray.js';
 
 const DEFAULT_NOTIFICATION_ICON = `${__dirname}/assets/img/`
@@ -8,7 +7,7 @@ export default class Notification
   constructor(title = "Cypherpunk Privacy", options = {}) {
     this.success = true;
 
-    if (!daemon.settings.showNotifications) {
+    if (!daemon || daemon.settings.showNotifications) {
       this.success = false;
     } else {
 

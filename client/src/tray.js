@@ -1,6 +1,5 @@
 import { app, dialog, BrowserWindow, Tray as ElectronTray, Menu, nativeImage as NativeImage, ipcMain as ipc } from 'electron';
 import fs from 'fs';
-import daemon from './daemon.js';
 import './util.js';
 
 let os = ({ 'win32': '_win', 'darwin': '_osx', 'linux': '_lin' })[process.platform] || '';
