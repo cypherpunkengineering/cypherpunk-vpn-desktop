@@ -89,14 +89,12 @@ ipcMain.on('daemon-open', (event) => {
 
 function onopen() {
   isopen = true;
-  console.log('daemon.emit:', 'up');
   daemon.emit('up');
   if (window) window.webContents.send('daemon-up', buildStatusReply());
 }
 
 function onerror() {
   isopen = false;
-  console.log('daemon.emit:', 'down');
   daemon.emit('down');
   if (window) window.webContents.send('daemon-down', buildStatusReply());
   return true;
@@ -122,7 +120,6 @@ function oncall(method, params, id) {
 }
 
 function onpost(method, params) {
-  console.log('daemon.onpost:', method, params);
   if (window) window.webContents.send('daemon-post', method, params);
   switch (method) {
     case 'data':
@@ -131,7 +128,6 @@ function onpost(method, params) {
           filterChanges(daemon[type], params[0][type]);
           Object.assign(daemon[type], params[0][type]);
           try {
-            console.log('daemon.emit:', type, params[0][type]);
             daemon.emit(type, params[0][type]); // deprecated
           } catch(e) {}
         }
@@ -147,7 +143,6 @@ function onpost(method, params) {
       break;
   }
   try {
-    console.log('daemon.emit:', method, ...params);
     daemon.emit(method, ...params);
   } catch(e) {}
 }
