@@ -49,7 +49,7 @@ $(error Failed to generate version number!)
 endif
 export APP_SHORT_VER := $(shell echo "$(APP_VER)" | cut -d. -f1-2)
 define COPYRIGHT_STRING
-Copyright $(shell date +%Y) Cypherpunk Partners, slf.
+™ and © $(shell date +%Y) Cypherpunk Partners, slf.
 All rights reserved.
 endef
 export COPYRIGHT_STRING
