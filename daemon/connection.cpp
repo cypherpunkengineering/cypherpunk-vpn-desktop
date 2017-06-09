@@ -32,6 +32,7 @@ Connection::Connection(asio::io_service& io, ConnectionListener* listener)
 	: _io(io)
 	, _listener(listener)
 	, _state(CREATED)
+	, _openvpn_state(OPENVPN_EXITED)
 	, _connection_attempts(0)
 	, _slow_connection_timer(io)
 	, _connection_interval_timer(io)
@@ -491,6 +492,8 @@ void Connection::Disconnect()
 			SetState(DISCONNECTING);
 			if (_openvpn_process)
 				_openvpn_process->Shutdown();
+			if (_openvpn_state == OPENVPN_EXITED)
+				SetState(DISCONNECTED);
 			break;
 	}
 }
