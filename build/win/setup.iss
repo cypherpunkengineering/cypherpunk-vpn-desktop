@@ -111,4 +111,6 @@ Filename: "{app}\cypherpunk-privacy-service.exe"; Parameters: "removetap"; Worki
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}"
-Type: filesandordirs; Name: "C:\ProgramData\{#MyAppName}"
+Type: filesandordirs; Name: "{userappdata}\{#MyAppName}"
+Type: filesandordirs; Name: "{commonappdata}\{#MyAppName}"
+Type: filesandordirs; Name: "{userpf}\{#MyAppName}"
