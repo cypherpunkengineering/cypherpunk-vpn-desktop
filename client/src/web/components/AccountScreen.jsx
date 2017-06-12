@@ -79,7 +79,7 @@ function describeRelativeDate(date, now) {
     }
   } else {
     if (diff < 1) {
-      return "in less than one hour";
+      return "in less than an hour";
     } else if (diff < 6) {
       return "in less than six hours";
     } else if (diff <= 2 * 24) {
