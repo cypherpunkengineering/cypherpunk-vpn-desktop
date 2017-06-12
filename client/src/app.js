@@ -81,8 +81,18 @@ eventPromise(app, 'ready').then(() => {
 }).then(status => {
   if (status === 'installed') {
     daemon = require('./daemon.js');
-    var next = timeoutPromise(Promise.all(['up', 'data'].map(e => eventPromise(daemon, e))), 10000);
-    return next;
+    return timeoutPromise(Promise.all([
+      daemon.connect(),
+      eventPromise(daemon, 'up'),
+      eventPromise(daemon, 'data')
+    ]), 10000).catch(e => {
+      if (e instanceof Error && e.message === "Daemon version mismatch") {
+        dialog.showErrorBox("Startup Error", "The Cypherpunk Privacy helper service is not the correct version. Please try reinstalling the application.");
+      } else {
+        dialog.showErrorBox("Startup Error", "The Cypherpunk Privacy helper service does not appear to be running. Please try reinstalling the application.");
+      }
+      throw null;
+    });
   } else {
     console.log("Installation status: " + status);
     app.exit(0);
@@ -137,11 +147,8 @@ eventPromise(app, 'ready').then(() => {
 }).catch(err => {
   if (err) {
     dialog.showErrorBox("Initialization Error", "An unexpected error happened while launching Cypherpunk Privacy:\n\n" + (err.stack ? err.stack : err));
-    app.exit(1);
-  } else {
-    dialog.showErrorBox("Initialization Error", "The Cypherpunk Privacy helper service does not appear to be running. Please try reinstalling the application.");
-    app.exit(1);
   }
+  app.exit(1);
 });
 
 
