@@ -12,6 +12,8 @@ const { shell } = require('electron').remote;
 import AccountIcon from '../assets/img/icon-account-big.svg';
 
 
+const WEBSITE_ROOT = 'https://cypherpunk.com';
+
 const ACCOUNT_TYPE_NAMES = {
   'free': "Trial Account",
   'premium': "Premium Account",
@@ -167,7 +169,7 @@ const AccountUserPane = ({ account, ...props }) => {
   }
 
   if (upgradeURL) {
-    upgradeURL = `https://cypherpunk.com${upgradeURL}?user=${encodeURIComponent(username)}&secret=${encodeURIComponent(account.secret)}`;
+    upgradeURL = `${WEBSITE_ROOT}${upgradeURL}?user=${encodeURIComponent(username)}&secret=${encodeURIComponent(account.secret)}`;
   }
   return (
     <div className="user pane" {...props}>
@@ -200,17 +202,17 @@ export default class AccountScreen extends DaemonAware(React.Component) {
           <div className="scrollable content">
             <AccountUserPane account={this.state.account}/>
             <div className="pane" data-title="Account Settings">
-              <div className="setting"><ExternalLink href={'https://cypherpunk.com/account?user=' + encodeURIComponent(this.state.account.account.email) + '&secret=' + encodeURIComponent(this.state.account.secret)}>Manage Account</ExternalLink></div>
+              <div className="setting"><ExternalLink href={`${WEBSITE_ROOT}/account?user=${encodeURIComponent(this.state.account.account.email)}&secret=${encodeURIComponent(this.state.account.secret)}`}>Manage Account</ExternalLink></div>
             </div>
             <div className="pane" data-title="More">
-              <div className="setting"><ExternalLink href="https://cypherpunk.com/account/refer-a-friend"><div>Refer a Friend</div></ExternalLink></div>
-              <div className="setting"><ExternalLink href="https://cypherpunk.com/support">Go to Help Center</ExternalLink></div>
+              <div className="setting"><ExternalLink href={`${WEBSITE_ROOT}/account/refer-a-friend`}><div>Refer a Friend</div></ExternalLink></div>
+              <div className="setting"><ExternalLink href={`${WEBSITE_ROOT}/support`}>Go to Help Center</ExternalLink></div>
               <div className="setting"><Link className="logout" to="/login/logout" tabIndex="0" onClick={() => analytics.event('Account', 'logout')}>Sign Out</Link></div>
             </div>
             <div className="links footer">
-              <ExternalLink href="https://cypherpunk.com/terms-of-service">Terms of Service</ExternalLink>
-              <ExternalLink href="https://cypherpunk.com/privacy-policy">Privacy Policy</ExternalLink>
-              <ExternalLink href="https://cypherpunk.com/legal/license/desktop">License Information</ExternalLink>
+              <ExternalLink href={`${WEBSITE_ROOT}/terms-of-service`}>Terms of Service</ExternalLink>
+              <ExternalLink href={`${WEBSITE_ROOT}/privacy-policy`}>Privacy Policy</ExternalLink>
+              <ExternalLink href={`${WEBSITE_ROOT}/legal/license/desktop`}>License Information</ExternalLink>
             </div>
           </div>
         </PanelContent>
