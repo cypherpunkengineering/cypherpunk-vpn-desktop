@@ -37,5 +37,6 @@ export function classList() {
   }
   return result.join(' ');
 }
+window.classList = classList;
 
 export * from '../util.js';
