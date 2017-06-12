@@ -182,6 +182,7 @@ void CypherDaemon::OnFirstClientConnected()
 void CypherDaemon::OnClientConnected(ClientConnection c)
 {
 	JsonObject data;
+	data["version"] = JsonString(VERSION);
 	data["config"] = MakeConfigObject();
 	data["account"] = MakeAccountObject();
 	data["settings"] = MakeSettingsObject();

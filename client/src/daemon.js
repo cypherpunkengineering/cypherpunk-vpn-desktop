@@ -12,6 +12,7 @@ var callbacks = {};
 var handlers = {};
 var ws, rpc, daemon;
 var isopen = false;
+var connectResolve = null, connectReject = null;
 
 function filterChanges(target, delta) {
   var count = 0;
@@ -58,8 +59,20 @@ class Daemon extends EventEmitter {
   notifyWindowCreated() {
     if (window) window.webContents.send(isopen ? 'daemon-up' : 'daemon-down', buildStatusReply());
   }
+  connect() {
+    if (connectResolve || connectReject) {
+      throw new Error("Already connecting");
+    }
+    return new Promise((resolve, reject) => {
+      connectResolve = resolve;
+      connectReject = reject;
+    });
+  }
   disconnect() {
     return ws.disconnect();
+  }
+  get connected() {
+    return isopen;
   }
 }
 
@@ -92,9 +105,7 @@ ipcMain.on('daemon-open', (event) => {
 // Listen for events from the WebSocket RPC instance
 
 function onopen() {
-  isopen = true;
-  daemon.emit('up');
-  if (window) window.webContents.send('daemon-up', buildStatusReply());
+  // wait for the first 'data' message
 }
 
 function onerror() {
@@ -124,7 +135,30 @@ function oncall(method, params, id) {
 }
 
 function onpost(method, params) {
-  if (window) window.webContents.send('daemon-post', method, params);
+  if (!isopen) {
+    if (method === 'data' && typeof params[0] === 'object' && params[0].hasOwnProperty('version')) {
+      if (params[0].version !== app.getVersion()) {
+        if (connectReject) {
+          connectReject(new Error("Daemon version mismatch"));
+        } else {
+          daemon.emit('error', { message: "Daemon version mismatch" });
+        }
+        daemon.disconnect();
+        return;
+      }
+      delete params[0].version;
+      isopen = true;
+      if (connectResolve) {
+        connectResolve();
+        connectResolve = null;
+      }
+      daemon.emit('up');
+      if (window) window.webContents.send('daemon-up', buildStatusReply());
+    } else {
+      return;
+    }
+  }
+
   switch (method) {
     case 'data':
       ['config','account','settings','state'].forEach(type => {
@@ -147,6 +181,7 @@ function onpost(method, params) {
       break;
   }
   try {
+    if (window) window.webContents.send('daemon-post', method, params);
     daemon.emit(method, ...params);
   } catch(e) {}
 }
