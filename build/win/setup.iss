@@ -98,7 +98,7 @@ Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\Run"; ValueType: 
 ;Type: filesandordirs; Name: "{app}"
 
 [Run]
-Filename: "{app}\cypherpunk-privacy-service.exe"; Parameters: "addtap 2"; WorkingDir: "{app}"; Flags: runhidden; StatusMsg: "Installing network adapter..."
+Filename: "{app}\cypherpunk-privacy-service.exe"; Parameters: "addtap 1"; WorkingDir: "{app}"; Flags: runhidden; StatusMsg: "Installing network adapter..."
 Filename: "{app}\cypherpunk-privacy-service.exe"; Parameters: "install"; WorkingDir: "{app}"; Flags: runhidden; StatusMsg: "Installing background service..."
 Filename: "{app}\cypherpunk-privacy-service.exe"; Parameters: "start"; WorkingDir: "{app}"; Flags: runhidden; StatusMsg: "Starting background service..."
 Filename: "{app}\{#MyAppExeName}"; Parameters: "--first"; WorkingDir: "{app}"; Flags: postinstall skipifsilent nowait; Description: "Launch {#MyAppName}"

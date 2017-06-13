@@ -6,6 +6,7 @@
 #include <vector>
 #include <memory>
 #include <cstdio>
+#include <string>
 #include <tchar.h>
 #include <winsock2.h>
 #include <windows.h>
@@ -115,8 +116,23 @@ static BOOL win_tap_install(LPTSTR cmdline)
 	return FALSE;
 }
 
-BOOL win_install_tap_adapter()
+BOOL win_install_tap_adapter(int argc, TCHAR **argv)
 {
+	if (argc >= 1) {
+		int count = 1;
+		try { count = std::stoi(argv[0]); }
+		catch (...) { return FALSE; }
+		auto adapters = win_get_tap_adapters();
+		if (adapters.size() >= count)
+			return TRUE;
+		count -= adapters.size();
+		while (count--)
+		{
+			if (!win_tap_install(_T("tapinstall.exe install OemVista.inf tap0901")))
+				return FALSE;
+		}
+		return TRUE;
+	}
 	return win_tap_install(_T("tapinstall.exe install OemVista.inf tap0901"));
 }
 

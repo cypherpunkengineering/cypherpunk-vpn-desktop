@@ -758,7 +758,7 @@ static int ConsoleMain(int argc, TCHAR *argv[])
 		if (0 == _tcsicmp(cmd, _T("run")))
 			return !win_run_service(SERVICE_NAME);
 		if (0 == _tcsicmp(cmd, _T("addtap")))
-			return !win_install_tap_adapter();
+			return !win_install_tap_adapter(argc - 2, argv + 2);
 		if (0 == _tcsicmp(cmd, _T("removetap")))
 			return !win_uninstall_tap_adapters();
 	}
