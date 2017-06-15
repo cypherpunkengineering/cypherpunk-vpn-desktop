@@ -1,6 +1,4 @@
 .PHONY: all clean run stop debug
-.DEFAULT: all
-.DEFAULT_GOAL = all
 
 DEBUG ?= true
 
@@ -41,6 +39,8 @@ GDB ?= gdb
 
 OUT ?= out/cypherpunk-privacy-service
 
+all: $(OUT)
+
 -include $(POSIX_OBJS:%.o=%.d) $(COMMON_OBJS:%.o=%.d)
 
 $(POSIX_OBJS): out/%.o : %.cpp
@@ -57,8 +57,6 @@ $(OUT): $(POSIX_OBJS) $(COMMON_OBJS)
 	@echo "* Linking $@..."
 	@mkdir -p out
 	@g++ $(CFLAGS) -o $@ $^ $(LIBS)
-
-all: $(OUT)
 
 clean:
 	@rm -rf out
