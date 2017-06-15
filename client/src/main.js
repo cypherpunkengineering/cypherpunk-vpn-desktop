@@ -11,6 +11,7 @@ global.exiting = false;
 global.args = {
   debug: false,
   showWindowOnStart: true,
+  clean: null,
 };
 
 process.on('uncaughtException', function(err) {
@@ -26,10 +27,12 @@ process.argv.forEach(arg => {
     args.debug = true;
   } else if (arg === '--background') {
     args.showWindowOnStart = false;
+  } else if (arg === '--clean') {
+    args.clean = true; // TODO: save next arg
   }
 });
 
-if (app.makeSingleInstance((argv, cwd) => {
+if (!args.clean && app.makeSingleInstance((argv, cwd) => {
   console.log("Attempted to start second instance: ", argv, cwd);
   if (window) window.show();
 })) {

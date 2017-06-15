@@ -133,6 +133,11 @@ Array.toMultiDict = function toMultiDict(arr, getKey, getValue) {
 };
 
 
+Promise.stall = function stall() {
+  return new Promise(function(){});
+}
+
+
 export function splitVersion(v) {
   var major = 0, minor = 0, patch = 0, prerelease = [], build = '', i;
   if ((i = v.indexOf('+')) >= 0) {
