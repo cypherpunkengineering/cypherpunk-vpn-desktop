@@ -1,6 +1,5 @@
 import { app, dialog } from 'electron';
 import fs from 'fs';
-import { run as installAsRoot, checkGroup } from './root.js';
 import child from 'child_process';
 import { nodePromise } from './util.js';
 
