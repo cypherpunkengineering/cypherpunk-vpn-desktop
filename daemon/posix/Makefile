@@ -40,15 +40,16 @@ OUT ?= out/cypherpunk-privacy-service
 -include out/deps.d
 
 $(OUT): $(SRCS)
-	@echo "Building $@..."
+	@echo "Generating dependencies..."
 	@mkdir -p out
+	@g++ $(CFLAGS) -MM -MP -MT $(OUT) $(INCS) $(SRCS) > out/deps.d
+	@echo "Building $@..."
 	@g++ \
 	$(CFLAGS) \
-	-MMD -MF out/deps.d \
 	$(INCS) \
 	$(SRCS) \
 	$(LIBS) \
-	-o $@
+	-o "$@"
 
 all: $(OUT)
 
