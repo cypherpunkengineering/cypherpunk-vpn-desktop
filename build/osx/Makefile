@@ -42,7 +42,7 @@ $(error Failed to initialize node modules!)
 endif
 endif
 $(info * Generating version number...)
-$(info $(shell rm -f "$(ROOT)/version.txt" && cd "$(ROOT)/client" && npm run build-version 1>&2 && npm run apply-version 1>&2))
+$(info $(shell rm -f "$(ROOT)/version.txt" && cd "$(ROOT)/client" && node_modules/.bin/gulp build-version 1>&2 && node_modules/.bin/gulp apply-version 1>&2))
 export APP_VER := $(shell cat "$(ROOT)/version.txt")
 ifeq ($(APP_VER),)
 $(error Failed to generate version number!)
@@ -66,6 +66,7 @@ package: $(OUT)/$(INSTALLER_PKG)
 clean:
 	$(ECHO) "* Cleaning..."
 	$(HUSH) rm -rf "$(OUT)"
+	$(HUSH) $(MAKE) -C $(ROOT)/daemon/posix clean
 
 vpn: clean
 great: update-node-modules
@@ -99,7 +100,7 @@ client:
 daemon: $(ROOT)/daemon/posix/out/$(DAEMON_FILENAME)
 
 $(ROOT)/daemon/posix/out/$(DAEMON_FILENAME): version
-	$(HUSH) $(MAKE) -C $(ROOT)/daemon/posix RELEASE=1 all
+	$(HUSH) $(MAKE) -j4 -C $(ROOT)/daemon/posix RELEASE=1 all
 
 
 # Staging
@@ -206,10 +207,10 @@ $(OUT)/Build.pkg: stage
 		Build.pkg
 
 $(OUT)/$(INSTALLER_PKG): $(OUT)/Build.pkg
-	cd "$(OUT)" && productbuild \
+	$(HUSH) cd "$(OUT)" && productbuild \
 		--resources "$(ROOT)/res/osx/resources" \
 		--distribution "$(ROOT)/res/osx/resources/distribution.xml" \
 		--sign $(INSTALLER_SIGN_IDENTITY) \
 		--version "$(APP_VER)" \
 		"$(INSTALLER_PKG)"
-	$(ECHO) "* Finished: $$(ls -l $(OUT)/$(INSTALLER_PKG))"
+	$(ECHO) "* Finished: $$(ls -l "$@")"
