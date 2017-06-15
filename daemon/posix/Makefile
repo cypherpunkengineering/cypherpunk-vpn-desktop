@@ -1,4 +1,4 @@
-.PHONY: all clean run stop
+.PHONY: all clean run stop debug
 .DEFAULT: all
 
 DEBUG ?= true
@@ -14,9 +14,11 @@ else
 CFLAGS += -O2 -D_RELEASE=1
 endif
 
-SRCS= \
-	$(wildcard *.cpp) \
-	$(wildcard ../*.cpp) \
+POSIX_SRCS=$(wildcard *.cpp)
+COMMON_SRCS=$(wildcard ../*.cpp)
+
+POSIX_OBJS=$(POSIX_SRCS:%.cpp=out/%.o)
+COMMON_OBJS=$(COMMON_SRCS:../%.cpp=out/%.o)
 
 INCS=\
 	-I../ \
@@ -37,19 +39,22 @@ GDB ?= gdb
 
 OUT ?= out/cypherpunk-privacy-service
 
--include out/deps.d
+-include $(POSIX_OBJS:%.o=%.d) $(COMMON_OBJS:%.o=%.d)
 
-$(OUT): $(SRCS)
-	@echo "Generating dependencies..."
+$(POSIX_OBJS): out/%.o : %.cpp
+	@echo "* Compiling $*.cpp..."
 	@mkdir -p out
-	@g++ $(CFLAGS) -MM -MP -MT $(OUT) $(INCS) $(SRCS) > out/deps.d
-	@echo "Building $@..."
-	@g++ \
-	$(CFLAGS) \
-	$(INCS) \
-	$(SRCS) \
-	$(LIBS) \
-	-o "$@"
+	@g++ -c $(CFLAGS) -MMD -MF out/$*.d $(INCS) -o $@ $<
+
+$(COMMON_OBJS): out/%.o : ../%.cpp
+	@echo "* Compiling $*.cpp..."
+	@mkdir -p out
+	@g++ -c $(CFLAGS) -MMD -MF out/$*.d $(INCS) -o $@ $<
+
+$(OUT): $(POSIX_OBJS) $(COMMON_OBJS)
+	@echo "* Linking $@..."
+	@mkdir -p out
+	@g++ $(CFLAGS) -o $@ $(LIBS) $^
 
 all: $(OUT)
 
