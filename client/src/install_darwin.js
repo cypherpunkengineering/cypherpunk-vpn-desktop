@@ -56,8 +56,6 @@ function runAsRoot(options) {
 
   let p = Promise.resolve();
 
-  p = p.then(() => nodePromise(cb => fs.writeFile('/tmp/testrootfile.txt', __filename + "\n" + __dirname + "\n" + JSON.stringify(options) + "\n", cb)));
-
   if (uninstall) {
 
     result.exit = 0;
@@ -67,7 +65,7 @@ function runAsRoot(options) {
     if (group.gid === null) {
       p = p.then(() =>
         // List all groups
-        exec('dscl . -list /Groups PrimaryGroupID', cb)
+        exec('dscl . -list /Groups PrimaryGroupID')
         // Find an available group ID between 333 and 500
         .then(stdout => {
           let takenGroupIDs = [];
@@ -111,8 +109,17 @@ function runAsRoot(options) {
     }
     if (moveToApplications) {
       if (THIS_APP_PATH !== '/Applications/Cypherpunk Privacy.app') {
-        p = p.then(() => exec('rm -rf "/Applications/Cypherpunk Privacy.app"'));
-        p = p.then(() => exec(`mv -f "${THIS_APP_PATH}" /Applications/`));
+        // Kill any existing processes running from the destination directory
+        p = p.then(() => exec('while pkill -f "^/Applications/Cypherpunk Privacy.app/Contents/MacOS/"; do sleep 0.5; done'));
+        p = p.then(() => execFile('/bin/rm', [ '-rf', '/Applications/Cypherpunk Privacy.app' ]));
+        // If the app directory isn't writable even though we're root, we've probably running in app translocation
+        let writable = false;
+        try { fs.accessSync(THIS_APP_PATH, fs.W_OK); writable = true; } catch(e) {}
+        if (writable) {
+          p = p.then(() => execFile('/bin/mv', [ '-f', THIS_APP_PATH, '/Applications/Cypherpunk Privacy.app' ]));
+        } else {
+          p = p.then(() => execFile('/bin/cp', [ '-fR', THIS_APP_PATH, '/Applications/Cypherpunk Privacy.app' ]));
+        }
         result.relaunch = { execPath: '/Applications/Cypherpunk Privacy.app/Contents/MacOS/Cypherpunk Privacy', args: [ '--clean', THIS_APP_PATH ] };
       } else {
         result.relaunch = {};
@@ -121,7 +128,7 @@ function runAsRoot(options) {
       p = p.then(() => exec('xattr -dr com.apple.quarantine "/Applications/Cypherpunk Privacy.app"'));
     }
     if (fixPermissions) {
-      let clientExecutable = moveToApplications ? '/Applications/Cypherpunk Privacy.app/Contents/MacOS/Cypherpunk Privacy' : THIS_APP_PATH;
+      let clientExecutable = moveToApplications ? '/Applications/Cypherpunk Privacy.app/Contents/MacOS/Cypherpunk Privacy' : process.execPath;
       p = p.then(() => execFile('/usr/bin/chgrp', [ 'cypherpunk', clientExecutable ]));
       p = p.then(() => execFile('/bin/chmod', [ 'g+s', clientExecutable ]));
       if (!result.relaunch) result.relaunch = {};

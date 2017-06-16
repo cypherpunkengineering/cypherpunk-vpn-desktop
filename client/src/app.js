@@ -187,7 +187,7 @@ eventPromise(app, 'ready').then(() => {
   tray.create();
 }).catch(err => {
   if (err) {
-    dialog.showErrorBox("Initialization Error", "An unexpected error happened while launching Cypherpunk Privacy:\n\n" + (err.stack ? err.stack : err));
+    dialog.showErrorBox("Initialization Error", "An unexpected error happened while launching Cypherpunk Privacy:\n\n" + (err.stack || require('util').inspect(err)));
     return app.exit(1);
   }
   return app.exit(0);

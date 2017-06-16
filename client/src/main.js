@@ -27,14 +27,16 @@ process.argv.forEach(arg => {
     args.debug = true;
   } else if (arg === '--background') {
     args.showWindowOnStart = false;
-  } else if (arg === '--clean') {
-    args.clean = true; // TODO: save next arg
   }
 });
 
-if (!args.clean && app.makeSingleInstance((argv, cwd) => {
+if (process.platform !== 'darwin' && app.makeSingleInstance((argv, cwd) => {
   console.log("Attempted to start second instance: ", argv, cwd);
-  if (window) window.show();
+  if (window) {
+    window.show();
+    window.focus();
+  }
+  return true;
 })) {
   exiting = true;
   app.exit(0);
