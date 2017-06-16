@@ -84,11 +84,13 @@ function mac_run(status) {
     //}
     dialog.showMessageBox(msg, function (response, checked) {
       if (response === msg.cancelId) {
+        console.log('Aborting installation'); // for some reason, this is necessary to avoid a UI delay - message loop pump?
         return resolve({ exit: 0 });
       }
       //if (options.moveToApplications && !checked) {
       //  options.moveToApplications = false;
       //}
+      console.log('Proceeding with installation');
       require('./install_darwin.js').run(options).then(resolve, reject);
     });
     app.show();
