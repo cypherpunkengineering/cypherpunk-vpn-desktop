@@ -25,7 +25,7 @@ export function run(options) {
 function mac_check() {
   function getAppVersion(path) {
     try {
-      let version = child.execFileSync('/usr/bin/defaults', [ 'read', path+'/Contents/Info.plist', 'CFBundleVersion' ]).toString().trim();
+      let version = child.execFileSync('/usr/bin/defaults', [ 'read', path+'/Contents/Info.plist', 'CFBundleVersion' ], { stdio: [ 'ignore', 'pipe', 'ignore' ] }).toString().trim();
       return version.startsWith('v') ? version.slice(1) : version;
     } catch (e) {
       dialog.showErrorBox("Couldn't read version", require('util').inspect(e));
@@ -47,7 +47,7 @@ function mac_check() {
   // 3. Check if the daemon is running
   let daemonRunning = false;
   try {
-    child.execSync('pgrep cypherpunk-privacy-service');
+    child.execSync('pgrep cypherpunk-privacy-service', { stdio: [ 'ignore', 'pipe', 'ignore' ] });
     daemonRunning = true;
   } catch (e) {}
 

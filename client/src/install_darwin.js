@@ -29,7 +29,7 @@ export function run(...args) {
         try {
           if (stderr) reject(JSON.parse(stderr));
           else if (stdout) resolve(JSON.parse(stdout));
-        } catch (e) { reject('unable to parse result'); }
+        } catch (e) { reject('unable to parse result, stdout: ' + stdout + ', stderr: ' + stderr); }
       });
     });
   }
@@ -146,7 +146,7 @@ function runAsRoot(options) {
 export function checkGroup() {
   let result = { gid: null, hasEveryone: false };
   try {
-    let stdout = child.execSync('dscl . -read /Groups/cypherpunk').toString().split('\n');
+    let stdout = child.execSync('dscl . -read /Groups/cypherpunk', { stdio: [ 'ignore', 'pipe', 'ignore' ] }).toString().split('\n');
     for (let s of stdout) {
       if (s.startsWith('PrimaryGroupID: ')) {
         result.gid = Number.parseInt(s.slice(16));
