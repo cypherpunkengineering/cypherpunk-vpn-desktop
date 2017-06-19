@@ -1,7 +1,7 @@
 import { app, dialog } from 'electron';
 import fs from 'fs';
 import child from 'child_process';
-import { nodePromise } from './util.js';
+import { nodePromise, compareVersions } from './util.js';
 
 export function check() {
   switch (process.platform) {
@@ -23,8 +23,19 @@ export function run(options) {
 
 
 function mac_check() {
+  function getAppVersion(path) {
+    try {
+      let version = child.execFileSync('/usr/bin/defaults', [ 'read', path+'/Contents/Info.plist', 'CFBundleVersion' ]).toString().trim();
+      return version.startsWith('v') ? version.slice(1) : version;
+    } catch (e) {
+      dialog.showErrorBox("Couldn't read version", require('util').inspect(e));
+      return '';
+    }
+  }
+
   var binaryPath = app.getPath('exe');
   const debugBuild = !binaryPath.endsWith('.app/Contents/MacOS/Cypherpunk Privacy'); // developer builds will use an Electron binary
+  const clientVersion = app.getVersion();
 
   // 1. Check if the 'cypherpunk' group exists
   let { gid: groupID, hasEveryone: groupHasEveryone } = require('./install_darwin.js').checkGroup(); // doesn't actually need root
@@ -48,12 +59,21 @@ function mac_check() {
   } catch (e) {}
 
   // 5. Check if we're in the Applications folder
-  let [ inApplications, applicationRelativeFolder, recursiveAppFolderCount ] = (m => [ !!m, m && m[2], (m && m[2].match(/\.app\//g) || []).length ])(binaryPath.match(/^\/(Users\/[^\/]+\/)?Applications\/(.*)/));
-  let clientInstalled = inApplications && recursiveAppFolderCount <= 1;
+  let clientInstalled = binaryPath.startsWith('/Applications/Cypherpunk Privacy.app/');
 
-  let result = { debugBuild, groupInstalled: !needsGroup, daemonInstalled, daemonRunning, clientPermissions: hasCorrectPermissions, clientInstalled };
+  let result = { debugBuild, groupInstalled: !needsGroup, daemonInstalled, daemonRunning, clientPermissions: hasCorrectPermissions, clientInstalled, clientVersion };
 
-  if (daemonRunning && hasCorrectPermissions && (debugBuild || (daemonInstalled && clientInstalled)) && hasCorrectPermissions && !needsGroup) {
+  // 6. Check if there is already a globally installed client
+  if (!clientInstalled && fs.existsSync('/Applications/Cypherpunk Privacy.app')) {
+    let existingClientVersion = getAppVersion('/Applications/Cypherpunk Privacy.app');
+    if (existingClientVersion) {
+      result.existingClientVersion = existingClientVersion;
+    }
+  }
+
+  // Note that we don't check for clientInstalled to determine if we need to install; if
+  // all other checks pass, the user probably preferred to run the client from elsewhere.
+  if (daemonRunning && hasCorrectPermissions && (debugBuild || daemonInstalled) && hasCorrectPermissions && !needsGroup) {
     result.status = 'installed';
   } else {
     result.status = 'needs install';
@@ -77,19 +97,27 @@ function mac_run(status) {
       defaultId: 0,
       cancelId: 1,
     };
-    //if (options.moveToApplications) {
-    //  msg.detail += "\n\nAdditionally, we recommend moving the app to the Applications folder.";
-    //  msg.checkboxLabel = "Move to Applications";
-    //  msg.checkboxChecked = true;
-    //}
+    if (!status.clientInstalled && status.existingClientVersion) {
+      let diff = compareVersions(status.clientVersion, status.existingClientVersion);
+      if (diff == 0 && status.clientVersion !== status.existingClientVersion) {
+        diff = status.clientVersion > status.existingClientVersion ? 10 : -10; // differs only by build identifier
+      }
+      msg.message = "Upgrade Cypherpunk Privacy?";
+      msg.detail = "We need to make some changes to your computer in order to upgrade your existing installation of Cypherpunk Privacy. This will require an administrator password.";
+      msg.buttons[0] = "Upgrade";
+    } else if (options.moveToApplications) {
+      msg.detail += "\n\nAdditionally, we recommend moving the app to the Applications folder.";
+      msg.checkboxLabel = "Move to Applications";
+      msg.checkboxChecked = true;
+    }
     dialog.showMessageBox(msg, function (response, checked) {
       if (response === msg.cancelId) {
         console.log('Aborting installation'); // for some reason, this is necessary to avoid a UI delay - message loop pump?
         return resolve({ exit: 0 });
       }
-      //if (options.moveToApplications && !checked) {
-      //  options.moveToApplications = false;
-      //}
+      if (msg.checkboxLabel && !checked) {
+        options.moveToApplications = false;
+      }
       console.log('Proceeding with installation');
       require('./install_darwin.js').run(options).then(resolve, reject);
     });

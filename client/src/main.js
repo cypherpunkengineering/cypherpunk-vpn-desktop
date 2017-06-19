@@ -14,6 +14,14 @@ global.args = {
   clean: null,
 };
 
+global.exit = function exit(code) {
+  return new Promise((resolve, reject) => {
+    exiting = true;
+    app.exit(code);
+    // intentionally doesn't resolve
+  });
+};
+
 process.on('uncaughtException', function(err) {
   console.log('Uncaught exception:', err);
   app.exit(1);
@@ -22,13 +30,15 @@ process.on('unhandledrejection', function (err, promise) {
   console.log('Unhandled rejection:', err, promise);
 });
 
-process.argv.forEach(arg => {
-  if (arg === "--debug") {
-    args.debug = true;
-  } else if (arg === '--background') {
-    args.showWindowOnStart = false;
+{
+  let a = process.argv.slice(1);
+  while (a.length) {
+    switch (a.shift()) {
+      case '--debug': args.debug = true; break;
+      case '--background': args.showWindowOnStart = false; break;
+    }
   }
-});
+}
 
 if (process.platform !== 'darwin' && app.makeSingleInstance((argv, cwd) => {
   console.log("Attempted to start second instance: ", argv, cwd);

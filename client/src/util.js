@@ -139,7 +139,7 @@ Promise.stall = function stall() {
 
 
 export function splitVersion(v) {
-  var major = 0, minor = 0, patch = 0, prerelease = [], build = '', i;
+  var major, minor, patch, prerelease = [], build = '', i;
   if ((i = v.indexOf('+')) >= 0) {
     build = v.slice(i+1);
     v = v.slice(0,i);
@@ -148,16 +148,34 @@ export function splitVersion(v) {
     prerelease = v.slice(i+1).split('.');
     v = v.slice(0,i);
   }
-  [major, minor, patch] = v.split('.');
+  [major, minor = 0, patch = 0] = v.split('.');
   return [major, minor, patch, prerelease, build];
 }
 
+// Compare two versions in semver.org format; returns greater than 0 if a is "newer" than b.
+// Specifically, return values have the following meaning:
+//
+//   0 == compareVersions('1.2.3-alpha+build', '1.2.3-alpha+ignored')
+//   1 == compareVersions('2.0.0', '1.0.0')
+//   2 == compareVersions('1.1.0', '1.0.0')
+//   3 == compareVersions('1.0.1', '1.0.0')
+//   4 == compareVersions('1.0.0-b', '1.0.0-a'), compareVersions('1.0.0', '1.0.0-a')
+//   5 == compareVersions('1.0.0-alpha.2', '1.0.0-alpha.1'), compareVersions('1.0.0-alpha.2', '1.0.0-alpha')
+//  >5 == etc.
+//   compareVersions(a, b) == -compareVersions(b, a)
+//
+// Note that the build identifier is ignored for the purposes of ordering. To check for
+// versions that only differ by their build identifiers, simply compare the strings when
+// the compareVersions function returns 0.
+//
 export function compareVersions(a, b) {
+  // Split the version strings into [major, minor, patch, prerelease, build]
   a = splitVersion(a);
   b = splitVersion(b);
+  // Concatenate prerelease version identifiers so we have a single array of [major, minor, patch, prerelease1, prerelease2, ...]
   a = a.slice(0,3).concat(a[3]);
   b = b.slice(0,3).concat(b[3]);
-  for (var i = 0; i < a.length; i++) {
+  for (let i = 0; i < a.length; i++) {
     if (i >= b.length) {
       if (b.length == 3)
         return -(b.length+1);
