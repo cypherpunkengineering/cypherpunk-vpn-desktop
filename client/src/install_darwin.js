@@ -123,7 +123,7 @@ function runAsRoot(options) {
           // Using Applescript to tell the Finder to trash the path seems to bypass App Translocation and move the original file
           p = p.then(() => execFile('/usr/bin/osascript', [ '-e', `set f to POSIX file ${JSON.stringify(actualAppPath)}`, '-e', 'tell application "Finder" to move f to trash' ]));
         }
-        result.relaunch = { execPath: '/Applications/Cypherpunk Privacy.app/Contents/MacOS/Cypherpunk Privacy', args: [] };
+        result.relaunch = { execPath: '/Applications/Cypherpunk Privacy.app', args: [] };
       } else {
         result.relaunch = {};
       }

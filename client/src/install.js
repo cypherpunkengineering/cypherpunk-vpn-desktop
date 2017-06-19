@@ -119,7 +119,19 @@ function mac_run(status) {
         options.moveToApplications = false;
       }
       console.log('Proceeding with installation');
-      require('./install_darwin.js').run(options).then(resolve, reject);
+      require('./install_darwin.js').run(options)
+      .then(result => {
+        if (result.relaunch && result.relaunch.execPath) {
+          try {
+            child.execFileSync('/usr/bin/open', [ '-n', result.relaunch.execPath, '--args' ].concat(result.relaunch.args));
+          } catch (e) {
+            dialog.showErrorBox("Relaunch Failed", "The installation was successful, but we failed to relaunch the Cypherpunk Privacy application. Please do so manually.");
+          }
+          delete result.relaunch;
+          result.exit = 0;
+        }
+        return result;
+      }).then(resolve, reject);
     });
     app.show();
     app.focus();

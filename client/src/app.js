@@ -130,7 +130,7 @@ eventPromise(app, 'ready').then(() => {
         if (e instanceof Error && e.message.startsWith("User did not grant permission.")) {
           // Just quit silently
         } else {
-          dialog.showErrorBox("Installation Failed", true ? require('util').inspect(e) : String(e));
+          dialog.showErrorBox("Installation Failed", args.debug ? require('util').inspect(e) : e.error ? require('util').inspect(e.error) : String(e));
         }
         return exit();
       });
