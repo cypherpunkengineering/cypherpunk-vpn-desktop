@@ -148,7 +148,7 @@ struct win_tap_adapter
 };
 
 std::vector<win_tap_adapter> win_get_tap_adapters();
-BOOL win_install_tap_adapter();
+BOOL win_install_tap_adapter(int argc = 0, TCHAR **argv = NULL);
 BOOL win_uninstall_tap_adapters();
 
 void win_get_ipv4_routing_table();

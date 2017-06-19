@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { REGION_GROUP_NAMES, REGION_GROUP_ORDER, COUNTRY_NAMES } from '../util';
+import { classList } from '../util';
 import daemon, { DaemonAware } from '../daemon';
 
 // Always use this stub to import standard React addons, as we will either use
@@ -12,34 +12,53 @@ function reactAddon(module, name) {
 const ReactCSSTransitionGroup = reactAddon(require('react-addons-css-transition-group'), 'CSSTransitionGroup');
 
 
+
+export { Location } from './LocationList';
+
+export function getSortedLocations() {
+
+}
+
+
+
 export default class RegionSelector extends DaemonAware(React.Component) {
 
   state = {
     locations: daemon.config.locations,
     regions: daemon.config.regions,
+    countryNames: daemon.config.countryNames,
+    regionNames: daemon.config.regionNames,
+    regionOrder: daemon.config.regionOrder,
     selected: daemon.settings.location,
     favorites: Array.toDict(daemon.settings.favorites, f => f, f => true),
     recent: daemon.settings.recent,
+    pingStats: daemon.state.pingStats,
     open: false,
   }
 
   daemonConfigChanged(config) {
     if (config.locations) this.setState({ locations: config.locations });
     if (config.regions) this.setState({ regions: config.regions });
+    if (config.countryNames) this.setState({ countryNames: config.countryNames });
+    if (config.regionNames) this.setState({ regionNames: config.regionNames });
+    if (config.regionOrder) this.setState({ regionOrder: config.regionOrder });
   }
   daemonSettingsChanged(settings) {
     if (settings.hasOwnProperty('location')) this.setState({ selected: settings.location });
     if (settings.hasOwnProperty('favorites')) this.setState({ favorites: Array.toDict(settings.favorites, f => f, f => true) });
     if (settings.hasOwnProperty('recent')) this.setState({ recent: settings.recent });
   }
+  daemonStateChanged(state) {
+    if (state.hasOwnProperty('pingStats')) this.setState({ pingStats: daemon.state.pingStats });
+  }
 
   open() {
-    //this.$.addClass('open');
+    //this.$dom.addClass('open');
     this.setState({ open: true });
   }
   close() {
-    //this.$.removeClass('open');
-    //this.$.children('.list').scrollTop(0);
+    //this.$dom.removeClass('open');
+    //this.$('.list').scrollTop(0);
     this.setState({ open: false });
   }
   ensureVisible(item) {
@@ -53,7 +72,7 @@ export default class RegionSelector extends DaemonAware(React.Component) {
     }
     var itemHeight = item.outerHeight();
     var itemTop = item[0].offsetTop;
-    var list = this.$.children('.list');
+    var list = this.$('.list');
     var listHeight = list.height();
     var listScroll = list.scrollTop();
     if (itemTop + itemHeight > listScroll + listHeight) {
@@ -105,36 +124,8 @@ export default class RegionSelector extends DaemonAware(React.Component) {
   }
   makeLocation(location, type = 'location') {
     const clickable = type !== 'header';
-    var classes = [ 'region' ];
-    var tag = null;
-    if (location.disabled) {
-      classes.push('disabled');
-      tag = 'UNAVAILABLE';
-    }
-    switch (location.level) {
-      case 'free':
-        if (!location.disabled) {
-          classes.push('free');
-          tag = 'FREE';
-        }
-        break;
-      case 'premium':
-        if (!location.authorized || !location.disabled) {
-          classes.push('premium');
-          tag = 'PREMIUM';
-        }
-        break;
-      case 'developer':
-        classes.push('developer');
-        tag = 'DEV';
-        break;
-    }
-    if (this.state.selected === location.id) {
-      classes.push('selected');
-    }
-    if (this.state.favorites[location.id]) {
-      classes.push('favorite');
-    }
+    const key = type + '-' + location.id;
+    const ping = this.state.pingStats && this.state.pingStats[location.id];
     var onclick = event => {
       var value = event.currentTarget.getAttribute('data-value');
       if (event.target.className.indexOf('cp-fav') != -1) {
@@ -143,22 +134,18 @@ export default class RegionSelector extends DaemonAware(React.Component) {
         this.onLocationClick(value);
       }
     };
-    var flag = (dpi = '') => `../assets/img/flags/24/${location.country.toLowerCase()}${dpi}.png`;
-    return(
-      <div className={classes.join(' ')} data-value={clickable ? location.id : null} key={type + '-' + location.id} onClick={clickable ? onclick : null}>
-        {/* <i className={location.country.toLowerCase() + " flag"}></i> */}
-        <img className="flag" src={flag()} srcSet={`${flag()} 1x, ${flag('@2x')} 2x`} alt=""/>
-        <span data-tag={tag}>{location.name}</span><i className="cp-fav icon"></i>
-      </div>
-    );
+    if (clickable)
+      return <Location location={location} key={key} className="region" onClick={onclick} selected={this.state.selected === location.id} favorite={!!this.state.favorites[location.id]} ping={ping}/>;
+    else
+      return <Location location={location} key={key} className="region"/>;
   }
 
   makeRegionList(regions, locations) {
     var items = Array.flatten(
-      REGION_GROUP_ORDER.map(g => ({
+      this.state.regionOrder.map(g => ({
         id: g,
-        name: REGION_GROUP_NAMES[g],
-        locations: Array.flatten(Object.mapToArray(regions[g], (c,l) => [c,l]).sort((a, b) => COUNTRY_NAMES[a[0]].localeCompare(COUNTRY_NAMES[b[0]])).map(([country, locs]) => locs.map(l => locations[l]).sort((a, b) => a.name.localeCompare(b.name)).map(l => this.makeLocation(l, 'location'))).filter(l => l && l.length > 0))
+        name: this.state.regionNames[g],
+        locations: Array.flatten(Object.mapToArray(regions[g], (c,l) => [c,l]).sort((a, b) => this.state.countryNames[a[0]].localeCompare(this.state.countryNames[b[0]])).map(([country, locs]) => locs.map(l => locations[l]).sort((a, b) => a.name.localeCompare(b.name)).map(l => this.makeLocation(l, 'location'))).filter(l => l && l.length > 0))
       })).filter(r => r.locations && r.locations.length > 0).map(r => [ this.makeLocationHeader('region-' + r.id.toLowerCase(), r.name) ].concat(r.locations))
     );
     var recent = this.state.recent.filter(r => !this.state.favorites[r] && locations[r]);
@@ -174,14 +161,8 @@ export default class RegionSelector extends DaemonAware(React.Component) {
     return items;
   }
 
-  get dom() {
-    return ReactDOM.findDOMNode(this);
-  }
-  get $() {
-    return $(this.dom);
-  }
   get $list() {
-    return this.$.children('.list');
+    return this.$('.list');
   }
   $item(location) {
     return this.$list.children(`[data-value="${location}"]`);

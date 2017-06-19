@@ -45,23 +45,33 @@
 }
 
 .setting {
+  @lineHeight: 44px;
   > .ui.checkbox {
     width: 100%;
-    padding: 1rem 15px 1rem 15px;
+    padding: 12px 15px 12px 15px;
     cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    min-height: @lineHeight;
     > input:checked + label {
       color: inherit;
     }
     > label {
       color: inherit;
     }
+    .box, label {
+
+    }
     &.left {
+      padding-left: 60px;
       .box, label {
         &:before {
-          top: 2px;
+          //top: 2px;
         }
         &:after {
-          top: 2px;
+          //top: 2px;
         }
       }
     }
@@ -107,6 +117,18 @@
     }
   }
   > .ui.radio.checkbox {
+    .box, label {
+      &:before, &:after {
+        width: 18px;
+        height: 18px;
+      }
+    }
+    &.left {
+      padding-left: 46px;
+      .box, label {
+        left: -30px;
+      }
+    }
     &.checked {
       background-color: rgba(255,255,255,0.1);
     }

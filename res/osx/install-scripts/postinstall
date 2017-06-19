@@ -12,19 +12,27 @@ if ! dscl . -read /Groups/$GROUP ; then
 	GID=$(dscl . -list /Groups PrimaryGroupID | awk '{g[$2]=1}END{for(i=333;i<500;i++)if(!g[i]){print i;exit 0}exit 1}')
 	# Create group
 	dscl . -create /Groups/$GROUP gid $GID
-	# Add 'everyone' to the group as a nested group, otherwise users will not be able to run binaries
-	# with +setgid owned by the cypherpunk group (this does not affect everyone's traffic)
-	dseditgroup -o edit -a everyone -t group $GROUP
 fi
 
+# Add 'everyone' to the group as a nested group, otherwise users will not be able to run binaries
+# with +setgid owned by the cypherpunk group (this does not affect everyone's traffic)
+dseditgroup -o edit -a everyone -t group $GROUP
+
+# Run some commands to help flush group changes so they're visible to posix commands
+dscacheutil -flushcache
+id
+
 # Update permissions on the client executable to exempt it from the killswitch
-chgrp $GROUP "/Applications/Cypherpunk Privacy.app/Contents/MacOS/Cypherpunk Privacy"
-chmod g+s "/Applications/Cypherpunk Privacy.app/Contents/MacOS/Cypherpunk Privacy"
+chgrp $GROUP "$3/Applications/Cypherpunk Privacy.app/Contents/MacOS/Cypherpunk Privacy"
+chmod g+s "$3/Applications/Cypherpunk Privacy.app/Contents/MacOS/Cypherpunk Privacy"
 
 # (The daemon does not need +setgid since it's running as root and can do it by itself)
+
+# force reload of pfctl main configuration file in case main rules got flushed somehow
+pfctl -q -f /etc/pf.conf
 
 # Make sure the daemon is running in the background
 launchctl load /Library/LaunchDaemons/com.cypherpunk.privacy.service.plist
 
 # Launch the client
-osascript -e 'tell application "Cypherpunk Privacy" to activate'
+open "$3/Applications/Cypherpunk Privacy.app" || open -a 'Cypherpunk Privacy' || true

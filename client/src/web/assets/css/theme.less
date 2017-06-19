@@ -1,0 +1,16 @@
+// This is the main theme definition, providing reusable variables for consistent
+// colors etc. across the application.
+
+@themeWindowBackground: @cpTeal;
+@themeBodyBackground: @themeWindowBackground;
+
+@themeDarkBackground: multiply(@themeWindowBackground, #aaa);
+
+@themeMainBackground: @themeDarkBackground;
+
+@themeTitlebarBackground: multiply(@themeMainBackground, #ccc);
+@themeSecondaryTitlebarBackground: multiply(@themeTitlebarBackground, #ccc);
+
+@themeLightBackground: saturate(screen(@themeWindowBackground, #444), 30%);
+
+@themeBorderColor: #19474c;

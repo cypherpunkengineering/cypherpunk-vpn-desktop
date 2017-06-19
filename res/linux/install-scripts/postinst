@@ -1,4 +1,5 @@
 #!/bin/bash
+addgroup --system cypherpunk
 systemctl daemon-reload
 update-rc.d cypherpunk defaults
 service cypherpunk force-reload

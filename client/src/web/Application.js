@@ -3,50 +3,47 @@ import ReactDOM from 'react-dom';
 import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, browserHistory, hashHistory } from 'react-router';
 import { ipcRenderer, remote } from 'electron';
 import LoginScreen, * as Login from './components/LoginScreen';
-import ConnectScreen from './components/ConnectScreen';
+import MainScreen from './components/MainScreen';
 import ConfigurationScreen from './components/ConfigurationScreen';
 import EmailScreen from './components/account/EmailScreen';
 import ShareScreen from './components/account/ShareScreen';
-import PrivacyScreen from './components/config/PrivacyScreen';
-import TrustedNetworksScreen from './components/config/TrustedNetworks';
+import ProfileScreen from './components/config/ProfileScreen';
+import TrustedNetworksScreen from './components/config/TrustedNetworksScreen';
 import RemotePortScreen from './components/config/RemotePortScreen';
 import FirewallScreen from './components/config/FirewallScreen';
 import HelpScreen from './components/account/HelpScreen';
 import PasswordScreen from './components/account/PasswordScreen';
 import AccountScreen from './components/AccountScreen';
-import './assets/css/app.less';
+import TutorialScreen from './components/TutorialScreen';
+
+import 'semantic/components/button';
+import 'semantic/components/checkbox';
+import 'semantic/components/dimmer';
+import 'semantic/components/dropdown';
+import 'semantic/components/flag';
+import 'semantic/components/icon';
+import 'semantic/components/input';
+import 'semantic/components/loader';
+import 'semantic/components/popup';
+
+import './assets/css/main.less';
 
 // import { configureStore } from './store/configureStore';
-import RouteTransition from './components/Transition';
+import { TransitionGroup } from './components/Transition';
 import daemon from './daemon.js';
 import server from './server.js';
+import analytics from './analytics.js';
 import { compareVersions } from './util.js';
 
-const transitionMap = {
-    'login': {
-      'connect': 'fadeIn',
-    },
-    'account': {
-      'connect': 'swipeLeft',
-    },
-    'connect': {
-      'account': 'swipeRight',
-      'configuration': 'swipeLeft',
-    },
-    'configuration': {
-      'configuration/*': 'swipeLeft',
-      'connect': 'swipeRight',
-    },
-    'account': {
-      'account/*': 'swipeLeft',
-      'connect': 'swipeRight',
-    },
-    '*': {
-      'login': '',
-      'root': '',
-      '*': 'fadeIn',
-    },
-};
+function getTransition(diff) {
+  if (diff.login === 'leave' && diff.main === 'enter') return 'fadeIn';
+  if (diff.login === 'enter' || diff.root === 'enter') return null;
+  return 'fadeIn';
+}
+
+let lastPath = null;
+
+export const RootContainer = (props) => <TransitionGroup transition={getTransition} {...props}/>;
 
 export default class Application {
   static init() {
@@ -57,14 +54,22 @@ export default class Application {
       return server.post('/api/v1/account/authenticate/token', { email: daemon.account.account.email, token: daemon.account.account.token }).then(data => true);
     };
     server.onAuthFailure = () => {
-      setImmediate(() => History.push('/login/email'));
+      setImmediate(() => History.push('/login/logout'));
     }
+
+    // Listen for daemon state changes
+    daemon.on('state', Application.daemonStateChanged);
+
+    if (daemon.settings.enableAnalytics) {
+      analytics.activate();
+    }
+
     History.push('/login');
     // TODO: Later we'll probably want to run this at a different timing
     Application.checkForUpdates();
   }
   static checkForUpdates() {
-    server.get('/api/v0/app/versions').then(response => {
+    server.get('/api/v1/app/versions').then(response => {
       var version = response.data[({ 'darwin':'macos', 'win32':'windows', 'linux':'debian' })[process.platform]];
       if (version !== undefined) {
         function downloadAndInstall() {
@@ -134,15 +139,31 @@ export default class Application {
     Application.History.push(location);
   }
   static onNavigation(location, action) {
+    if (lastPath !== location.pathname) {
+      lastPath = location.pathname;
+      analytics.screenview(lastPath);
+    }
     ipcRenderer.send('navigate', location);
   }
   static isLoggedIn() {
     return Application.History.location.pathname.match(/^\/(?!login)./);
   }
+  static daemonStateChanged(state) {
+    if (state.state) {
+      switch (state.state) {
+        case 'CONNECTED':
+          document.documentElement.className = 'online';
+          break;
+        case 'DISCONNECTED':
+          document.documentElement.className = 'offline';
+          break;
+      }
+    }
+  }
   static render() {
     return (
       <Router history={window.History}>
-        <Route path="/" component={RouteTransition} transition={transitionMap}>
+        <Route path="/" component={RootContainer}>
           {/*<IndexRoute component={LoginScreen}/>*/}
           <Route path="login" component={LoginScreen}>
             <Route path="check" component={Login.Check}/>
@@ -150,12 +171,15 @@ export default class Application {
             <Route path="password" component={Login.PasswordStep}/>
             <Route path="register" component={Login.RegisterStep}/>
             <Route path="confirm" component={Login.ConfirmationStep}/>
+            <Route path="analytics" component={Login.AnalyticsStep}/>
             <Route path="logout" component={Login.Logout}/>
             <IndexRedirect to="check"/>
           </Route>
-          <Route path="connect" component={ConnectScreen}>
+          <Route path="main" component={MainScreen}>
+            <Route path="/tutorial/:page" component={TutorialScreen}/>
+            <Redirect from="/tutorial" to="/tutorial/0"/>
             <Route path="/configuration" component={ConfigurationScreen}>
-              <Route path="privacy" component={PrivacyScreen}/>
+              <Route path="privacy" component={ProfileScreen}/>
               <Route path="firewall" component={FirewallScreen}/>
               <Route path="trustednetworks" component={TrustedNetworksScreen}/>
               <Route path="remoteport" component={RemotePortScreen}/>
@@ -184,10 +208,12 @@ window.addEventListener('unhandledrejection', function (event) {
   if (event.reason.handled) {
     // e.g. a 403 which was "handled" by moving to the login screen
     event.preventDefault();
+    analytics.exception(event.reason.toString(), 0);
     return false;
   } else {
     console.error("Unhandled error: " + event.reason.message);
     console.dir(event.reason);
+    analytics.exception(event.reason.toString(), 1);
     alert(event.reason.message);
   }
 });

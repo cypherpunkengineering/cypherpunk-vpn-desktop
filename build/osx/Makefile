@@ -30,20 +30,34 @@ OPENVPN_FILENAME = cypherpunk-privacy-openvpn
 OPENVPN_SCRIPTS = $(shell find $(ROOT)/res/osx/openvpn-scripts -type f -name '*.sh')
 PF_ANCHORS = $(shell find $(ROOT)/res/osx/pf.anchors -type f -name 'com.cypherpunk.*')
 
-APP_SIGN_IDENTITY = "Developer ID Application: Cypherpunk Engineering K.K. (S353YJSBDX)"
-INSTALLER_SIGN_IDENTITY = "Developer ID Installer: Cypherpunk Engineering K.K. (S353YJSBDX)"
+APP_SIGN_IDENTITY ?= "Developer ID Application: Cypherpunk Engineering K.K. (S353YJSBDX)"
+INSTALLER_SIGN_IDENTITY ?= "Developer ID Installer: Cypherpunk Engineering K.K. (S353YJSBDX)"
 
-# BUILD_NUMBER is provided on Jenkins builds, or can be specified explicitly.
-# If BUILD_NAME is specified (e.g. for special/branch builds), it is prepended to the build number.
-ifeq ($(BUILD_NUMBER),)
-BUILD_NUMBER := $(BUILD_NAME)-$(shell git --git-dir="$(ROOT)/.git" describe --always --match=nosuchtagpattern --dirty=-p)
-BUILD_NUMBER := $(BUILD_NUMBER:-%=%)
+
+ifneq ($(MAKECMDGOALS),clean)
+
+ifeq ($(wildcard $(ROOT)/client/node_modules/.),)
+$(info * Initializing node modules...)
+ifneq ($(shell cd "$(ROOT)/client" && npm install 1>&2 || echo FAIL),)
+$(error Failed to initialize node modules!)
 endif
-ORIGINAL_APP_VER := $(shell node -e "console.log(require('$(ROOT)/client/package.json').version);")
-export APP_VER := $(shell echo "$(ORIGINAL_APP_VER)" | sed -E 's/^([^-+]*)(-[^+]*)?(\+.*)?/\1\2+$(BUILD_NUMBER)/')
+endif
+$(info * Generating version number...)
+$(info $(shell rm -f "$(ROOT)/version.txt" && cd "$(ROOT)/client" && node_modules/.bin/gulp build-version 1>&2 && node_modules/.bin/gulp apply-version 1>&2))
+export APP_VER := $(shell cat "$(ROOT)/version.txt")
+ifeq ($(APP_VER),)
+$(error Failed to generate version number!)
+endif
+export APP_SHORT_VER := $(shell echo "$(APP_VER)" | cut -d. -f1-2)
+define COPYRIGHT_STRING
+™ and © $(shell date +%Y) Cypherpunk Partners, slf.
+All rights reserved.
+endef
+export COPYRIGHT_STRING
+
+endif
 
 INSTALLER_PKG = cypherpunk-privacy-macos-$(subst +,-,$(APP_VER)).pkg
-
 
 
 all: package
@@ -53,6 +67,7 @@ package: $(OUT)/$(INSTALLER_PKG)
 clean:
 	$(ECHO) "* Cleaning..."
 	$(HUSH) rm -rf "$(OUT)"
+	$(HUSH) $(MAKE) -C $(ROOT)/daemon/posix clean
 
 vpn: clean
 great: update-node-modules
@@ -82,32 +97,16 @@ stop-leasewatcher:
 
 # Source building
 
-update-node-modules:
-	$(ECHO) "* Updating node modules..."
-	$(HUSH) cd "$(ROOT)/client" && npm install
-
-check-node-modules: $(if $(wildcard $(ROOT)/client/node_modules/.),,update-node-modules)
-
-#ifeq ($(APP_VER),$(ORIGINAL_APP_VER))
-#version:
-#	$(ECHO) "* Building version $(APP_VER)..."
-#else
-version: check-node-modules
-	$(ECHO) "* Setting version number to $(APP_VER)..."
-	$(HUSH) cd "$(ROOT)/client" && ./node_modules/.bin/json -I -f package.json -e 'this.version=this.version.replace(/(\+.*)?$$/,"+$(BUILD_NUMBER)")' && npm run version
-## We'd run npm version $(APP_VER) instead but that doesn't work with build numbers
-#endif
-
-client: check-node-modules version
+client:
 	$(ECHO) "* Building client..."
 	$(HUSH) cd "$(ROOT)/client" && npm --production run build
 	$(ECHO) "* Rebuilding Electron modules..."
 	$(HUSH) cd "$(ROOT)/client" && ./node_modules/.bin/electron-rebuild
 
-daemon: $(ROOT)/daemon/posix/$(DAEMON_FILENAME)
+daemon: $(ROOT)/daemon/posix/out/$(DAEMON_FILENAME)
 
-$(ROOT)/daemon/posix/$(DAEMON_FILENAME): version
-	$(HUSH) $(MAKE) -C $(ROOT)/daemon/posix
+$(ROOT)/daemon/posix/out/$(DAEMON_FILENAME): version
+	$(HUSH) $(MAKE) -j4 -C $(ROOT)/daemon/posix RELEASE=1 all
 
 
 # Staging
@@ -121,9 +120,12 @@ stage-client: client
 	$(HUSH) rm -rf "$(OUT)/$(APP_SIG)"
 	$(HUSH) cd "$(ROOT)/client" && ./node_modules/.bin/electron-packager ./app/ "$(APP_NAME)" \
 		--app-bundle-id="$(APP_NS).app" \
+		--app-version="Version $(APP_SHORT_VER)" \
+		--build-version="v$(APP_VER)" \
+		--app-copyright="$$COPYRIGHT_STRING" \
 		--platform=darwin \
 		--arch=x64 \
-		--icon="$(ROOT)/res/osx/logo2.icns" \
+		--icon="$(ROOT)/res/osx/logo5.icns" \
 		--out="$(OUT)"
 	$(HUSH) sync; sleep 1
 	$(HUSH) codesign --force --deep --sign $(APP_SIGN_IDENTITY) "$(OUT)/$(APP_SIG)/$(APP_BUNDLE)"
@@ -136,7 +138,7 @@ stage-daemon: $(STAGING)/usr/local/cypherpunk/bin/$(DAEMON_FILENAME) $(STAGING)/
 
 stage-leasewatcher: $(STAGING)/Library/LaunchDaemons/$(LEASEWATCHER_NS).plist
 
-$(STAGING)/usr/local/cypherpunk/bin/$(DAEMON_FILENAME): $(ROOT)/daemon/posix/$(DAEMON_FILENAME)
+$(STAGING)/usr/local/cypherpunk/bin/$(DAEMON_FILENAME): $(ROOT)/daemon/posix/out/$(DAEMON_FILENAME)
 	$(ECHO_STAGING)
 	$(HUSH) mkdir -p $(dir $@)
 	$(HUSH) install -c -m 755 $< $@
@@ -222,10 +224,10 @@ $(OUT)/Build.pkg: stage
 		Build.pkg
 
 $(OUT)/$(INSTALLER_PKG): $(OUT)/Build.pkg
-	cd "$(OUT)" && productbuild \
+	$(HUSH) cd "$(OUT)" && productbuild \
 		--resources "$(ROOT)/res/osx/resources" \
 		--distribution "$(ROOT)/res/osx/resources/distribution.xml" \
 		--sign $(INSTALLER_SIGN_IDENTITY) \
 		--version "$(APP_VER)" \
 		"$(INSTALLER_PKG)"
-	$(ECHO) "* Finished: $$(ls -l $(OUT)/$(INSTALLER_PKG))"
+	$(ECHO) "* Finished: $$(ls -l "$@")"

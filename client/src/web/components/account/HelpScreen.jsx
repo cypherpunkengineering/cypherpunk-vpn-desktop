@@ -1,22 +1,25 @@
 import React from 'react';
 import { Link } from 'react-router';
+import { Subpanel, PanelContent } from '../Panel';
 
 export default class HelpScreen extends React.Component  {
   render() {
     return(
-      <div class="container__comp">
-        <div className="ui fluid inverted borderless icon menu cp_config_header">
-          <Link className="nondraggable item" to="/account"><i className="angle left icon"></i></Link>
-          <div className="header item center aligned">Help</div>
-        </div>
-        <div class="ui padded grid">
-          <div class="row">
-            <div class="sixteen wide olive column">
-              Write Help Information Here.
+      <Subpanel>
+        <PanelContent>
+          <div className="ui fluid inverted borderless icon menu cp_config_header" ref="root">
+            <Link className="nondraggable item" to="/account"><i className="angle left icon"></i></Link>
+            <div className="header item center aligned">Help</div>
+          </div>
+          <div class="ui padded grid">
+            <div class="row">
+              <div class="sixteen wide olive column">
+                Write Help Information Here.
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        </PanelContent>
+      </Subpanel>
     );
   }
 }

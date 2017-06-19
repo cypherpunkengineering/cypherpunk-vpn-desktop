@@ -130,24 +130,30 @@
 
   <ItemGroup>
     <ClInclude Include="config.h" />
+    <ClInclude Include="connection.h" />
     <ClInclude Include="daemon.h" />
+    <ClInclude Include="debug.h" />
     <ClInclude Include="json.h" />
     <ClInclude Include="logger_file.h" />
     <ClInclude Include="logger.h" />
     <ClInclude Include="openvpn.h" />
     <ClInclude Include="path.h" />
+    <ClInclude Include="ping.h" />
+    <ClInclude Include="posix\posix.h" />
+    <ClInclude Include="posix\posix_subprocess.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="serialization.h" />
     <ClInclude Include="settings.h" />
+    <ClInclude Include="subprocess.h" />
+    <ClInclude Include="util.h" />
+    <ClInclude Include="version.h" />
     <ClInclude Include="websocketpp.h" />
-    <ClInclude Include="win\SampleService.h" />
-    <ClInclude Include="win\ServiceBase.h" />
-    <ClInclude Include="win\ServiceInstaller.h" />
-    <ClInclude Include="win\ThreadPool.h" />
-    <ClInclude Include="win\util.h" />
     <ClInclude Include="win\win.h" />
     <ClInclude Include="win\win_firewall.h" />
+    <ClInclude Include="win\win_subprocess.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="connection.cpp" />
     <ClCompile Include="daemon.cpp" />
     <ClCompile Include="json.cpp" />
     <ClCompile Include="logger.cpp" />

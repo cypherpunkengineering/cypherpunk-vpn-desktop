@@ -10,8 +10,8 @@
   width: 100%;
   bottom: 0;
   z-index: 2;
-  transition: top 350ms cubic-bezier(0.5,0,0,1);
-  background: linear-gradient(to top, #034698, #4c8ee1) fixed;
+  transition+: top 350ms cubic-bezier(0.5,0,0,1);
+  background: @themeWindowBackground;
   font-size: 1.125rem;
   > .bar {
     position: relative;
@@ -77,6 +77,12 @@
       > span {
         flex-grow: 1;
       }
+      > span.ping-time {
+        flex: none;
+        color: rgba(255,255,255,0.5);
+        font-size: 12px;
+        font-weight: 400;
+      }
       > .cp-fav {
         cursor: pointer;
         font-size: 120%;
@@ -133,44 +139,7 @@
 
   // Common styles only (i.e. for list and bar)
   .region {
-    display: flex;
-    align-items: center;
-
-    > span[data-tag]:after {
-      content: attr(data-tag);
-      margin-left: 10px;
-      font-size: 10px;
-    }
-    &.premium > span[data-tag]:after {
-      background: linear-gradient(329deg, @cpYellowDark, @cpYellow, @cpYellowDark);
-      border-radius: 5px 0 5px 0;
-      padding: 1px 3px;
-      color: darken(@cpYellowDark, 40%) !important;
-      font-weight: 800;
-      position: relative;
-      top: -1px;
-    }
-    &.free > span[data-tag]:after {
-      background: linear-gradient(329deg, #aaa, #fff, #aaa);
-      border-radius: 5px;
-      padding: 1px 3px;
-      color: @cpDarkBlue !important;
-      font-weight: 800;
-      position: relative;
-      top: -1px;
-      display: none; // hide for now
-    }
-    &.developer > span[data-tag]:after {
-      background: linear-gradient(329deg, #a30, #f62, #a30);
-      padding: 1px 3px;
-      color: white !important;
-      font-weight: 800;
-      position: relative;
-      top: -1px;
-    }
-    &.disabled > span[data-tag]:after {
-      color: rgba(255,255,255,0.7);
-    }
+    .location;
   }
 
   .flag {
@@ -178,7 +147,7 @@
   }
 
   &.open {
-    top: (@fullHeaderHeight - 1px);
+    top: 102px; // (@fullHeaderHeight - 1px);
 
     > .bar {
       &:after {
@@ -189,4 +158,75 @@
       overflow-y: overlay;
     }
   }
+}
+
+.location {
+  display: flex;
+  align-items: center;
+
+  > .flag {
+    margin-right: 10px;
+  }
+  > span[data-tag]:after {
+    content: attr(data-tag);
+    margin-left: 10px;
+    font-size: 10px;
+  }
+  &.premium > span[data-tag]:after {
+    background: linear-gradient(329deg, @cpYellowDark, @cpYellow, @cpYellowDark);
+    border-radius: 5px 0 5px 0;
+    padding: 1px 3px;
+    color: darken(@cpYellowDark, 40%) !important;
+    font-weight: 800;
+    position: relative;
+    top: -1px;
+  }
+  &.free > span[data-tag]:after {
+    background: linear-gradient(329deg, #aaa, #fff, #aaa);
+    border-radius: 5px;
+    padding: 1px 3px;
+    color: @cpDarkBlue !important;
+    font-weight: 800;
+    position: relative;
+    top: -1px;
+    display: none; // hide for now
+  }
+  &.developer > span[data-tag]:after {
+    background: linear-gradient(329deg, #a30, #f62, #a30);
+    padding: 1px 3px;
+    color: white !important;
+    font-weight: 800;
+    position: relative;
+    top: -1px;
+  }
+  &.disabled > span[data-tag]:after {
+    color: rgba(255,255,255,0.7);
+  }
+
+  > .cp-fav {
+    cursor: pointer;
+    font-size: 120%;
+    width: 40px;
+    height: auto;
+    padding-right: 6px;
+    //line-height: 100%;
+    //align-self: stretch;
+    color: rgba(255,255,255,0.5);
+    &:before {
+      content: '\f006';
+    }
+    &:hover {
+      color: #fff !important;
+    }
+  }
+  &.favorite > .cp-fav {
+    color: @cpYellowDark;
+    &:before {
+      content: '\f005';
+    }
+    &:hover {
+      color: @cpYellow !important;
+    }
+  }
+
 }

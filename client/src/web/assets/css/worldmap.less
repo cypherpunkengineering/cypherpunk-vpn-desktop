@@ -1,0 +1,84 @@
+
+.worldmap {
+  overflow: visible;
+  .world {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: auto;
+    height: auto;
+    opacity: 0.3;
+    transform-origin: left top;
+    transform: scale(0.5) translate(-50%,-50%);
+    // transform: scale(S) translate(-X,-Y);
+    transition: transform 1.2s cubic-bezier(0.3,0,0.3,1);
+    > img:first-child {
+    }
+  }
+  &.moving .world {
+    will-change: transform;
+  }
+  .point {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 10px;
+    transform: translate(-50%,-50%);
+    background: #088;
+    border: 2px solid #044;
+    transition: box-shadow 1.2s, background 1.2s, border-color 1.2s;
+    &.selected {
+      z-index: 5;
+      box-shadow: 0 0 20px 5px #0ff;
+      background: rgba(0,255,255,0.75);
+      border-color: #0ff;
+    }
+  }
+  .marker {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: 0;
+    transition: opacity 0.5s;
+    &::before, &::after {
+      .semanticIcon('\f041');
+      position: absolute;
+      width: 50px;
+      left: 50%;
+      top: 50%;
+      font-size: 40px;
+      text-align: center;
+      will-change: transform;
+      transition: transform 0.4s cubic-bezier(0.6,0,0.8,0.8), opacity 0.4s cubic-bezier(0.6,0,0.8,0.8);
+    }
+    &::before {
+      color: #8ff;
+      transform: translate(-50%,-100%) translateY(2px);
+      z-index: 2;
+    }
+    &::after {
+      color: #000;
+      transform-origin: bottom;
+      transform: translate(-50%, -100%) translateY(0px) skewX(-60deg) scaleY(0.3);
+      filter: blur(2px);
+      z-index: 1;
+      opacity: 0/*.75*/; // hide shadow for now
+    }
+    &.up {
+      &::before, &::after {
+        transition: transform 0.3s cubic-bezier(0.2,0.5,0.2,1), opacity 0.3s cubic-bezier(0.2,0.5,0.2,1);
+      }
+      &::before {
+        transform: translate(-50%,-100%) translateY(2px) translateY(-20px);
+      }
+      &::after {
+        transform: translate(-50%, -100%) translateY(0px) skewX(-60deg) scaleY(0.3) translateY(-20px);
+        opacity: 0/*.25*/; // hide shadow for now
+      }
+    }
+    &.hidden {
+      opacity: 0;
+    }
+  }
+}

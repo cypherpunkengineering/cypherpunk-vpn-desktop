@@ -7,7 +7,7 @@ export default class MainBackground extends React.Component {
 
   render() {
     return(
-      <div id="onezeros">
+      <div id="matrix">
 
         <img src={BgText1} id="bits-one" className="bits-img" />
         <img src={BgText2} id="bits-two" className="bits-img" />

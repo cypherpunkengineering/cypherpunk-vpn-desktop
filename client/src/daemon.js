@@ -1,13 +1,18 @@
-const { ipcMain } = require('electron');
+const { ipcMain, app } = require('electron');
 const EventEmitter = require('events');
 const { RPC, WebSocketImpl, ERROR_METHOD_NOT_FOUND } = require('./rpc.js');
 const WebSocket = require('ws');
 //const WebSocket = require('websocket').client;
 
+if (!app.isReady()) {
+  throw new Error('Initialization order error');
+}
+
 var callbacks = {};
 var handlers = {};
 var ws, rpc, daemon;
 var isopen = false;
+var connectResolve = null, connectReject = null;
 
 function filterChanges(target, delta) {
   var count = 0;
@@ -43,6 +48,7 @@ class Daemon extends EventEmitter {
     this.config = {};
     this.settings = {};
     this.state = {};
+    this.setMaxListeners(0);
   }
   registerMethod(method, callback) {
     handlers[method] = callback;
@@ -53,8 +59,20 @@ class Daemon extends EventEmitter {
   notifyWindowCreated() {
     if (window) window.webContents.send(isopen ? 'daemon-up' : 'daemon-down', buildStatusReply());
   }
+  connect() {
+    if (connectResolve || connectReject) {
+      throw new Error("Already connecting");
+    }
+    return new Promise((resolve, reject) => {
+      connectResolve = resolve;
+      connectReject = reject;
+    });
+  }
   disconnect() {
     return ws.disconnect();
+  }
+  get connected() {
+    return isopen;
   }
 }
 
@@ -87,9 +105,7 @@ ipcMain.on('daemon-open', (event) => {
 // Listen for events from the WebSocket RPC instance
 
 function onopen() {
-  isopen = true;
-  daemon.emit('up');
-  if (window) window.webContents.send('daemon-up', buildStatusReply());
+  // wait for the first 'data' message
 }
 
 function onerror() {
@@ -119,8 +135,43 @@ function oncall(method, params, id) {
 }
 
 function onpost(method, params) {
-  if (window) window.webContents.send('daemon-post', method, params);
+  if (!isopen) {
+    if (method === 'data' && typeof params[0] === 'object' && params[0].hasOwnProperty('version')) {
+      if (params[0].version !== app.getVersion()) {
+        if (connectReject) {
+          connectReject(new Error("Daemon version mismatch"));
+        } else {
+          daemon.emit('error', { message: "Daemon version mismatch" });
+        }
+        daemon.disconnect();
+        return;
+      }
+      delete params[0].version;
+      isopen = true;
+      if (connectResolve) {
+        connectResolve();
+        connectResolve = null;
+      }
+      daemon.emit('up');
+      if (window) window.webContents.send('daemon-up', buildStatusReply());
+    } else {
+      return;
+    }
+  }
+
   switch (method) {
+    case 'data':
+      ['config','account','settings','state'].forEach(type => {
+        if (params[0].hasOwnProperty(type)) {
+          filterChanges(daemon[type], params[0][type]);
+          Object.assign(daemon[type], params[0][type]);
+          try {
+            daemon.emit(type, params[0][type]); // deprecated
+          } catch(e) {}
+        }
+      });
+      break;
+    // deprecated
     case 'account':
     case 'config':
     case 'settings':
@@ -129,7 +180,10 @@ function onpost(method, params) {
       Object.assign(daemon[method], params[0]);
       break;
   }
-  daemon.emit(method, ...params);
+  try {
+    if (window) window.webContents.send('daemon-post', method, params);
+    daemon.emit(method, ...params);
+  } catch(e) {}
 }
 
 // Finally put everything together and export the daemon instance

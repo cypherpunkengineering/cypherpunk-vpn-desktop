@@ -1,0 +1,367 @@
+.quick-panel {
+  @headerHeight: 46px;
+  @gridHeight: 188px;
+  @panelHeight: @headerHeight + @gridHeight;
+  @fullHeight: 420px;
+  @listHeight: @fullHeight - @headerHeight;
+
+  @headerColor: fade(multiply(@themeLightBackground, #ccc), 75%);
+
+  position: absolute;
+  left: 0;
+  width: 100vw;
+  bottom: 0;
+  height: @panelHeight;
+  z-index: 1003;
+
+  > .drawer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: @fullHeight;
+
+    > .dimmer {
+      position: absolute;
+      width: 100%;
+      bottom: 100%;
+      height: calc(~"100vh - "@panelHeight);
+      background: linear-gradient(to top, transparent, rgba(0,0,0,0.5) 30px);
+      cursor: pointer;
+      .nondraggable;
+    }
+    > .description {
+      @descriptionHeight: 17px;
+
+      position: absolute;
+      height: @descriptionHeight;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: @descriptionHeight solid transparent;
+      border-top: none;
+      font-size: 12px;
+      line-height: 22px;
+      padding: 0 10px;
+      border-bottom-color: @headerColor;
+      color: #8cc;
+
+      transition: border-bottom-color 0.5s, color 0.5s;
+    }
+    > .header {
+      width: 100%;
+      height: @headerHeight;
+      position: relative;
+      background: @headerColor;
+      font-size: 16px;
+      z-index: 1;
+      > .selected-location {
+        position: absolute;
+        width: 100%;
+        height: @headerHeight;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      > .list-header {
+        position: absolute;
+        width: 100%;
+        height: @headerHeight;
+        line-height: @headerHeight;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        > .input {
+          flex: 1 0 auto;
+          margin: 0 10px;
+          height: 28px;
+          > input {
+            border: none;
+            border-radius: 5px;
+            background: rgba(10,30,40,0.25);
+            color: rgba(255,255,255,0.5);
+            &:focus, &:hover {
+              background: rgba(10,30,40,0.35);
+            }
+            &:focus {
+              color: #fff !important;
+            }
+          }
+        }
+        > i.icon.link {
+          width: auto;
+          height: @headerHeight;
+          margin: 0;
+          min-width: 24px;
+          opacity: 0.5;
+          color: #add;
+          &.selected {
+            opacity: 1.0 !important;
+            cursor: default !important;
+            pointer-events: none;
+            color: #fff;
+          }
+          &:last-child {
+            padding: 0 20px;
+            opacity: 0.75;
+          }
+        }
+      }
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(to bottom, rgba(50,190,200,1), transparent);
+        opacity: 0;
+        transition: opacity 0.5s;
+      }
+      &::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        width: 100%;
+        height: 5px;
+        background: linear-gradient(to bottom, rgba(0,0,0,0.25), transparent);
+      }
+    }
+    > .list {
+      display: block;
+      height: @listHeight;
+      background: linear-gradient(to bottom, fade(multiply(@themeWindowBackground, #aaa), 85%), fade(@themeWindowBackground, 85%) @gridHeight);
+      > .locations {
+        display: flex;
+        width: 100vw;
+        height: 100%;
+        opacity: 0;
+        flex-direction: column;
+        overflow-x: hidden;
+        overflow-y: overlay;
+        padding-bottom: 30px;
+        > * {
+          flex: 0 0 auto;
+          width: 100%;
+          padding-left: 15px;
+        }
+        > .header {
+          padding-top: 20px;
+          padding-bottom: 8px;
+          font-size: 13px;
+          text-transform: uppercase;
+          color: #ccc;
+          background: linear-gradient(7deg, rgba(0,0,0,0.2) 20%, transparent 50%);
+          display: flex;
+          justify-content: space-between;
+          padding-right: 20px;
+          &[data-count]::after {
+            content: attr(data-count);
+            color: rgba(255,255,255,0.5);
+          }
+        }
+        > .location {
+          @lineHeight: 32px;
+          height: @lineHeight;
+          color: rgba(255,255,255,0.7);
+          transition: 0.3s background, 0.3s color;
+          > span:first-of-type {
+            flex-grow: 1;
+            font-size: 15px;
+          }
+          &:not(.disabled) {
+            cursor: pointer;
+            &:hover {
+              background: fade(#8dfffc, 25%);
+              color: #fff;
+            }
+          }
+          &.disabled {
+            opacity: 0.3;
+          }
+          &.selected {
+            color: #8dfffc;
+            background: fade(#8dfffc, 10%);
+          }
+          > .cp-fav {
+            transition: 0.3s color;
+            line-height: @lineHeight;
+          }
+        }
+        > .empty {
+          width: 100%;
+          text-align: center;
+          color: rgba(255,255,255,0.3);
+          padding: 55px 0;
+          color: rgba(100,190,200,0.4);
+        }
+      }
+    }
+  }
+
+  &.connected {
+    > .drawer {
+      > .description {
+        border-bottom-color: rgba(50,190,200,1);
+        color: white;
+        transition-delay: 0.5s;
+      }
+      > .header {
+        &::before {
+          opacity: 1;
+          transition-delay: 0.5s;
+        }
+      }
+    }
+  }
+
+  .grid {
+    position: absolute;
+    left: 0;
+    top: @headerHeight;
+    //bottom: 0;
+    width: 100vw;
+    height: @gridHeight;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding-left: 110px;
+
+    > .cypherplay {
+      width: 110px;
+      height: @gridHeight;
+      position: absolute;
+      left: 0;
+      //border: none;
+      > img {
+        width: 64px;
+        height: 64px;
+        margin-top: -14px;
+        margin-bottom: 14px;
+        border-width: 2px;
+      }
+      &[data-tooltip] {
+        &::before, &::after {
+          bottom: 85%;
+        }
+        &::before {
+          left: 48px;
+        }
+        &::after {
+          left: 10px;
+          transform-origin: 45px bottom;
+        }
+      }
+    }
+    > * {
+      width: 80px;
+      height: @gridHeight / 2;
+      cursor: pointer;
+      padding: 1px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      //border-left: 2px solid rgba(0,0,0,0.25);
+      border: 1px solid rgba(0,0,0,0.25);
+      cursor: pointer;
+      transition: 0.3s background-color ease, 0.3s color ease;
+      color: #8cc;
+      > img, > i {
+        display: inline-block;
+        position: relative;
+        width: 46px;
+        height: 46px;
+        border-radius: 10px;
+        background: black;
+        object-fit: none;
+        transition: 0.3s border-color ease;
+        border: 2px solid #366;
+        margin: 0;
+        margin-bottom: 7px;
+        font-size: 28px;
+        line-height: 42px;
+      }
+      > span {
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        max-width: 92%;
+      }
+      &:not(.disabled), &.other {
+        &:hover, &:focus {
+          transition: 0.1s;
+          background: @themeWindowBackground;
+          color: #fff;
+          > img, > i {
+            border-color: #8cc;
+          }
+        }
+        &:focus:not(:active) {
+          border: 1px dotted fade(#8dfffc, 25%);
+        }
+        &:active {
+          transition: 0.1s color ease;
+          background: multiply(@themeWindowBackground, #ddd);
+          padding: 2px 0 0 2px;
+          box-shadow: inset 2px 2px 4px rgba(0,0,0,0.2);
+          > img, > i {
+            //top: 1px; left: 1px;
+            transition: 0.1s border-color ease;
+          }
+        }
+      }
+      &.selected {
+        background: fade(@themeLightBackground, 50%) !important;
+        color: #fff !important;
+        > img, > i {
+          border-color: #8cc !important;
+        }
+      }
+      &.disabled {
+        cursor: default;
+        > img, > i, > span {
+          opacity: 0.25;
+        }
+      }
+      &.favorite.disabled::before {
+        .semanticIcon('\f006');
+        font-size: 40px;
+        color: fade(#8cc, 8%);
+        margin-bottom: 8px;
+      }
+    }
+  }
+
+
+  @gridTransitionDuration: 0.2s;
+  @listTransitionDuration: 0.3s;
+
+
+  & {
+    > .drawer {
+      transition: transform @listTransitionDuration;
+      > .dimmer { .fadeOutTransition(@listTransitionDuration, ease-out); }
+      > .header {
+        > .selected-location { .fadeInTransition(@listTransitionDuration, ease-in); }
+        > .list-header { .fadeOutTransition(@listTransitionDuration, ease-out); }
+      }
+      > .list > .locations { .fadeOutTransition(@listTransitionDuration, ease-out); }
+    }
+    .grid { .fadeInTransition(@gridTransitionDuration, ease, @listTransitionDuration); }
+  }
+
+  &.location-list-open {
+    > .drawer {
+      transition: transform @listTransitionDuration @gridTransitionDuration;
+      transform: translateY(@panelHeight - @fullHeight);
+      > .dimmer { .fadeInTransition(@listTransitionDuration, ease-in, @gridTransitionDuration); }
+      > .header {
+        > .selected-location { .fadeOutTransition(@listTransitionDuration, ease-out, @gridTransitionDuration); }
+        > .list-header { .fadeInTransition(@listTransitionDuration, ease-in, @gridTransitionDuration); }
+      }
+      > .list > .locations { .fadeInTransition(@listTransitionDuration, ease-in, @gridTransitionDuration); }
+    }
+    .grid { .fadeOutTransition(@gridTransitionDuration); }
+  }
+}

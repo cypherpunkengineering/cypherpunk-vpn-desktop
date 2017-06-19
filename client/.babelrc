@@ -5,11 +5,13 @@
   "plugins": [
     "add-module-exports",
     "transform-decorators-legacy",
+    "transform-object-rest-spread",
     "react-html-attrs"
   ],
   "env": {
     "production": {
       //"presets": [ "babili" ], // minification, but too early for use it seems
+      "sourceMaps": false,
       "minified": true,
       "comments": false,
       "compact": true

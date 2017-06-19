@@ -1,0 +1,713 @@
+
+@panelWidth: 290px;
+@leftPanelWidth: @panelWidth;
+@rightPanelWidth: @panelWidth;
+
+// A container for any panel which has a slide-out subpanel attached to it
+.panel {
+  @transitionTime: @screenTransitionTime;
+  @overlayOpacity: 0.35;
+
+  display: block;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+
+  // Mode 1: no subpanel present, normal content should be displayed normally
+  > .panel-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    //transition: transform @transitionTime;
+    display: flex;
+    ~ .overlay {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 3;
+      visibility: hidden;
+      background: black;
+      opacity: 0;
+      //transition: transform @transitionTime, opacity @transitionTime;
+
+      &::before, &::after {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 60px;
+        color: rgba(140,255,255,0.3);
+        font-size: 80px;
+        line-height: 100vh;
+        transition: opacity 0.3s, color 0.2s, text-shadow 0.3s;
+        opacity: 0;
+        text-align: center;
+      }
+      &:hover {
+        &::before, &::after {
+          color: rgba(200,255,255,0.8);
+          text-shadow: 0 0 40px rgba(140,255,255,0.5);
+        }
+      }
+      &::before {
+        .semanticIcon('\f105');
+        left: 0;
+      }
+      &::after {
+        .semanticIcon('\f104');
+        right: 0;
+      }
+    }
+  }
+
+  // Mode 2: subpanel present, shift out main panel
+  > .subpanel {
+    position: absolute;
+    left: auto;
+    right: 0;
+    top: 0;
+    width: @rightPanelWidth;
+    height: 100%;
+    z-index: 1;
+
+    &.reveal {
+      &-enter {
+        pointer-events: none !important;
+        transform: translateX(@rightPanelWidth);
+        filter: brightness(40%);
+        will-change: transform;
+        ~ .panel-content { display: flex; }
+        ~ .panel-content, ~ .panel-content ~ .overlay {
+          pointer-events: none !important;
+          transform: translateX(0);
+          will-change: transform;
+        }
+        ~ .panel-content ~ .overlay {
+          opacity: 0;
+        }
+        &-active {
+          transform: translateX(0);
+          filter: brightness(100%);
+          transition: transform @transitionTime ease-out, filter @transitionTime cubic-bezier(.5,0,.8,1);
+          ~ .panel-content, ~ .panel-content ~ .overlay {
+            transform: translateX(-@rightPanelWidth);
+            transition: transform @transitionTime ease-out, opacity @transitionTime;
+          }
+          ~ .panel-content ~ .overlay {
+            opacity: @overlayOpacity;
+          }
+        }
+      }
+      &-leave {
+        pointer-events: none !important;
+        transform: translateX(0);
+        filter: brightness(100%);
+        ~ .panel-content { display: flex; }
+        ~ .panel-content, ~ .panel-content ~ .overlay {
+          pointer-events: none !important;
+          transform: translateX(-@rightPanelWidth);
+        }
+        ~ .panel-content ~ .overlay {
+          opacity: @overlayOpacity;
+        }
+        &-active {
+          transform: translateX(@rightPanelWidth);
+          filter: brightness(40%);
+          transition: transform @transitionTime ease-out, filter @transitionTime cubic-bezier(.2,0,.5,1);
+          ~ .panel-content, ~ .panel-content ~ .overlay {
+            transform: translateX(0);
+            transition: transform @transitionTime ease-out, opacity @transitionTime;
+          }
+          ~ .panel-content ~ .overlay {
+            opacity: 0;
+          }
+        }
+      }
+    }
+    // Position of original panel content when there's no animation
+    ~ .panel-content {
+      transform: translateX(-@rightPanelWidth);
+      pointer-events: none;
+      display: none;
+      ~ .overlay {
+        pointer-events: auto;
+        cursor: pointer;
+        visibility: visible;
+        opacity: @overlayOpacity;
+        //transition: transform @transitionTime, opacity @transitionTime;
+        transform: translateX(-@rightPanelWidth);
+        &::after {
+          transition: opacity 1s, color 0.2s, text-shadow 0.3s;
+          opacity: 1;
+        }
+        &::before {
+          opacity: 0;
+        }
+      }
+    }
+  }
+  // Override styles for subpanels appearing on the left side
+  > .left.subpanel {
+    left: 0;
+    right: auto;
+    width: @leftPanelWidth;
+
+    &.reveal {
+      &-enter {
+        transform: translateX(-@leftPanelWidth);
+        ~ .panel-content, ~ .panel-content ~ .overlay {
+          transform: translateX(0);
+        }
+        &-active {
+          transform: translateX(0);
+          ~ .panel-content, ~ .panel-content ~ .overlay {
+            transform: translateX(@leftPanelWidth);
+          }
+        }
+      }
+      &-leave {
+        transform: translateX(0);
+        ~ .panel-content, ~ .panel-content ~ .overlay {
+          transform: translateX(@leftPanelWidth);
+        }
+        &-active {
+          transform: translateX(-@leftPanelWidth);
+          ~ .panel-content, ~ .panel-content ~ .overlay {
+            transform: translateX(0);
+          }
+        }
+      }
+    }
+    ~ .panel-content, ~ .panel-content ~ .overlay {
+      transform: translateX(@leftPanelWidth);
+      &::after {
+        opacity: 0;
+      }
+      &::before {
+        transition: opacity 1s, color 0.2s, text-shadow 0.3s;
+        opacity: 1;
+      }
+    }
+  }
+
+  #connect-screen {
+    display: flex !important;
+  }
+}
+
+// Override so that at the top level, the subpanel only slide in half the distance
+#main-screen-container {
+  > .subpanel.reveal {
+    &-enter { transform: translateX(@rightPanelWidth / 2); &-active { transform: translateX(0); } }
+    &-leave { transform: translateX(0); &-active { transform: translateX(@rightPanelWidth / 2); } }
+  }
+  > .left.subpanel.reveal {
+    &-enter { transform: translateX(-@leftPanelWidth / 2); &-active { transform: translateX(0); } }
+    &-leave { transform: translateX(0); &-active { transform: translateX(-@leftPanelWidth / 2); } }
+  }
+  // Add shadows on top of subpanels
+  > .subpanel::before {
+    content: '';
+    z-index: 3;
+    position: absolute;
+    pointer-events: none;
+    left: 0;
+    top: 0;
+    width: 80px;
+    height: 100%;
+    background: linear-gradient(to right, rgba(0,0,0,0.5), rgba(0,0,0,0.25) 7px, transparent);
+  }
+  > .left.subpanel::before {
+    left: auto;
+    right: 0;
+    background: linear-gradient(to left, rgba(0,0,0,0.5), rgba(0,0,0,0.25) 7px, transparent);
+  }
+}
+
+
+
+.subpanel {
+  background: #133;
+}
+
+.panel-content {
+  border: none;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(-39deg, #033, #255);
+
+  .titlebar {
+    flex: 0 0 auto;
+    text-align: center;
+    z-index: 4;
+    &.secondary {
+      background: linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.1)) !important;
+      border-bottom: 2px solid #255;
+    }
+  }
+
+  .content {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    &.scrollable {
+      overflow-x: hidden;
+      overflow-y: auto;
+      &::-webkit-scrollbar-thumb {
+        background: rgba(220, 245, 255, 0.3);
+      }
+    }
+
+    @leftPadding: 15px;
+    @rightPadding: 15px;
+    @indentWidth: 15px;
+    @lineHeight: 44px;
+
+    .pane.hidden, .setting.hidden {
+      display: none !important;
+    }
+
+    .pane {
+      background: rgba(255,255,255,0.16);
+      position: relative;
+
+      &[data-title]:before {
+        font-size: 14px;
+        content: attr(data-title);
+        display: block;
+        width: 100%;
+        padding: 10px 15px 2px;
+        color: @cpYellowDark;
+      }
+      + .pane {
+        margin-top: 10px;
+      }
+
+      .setting {
+        width: 100%;
+        min-height: @lineHeight;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 16px;
+        position: relative;
+        color: rgba(255,255,255,0.75);
+        cursor: pointer;
+
+        > * {
+          //flex-grow: 1;
+        }
+        label {
+          cursor: pointer;
+        }
+
+        > a {
+          display: flex;
+          align-self: stretch;
+          align-items: center;
+          justify-content: space-between;
+          flex-grow: 1;
+          padding: 8px @rightPadding 9px @leftPadding;
+          color: inherit;
+          &:after {
+            .semanticIcon("\f105");
+            flex-grow: 0;
+            order: 2;
+            font-size: 25px;
+            color: rgba(255,255,255,0.75);
+            margin-left: 10px;
+          }
+          &.external:after {
+            .semanticIcon("\f08e");
+            font-size: 16px;
+          }
+          &.logout:after {
+            .semanticIcon("\f08b");
+            font-size: 18px;
+          }
+          &[data-value]:before {
+            content: attr(data-value);
+            flex-grow: 1;
+            order: 1;
+            color: rgba(255,255,255,0.6);
+            text-align: right;
+            text-transform: uppercase;
+            font-size: 90%;
+            margin-right: 5px;
+          }
+          &:hover, &:focus {
+            color: #fff;
+            &:after {
+              color: inherit;
+            }
+          }
+          &:focus {
+            outline: none !important;
+            &:after {
+              text-shadow: 0 0 10px #fff;
+            }
+          }
+        }
+
+        // See also: semantic/src/site/modules/checkbox.overrides
+
+        > .ui.dropdown {
+          order: 10;
+          width: auto;
+          font-size: 15px;
+          margin-right: @rightPadding;
+          margin-top: 1px;
+          background: rgba(0,0,0,0.08) !important;
+          white-space: nowrap;
+          &:hover {
+            color: #fff !important;
+          }
+          > .menu {
+            background: #6283ad;
+            > .item {
+              border-color: rgba(255,255,255,0.5);
+              &:hover, &:focus {
+                background: rgba(255,255,255,0.1) !important;
+                color: #fff;
+              }
+              &.selected {
+                color: @cpYellowDark !important;
+              }
+            }
+          }
+          + label {
+            margin-left: @leftPadding;
+          }
+        }
+        > select {
+          order: 10;
+          width: auto;
+          font-size: 15px;
+          margin-right: @rightPadding;
+          background: rgba(0,0,0,0.08) !important;
+          border-color: rgba(255,255,255,0.16);
+          color: rgba(255,255,255,0.75);
+          white-space: nowrap;
+          height: 29px;
+          cursor: pointer;
+          &:hover {
+            border-color: rgba(255,255,255,0.5);
+          }
+          &:focus {
+            border-color: rgba(255,255,255,0.75) !important;
+            color: #fff !important;
+          }
+          + label {
+            margin-left: @leftPadding;
+          }
+        }
+
+        > .ui.input {
+          order: 10;
+          width: auto;
+          margin-right: @rightPadding;
+          > input {
+            padding: 4px 8px;
+            border: 1px solid rgba(255,255,255,0.16);
+            border-radius: 5px;
+            color: rgba(255,255,255,0.75);
+            &:hover {
+              border-color: rgba(255,255,255,0.5);
+            }
+            &:focus {
+              border-color: rgba(255,255,255,0.75) !important;
+              color: #fff !important;
+            }
+          }
+          + label {
+            margin-left: @leftPadding;
+          }
+        }
+
+        &.disabled {
+          pointer-events: none !important;
+          > * {
+            opacity: 0.3;
+          }
+          label {
+            color: inherit !important;
+            opacity: 1;
+          }
+        }
+
+        /*
+        &.indented {
+          min-height: 40px;
+          height: 40px;
+          background-color: rgba(0,0,0,0.1);
+          &:hover {
+            background-image+: linear-gradient(to bottom, rgba(255,255,255,0.3), rgba(0,0,0,0.1) 1px), linear-gradient(to left, rgba(255,255,255,0.1), transparent) !important;
+          }
+          > a, > .ui.checkbox > label {
+            margin-left: @indentWidth !important;
+          }
+          > .ui.dropdown + label, > select + label, > .ui.input + label {
+            margin-left: @leftPadding + @indentWidth !important;
+          }
+        }
+        */
+
+        .warning.sign.icon {
+          color: @cpYellowDark;
+        }
+
+        .encryption-details {
+          display: flex;
+          font-size: 13px;
+          margin-top: 10px;
+          margin-bottom: -3px;
+          justify-content: space-between;
+          span {
+            flex: 0 1 100%;
+            white-space: nowrap;
+            &[data-title]:before {
+              content: attr(data-title);
+              font-size: 10px;
+              color: rgba(255,255,255,0.33);
+              display: block;
+              line-height: 8px;
+            }
+          }
+          span:first-child {
+            flex-basis: 150%;
+          }
+        }
+
+        &.reset {
+          &.animating {
+            background: no-repeat border-box -100vw 0 linear-gradient(135deg, transparent 30%, rgba(200,255,255,0.25) 40%, rgba(200,255,255,0.25) 60%, transparent 70%);
+            animation: horizontal-sweep-background 0.5s ease-out 1;
+            > a::after {
+              animation: rotate-counter-clockwise 0.5s 1;
+            }
+          }
+          > a::after {
+            .semanticIcon("\f0e2");
+            font-size: 20px;
+          }
+        }
+
+        &.advanced {
+          background-color: rgba(0,0,0,0.2);
+          > a, > .ui.checkbox > label {
+            margin-left: 10px !important;
+          }
+          > .ui.dropdown + label, > select + label, > .ui.input + label {
+            margin-left: @leftPadding + 10px !important;
+          }
+          &::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 10px;
+            height: 100%;
+            background-image: repeating-linear-gradient(45deg, #fb0 0px, #fb0 5px, transparent 5px, transparent 10px);
+            background-origin: border-box;
+            border: 1px outset rgba(0,0,0,0.5);
+            opacity: 0.6;
+            z-index: 1;
+          }
+        }
+
+        &:not(.hidden) ~ .setting {
+          background-image+: linear-gradient(to bottom, rgba(255,255,255,0.2) 1px, transparent 1px);
+          &:hover {
+            background-image: linear-gradient(to bottom, rgba(255,255,255,0.2) 1px, transparent 1px), linear-gradient(to left, rgba(255,255,255,0.1), transparent);
+          }
+        }
+        &:hover {
+          background-image+: linear-gradient(to left, rgba(255,255,255,0.1), transparent);
+          color: white !important;
+        }
+      }
+
+      &.advanced {
+        background: rgba(255,192,128,0.16);
+        &[data-title]::before {
+          padding-left: 25px;
+        }
+        &[data-title]::after {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 0;
+          height: 100%;
+          width: 10px;
+          background-image: repeating-linear-gradient(45deg, #fb0 0px, #fb0 5px, transparent 5px, transparent 10px);
+          background-origin: border-box;
+          border: 1px outset rgba(0,0,0,0.5);
+          opacity: 0.6;
+          pointer-events: none;
+        }
+        .setting.advanced {
+          background-color: transparent;
+          &::before {
+            background: none;
+            border-left: none;
+            border-right: none;
+          }
+          &:first-child::before {
+            border-top: none;
+          }
+        }
+      }
+
+      &.input {
+        display: flex;
+        flex-direction: column;
+        .ui.input {
+          margin: 15px 15px 15px 10px;
+          input {
+            font-size: 18px;
+            //border: 1px solid rgba(255,255,255,0.2);
+            border: none;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+          }
+          + .ui.input {
+            margin-top: 0;
+          }
+        }
+        .ui.button {
+          margin: 15px;
+          width: auto;
+        }
+        button {
+          margin: 15px;
+          width: auto;
+          border: none;
+          background: rgba(0,0,0,0.25);
+          color: rgba(255,255,255,0.75);
+          font-size: 18px;
+          line-height: 40px;
+          padding: 1px;
+          transition: background-color 0.3s, box-shadow 0.3s, color 0.2s, border-color 0.2s;
+          &:active {
+            padding: 2px 0 0 2px;
+            box-shadow: inset 1px 1px 5px rgba(0,0,0,0.15);
+          }
+          border-radius: 30px;
+          border: 1px solid #5fbbc4;
+          color: rgba(255,255,255,0.75);
+          background: rgba(0,0,0,0.25);
+          &:hover {
+            background-color: rgba(0,0,0,0.35);
+            box-shadow: inset 0 0 50px -10px #5fbbc4;
+            border-color: white;
+            color: white;
+          }
+        }
+      }
+
+      // Share links in the "Share with a friend" subscreen; display <a> elements as a vertical list
+      &.share {
+        //display: flex;
+        //flex-direction: column;
+        //padding: 1em;
+
+        a {
+          display: block;
+          margin: 15px;
+          padding: 10px;
+          cursor: pointer;
+          font-size: 20px;
+          border-radius: 8px;
+          border: 1px solid rgba(255,255,255,0.25);
+
+          > i {
+            font-size: 24px;
+            margin-right: 10px;
+          }
+        }
+      }
+    }
+    .collapsible {
+      position: relative;
+      > .collapsible-title {
+        font-size: 16px;
+        padding: 0 @rightPadding 0 15px;
+        min-height: @lineHeight;
+        line-height: @lineHeight;
+        cursor: pointer;
+        color: rgba(255,255,255,0.75);
+        &:after {
+          font-family: 'Icons';
+          content: '\f078';
+          float: right;
+        }
+        &:hover {
+          background: rgba(255,255,255,0.05);
+          color: white;
+        }
+      }
+      > .collapsible-content {
+        transition: transform 0.3s ease-out, opacity 0.3s;
+        transform: scaleY(0);
+        opacity: 0;
+        height: 0px;
+        transform-origin: right top;
+      }
+      &.open {
+        > .collapsible-title {
+          &:after {
+            content: '\f077';
+          }
+        }
+        > .collapsible-content {
+          height: auto;
+          transform: scaleY(1);
+          opacity: 1;
+        }
+      }
+    }
+
+    .footer {
+      flex: 1 0 auto;
+      min-height: @lineHeight;
+      line-height: @lineHeight;
+      display: flex;
+      justify-content: flex-end;
+      padding: 0 @rightPadding 0 15px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      &.version {
+        align-items: flex-end;
+      }
+      &.links {
+        line-height: normal;
+        padding: 10px 0 20px;
+        flex-direction: column;
+        align-items: flex-end;
+
+        a {
+          cursor: pointer;
+          color: rgba(255,255,255,0.4);
+          padding: 2px 5px;
+          &.external:after {
+            .semanticIcon("\f08e");
+            margin: 0 5px;
+          }
+          transition+: color 0.2s ease;
+          &:hover, &:focus, &:active {
+            color: #7ffffc;
+          }
+        }
+      }
+    }
+  }
+}

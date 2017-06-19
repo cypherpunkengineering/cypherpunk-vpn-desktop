@@ -8,6 +8,7 @@
 
 #include "win.h"
 #include "win_firewall.h"
+#include "win_subprocess.h"
 
 #include <cstdio>
 #include <tchar.h>
@@ -55,313 +56,11 @@ static FileLogger g_stderr_logger(stderr);
 static FileLogger g_file_logger;
 
 
-class WinPipe
+std::shared_ptr<Subprocess> Subprocess::Create(asio::io_service& io)
 {
-public:
-	Win32Handle read;
-	Win32Handle write;
-public:
-	WinPipe(bool inherit_read, bool inherit_write)
-	{
-		SECURITY_ATTRIBUTES sa;
-		sa.nLength = sizeof(SECURITY_ATTRIBUTES);
-		sa.bInheritHandle = (inherit_read || inherit_write) ? TRUE : FALSE;
-		sa.lpSecurityDescriptor = NULL;
+	return std::make_shared<WinSubprocess>(io);
+}
 
-		WIN_CHECK_IF_FALSE(CreatePipe, (&read.ref(), &write.ref(), &sa, 0));
-		if (!inherit_read)
-			WIN_CHECK_IF_FALSE(SetHandleInformation, (read, HANDLE_FLAG_INHERIT, 0));
-		if (!inherit_write)
-			WIN_CHECK_IF_FALSE(SetHandleInformation, (write, HANDLE_FLAG_INHERIT, 0));
-	}
-};
-
-class WinSubprocess
-{
-	asio::windows::basic_object_handle<> _handle;
-	Win32Handle _job;
-	DWORD _id;
-	bool _signaled;
-	bool _terminated;
-public:
-	Win32Handle stdin_handle;
-	Win32Handle stdout_handle;
-	Win32Handle stderr_handle;
-public:
-	WinSubprocess(asio::io_service& io) : _handle(io), _id(0), _signaled(false), _terminated(false) {}
-	void Run(const std::string& executable, const std::vector<std::string>& args, const std::string& cwd, bool as_network_user)
-	{
-		// Combine all parameters into a quoted command line string
-		std::tstring cmdline = convert<TCHAR>("cypherpunk-privacy-openvpn.exe");
-		for (const auto& arg : args)
-		{
-			if (!cmdline.empty())
-				cmdline.push_back(' ');
-			AppendQuotedCommandLineArgument(cmdline, arg);
-		}
-
-		std::tstring t_executable = convert<TCHAR>(executable);
-		std::tstring t_cwd = convert<TCHAR>(cwd);
-
-		WinPipe stdin_pipe(true, false);
-		WinPipe stdout_pipe(false, true);
-		WinPipe stderr_pipe(false, true);
-
-		STARTUPINFO startupinfo = { sizeof(STARTUPINFO), 0 };
-		startupinfo.hStdInput = stdin_pipe.read;
-		startupinfo.hStdOutput = stdout_pipe.write;
-		startupinfo.hStdError = stderr_pipe.write;
-		startupinfo.dwFlags |= STARTF_USESTDHANDLES;
-		DWORD flags = CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP;
-		PROCESS_INFORMATION processinfo = { 0 };
-
-		if (as_network_user)
-		{
-			try
-			{
-				// Get a user token for the built-in Network Service user.
-				Win32Handle network_service_token;
-				WIN_CHECK_IF_FALSE(LogonUser, (_T("NETWORK SERVICE"), _T("NT AUTHORITY"), NULL, LOGON32_LOGON_SERVICE, LOGON32_PROVIDER_DEFAULT, &network_service_token.ref()));
-				// Launch OpenVPN as the specified user.
-				WIN_CHECK_IF_FALSE(CreateProcessAsUser, (network_service_token, t_executable.c_str(), &cmdline[0], NULL, NULL, TRUE, flags, NULL, t_cwd.c_str(), &startupinfo, &processinfo));
-				goto success;
-			}
-			catch (const Win32Exception& e)
-			{
-				LOG(WARNING) << e << " - retrying without impersonation";
-			}
-		}
-		WIN_CHECK_IF_FALSE(CreateProcess, (t_executable.c_str(), &cmdline[0], NULL, NULL, TRUE, flags, NULL, t_cwd.c_str(), &startupinfo, &processinfo));
-	success:
-		// Save the process handle.
-		_handle.assign(processinfo.hProcess);
-		_id = processinfo.dwProcessId;
-		// Don't need the thread handle.
-		CloseHandle(processinfo.hThread);
-		// Move-assign the pipe handles.
-		stdin_handle = std::move(stdin_pipe.write);
-		stdout_handle = std::move(stdout_pipe.read);
-		stderr_handle = std::move(stderr_pipe.read);
-
-		// Try to assign the new process to a job, so it gets closed automatically when the handle holder dies.
-		try
-		{
-			_job = Win32Handle::Wrap(WIN_CHECK_IF_NULL(CreateJobObject, (NULL, NULL)));
-			JOBOBJECT_EXTENDED_LIMIT_INFORMATION jobinfo = {0};
-			jobinfo.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
-			WIN_CHECK_IF_FALSE(SetInformationJobObject, (_job, JobObjectExtendedLimitInformation, &jobinfo, sizeof(jobinfo)));
-			WIN_CHECK_IF_FALSE(AssignProcessToJobObject, (_job, _handle.native_handle()));
-		}
-		catch (const Win32Exception& e)
-		{
-			LOG(WARNING) << "Failed to create job object: " << e;
-		}
-	}
-	DWORD Wait()
-	{
-		if (!_handle.is_open())
-			throw std::exception("Null pointer exception");
-		switch (WaitForSingleObject(_handle.native_handle(), INFINITE))
-		{
-		case WAIT_OBJECT_0:
-		{
-			DWORD code;
-			WIN_CHECK_IF_FALSE(GetExitCodeProcess, (_handle.native_handle(), &code));
-			return code;
-		}
-		case WAIT_FAILED:
-			THROW_WIN32EXCEPTION(GetLastError(), WaitForSingleObject);
-		default:
-			throw std::exception("Unexpected result from WaitForSingleObject");
-		}
-	}
-	void AsyncWait(const std::function<void(const asio::error_code&, DWORD code)>& cb)
-	{
-		_handle.async_wait([this, cb](const asio::error_code& error) {
-			DWORD code;
-			if (error)
-				cb(error, 0);
-			else if (GetExitCodeProcess(_handle.native_handle(), &code))
-				cb(error, code);
-			else
-				cb(asio::error::access_denied, 0);
-		});
-	}
-	void Kill()
-	{
-		if (_handle.is_open())
-		{
-			if (!_signaled)
-			{
-				if (!GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, _id))
-					PLOG(WARNING) << "GenerateConsoleCtrlEvent failed: " << LastError;
-				_signaled = true;
-			}
-			else if (!_terminated)
-			{
-				if (!TerminateProcess(_handle.native_handle(), 9000))
-					PLOG(WARNING) << "TerminateProcess failed: " << LastError;
-				_terminated = true;
-			}
-		}
-	}
-private:
-	template<typename RESULT, typename INPUT>
-	static void AppendQuotedCommandLineArgument(std::basic_string<RESULT>& result, const std::basic_string<INPUT>& arg, bool force = false)
-	{
-		static const INPUT special_chars[] = { ' ', '\t', '\n', '\v', '"', 0 };
-
-		if (!force && !arg.empty() && arg.find_first_of(special_chars) == arg.npos)
-		{
-			result.append(arg.begin(), arg.end());
-		}
-		else
-		{
-			result.push_back('"');
-
-			for (auto it = arg.begin(); ; ++it)
-			{
-				size_t backslashes = 0;
-				while (it != arg.end() && *it == '\\')
-				{
-					++it;
-					++backslashes;
-				}
-				if (it == arg.end())
-				{
-					result.append(backslashes * 2, '\\');
-					break;
-				}
-				else if (*it == '"')
-				{
-					result.append(backslashes * 2 + 1, '\\');
-					result.push_back(*it);
-				}
-				else
-				{
-					result.append(backslashes, '\\');
-					result.push_back(*it);
-				}
-			}
-
-			result.push_back('"');
-		}
-	}
-};
-
-
-class WinOpenVPNProcess : public OpenVPNProcess, public WinSubprocess
-{
-	std::thread _stdout_read_thread;
-	std::thread _stderr_read_thread;
-public:
-	WinOpenVPNProcess(asio::io_service& io) : OpenVPNProcess(io), WinSubprocess(io) {}
-
-	virtual void Run(const std::vector<std::string>& params) override
-	{
-		WinSubprocess::Run(GetPath(OpenVPNExecutable), params, GetPath(OpenVPNDir), !g_settings.runOpenVPNAsRoot());
-
-		_stdout_read_thread = std::thread(THIS_CALLBACK(ReadThread), std::move(stdout_handle), [this](const asio::error_code& error, std::string line) {
-			g_daemon->OnOpenVPNStdOut(this, error, std::move(line));
-		});
-		_stderr_read_thread = std::thread(THIS_CALLBACK(ReadThread), std::move(stderr_handle), [this](const asio::error_code& error, std::string line) {
-			g_daemon->OnOpenVPNStdErr(this, error, std::move(line));
-		});
-	}
-
-	virtual void Kill() override
-	{
-		WinSubprocess::Kill();
-	}
-
-	virtual void AsyncWait(std::function<void(const asio::error_code&)> cb) override
-	{
-		WinSubprocess::AsyncWait([cb = std::move(cb)](const asio::error_code& error, DWORD code) {
-			cb(error);
-		});
-	}
-
-private:
-	void ReadThread(Win32Handle handle, std::function<void(const asio::error_code&, std::string)> cb)
-	{
-		asio::io_service io;
-		asio::error_code error;
-		asio::streambuf buffer;
-		while (size_t size = SyncReadUntil(handle, buffer, '\n', error))
-		{
-			if (!error)
-			{
-				std::istream is(&buffer);
-				std::string line;
-				std::getline(is, line);
-				if (line.size() > 0 && *line.crbegin() == '\r')
-					line.pop_back();
-				_io.post([=, line = std::move(line)]() { cb(error, line); });
-			}
-			else
-				_io.post([=]() { cb(error, std::string()); });
-		}
-		_io.post([=](){ cb(error, std::string()); });
-	}
-
-	static size_t SyncReadUntil(Win32Handle& handle, asio::streambuf& buffer, char delim, asio::error_code& error)
-	{
-		size_t search_position = 0;
-		for (;;)
-		{
-			// Determine the range of the data to be searched.
-			typedef asio::buffers_iterator<asio::streambuf::const_buffers_type> iterator;
-			asio::streambuf::const_buffers_type buffers = buffer.data();
-			iterator begin = iterator::begin(buffers);
-			iterator pos = begin + search_position;
-			iterator end = iterator::end(buffers);
-
-			// Look for a match.
-			auto it = std::find(pos, end, '\n');
-			if (it != end)
-			{
-				// Found a match. We're done.
-				error = asio::error_code();
-				return it - begin + 1;
-			}
-			else
-			{
-				// No match. Next search can start with the new data.
-				search_position = end - begin;
-			}
-
-			// Check if buffer is full.
-			if (buffer.size() == buffer.max_size())
-			{
-				error = asio::error::not_found;
-				return 0;
-			}
-
-			// Need more data.
-			size_t bytes_to_read = asio::read_size_helper(buffer, 65536);
-			buffer.commit(SyncReadSome(handle, buffer.prepare(bytes_to_read), error));
-			if (error)
-				return 0;
-		}
-	}
-	static size_t SyncReadSome(Win32Handle& handle, asio::streambuf::mutable_buffers_type& buffers, asio::error_code& error)
-	{
-		asio::mutable_buffer buffer = buffers;
-		void* data = asio::detail::buffer_cast_helper(buffer);
-		DWORD bytes_to_read = (DWORD)asio::detail::buffer_size_helper(buffer);
-		DWORD bytes_read = 0;
-		if (ReadFile(handle, data, bytes_to_read, &bytes_read, NULL))
-		{
-			error = asio::error_code();
-			return bytes_read;
-		}
-		else
-		{
-			error = asio::error_code(GetLastError(), asio::error::get_system_category());
-			return 0;
-		}
-	}
-};
 
 class WinCypherDaemon : public CypherDaemon
 {
@@ -397,10 +96,6 @@ public:
 		}
 		return CypherDaemon::Run();
 	}
-	virtual OpenVPNProcess* CreateOpenVPNProcess(asio::io_service& io) override
-	{
-		return new WinOpenVPNProcess(io);
-	}
 	virtual int GetAvailablePort(int hint) override
 	{
 		return hint;
@@ -426,9 +121,13 @@ public:
 		allow_lan_ipv6_linklocal,
 		allow_lan_ipv6_multicast,
 
+		block_dns_ipv4,
+		block_dns_ipv6,
+
 		allow_client,
 		allow_daemon,
 		allow_openvpn,
+		allow_cypherpunk_dns,
 		allow_localhost_ipv4,
 		allow_localhost_ipv6,
 		allow_dhcp_ipv4,
@@ -464,24 +163,10 @@ public:
 			} \
 		} while(false)
 
-		bool is_connected;
-		switch (_state)
-		{
-		case CONNECTING:
-		case CONNECTED:
-		case DISCONNECTING:
-		case SWITCHING:
-			is_connected = true;
-			break;
-		default:
-			is_connected = false;
-			break;
-		}
-
 		auto adapters = win_get_tap_adapters();
 
 		auto mode = g_settings.firewall();
-		if (!_connections.empty() && (mode == "on" || (is_connected && mode == "auto")))
+		if (!_connections.empty() && (mode == "on" || (_shouldConnect && mode == "auto")))
 		{
 			try
 			{
@@ -499,6 +184,17 @@ public:
 				{
 					for (int i = first_lan_filter; i <= last_lan_filter; i++)
 						TURN_OFF(i);
+				}
+
+				if (g_settings.overrideDNS())
+				{
+					TURN_ON(block_dns_ipv4, BlockDNSFilter<IPv4>());
+					TURN_ON(block_dns_ipv6, BlockDNSFilter<IPv6>());
+				}
+				else
+				{
+					TURN_OFF(block_dns_ipv4);
+					TURN_OFF(block_dns_ipv6);
 				}
 
 				std::set<uint64_t> tap_filters_to_remove;
@@ -521,14 +217,15 @@ public:
 					success++;
 				}
 
-				TURN_ON(allow_client,         AllowAppFilter<Outgoing, IPv4>(GetPath(ClientExecutable)));
-				TURN_ON(allow_daemon,         AllowAppFilter<Outgoing, IPv4>(GetPath(DaemonExecutable)));
-				TURN_ON(allow_openvpn,        AllowAppFilter<Outgoing, IPv4>(GetPath(OpenVPNExecutable)));
+				TURN_ON(allow_client,         AllowAppFilter<Outgoing, IPv4>(GetFile(ClientExecutable)));
+				TURN_ON(allow_daemon,         AllowAppFilter<Outgoing, IPv4>(GetFile(DaemonExecutable)));
+				TURN_ON(allow_openvpn,        AllowAppFilter<Outgoing, IPv4>(GetFile(OpenVPNExecutable)));
+				TURN_ON(allow_cypherpunk_dns, AllowIPRangeFilter<Outgoing, IPv4>("10.10.8.0", 21, 14));
 				TURN_ON(allow_localhost_ipv4, AllowLocalHostFilter<Outgoing, IPv4>());
 				TURN_ON(allow_localhost_ipv6, AllowLocalHostFilter<Outgoing, IPv6>());
 				TURN_ON(allow_dhcp_ipv4,      AllowDHCPFilter<IPv4>());
 				TURN_ON(allow_dhcp_ipv6,      AllowDHCPFilter<IPv6>());
-				TURN_ON(block_ipv6,           BlockAllFilter<Outgoing, IPv4>());
+				TURN_ON(block_ipv4,           BlockAllFilter<Outgoing, IPv4>());
 				TURN_ON(block_ipv6,           BlockAllFilter<Outgoing, IPv6>());
 
 				if (success) tx.Commit();
@@ -564,7 +261,10 @@ public:
 	}
 };
 
-
+unsigned short GetPingIdentifier()
+{
+	return (unsigned short)::GetProcessId(NULL);
+}
 
 
 
@@ -870,7 +570,10 @@ static BOOL win_start_service(PCTSTR service_name, DWORD argc = 0, PCTSTR* argv 
 				{
 					DWORD error = GetLastError();
 					if (error == ERROR_SERVICE_ALREADY_RUNNING)
+					{
 						_tcprintf(_T("%s is already running.\n"), service_name);
+						result = TRUE;
+					}
 					else
 						PrintError(StartService, error);
 				}
@@ -1055,7 +758,7 @@ static int ConsoleMain(int argc, TCHAR *argv[])
 		if (0 == _tcsicmp(cmd, _T("run")))
 			return !win_run_service(SERVICE_NAME);
 		if (0 == _tcsicmp(cmd, _T("addtap")))
-			return !win_install_tap_adapter();
+			return !win_install_tap_adapter(argc - 2, argv + 2);
 		if (0 == _tcsicmp(cmd, _T("removetap")))
 			return !win_uninstall_tap_adapters();
 	}
@@ -1067,8 +770,7 @@ int _tmain(int argc, TCHAR *argv[])
 {
 	InitPaths(argc > 0 ? convert<char>(argv[0]) : "./daemon.exe");
 
-	_tmkdir(convert<TCHAR>(GetPath(LogDir)).c_str());
-	g_file_logger.Open(GetPath(LogDir, "daemon.log"));
+	g_file_logger.Open(GetFile(LogDir, EnsureExists, "daemon.log"));
 	Logger::Push(&g_file_logger);
 
 	SERVICE_TABLE_ENTRY table[] =

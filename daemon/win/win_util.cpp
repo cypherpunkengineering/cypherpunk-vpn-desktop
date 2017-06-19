@@ -6,6 +6,7 @@
 #include <vector>
 #include <memory>
 #include <cstdio>
+#include <string>
 #include <tchar.h>
 #include <winsock2.h>
 #include <windows.h>
@@ -58,35 +59,42 @@ std::vector<win_tap_adapter> win_get_tap_adapters()
 {
 	std::vector<win_tap_adapter> result;
 
+	int iterations = 0;
+
 	ULONG error;
 	ULONG flags = GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_INCLUDE_WINS_INFO | GAA_FLAG_INCLUDE_GATEWAYS;
-	ULONG size = 0;
-	if ((error = GetAdaptersAddresses(AF_UNSPEC, flags, NULL, NULL, &size)) == ERROR_BUFFER_OVERFLOW)
+	ULONG size = 15000;
+
+	IP_ADAPTER_ADDRESSES* addresses = NULL;
+
+	do
 	{
-		if (auto addresses = (IP_ADAPTER_ADDRESSES*)malloc(size))
+		if (NULL == (addresses = (IP_ADAPTER_ADDRESSES*)malloc(size)))
+			THROW_WIN32EXCEPTION(ERROR_NOT_ENOUGH_MEMORY, malloc);
+		
+		if ((error = GetAdaptersAddresses(AF_UNSPEC, flags, NULL, addresses, &size)) != ERROR_BUFFER_OVERFLOW)
+			break;
+
+		free(addresses);
+		addresses = NULL;
+
+	} while (++iterations < 3);
+
+	if (error != ERROR_SUCCESS)
+		THROW_WIN32EXCEPTION(error, GetAdaptersAddresses);
+	
+	for (auto address = addresses; address; address = address->Next)
+	{
+		if (address->Description && wcsstr(address->Description, L"TAP-Windows Adapter") != NULL)
 		{
-			if ((error = GetAdaptersAddresses(AF_UNSPEC, flags, NULL, addresses, &size)) == ERROR_SUCCESS)
-			{
-				for (auto address = addresses; address; address = address->Next)
-				{
-					if (address->Description && wcsstr(address->Description, L"TAP-Windows Adapter") != NULL)
-					{
-						win_tap_adapter adapter;
-						adapter.guid = address->AdapterName;
-						adapter.luid = address->Luid.Value;
-						result.push_back(std::move(adapter));
-					}
-				}
-			}
-			else
-				PrintError(GetAdaptersAddresses, error);
-			free(addresses);
+			win_tap_adapter adapter;
+			adapter.guid = address->AdapterName;
+			adapter.luid = address->Luid.Value;
+			result.push_back(std::move(adapter));
 		}
-		else
-			PrintError("malloc", 0);
 	}
-	else
-		PrintError(GetAdaptersAddresses, error);
+
+	free(addresses);
 
 	return std::move(result);
 }
@@ -94,7 +102,7 @@ std::vector<win_tap_adapter> win_get_tap_adapters()
 static BOOL win_tap_install(LPTSTR cmdline)
 {
 	std::tstring tap_path = convert<TCHAR>(GetPath(TapDriverDir));
-	std::tstring tap_install = convert<TCHAR>(GetPath(TapInstallExecutable));
+	std::tstring tap_install = convert<TCHAR>(GetFile(TapInstallExecutable));
 
 	STARTUPINFO si = { sizeof(si), 0 };
 	PROCESS_INFORMATION pi;
@@ -108,8 +116,23 @@ static BOOL win_tap_install(LPTSTR cmdline)
 	return FALSE;
 }
 
-BOOL win_install_tap_adapter()
+BOOL win_install_tap_adapter(int argc, TCHAR **argv)
 {
+	if (argc >= 1) {
+		int count = 1;
+		try { count = std::stoi(argv[0]); }
+		catch (...) { return FALSE; }
+		auto adapters = win_get_tap_adapters();
+		if (adapters.size() >= count)
+			return TRUE;
+		count -= adapters.size();
+		while (count--)
+		{
+			if (!win_tap_install(_T("tapinstall.exe install OemVista.inf tap0901")))
+				return FALSE;
+		}
+		return TRUE;
+	}
 	return win_tap_install(_T("tapinstall.exe install OemVista.inf tap0901"));
 }
 

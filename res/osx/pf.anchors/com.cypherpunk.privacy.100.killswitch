@@ -13,7 +13,7 @@ set skip on lo0
 pass on lo0 flags any
 
 # 4. Exempt all Cypherpunk traffic
-pass proto { tcp, udp } group cypherpunk
+pass proto { tcp, udp } group cypherpunk flags any
 
 # 5. Exempt the tunnel interface(s) used by the VPN connection
 pass out on utun0 flags any
@@ -26,3 +26,9 @@ pass out on utun6 flags any
 pass out on utun7 flags any
 pass out on utun8 flags any
 pass out on utun9 flags any
+
+# 6. Exempt outgoing DHCPv4 traffic
+pass out proto udp from any port 68 to any port 67
+
+# 7. Exempt outgoing DHCPv6 traffic
+pass out proto udp from any port 546 to any port 547

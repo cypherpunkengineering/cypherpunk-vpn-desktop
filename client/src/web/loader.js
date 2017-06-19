@@ -1,4 +1,5 @@
-import 'semantic';
+import 'semantic/components/dimmer';
+import 'semantic/components/loader';
 
 var loader = document.getElementById('load-screen');
 var loaderLabel = $(loader).find('div');

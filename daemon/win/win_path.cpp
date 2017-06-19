@@ -5,6 +5,8 @@
 #include <tchar.h>
 #include <shlwapi.h>
 
+#include <windows.h>
+
 #pragma comment (lib, "shlwapi.lib")
 
 const char PATH_SEPARATOR = '\\';
@@ -72,22 +74,24 @@ void InitPaths(std::string argv0)
 	}
 }
 
-std::string GetPath(PredefinedFile file)
+std::string GetPredefinedFile(PredefinedFile file, EnsureExistsTag ensure_path_exists)
 {
 	switch (file)
 	{
 	case DaemonExecutable: return g_argv0;
 	case ClientExecutable: return g_client_executable;
-	case OpenVPNExecutable: return GetPath(OpenVPNDir, "cypherpunk-privacy-openvpn.exe");
-	case SettingsFile: return GetPath(SettingsDir, "settings.json");
-	case TapInstallExecutable: return GetPath(TapDriverDir, "tapinstall.exe");
+	case OpenVPNExecutable: return GetPath(OpenVPNDir, ensure_path_exists, "cypherpunk-privacy-openvpn.exe");
+	case ConfigFile: return GetPath(SettingsDir, ensure_path_exists, "config.json");
+	case AccountFile: return GetPath(SettingsDir, ensure_path_exists, "account.json");
+	case SettingsFile: return GetPath(SettingsDir, ensure_path_exists, "settings.json");
+	case TapInstallExecutable: return GetPath(TapDriverDir, ensure_path_exists, "tapinstall.exe");
 	default:
 		LOG(ERROR) << "Unknown file";
 		return std::string();
 	}
 }
 
-std::string GetPath(PredefinedDirectory dir)
+std::string GetPredefinedDirectory(PredefinedDirectory dir)
 {
 	switch (dir)
 	{
@@ -101,6 +105,37 @@ std::string GetPath(PredefinedDirectory dir)
 		LOG(ERROR) << "Unknown path";
 		return std::string();
 	}
+}
+
+void RecursivelyCreateDirectory(std::tstring& path, size_t end)
+{
+	if (!CreateDirectory(path.c_str(), NULL))
+	{
+		DWORD error = GetLastError();
+		if (error == ERROR_PATH_NOT_FOUND && end > 0)
+		{
+			size_t p = path.rfind(PATH_SEPARATOR, end - 1);
+			if (p != path.npos)
+			{
+				{
+					path[p] = 0;
+					FINALLY({ path[p] = PATH_SEPARATOR; });
+					RecursivelyCreateDirectory(path, p);
+				}
+				WIN_CHECK_IF_FALSE(CreateDirectory, (path.c_str(), NULL));
+				return;
+			}
+		}
+		if (error != ERROR_ALREADY_EXISTS)
+			THROW_WIN32EXCEPTION(error, CreateDirectory);
+	}
+}
+
+std::string& EnsurePathExists(std::string& path)
+{
+	std::tstring p = convert<TCHAR>(path);
+	RecursivelyCreateDirectory(p, p.size());
+	return path;
 }
 
 std::string ReadFile(const std::string& path)

@@ -5,6 +5,7 @@
 #endif
 
 #include "config.h"
+#include "connection.h"
 #include "openvpn.h"
 #include "settings.h"
 #include "websocketpp.h"
@@ -18,6 +19,7 @@
 #include <memory>
 #include <set>
 #include <thread>
+#include <unordered_set>
 
 extern class CypherDaemon* g_daemon;
 
@@ -25,6 +27,9 @@ class OpenVPNProcess;
 typedef jsonrpc::Server JsonRPCServer;
 typedef jsonrpc::Client JsonRPCClient;
 typedef jsonrpc::Dispatcher JsonRPCDispatcher;
+
+// Implemented by platform
+extern unsigned short GetPingIdentifier();
 
 
 /*struct ServerInfo
@@ -36,7 +41,7 @@ typedef jsonrpc::Dispatcher JsonRPCDispatcher;
 	std::map<std::string, std::string> ips;
 };*/
 
-class CypherDaemon
+class CypherDaemon : public ConnectionListener
 {
 	static const int DEFAULT_RPC_PORT = 9337;
 	static const int DEFAULT_OPENVPN_PORT_BASE = 9338;
@@ -48,14 +53,18 @@ public:
 	{
 		STARTING,
 		INITIALIZED,
-		DISCONNECTED = INITIALIZED,
-		CONNECTING,
-		CONNECTED,
-		SWITCHING,
-		DISCONNECTING,
+		// Actual state fetched from _connection
 		EXITING,
 		EXITED,
 	};
+
+	struct PingResult
+	{
+		std::string id;
+		double average, minimum, maximum;
+		size_t replies, timeouts;
+	};
+	typedef void PingCallback(std::vector<PingResult> results);
 
 public:
 	// The main entrypoint of the daemon; should block for the duration of the daemon.
@@ -65,63 +74,102 @@ public:
 	// the daemon or from another thread.
 	virtual void RequestShutdown();
 
-	virtual void OnOpenVPNStdOut(OpenVPNProcess* process, const asio::error_code& error, std::string line);
-	virtual void OnOpenVPNStdErr(OpenVPNProcess* process, const asio::error_code& error, std::string line);
-	virtual void OnOpenVPNCallback(OpenVPNProcess* process, std::string args);
-	virtual void OnOpenVPNProcessExited(OpenVPNProcess* process);
-	virtual void OnSettingsChanged(const std::vector<std::string>& names);
+	virtual void OnOpenVPNCallback(OpenVPNProcess* process, std::string line) override {}
+	virtual void OnConfigChanged(const char* name);
+	virtual void OnAccountChanged(const char* name);
+	virtual void OnSettingsChanged(const char* name);
 
 protected:
-	typedef websocketpp::connection_hdl Connection;
-	typedef std::set<Connection, std::owner_less<Connection>> ConnectionList;
+	typedef websocketpp::connection_hdl ClientConnection;
+	typedef std::set<ClientConnection, std::owner_less<ClientConnection>> ClientConnectionList;
+	typedef std::map<ClientConnection, bool, std::owner_less<ClientConnection>> ClientConnectionMap;
 
-	enum StateChangedFlags { STATE = 1, NEEDSRECONNECT = 2, IPADDRESS = 4, BYTECOUNT = 8 };
-
-	void SendToClient(Connection con, const std::shared_ptr<jsonrpc::FormattedData>& data);
+	void SendToClient(ClientConnection con, const std::shared_ptr<jsonrpc::FormattedData>& data);
 	void SendToAllClients(const std::shared_ptr<jsonrpc::FormattedData>& data);
 	void SendErrorToAllClients(const std::string& name, const std::string& description);
 	void OnFirstClientConnected();
-	void OnClientConnected(Connection c);
-	void OnClientDisconnected(Connection c);
+	void OnClientConnected(ClientConnection c);
+	void OnClientDisconnected(ClientConnection c);
 	void OnLastClientDisconnected();
-	void OnReceiveMessage(Connection con, WebSocketServer::message_ptr msg);
+	void OnReceiveMessage(ClientConnection con, WebSocketServer::message_ptr msg);
 	void OnStateChanged(unsigned int state_changed_flags);
 
-	JsonObject MakeStateObject();
-	JsonObject MakeConfigObject();
-	JsonObject MakeAccountObject();
+	virtual void OnConnectionStateChanged(Connection* connection, Connection::State state) override;
+	virtual void OnTrafficStatsUpdated(Connection* connection, uint64_t downloaded, uint64_t uploaded) override;
+	virtual void OnConnectionAttempt(Connection* connection, int attempt) override;
+
+	void NotifyChanges();
+
+	void PingServers();
+	void ScheduleNextPingServers(std::chrono::steady_clock::time_point t);
+	void WriteOpenVPNProfile(std::ostream& out, const JsonObject& server, OpenVPNProcess* process);
+
+	JsonObject MakeConfigObject(const std::unordered_set<std::string>* keys = nullptr);
+	JsonObject MakeAccountObject(const std::unordered_set<std::string>* keys = nullptr);
+	JsonObject MakeSettingsObject(const std::unordered_set<std::string>* keys = nullptr);
+	JsonObject MakeStateObject(int flags = -1);
 
 	// Get one of the datasets (state, settings or config).
 	JsonObject RPC_get(const std::string& type);
-	// Apply one or more settings.
-	void RPC_applySettings(const JsonObject& settings);
 	// Set the user account info. FIXME: should probably have the daemon be in charge of this instead, or at least validate the information independently from the client.
 	void RPC_setAccount(const JsonObject& account);
+	// Apply config settings (settings that are not supposed to be touched directly by the user)
+	void RPC_applyConfig(const JsonObject& config);
+	// Apply one or more settings.
+	void RPC_applySettings(const JsonObject& settings);
+	// Reset settings to default values
+	void RPC_resetSettings(bool deleteAllValues = true);
 	// Connect to the currently configured server. Returns false if already
 	// connected and no changes are required.
 	bool RPC_connect();
 	// Disconnect from the current server (or cancel a connection attempt).
 	void RPC_disconnect();
 
-	void DoConnect();
+	//void DoConnect();
+	void DoShutdown();
 
 	asio::io_service _io;
 	WebSocketServer _ws_server;
-	ConnectionList _connections;
+	ClientConnectionMap _connections;
 	jsonrpc::JsonFormatHandler _json_handler;
 	JsonRPCDispatcher _dispatcher;
 	JsonRPCClient _rpc_client;
-	std::shared_ptr<OpenVPNProcess> _process;
+	std::shared_ptr<Connection> _connection;
+	
+	// Bitfield to internally signal which state-related fields have changed
+	enum StateChangedFlags
+	{
+		CONNECT = 1,         // _shouldConnect
+		STATE = 2,           // _state
+		NEEDSRECONNECT = 4,  // _needsReconnect
+		BYTECOUNT = 8,       // _bytesSent, _bytesReceived
+		PING_STATS = 16,     // _ping_stats
+	};
+
+	// Client has clicked the connect button and wants to be online
+	bool _shouldConnect;
+	// Current daemon state
 	State _state;
-	std::string _localIP, _remoteIP;
-	int64_t _bytesReceived, _bytesSent;
+	// Some setting has changed which requires a reconnect (i.e. call RPC_connect again)
 	bool _needsReconnect;
+	// Traffic stats
+	int64_t _bytesReceived, _bytesSent;
+	// Ping statistics for 
+	JsonObject _ping_stats;
+	struct {
+		std::unordered_set<std::string> config, account, settings;
+		int state; // StateChangedFlags
+	} _to_notify;
+	bool _notify_scheduled;
 	//std::map<std::string, ServerInfo> _servers;
 
-protected:
-	// Create a platform-specific handler around an OpenVPN process.
-	// Note: the process isn't actually started until 'Run' is called on it.
-	virtual OpenVPNProcess* CreateOpenVPNProcess(asio::io_service& io) = 0;
+	size_t _valid_client_count;
+	asio::basic_waitable_timer<std::chrono::steady_clock> _ping_timer;
+	std::chrono::steady_clock::time_point _last_ping_round;
+	bool _next_ping_scheduled;
+
+
+public:
 	// Ask the system for an available TCP port (for listening), preferably >= 'hint'.
 	virtual int GetAvailablePort(int hint);
 	// Get the identifier (for --dev) for an available TAP adapter to use.

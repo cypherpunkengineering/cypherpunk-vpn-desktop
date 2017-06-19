@@ -3,3 +3,21 @@ systemctl daemon-reload
 rm -f /etc/rc2.d/S04cypherpunk
 rm -f /etc/rc3.d/S04cypherpunk
 rm -f /etc/rc5.d/S04cypherpunk
+
+# flush chains
+iptables -F cypherpunk.100.exemptLAN 2>/dev/null || true
+ip6tables -F cypherpunk.100.exemptLAN 2>/dev/null || true
+iptables -F cypherpunk.500.killswitch 2>/dev/null || true
+ip6tables -F cypherpunk.500.killswitch 2>/dev/null || true
+
+# unlink chains
+iptables -D OUTPUT -j cypherpunk.100.exemptLAN 2>/dev/null || true
+ip6tables -D OUTPUT -j cypherpunk.100.exemptLAN 2>/dev/null || true
+iptables -D OUTPUT -j cypherpunk.500.killswitch 2>/dev/null || true
+ip6tables -D OUTPUT -j cypherpunk.500.killswitch 2>/dev/null || true
+
+# delete chains
+iptables -X cypherpunk.100.exemptLAN 2>/dev/null || true
+ip6tables -X cypherpunk.100.exemptLAN 2>/dev/null || true
+iptables -X cypherpunk.500.killswitch 2>/dev/null || true
+ip6tables -X cypherpunk.500.killswitch 2>/dev/null || true

@@ -1,17 +1,17 @@
 
-const SERVER = "https://cypherpunk.com";
+const SERVER = "https://api.cypherpunk.com";
 
 const server = {};
 
-function makeQueryString(params) {
+export function makeQueryString(params) {
   var queryString = '';
   for (let key of Object.keys(params)) {
     if (Array.isArray(params[key])) {
       for (let item of params[key]) {
-        processedUrl += '&' + encodeURIComponent(key) + '[]=' + encodeURIComponent(item);
+        queryString += '&' + encodeURIComponent(key) + '[]=' + encodeURIComponent(item);
       }
-    } else {
-      processedUrl += '&' + encodeURIComponent(key) + '=' + encodeURIComponent(params[key]);
+    } else if (params[key] !== undefined) {
+      queryString += '&' + encodeURIComponent(key) + '=' + encodeURIComponent(params[key]);
     }
   }
   return queryString.substr(1);

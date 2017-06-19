@@ -3,12 +3,12 @@
 #define MyAppPublisher "Cypherpunk Partners, slf."
 #define MyAppURL "https://cypherpunk.com/"
 #define MyAppExeName "CypherpunkPrivacy.exe"
-#define MyAppCopyright "Copyright © 2016 " + MyAppPublisher
+#define MyAppCopyright "Copyright © 2017 " + MyAppPublisher
 #define MyInstallerName "cypherpunk-privacy-windows"
 
-#define MyAppVersion "0.4.0-beta"
-#define MyAppNumericVersion "0.4.0"
-#define MyInstallerSuffix "-0.4.0-beta"
+#define MyAppVersion "0.8.0-beta"
+#define MyAppNumericVersion "0.8.0"
+#define MyInstallerSuffix "-0.8.0-beta"
 
 [Setup]
 AppId={#MyAppID}
@@ -36,6 +36,7 @@ AppCopyright={#MyAppCopyright}
 TimeStampsInUTC=True
 DisableDirPage=yes
 ShowLanguageDialog=no
+CloseApplications=False
 RestartApplications=False
 CloseApplicationsFilter=*.exe,*.dll
 VersionInfoVersion={#MyAppNumericVersion}
@@ -53,6 +54,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 ;Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce
 
 [Files]
+Source: "..\..\out\win\client\CypherpunkPrivacy-win32-ia32\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion overwritereadonly sign; BeforeInstall: StopClient
 Source: "..\..\out\win\client\CypherpunkPrivacy-win32-ia32\*"; DestDir: "{app}"; Flags: 32bit createallsubdirs overwritereadonly recursesubdirs
 Source: "..\..\out\win\daemon\Release\32\cypherpunk-privacy-service.exe"; DestDir: "{app}"; DestName: "cypherpunk-privacy-service.exe"; Flags: ignoreversion overwritereadonly sign; Check: not Is64BitInstallMode; BeforeInstall: StopService
 Source: "..\..\out\win\daemon\Release\64\cypherpunk-privacy-service.exe"; DestDir: "{app}"; DestName: "cypherpunk-privacy-service.exe"; Flags: ignoreversion overwritereadonly sign; Check: Is64BitInstallMode; BeforeInstall: StopService
@@ -78,31 +80,37 @@ procedure StopService();
 begin
     Exec('net.exe', 'stop CypherpunkPrivacyService', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
 end;
+procedure StopClient();
+begin
+    Exec('taskkill.exe', ExpandConstant('/im {#MyAppExeName} /f'), ExpandConstant('{app}'), SW_HIDE, ewWaitUntilTerminated, ResultCode);
+end;
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
-;Name: "{group}\{#MyAppName} (Semantic)"; Filename: "{app}\{#MyAppExeName}"; Parameters: "semantic"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 ;Name: "{commonstartup}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Parameters: "--background"
-;Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
-;Name: "{commondesktop}\{#MyAppName} (Semantic)"; Filename: "{app}\{#MyAppExeName}"; Parameters: "semantic"; Tasks: desktopicon
+Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Comment: "{#MyAppName}"
 
 [Registry]
-;Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "{#MyAppName}"; ValueData: """{app}\{#MyAppExeName}"" --background"; Flags: uninsdeletevalue
+Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "{#MyAppID}"; ValueData: """{app}\{#MyAppExeName}"" --background"; Flags: uninsdeletevalue
 
 [InstallDelete]
-Type: filesandordirs; Name: "{app}"
+;Type: filesandordirs; Name: "{app}"
 
 [Run]
-Filename: "{app}\cypherpunk-privacy-service.exe"; Parameters: "addtap 2"; WorkingDir: "{app}"; Flags: runhidden; StatusMsg: "Installing network adapter..."
+Filename: "{app}\cypherpunk-privacy-service.exe"; Parameters: "addtap 1"; WorkingDir: "{app}"; Flags: runhidden; StatusMsg: "Installing network adapter..."
 Filename: "{app}\cypherpunk-privacy-service.exe"; Parameters: "install"; WorkingDir: "{app}"; Flags: runhidden; StatusMsg: "Installing background service..."
 Filename: "{app}\cypherpunk-privacy-service.exe"; Parameters: "start"; WorkingDir: "{app}"; Flags: runhidden; StatusMsg: "Starting background service..."
+Filename: "{app}\{#MyAppExeName}"; Parameters: "--first"; WorkingDir: "{app}"; Flags: postinstall skipifsilent nowait; Description: "Launch {#MyAppName}"
 
 [UninstallRun]
+Filename: "taskkill.exe"; Parameters: "/im {#MyAppExeName} /f"; WorkingDir: "{app}"; Flags: runhidden
 Filename: "{app}\cypherpunk-privacy-service.exe"; Parameters: "stop"; WorkingDir: "{app}"; Flags: runhidden
 Filename: "{app}\cypherpunk-privacy-service.exe"; Parameters: "uninstall"; WorkingDir: "{app}"; Flags: runhidden
 Filename: "{app}\cypherpunk-privacy-service.exe"; Parameters: "removetap"; WorkingDir: "{app}"; Flags: runhidden
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}"
-Type: filesandordirs; Name: "C:\ProgramData\{#MyAppName}"
+Type: filesandordirs; Name: "{userappdata}\{#MyAppName}"
+Type: filesandordirs; Name: "{commonappdata}\{#MyAppName}"
+Type: filesandordirs; Name: "{userpf}\{#MyAppName}"
