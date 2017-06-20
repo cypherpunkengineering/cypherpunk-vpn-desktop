@@ -139,9 +139,9 @@ function onpost(method, params) {
     if (method === 'data' && typeof params[0] === 'object' && params[0].hasOwnProperty('version')) {
       if (params[0].version !== app.getVersion()) {
         if (connectReject) {
-          connectReject(new Error("Daemon version mismatch"));
+          connectReject(Object.assign(new Error("Daemon version mismatch"), { daemonVersion: params[0].version }));
         } else {
-          daemon.emit('error', { message: "Daemon version mismatch" });
+          daemon.emit('error', { message: "Daemon version mismatch", daemonVersion: params[0].version });
         }
         daemon.disconnect();
         return;

@@ -58,11 +58,12 @@ export COPYRIGHT_STRING
 endif
 
 INSTALLER_PKG = cypherpunk-privacy-macos-$(subst +,-,$(APP_VER)).pkg
+INSTALLER_ZIP = cypherpunk-privacy-macos-$(subst +,-,$(APP_VER)).zip
 
 
 all: package
 
-package: $(OUT)/$(INSTALLER_PKG)
+package: $(OUT)/$(INSTALLER_ZIP)
 
 clean:
 	$(ECHO) "* Cleaning..."
@@ -115,7 +116,7 @@ ECHO_STAGING=$(ECHO) "* Staging $(@:$(STAGING)%=%)..."
 
 stage: stage-client stage-daemon stage-leasewatcher
 
-stage-client: client
+stage-client: client stage-daemon
 	$(ECHO) "* Staging client..."
 	$(HUSH) rm -rf "$(OUT)/$(APP_SIG)"
 	$(HUSH) cd "$(ROOT)/client" && ./node_modules/.bin/electron-packager ./app/ "$(APP_NAME)" \
@@ -125,6 +126,7 @@ stage-client: client
 		--app-copyright="$$COPYRIGHT_STRING" \
 		--platform=darwin \
 		--arch=x64 \
+		--extra-resource="$(STAGING)/daemon.tar.bz2" \
 		--icon="$(ROOT)/res/osx/logo5.icns" \
 		--out="$(OUT)"
 	$(HUSH) sync; sleep 1
@@ -134,7 +136,11 @@ stage-client: client
 	$(HUSH) mv "$(OUT)/$(APP_SIG)/$(APP_BUNDLE)" "$(STAGING)/Applications/"
 	$(HUSH) rm -rf "$(OUT)/$(APP_SIG)"
 
-stage-daemon: $(STAGING)/usr/local/cypherpunk/bin/$(DAEMON_FILENAME) $(STAGING)/Library/LaunchDaemons/$(DAEMON_NS).plist $(STAGING)/usr/local/cypherpunk/bin/$(OPENVPN_FILENAME) $(OPENVPN_SCRIPTS:$(ROOT)/res/osx/openvpn-scripts/%=$(STAGING)/usr/local/cypherpunk/etc/scripts/%) $(PF_ANCHORS:$(ROOT)/res/osx/pf.anchors/%=$(STAGING)/usr/local/cypherpunk/etc/pf.anchors/%)
+$(STAGING)/daemon.tar.bz2: $(STAGING)/usr/local/cypherpunk/bin/$(DAEMON_FILENAME) $(STAGING)/Library/LaunchDaemons/$(DAEMON_NS).plist $(STAGING)/usr/local/cypherpunk/bin/$(OPENVPN_FILENAME) $(OPENVPN_SCRIPTS:$(ROOT)/res/osx/openvpn-scripts/%=$(STAGING)/usr/local/cypherpunk/etc/scripts/%) $(PF_ANCHORS:$(ROOT)/res/osx/pf.anchors/%=$(STAGING)/usr/local/cypherpunk/etc/pf.anchors/%)
+	$(ECHO_STAGING)
+	$(HUSH) cd "$(STAGING)" && tar c --format=mtree --options='!all,type' $(patsubst $(STAGING)/%,%,$^) | sed -e 's/^\([^#].*\)/\1 mode=755 uname=root uid=0 gname=wheel gid=0/' | tar cyf $@ @-
+
+stage-daemon: $(STAGING)/daemon.tar.bz2
 
 stage-leasewatcher: $(STAGING)/Library/LaunchDaemons/$(LEASEWATCHER_NS).plist
 
@@ -230,4 +236,9 @@ $(OUT)/$(INSTALLER_PKG): $(OUT)/Build.pkg
 		--sign $(INSTALLER_SIGN_IDENTITY) \
 		--version "$(APP_VER)" \
 		"$(INSTALLER_PKG)"
+	$(ECHO) "* Finished: $$(ls -l "$@")"
+
+$(OUT)/$(INSTALLER_ZIP): stage
+	$(HUSH) rm -f "$@"
+	$(HUSH) cd "$(STAGING)/Applications" && zip -r -y "$@" "$(APP_BUNDLE)"
 	$(ECHO) "* Finished: $$(ls -l "$@")"

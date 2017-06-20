@@ -47,7 +47,7 @@
   "platformDependencies": {
     "darwin": {
       "applescript": "^1.0.0",
-      "sudo-fn": "^2.0.0"
+      "sudo-prompt": "^7.0.0"
     },
     "win32": {
       "winreg": "^1.2.2"

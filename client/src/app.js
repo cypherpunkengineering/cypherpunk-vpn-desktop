@@ -73,32 +73,71 @@ app.on('will-quit', event => {
   }
 });
 
+let daemonPromise = null;
 
-eventPromise(app, 'ready').then(() => {
-  //dpi = electron.screen.getPrimaryDisplay().scaleFactor >= 2 ? '@2x' : '';
-  //return require('./install.js').checkInstalled();
-  return 'installed';
-}).then(status => {
-  if (status === 'installed') {
-    daemon = require('./daemon.js');
-    return timeoutPromise(Promise.all([
+function connectToDaemon() {
+  if (!daemon) daemon = require('./daemon.js');
+  if (!daemonPromise) {
+    daemonPromise = timeoutPromise(Promise.all([
       daemon.connect(),
       eventPromise(daemon, 'up'),
-      eventPromise(daemon, 'data')
-    ]), 10000).catch(e => {
-      if (e instanceof Error && e.message === "Daemon version mismatch") {
-        dialog.showErrorBox("Startup Error", "The Cypherpunk Privacy helper service is not the correct version. Please try reinstalling the application.");
-      } else {
-        dialog.showErrorBox("Startup Error", "The Cypherpunk Privacy helper service does not appear to be running. Please try reinstalling the application.");
-      }
-      throw null;
-    });
-  } else {
-    console.log("Installation status: " + status);
-    app.exit(0);
-    throw null; // dirty way to halt rest of promise chain
+      eventPromise(daemon, 'data'),
+    ]), 10000);
   }
+  return daemonPromise;
+}
+
+let install = null;
+
+eventPromise(app, 'ready').then(() => {
+  // First check if we're properly installed
+  install = require('./install.js');
+  let installation = install.check();
+
+  if (installation.status === 'installed' || installation.daemonRunning) {
+    // Connect to the daemon to determine if it's the correct version
+    return connectToDaemon()
+      .then(() => installation, e => {
+        if (process.platform === 'darwin' && e instanceof Error && e.message === "Daemon version mismatch") {
+          return Object.assign(installation, { status: 'needs install', daemonInstalled: false, daemonVersion: e.daemonVersion });
+        }
+        throw e;
+      });
+  } else {
+    return installation;
+  }
+
+}).then(installation => {
+
+  if (installation.status !== 'installed') {
+    return install.run(installation)
+      .then(result => {
+        if (result.hasOwnProperty('relaunch')) {
+          if (result.relaunch.execPath) {
+            require('child_process').spawn(result.relaunch.execPath, result.relaunch.args, { detached: true, stdio: 'ignore' }).unref();
+          } else {
+            app.relaunch(result.relaunch);
+          }
+          return exit();
+        } else if (result.hasOwnProperty('exit')) {
+          return exit(result.exit);
+        } else if (daemonPromise) {
+          app.relaunch();
+          return exit();
+        }
+        return connectToDaemon();
+      }, e => {
+        if (e instanceof Error && e.message.startsWith("User did not grant permission.")) {
+          // Just quit silently
+        } else {
+          dialog.showErrorBox("Installation Failed", args.debug ? require('util').inspect(e) : e.error ? require('util').inspect(e.error) : String(e));
+        }
+        return exit();
+      });
+  }
+
 }).then(() => {
+
   // Trigger account-changed events if the daemon.account property is touched
   daemon.on('account', account => {
     if (loggedIn) {
@@ -146,9 +185,10 @@ eventPromise(app, 'ready').then(() => {
   tray.create();
 }).catch(err => {
   if (err) {
-    dialog.showErrorBox("Initialization Error", "An unexpected error happened while launching Cypherpunk Privacy:\n\n" + (err.stack ? err.stack : err));
+    dialog.showErrorBox("Initialization Error", "An unexpected error happened while launching Cypherpunk Privacy:\n\n" + (err.stack || require('util').inspect(err)));
+    return exit(1);
   }
-  app.exit(1);
+  return exit();
 });
 
 

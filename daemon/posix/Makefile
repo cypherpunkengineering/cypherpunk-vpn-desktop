@@ -1,5 +1,4 @@
 .PHONY: all clean run stop debug
-.DEFAULT: all
 
 DEBUG ?= true
 
@@ -32,12 +31,15 @@ UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
 	LIBS += -lpthread
 endif
+$(info $(LIBS))
 ifeq ($(UNAME_S),Darwin)
 	GDB ?= lldb
 endif
 GDB ?= gdb
 
 OUT ?= out/cypherpunk-privacy-service
+
+all: $(OUT)
 
 -include $(POSIX_OBJS:%.o=%.d) $(COMMON_OBJS:%.o=%.d)
 
@@ -54,9 +56,7 @@ $(COMMON_OBJS): out/%.o : ../%.cpp
 $(OUT): $(POSIX_OBJS) $(COMMON_OBJS)
 	@echo "* Linking $@..."
 	@mkdir -p out
-	@g++ $(CFLAGS) -o $@ $(LIBS) $^
-
-all: $(OUT)
+	@g++ $(CFLAGS) -o $@ $^ $(LIBS)
 
 clean:
 	@rm -rf out

@@ -33,7 +33,7 @@ make vpn great again
 
 # Archive build artifacts
 cd ../../out/osx/
-ARTIFACT=$(echo cypherpunk-*.pkg)
+ARTIFACT=$(echo cypherpunk-*.zip)
 echo "Uploading build to builds repo..."
 scp -P92 "${ARTIFACT}" upload@builds-upload.cypherpunk.engineering:/data/builds/
 echo "Uploading build to GCS bucket..."
