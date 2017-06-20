@@ -131,7 +131,7 @@ function runAsRoot(options) {
         result.relaunch = {};
       }
       p = p.then(() => execFile('/usr/sbin/chown', [ '-R', 'root:wheel', '/Applications/Cypherpunk Privacy.app' ]));
-      p = p.then(() => exec('xattr -dr com.apple.quarantine "/Applications/Cypherpunk Privacy.app"'));
+      p = p.then(() => execFile('/usr/bin/xattr', [ '-dr', 'com.apple.quarantine', '/Applications/Cypherpunk Privacy.app' ]));
     }
     if (fixPermissions) {
       let clientExecutable = moveToApplications ? '/Applications/Cypherpunk Privacy.app/Contents/MacOS/Cypherpunk Privacy' : process.execPath;
