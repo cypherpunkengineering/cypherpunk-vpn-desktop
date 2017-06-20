@@ -30,6 +30,7 @@ APP_SIG = $(APP_NAME)-$(APP_PLATFORM)-$(APP_ARCH)
 APP_BUNDLE = $(APP_NAME).app
 APP_NS = com.cypherpunk.privacy
 CLIENT_NS = $(APP_NS).client
+LEASEWATCHER_NS = $(APP_NS).leasewatcher
 DAEMON_NS = $(APP_NS).service
 DAEMON_FILENAME = cypherpunk-privacy-service
 OPENVPN_FILENAME = cypherpunk-privacy-openvpn
@@ -89,6 +90,9 @@ endef
 define do-stop-daemon
 	$(HUSH) sudo launchctl unload "/Library/LaunchDaemons/$(DAEMON_NS).plist" || true
 endef
+define do-stop-leasewatcher
+	$(HUSH) sudo launchctl unload "/Library/LaunchDaemons/$(LEASEWATCHER_NS).plist" || true
+endef
 
 start-daemon:
 	$(do-start-daemon)
@@ -96,6 +100,8 @@ start-daemon:
 stop-daemon:
 	$(do-stop-daemon)
 
+stop-leasewatcher:
+	$(do-stop-leasewatcher)
 
 # Source building
 
@@ -115,7 +121,7 @@ $(ROOT)/daemon/posix/out/$(DAEMON_FILENAME): version
 
 ECHO_STAGING=$(ECHO) "* Staging $(@:$(STAGING)%=%)..."
 
-stage: stage-client stage-daemon
+stage: stage-client stage-daemon stage-leasewatcher
 
 stage-client: client stage-daemon
 	$(ECHO) "* Staging client..."
@@ -155,11 +161,21 @@ usr/local/cypherpunk/var/log type=dir mode=777
 endef
 export DAEMON_MTREE
 
-$(STAGING)/daemon.tar.bz2: $(STAGING)/usr/local/cypherpunk/bin/$(DAEMON_FILENAME) $(STAGING)/Library/LaunchDaemons/$(DAEMON_NS).plist $(STAGING)/usr/local/cypherpunk/bin/$(OPENVPN_FILENAME) $(OPENVPN_SCRIPTS:$(ROOT)/res/osx/openvpn-scripts/%=$(STAGING)/usr/local/cypherpunk/etc/scripts/%) $(PF_ANCHORS:$(ROOT)/res/osx/pf.anchors/%=$(STAGING)/usr/local/cypherpunk/etc/pf.anchors/%) $(STAGING)/usr/local/cypherpunk/etc/var/log/.logs
+$(STAGING)/daemon.tar.bz2: \
+	$(STAGING)/usr/local/cypherpunk/bin/$(DAEMON_FILENAME) \
+	$(STAGING)/Library/LaunchDaemons/$(DAEMON_NS).plist \
+	$(STAGING)/Library/LaunchDaemons/$(LEASEWATCHER_NS).plist \
+	$(STAGING)/usr/local/cypherpunk/bin/$(OPENVPN_FILENAME) \
+	$(OPENVPN_SCRIPTS:$(ROOT)/res/osx/openvpn-scripts/%=$(STAGING)/usr/local/cypherpunk/etc/scripts/%) \
+	$(PF_ANCHORS:$(ROOT)/res/osx/pf.anchors/%=$(STAGING)/usr/local/cypherpunk/etc/pf.anchors/%) \
+	$(STAGING)/usr/local/cypherpunk/etc/var/log/.logs
+
 	$(ECHO_STAGING)
 	$(HUSH) cd "$(STAGING)" && echo "$$DAEMON_MTREE" | sed -e 's/^\([^#].*\)/\1 uname=root uid=0 gname=wheel gid=0/' | tar cyf $@ @-
 
 stage-daemon: $(STAGING)/daemon.tar.bz2
+
+stage-leasewatcher: $(STAGING)/Library/LaunchDaemons/$(LEASEWATCHER_NS).plist
 
 $(STAGING)/usr/local/cypherpunk/bin/$(DAEMON_FILENAME): $(ROOT)/daemon/posix/out/$(DAEMON_FILENAME)
 	$(ECHO_STAGING)
@@ -188,11 +204,15 @@ $(STAGING)/Library/LaunchDaemons/$(DAEMON_NS).plist: $(ROOT)/res/osx/plist/$(DAE
 	$(ECHO_STAGING)
 	$(HUSH) mkdir -p $(dir $@)
 	$(HUSH) cp -p $< $@
+$(STAGING)/Library/LaunchDaemons/$(LEASEWATCHER_NS).plist: $(ROOT)/res/osx/plist/$(LEASEWATCHER_NS).plist
+	$(ECHO_STAGING)
+	$(HUSH) mkdir -p $(dir $@)
+	$(HUSH) cp -p $< $@
 
 
 # Installing to local machine
 
-install: install-daemon install-client
+install: install-daemon install-client install-leasewatcher
 
 install-client: stage-client uninstall-client
 	$(HUSH) sudo cp -pR "$(STAGING)/Applications/$(APP_BUNDLE)" /Applications/
@@ -212,10 +232,12 @@ install-daemon: stage-daemon
 	$(HUSH) sudo dseditgroup -o edit -a everyone -t group cypherpunk
 	$(do-start-daemon)
 
+install-leasewatcher: stage-leasewatcher
+	$(HUSH) sudo cp -f "$(STAGING)/Library/LaunchDaemons/$(LEASEWATCHER_NS).plist" /Library/LaunchDaemons/
 
 # Uninstalling from local machine
 
-uninstall: uninstall-client uninstall-daemon
+uninstall: uninstall-client uninstall-daemon uninstall-leasewatcher
 
 uninstall-client:
 	$(do-stop-client)
@@ -226,6 +248,9 @@ uninstall-daemon:
 	$(do-stop-daemon)
 	$(HUSH) sudo rm -f "/Library/LaunchDaemons/$(DAEMON_NS).plist"
 
+uninstall-leasewatcher:
+	$(do-stop-leasewatcher)
+	$(HUSH) sudo rm -f "/Library/LaunchDaemons/$(LEASEWATCHER_NS).plist"
 
 # Final packages
 
