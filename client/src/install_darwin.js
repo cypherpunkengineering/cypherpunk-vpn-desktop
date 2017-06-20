@@ -101,7 +101,8 @@ function runAsRoot(options) {
       p = p.then(() => exec('launchctl unload /Library/LaunchDaemons/com.cypherpunk.privacy.service.plist').catch(() => {}));
     }
     if (installDaemon) {
-      p = p.then(() => execFile('/usr/bin/tar', [ 'xyvf', DAEMON_ARCHIVE, '-C', '/', ...DAEMON_PATH_WHITELIST ]));
+      p = p.then(() => execFile('/usr/bin/tar', [ 'xyvpf', DAEMON_ARCHIVE, '-C', '/', ...DAEMON_PATH_WHITELIST ]));
+      p = p.then(() => execFile('/usr/bin/xattr', [ '-dr', 'com.apple.quarantine' ].concat(DAEMON_PATH_WHITELIST.map(d => '/' + d.slice(0,-1)))));
     }
     if (reloadPF) {
       p = p.then(() => exec('pfctl -q -f /etc/pf.conf'));
