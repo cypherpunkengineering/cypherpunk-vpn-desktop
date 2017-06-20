@@ -7,6 +7,13 @@
 .DEFAULT: all
 .SUFFIXES:
 
+NULL :=
+SP := $(NULL) $(NULL)
+define NL
+
+
+endef
+
 HUSH := @
 ECHO := @echo
 QUIET := > /dev/null
@@ -136,16 +143,35 @@ stage-client: client stage-daemon
 	$(HUSH) mv "$(OUT)/$(APP_SIG)/$(APP_BUNDLE)" "$(STAGING)/Applications/"
 	$(HUSH) rm -rf "$(OUT)/$(APP_SIG)"
 
+define DAEMON_MTREE
+#mtree
+Library/LaunchDaemons/$(DAEMON_NS).plist type=file mode=644
+usr/local/cypherpunk type=dir mode=755
+usr/local/cypherpunk/bin type=dir mode=755
+usr/local/cypherpunk/bin/$(DAEMON_FILENAME) type=file mode=755
+usr/local/cypherpunk/bin/$(OPENVPN_FILENAME) type=file mode=755
+usr/local/cypherpunk/etc type=dir mode=755
+usr/local/cypherpunk/etc/pf.anchors type=dir mode=755
+$(subst +, ,$(subst $(SP),$(NL),$(patsubst $(ROOT)/res/osx/pf.anchors/%,usr/local/cypherpunk/etc/pf.anchors/%+type=file+mode=644,$(PF_ANCHORS))))
+usr/local/cypherpunk/etc/profiles type=dir mode=755
+usr/local/cypherpunk/etc/scripts type=dir mode=755
+$(subst +, ,$(subst $(SP),$(NL),$(patsubst $(ROOT)/res/osx/openvpn-scripts/%,usr/local/cypherpunk/etc/scripts/%+type=file+mode=644,$(OPENVPN_SCRIPTS))))
+usr/local/cypherpunk/var type=dir mode=755
+usr/local/cypherpunk/var/log type=dir mode=777
+endef
+export DAEMON_MTREE
+
 $(STAGING)/daemon.tar.bz2: \
 	$(STAGING)/usr/local/cypherpunk/bin/$(DAEMON_FILENAME) \
 	$(STAGING)/Library/LaunchDaemons/$(DAEMON_NS).plist \
 	$(STAGING)/Library/LaunchDaemons/$(LEASEWATCHER_NS).plist \
 	$(STAGING)/usr/local/cypherpunk/bin/$(OPENVPN_FILENAME) \
 	$(OPENVPN_SCRIPTS:$(ROOT)/res/osx/openvpn-scripts/%=$(STAGING)/usr/local/cypherpunk/etc/scripts/%) \
-	$(PF_ANCHORS:$(ROOT)/res/osx/pf.anchors/%=$(STAGING)/usr/local/cypherpunk/etc/pf.anchors/%)
+	$(PF_ANCHORS:$(ROOT)/res/osx/pf.anchors/%=$(STAGING)/usr/local/cypherpunk/etc/pf.anchors/%) \
+	$(STAGING)/usr/local/cypherpunk/etc/var/log/.logs
 
 	$(ECHO_STAGING)
-	$(HUSH) cd "$(STAGING)" && tar c --format=mtree --options='!all,type' $(patsubst $(STAGING)/%,%,$^) | sed -e 's/^\([^#].*\)/\1 mode=755 uname=root uid=0 gname=wheel gid=0/' | tar cyf $@ @-
+	$(HUSH) cd "$(STAGING)" && echo "$$DAEMON_MTREE" | sed -e 's/^\([^#].*\)/\1 uname=root uid=0 gname=wheel gid=0/' | tar cyf $@ @-
 
 stage-daemon: $(STAGING)/daemon.tar.bz2
 
@@ -169,6 +195,11 @@ $(STAGING)/usr/local/cypherpunk/etc/scripts/%: $(ROOT)/res/osx/openvpn-scripts/%
 	$(ECHO_STAGING)
 	$(HUSH) mkdir -p $(dir $@)
 	$(HUSH) install -c -m 755 $< $@
+$(STAGING)/usr/local/cypherpunk/etc/var/log/.logs:
+	$(ECHO_STAGING)
+	$(HUSH) mkdir -p $(dir $@)
+	$(HUSH) chmod 777 $(dir $@)
+	$(HUSH) touch $@
 $(STAGING)/Library/LaunchDaemons/$(DAEMON_NS).plist: $(ROOT)/res/osx/plist/$(DAEMON_NS).plist
 	$(ECHO_STAGING)
 	$(HUSH) mkdir -p $(dir $@)

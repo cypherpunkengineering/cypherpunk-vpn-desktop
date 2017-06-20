@@ -34,11 +34,11 @@ function mac_check() {
   }
 
   var binaryPath = app.getPath('exe');
-  const debugBuild = require('./install_darwin.js').debugBuild;
+  const { INSTALL_APP_PATH, debugBuild, checkGroup } = require('./install_darwin.js');
   const clientVersion = app.getVersion();
 
   // 1. Check if the 'cypherpunk' group exists
-  let { gid: groupID, hasEveryone: groupHasEveryone } = require('./install_darwin.js').checkGroup(); // doesn't actually need root
+  let { gid: groupID, hasEveryone: groupHasEveryone } = checkGroup(); // doesn't actually need root
   let needsGroup = groupID === null || !groupHasEveryone;
 
   // 2. Check if the daemon is installed
@@ -59,13 +59,13 @@ function mac_check() {
   } catch (e) {}
 
   // 5. Check if we're in the Applications folder
-  let clientInstalled = binaryPath.startsWith('/Applications/Cypherpunk Privacy.app/');
+  let clientInstalled = binaryPath.startsWith(INSTALL_APP_PATH + '/');
 
   let result = { debugBuild, groupInstalled: !needsGroup, daemonInstalled, daemonRunning, clientPermissions: hasCorrectPermissions, clientInstalled, clientVersion };
 
   // 6. Check if there is already a globally installed client
-  if (!clientInstalled && fs.existsSync('/Applications/Cypherpunk Privacy.app')) {
-    let existingClientVersion = getAppVersion('/Applications/Cypherpunk Privacy.app');
+  if (!clientInstalled && fs.existsSync(INSTALL_APP_PATH)) {
+    let existingClientVersion = getAppVersion(INSTALL_APP_PATH);
     if (existingClientVersion) {
       result.existingClientVersion = existingClientVersion;
     }

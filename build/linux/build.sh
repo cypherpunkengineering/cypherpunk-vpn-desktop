@@ -89,11 +89,14 @@ make RELEASE=1 all
 # prepare dirs
 cd "../../${OUT_PATH}/"
 mkdir -p "./${APP_PATH_RELATIVE}/"
-mkdir -p "./${APP_PATH_RELATIVE}/etc/"
-mkdir -p "./${APP_PATH_RELATIVE}/etc/settings/"
-mkdir -p "./${APP_PATH_RELATIVE}/etc/scripts/"
 mkdir -p "./${APP_PATH_RELATIVE}/bin/"
+mkdir -p "./${APP_PATH_RELATIVE}/etc/"
+mkdir -p "./${APP_PATH_RELATIVE}/etc/scripts/"
+mkdir -p "./${APP_PATH_RELATIVE}/var/log"
 mkdir -p "./usr/share/applications/"
+
+chmod 777 "./${APP_PATH_RELATIVE}/var/log"
+touch "./${APP_PATH_RELATIVE}/var/log/.logs"
 
 # get app bundle
 mv "${ELECTRON_NAME}"/* "./${APP_PATH_RELATIVE}/"

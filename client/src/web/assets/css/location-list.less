@@ -48,6 +48,7 @@
       padding: 0 15px 0 @leftPadding;
       cursor: pointer;
       height: 28px;
+      color: rgba(255,255,255,0.8);
       &:not(.disabled)::before {
         position: absolute;
         top: 50%;
@@ -78,28 +79,38 @@
         color: rgba(200,255,255,0.3);
       }
     }
-    > .cypherplay {
-      font-size: 16px;
-      font-weight: 500;
-      padding: 10px 0 9px @leftPadding;
+    > .cypherplay, > .fastest {
+      font-size: 16px !important;
+      font-weight: 500 !important;
       cursor: pointer;
-      color: rgba(250,120,60,0.8);
-      margin-top: -5px;
       background-clip: padding-box;
       line-height: 18px;
+      &.selected, &.disabled {
+        opacity: 0.5;
+      }
+      &.selected, &:hover {
+      }
+    }
+    > .cypherplay {
+      color: rgba(255,200,100,0.8);
+      margin-top: -5px;
+      padding: 8px 0 6px @leftPadding;
       > img {
         width: (@leftPadding + 24px);
         margin-left: (-@leftPadding);
       }
       &.selected, &:hover {
-        color: rgb(250,120,60);
-        background-image: linear-gradient(to right, rgba(250,120,60,0.25), transparent);
-        > span {
-          color: #fff;
+        color: rgb(255,200,100);
+        span {
+          color: rgb(250,120,60);
         }
+        background-image: linear-gradient(to right, rgba(250,120,60,0.25), transparent);
       }
-      &.selected, &.disabled {
-        opacity: 0.5;
+    }
+    > .fastest {
+      opacity: 0.8;
+      &.selected, &:hover {
+        opacity: 1;
       }
     }
   }
@@ -125,7 +136,7 @@
       text-transform: uppercase;
       font-weight: 600;
     }
-    > .location, > .cypherplay {
+    > .location, > .cypherplay, > .fastest {
       margin: 5px 0 -5px;
       width: 100%;
       justify-content: center;
@@ -230,12 +241,26 @@
     vertical-align: top;
   }
   > span {
-    text-transform: uppercase;
-    font-size: 10px;
-    margin-left: 0.5em;
-    color: rgba(255,255,255,0.5);
+    color: rgba(250,120,60,0.8);
+    > span {
+      text-transform: uppercase;
+      font-size: 10px;
+      margin-left: 1em;
+    }
   }
   &.disabled {
     opacity: 0.5;
+  }
+}
+
+.cypherplay, .fastest {
+  &.disabled.taggable {
+    &::after {
+      content: 'CALCULATING...';
+      text-transform: uppercase;
+      font-size: 10px;
+      margin-left: 0.5em;
+      color: rgba(255,255,255,0.8);
+    }
   }
 }
