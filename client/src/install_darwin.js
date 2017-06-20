@@ -108,7 +108,7 @@ function runAsRoot(options) {
       p = p.then(() => exec('pfctl -q -f /etc/pf.conf'));
     }
     if (startDaemon) {
-      p = p.then(() => exec('launchctl load /Library/LaunchDaemons/com.cypherpunk.privacy.service.plist'));
+      p = p.then(() => exec('launchctl load -w /Library/LaunchDaemons/com.cypherpunk.privacy.service.plist'));
     }
     if (moveToApplications) {
       let actualAppPath = THIS_APP_PATH;
