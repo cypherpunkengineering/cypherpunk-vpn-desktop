@@ -123,8 +123,8 @@ function runAsRoot(options) {
           p = p.then(() => execFile('/bin/mv', [ '-f', actualAppPath, '/Applications/Cypherpunk Privacy.app' ]));
         } else {
           p = p.then(() => execFile('/bin/cp', [ '-fR', actualAppPath, '/Applications/Cypherpunk Privacy.app' ]));
-          // Using Applescript to tell the Finder to trash the path seems to bypass App Translocation and move the original file
-          p = p.then(() => execFile('/usr/bin/osascript', [ '-e', `set f to POSIX file ${JSON.stringify(actualAppPath)}`, '-e', 'tell application "Finder" to move f to trash' ]));
+          // Using Applescript to tell the Finder to trash the path seems to bypass App Translocation and move the original file (it's okay if this fails)
+          p = p.then(() => execFile('/usr/bin/osascript', [ '-e', `set f to POSIX file ${JSON.stringify(actualAppPath)}`, '-e', 'tell application "Finder" to move f to trash' ]).catch(e => {}));
         }
         result.relaunch = { execPath: '/Applications/Cypherpunk Privacy.app', args: [] };
       } else {
