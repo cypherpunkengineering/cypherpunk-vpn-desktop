@@ -65,7 +65,7 @@ std::string GetPredefinedDirectory(PredefinedDirectory dir)
 	case ScriptsDir: return g_is_installed ? GetPath(BaseDir, "etc", "scripts") : GetPath(BaseDir, "res", "osx", "openvpn-scripts");
 #endif
 	case SettingsDir: return g_is_installed ? GetPath(BaseDir, "etc") : g_daemon_path;
-	case LogDir: return g_is_installed ? GetPath(BaseDir, "etc", "logs") : g_daemon_path;
+	case LogDir: return g_is_installed ? GetPath(BaseDir, "var", "log") : g_daemon_path;
 	case ProfileDir: return g_is_installed ? GetPath(BaseDir, "etc", "profiles") : g_daemon_path;
 	default:
 		LOG(ERROR) << "Unknown path";
