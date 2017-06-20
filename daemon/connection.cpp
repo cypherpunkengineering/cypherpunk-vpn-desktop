@@ -585,9 +585,9 @@ void Connection::DoConnect()
 	args.push_back("2");
 
 	args.push_back("--up");
-	args.push_back(GetPath(ScriptsDir, "up.sh") + " -9 -d -f -m -w -pradsgnwADSGNW");
+	args.push_back(GetPath(ScriptsDir, "up.sh"));
 	args.push_back("--down");
-	args.push_back(GetPath(ScriptsDir, "down.sh") + " -9 -d -f -m -w -pradsgnwADSGNW");
+	args.push_back(GetPath(ScriptsDir, "down.sh"));
 	args.push_back("--route-pre-down");
 	args.push_back(GetPath(ScriptsDir, "route-pre-down.sh"));
 #elif OS_LINUX
