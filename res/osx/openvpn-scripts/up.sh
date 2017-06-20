@@ -4,9 +4,6 @@ trap "" HUP
 trap "" INT
 export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin"
 
-CP_APP_PATH=`osascript -e 'POSIX path of (path to application id "com.cypherpunk.privacy.app")'`
-
-CP_RESOURCES_PATH="${ARG_CP_PATH}/Contents/Resources"
 LEASEWATCHER_PLIST_PATH="/Library/LaunchDaemons/com.cypherpunk.privacy.leasewatcher.plist"
 REMOVE_LEASEWATCHER_PLIST="false"
 
@@ -37,7 +34,7 @@ unset vDNS
 unset vOptions
 
 # what's the rush?
-#sleep 2
+sleep 2
 
 while vForOptions=foreign_option_$nOptionIndex; [ -n "${!vForOptions}" ]; do
 	{
@@ -110,14 +107,8 @@ readonly DYN_DNS ALL_DNS
 if ! ${DYN_DNS} ; then
 	NO_DNS="#"
 fi
-if [ -z "${STATIC_WORKGROUP}" ] ; then
-	NO_WG="#"
-fi
 if [ -z "${ALL_DNS}" ] ; then
 	AGG_DNS="#"
-fi
-if [ -z "${ALL_SEARCH}" ] ; then
-	AGG_SEARCH="#"
 fi
 
 scutil <<- EOF
