@@ -10,23 +10,29 @@ class FileLogger : public Logger
 {
 protected:
 	FILE* _file;
+	std::string _name;
+	size_t _size, _maxsize;
 	bool _timestamps;
 public:
-	FileLogger() : _file(nullptr), _timestamps(false) {}
-	FileLogger(FILE* file) : _file(file), _timestamps(false) {}
+	FileLogger() : _file(NULL), _size(0), _maxsize(0), _timestamps(false) {}
+	FileLogger(FILE* file) : _file(file), _size(0), _maxsize(0), _timestamps(false) {}
 
 	bool Open(FILE* file)
 	{
 		_file = file;
-		return _file != nullptr;
+		_size = 0;
+		_maxsize = 0;
+		_timestamps = false;
+		return _file != NULL;
 	}
-	bool Open(const char* filename)
+	bool Open(std::string filename, size_t maxsize = 10*1024*1024)
 	{
-		return _timestamps = Open(daemon_fopen(filename, "at"));
-	}
-	bool Open(const std::string& filename)
-	{
-		return Open(filename.c_str());
+		_name = std::move(filename);
+		_file = daemon_fopen(_name.c_str(), "a+");
+		_size = _file ? (fseek(_file, 0, SEEK_END), ftell(_file)) : 0;
+		_maxsize = maxsize;
+		_timestamps = true;
+		return _file != NULL;
 	}
 
 	void Close()
@@ -34,7 +40,49 @@ public:
 		if (_file)
 		{
 			daemon_fclose(_file);
-			_file = nullptr;
+			_file = NULL;
+		}
+	}
+
+	void Archive()
+	{
+		if (_file)
+		{
+			if (char* buf = new char[1024*1024])
+			{
+				if (FILE* f = daemon_fopen((_name + ".old").c_str(), "w"))
+				{
+					size_t s = (fseek(_file, 0, SEEK_END), ftell(_file));
+					fseek(_file, 0, SEEK_SET);
+
+					while (s > 0)
+					{
+						size_t b = s > 1024 * 1024 ? 1024 * 1024 : s;
+						if (!fread(buf, b, 1, _file)) break;
+						if (!fwrite(buf, b, 1, f)) break;
+						s -= b;
+					}
+					if (!s)
+					{
+						fflush(f);
+						fseek(_file, 0, SEEK_SET);
+						_file = freopen(_name.c_str(), "w+", _file); // truncate current file
+						if (_file) fflush(_file);
+					}
+					fclose(f);
+				}
+				delete[] buf;
+			}
+		}
+	}
+
+	void Count(size_t chars)
+	{
+		_size += chars;
+		if (_maxsize && _size > _maxsize)
+		{
+			Archive();
+			_size = 0;
 		}
 	}
 
@@ -43,9 +91,10 @@ public:
 		if (_file)
 		{
 			WriteTimestampIfNeeded();
-			vfprintf(_file, fmt, args);
+			int size = vfprintf(_file, fmt, args);
 			fputc('\n', _file);
 			fflush(_file);
+			Count(size > 0 ? size + 1 : 1);
 		}
 		Logger::DoWrite(level, fmt, args);
 	}
@@ -55,9 +104,10 @@ public:
 		if (_file)
 		{
 			WriteTimestampIfNeeded();
-			fwrite(str.data(), 1, str.size(), _file);
+			size_t chars = fwrite(str.data(), 1, str.size(), _file);
 			fputc('\n', _file);
 			fflush(_file);
+			Count(chars + 1);
 		}
 		Logger::DoWrite(str);
 	}
