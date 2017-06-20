@@ -11,6 +11,8 @@ const THIS_APP_PATH = debugBuild ? path.resolve(__dirname) : path.resolve(__dirn
 const ICON_PATH = debugBuild ? path.resolve(THIS_APP_PATH, '../../res/osx/logo5.icns') : path.resolve(THIS_APP_PATH, 'Contents/Resources/electron.icns');
 const DAEMON_ARCHIVE = path.resolve(__dirname, '../daemon.tar.bz2');
 
+export const INSTALL_APP_PATH = '/Applications/Cypherpunk Privacy.app';
+
 const DAEMON_PATH_WHITELIST = [
   'Library/LaunchDaemons/',
   'usr/local/cypherpunk/',
@@ -112,29 +114,29 @@ function runAsRoot(options) {
     }
     if (moveToApplications) {
       let actualAppPath = THIS_APP_PATH;
-      if (actualAppPath !== '/Applications/Cypherpunk Privacy.app') {
+      if (actualAppPath !== INSTALL_APP_PATH) {
         // Kill any existing processes running from the destination directory
-        p = p.then(() => exec('while pkill -f "^/Applications/Cypherpunk Privacy.app/Contents/MacOS/"; do sleep 0.5; done'));
-        p = p.then(() => execFile('/bin/rm', [ '-rf', '/Applications/Cypherpunk Privacy.app' ]));
+        p = p.then(() => exec(`while pkill -f "^${INSTALL_APP_PATH}/Contents/MacOS/"; do sleep 0.5; done`));
+        p = p.then(() => execFile('/bin/rm', [ '-rf', INSTALL_APP_PATH ]));
         // If the app directory isn't writable even though we're root, we've probably running in app translocation
         let writable = false;
         try { fs.accessSync(actualAppPath, fs.W_OK); writable = true; } catch(e) {}
         if (writable) {
-          p = p.then(() => execFile('/bin/mv', [ '-f', actualAppPath, '/Applications/Cypherpunk Privacy.app' ]));
+          p = p.then(() => execFile('/bin/mv', [ '-f', actualAppPath, INSTALL_APP_PATH ]));
         } else {
-          p = p.then(() => execFile('/bin/cp', [ '-fR', actualAppPath, '/Applications/Cypherpunk Privacy.app' ]));
+          p = p.then(() => execFile('/bin/cp', [ '-fR', actualAppPath, INSTALL_APP_PATH ]));
           // Using Applescript to tell the Finder to trash the path seems to bypass App Translocation and move the original file (it's okay if this fails)
           p = p.then(() => execFile('/usr/bin/osascript', [ '-e', `set f to POSIX file ${JSON.stringify(actualAppPath)}`, '-e', 'tell application "Finder" to move f to trash' ]).catch(e => {}));
         }
-        result.relaunch = { execPath: '/Applications/Cypherpunk Privacy.app', args: [] };
+        result.relaunch = { execPath: INSTALL_APP_PATH, args: [] };
       } else {
         result.relaunch = {};
       }
-      p = p.then(() => execFile('/usr/sbin/chown', [ '-R', 'root:wheel', '/Applications/Cypherpunk Privacy.app' ]));
-      p = p.then(() => execFile('/usr/bin/xattr', [ '-dr', 'com.apple.quarantine', '/Applications/Cypherpunk Privacy.app' ]));
+      p = p.then(() => execFile('/usr/sbin/chown', [ '-R', 'root:wheel', INSTALL_APP_PATH ]));
+      p = p.then(() => execFile('/usr/bin/xattr', [ '-dr', 'com.apple.quarantine', INSTALL_APP_PATH ]));
     }
     if (fixPermissions) {
-      let clientExecutable = moveToApplications ? '/Applications/Cypherpunk Privacy.app/Contents/MacOS/Cypherpunk Privacy' : process.execPath;
+      let clientExecutable = moveToApplications ? INSTALL_APP_PATH + '/Contents/MacOS/Cypherpunk Privacy' : process.execPath;
       p = p.then(() => execFile('/usr/bin/chgrp', [ 'cypherpunk', clientExecutable ]));
       p = p.then(() => execFile('/bin/chmod', [ 'g+s', clientExecutable ]));
       if (!result.relaunch) result.relaunch = {};
