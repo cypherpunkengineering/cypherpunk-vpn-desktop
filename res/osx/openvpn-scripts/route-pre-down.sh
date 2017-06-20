@@ -1,20 +1,4 @@
 #!/bin/bash -e
-
-# Note: must be bash; uses bash-specific tricks
-#
-# ******************************************************************************************************************
-# This Cypherpunk script does everything! It handles TUN and TAP interfaces,
-# pushed configurations and DHCP leases. :)
-#
-# This is the "route-pre-down" version of the script, executed before the connection is closed.
-#
-# It is a modified version of the "down" script written by Nick Williams
-#
-# It releases the DHCP lease for any TAP devices.
-# It has no effect for TUN devices or TAP devices not using DHCP.
-#
-# ******************************************************************************************************************
-
 # @param String message - The message to log
 logMessage()
 {
@@ -32,7 +16,7 @@ logMessage "**********************************************"
 logMessage "Start of output from ${OUR_NAME}"
 
 # Quick check - is the configuration there?
-if ! scutil -w State:/Network/OpenVPN &>/dev/null -t 1 ; then
+if ! scutil -w State:/Network/Cypherpunk &>/dev/null -t 1 ; then
 	# Configuration isn't there, so we forget it
 	logMessage "WARNING: No saved Cypherpunk DNS configuration found; not doing anything."
     logMessage "End of output from ${OUR_NAME}"
@@ -40,12 +24,12 @@ if ! scutil -w State:/Network/OpenVPN &>/dev/null -t 1 ; then
 	exit 0
 fi
 
-# NOTE: This script does not use any arguments passed to it by OpenVPN, so it doesn't shift Cypherpunk options out of the argument list
+# NOTE: This script does not use any arguments passed to it by Cypherpunk, so it doesn't shift Cypherpunk options out of the argument list
 
 # Get info saved by the up script
 CYPHERPUNK_CONFIG="$( scutil <<-EOF
 	open
-	show State:/Network/OpenVPN
+	show State:/Network/Cypherpunk
 	quit
 EOF
 )"
@@ -69,7 +53,7 @@ if ${ARG_TAP} ; then
         # Issue warning if the primary service ID has changed
         PSID_CURRENT="$( scutil <<-EOF |
             open
-            show State:/Network/OpenVPN
+            show State:/Network/Cypherpunk
             quit
 EOF
 grep Service | sed -e 's/.*Service : //'
@@ -89,10 +73,10 @@ grep Service | sed -e 's/.*Service : //'
             # Indicate leasewatcher has been removed
             scutil <<-EOF
             open
-            get State:/Network/OpenVPN
+            get State:/Network/Cypherpunk
             d.remove MonitorNetwork
             d.add MonitorNetwork        "false"
-            set State:/Network/OpenVPN
+            set State:/Network/Cypherpunk
             quit
 EOF
         fi
@@ -100,7 +84,7 @@ EOF
         # Release the DHCP lease
         if [ -z "$dev" ]; then
             # If $dev is not defined, then use TunnelDevice, which was set from $dev by up.sh
-            # ($dev is not defined when this script is called from MenuController to clean up when OpenVPN has crashed)
+            # ($dev is not defined when this script is called from MenuController to clean up when Cypherpunk has crashed)
             if [ -n "${sTunnelDevice}" ]; then
                 logMessage "ERROR: \$dev not defined; using TunnelDevice: ${sTunnelDevice}"
                 set +e
@@ -108,7 +92,7 @@ EOF
                 set -e
                 logMessage "Released the DHCP lease via ipconfig set \"${sTunnelDevice}\" NONE."
             else
-                logMessage "WARNING: Cannot release the DHCP lease without \$dev or State:/Network/OpenVPN/TunnelDevice being defined. Device may not have disconnected properly."
+                logMessage "WARNING: Cannot release the DHCP lease without \$dev or State:/Network/Cypherpunk/TunnelDevice being defined. Device may not have disconnected properly."
             fi
         else
             set +e
@@ -120,10 +104,10 @@ EOF
         # Indicate the DHCP lease has been released
         scutil <<-EOF
         open
-        get State:/Network/OpenVPN
+        get State:/Network/Cypherpunk
         d.remove TapDeviceSetNone
         d.add TapDeviceHasBeenSetNone "true"
-        set State:/Network/OpenVPN
+        set State:/Network/Cypherpunk
         quit
 EOF
     else

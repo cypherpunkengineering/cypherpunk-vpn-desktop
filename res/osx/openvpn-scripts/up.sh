@@ -16,24 +16,13 @@ trim() {
 	echo ${@}
 }
 
-case "${OSVER}" in
-	10.4 | 10.5 )
-		HIDE_SNOW_LEOPARD=""
-		HIDE_LEOPARD="#"
-		;;
-	10.6 | 10.7 )
-		HIDE_SNOW_LEOPARD="#"
-		HIDE_LEOPARD=""
-		;;
-esac
-
 nOptionIndex=1
 nNameServerIndex=1
 unset vForOptions
 unset vDNS
 unset vOptions
 
-# what's the rush?
+# wait for network to settle
 sleep 2
 
 while vForOptions=foreign_option_$nOptionIndex; [ -n "${!vForOptions}" ]; do
@@ -113,26 +102,36 @@ fi
 
 scutil <<- EOF
 	open
+
+	# Store our variables for the other scripts (leasewatch, down, etc.) to use
 	d.init
+	# The '#' in the next line does NOT start a comment; it indicates to scutil that a number follows it (as opposed to a string or an array)
 	d.add PID # ${PPID}
 	d.add Service ${PSID}
 	d.add LeaseWatcherPlistPath "${LEASEWATCHER_PLIST_PATH}"
 	d.add RemoveLeaseWatcherPlist "${REMOVE_LEASEWATCHER_PLIST}"
 	d.add MonitorNetwork "${ARG_MONITOR_NETWORK_CONFIGURATION}"
 	d.add RestoreOnDNSReset   "${ARG_RESTORE_ON_DNS_RESET}"
-	set State:/Network/OpenVPN
+	set State:/Network/Cypherpunk
 
 	# First, back up the device's current DNS configurations
 	# Indicate 'no such key' by a dictionary with a single entry: "CypherpunkNoSuchKey : true"
+	# If there isn't a key, "CypherpunkNoSuchKey : true" won't be removed.
+	# If there is a key, "CypherpunkNoSuchKey : true" will be removed and the key's contents will be used
 	d.init
 	d.add CypherpunkNoSuchKey true
 	get State:/Network/Service/${PSID}/DNS
-	set State:/Network/OpenVPN/OldDNS
+	set State:/Network/Cypherpunk/OldDNS
+
+	d.init
+	d.add CypherpunkNoSuchKey true
+	get Setup:/Network/Service/${PSID}/DNS
+	set State:/Network/Cypherpunk/OldDNSSetup
 
 	d.init
 	d.add CypherpunkNoSuchKey true
 	get State:/Network/Service/${PSID}/SMB
-	set State:/Network/OpenVPN/OldSMB
+	set State:/Network/Cypherpunk/OldSMB
 
 	# Second, initialize the new DNS map
 	d.init
@@ -144,12 +143,28 @@ scutil <<- EOF
 	${NO_DNS}d.add ServerAddresses * ${vDNS[*]}
 	set Setup:/Network/Service/${PSID}/DNS
 
+	# We're done
+	quit
+EOF
+
+# wait for settings to propagate
+sleep 1
+
+scutil <<- EOF
+	open
+
 	# Now, initialize the maps that will be compared against the system-generated map
 	# which means that we will have to aggregate configurations of statically-configured
 	# nameservers
 	d.init
+	d.add CypherpunkNoSuchKey true
 	get State:/Network/Global/DNS
-	set State:/Network/OpenVPN/DNS
+	set State:/Network/Cypherpunk/DNS
+
+	d.init
+	d.add CypherpunkNoSuchKey true
+	get State:/Network/Global/SMB
+	set State:/Network/Cypherpunk/SMB
 
 	# We're done
 	quit

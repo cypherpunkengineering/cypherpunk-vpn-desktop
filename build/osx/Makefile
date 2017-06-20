@@ -136,7 +136,14 @@ stage-client: client stage-daemon
 	$(HUSH) mv "$(OUT)/$(APP_SIG)/$(APP_BUNDLE)" "$(STAGING)/Applications/"
 	$(HUSH) rm -rf "$(OUT)/$(APP_SIG)"
 
-$(STAGING)/daemon.tar.bz2: $(STAGING)/usr/local/cypherpunk/bin/$(DAEMON_FILENAME) $(STAGING)/Library/LaunchDaemons/$(DAEMON_NS).plist $(STAGING)/usr/local/cypherpunk/bin/$(OPENVPN_FILENAME) $(OPENVPN_SCRIPTS:$(ROOT)/res/osx/openvpn-scripts/%=$(STAGING)/usr/local/cypherpunk/etc/scripts/%) $(PF_ANCHORS:$(ROOT)/res/osx/pf.anchors/%=$(STAGING)/usr/local/cypherpunk/etc/pf.anchors/%)
+$(STAGING)/daemon.tar.bz2: \
+	$(STAGING)/usr/local/cypherpunk/bin/$(DAEMON_FILENAME) \
+	$(STAGING)/Library/LaunchDaemons/$(DAEMON_NS).plist \
+	$(STAGING)/Library/LaunchDaemons/$(LEASEWATCHER_NS).plist \
+	$(STAGING)/usr/local/cypherpunk/bin/$(OPENVPN_FILENAME) \
+	$(OPENVPN_SCRIPTS:$(ROOT)/res/osx/openvpn-scripts/%=$(STAGING)/usr/local/cypherpunk/etc/scripts/%) \
+	$(PF_ANCHORS:$(ROOT)/res/osx/pf.anchors/%=$(STAGING)/usr/local/cypherpunk/etc/pf.anchors/%)
+
 	$(ECHO_STAGING)
 	$(HUSH) cd "$(STAGING)" && tar c --format=mtree --options='!all,type' $(patsubst $(STAGING)/%,%,$^) | sed -e 's/^\([^#].*\)/\1 mode=755 uname=root uid=0 gname=wheel gid=0/' | tar cyf $@ @-
 
