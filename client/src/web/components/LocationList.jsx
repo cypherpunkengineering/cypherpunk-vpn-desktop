@@ -6,7 +6,14 @@ import { RetinaImage } from './Image';
 
 const CypherPlayIcon = { [1]: require('../assets/img/icon_cypherplay.png'), [2]: require('../assets/img/icon_cypherplay@2x.png') };
 
-export const Location = ({ location, className, selected = false, favorite = null, ping = null, hideTag = false, onClick, ...props } = {}) => {
+const FLAG_PATH = '../assets/img/flags/24/';
+
+export const Flag = ({ country, className = null, ...props }) => {
+  country = country.toLowerCase();
+  return (<RetinaImage className={classList("flag", className)} src={{ [1]: `${FLAG_PATH}${country}.png`, [2]: `${FLAG_PATH}${country}@2x.png` }} alt=""/>);
+}
+
+export const Location = ({ location, className, selected = false, favorite = null, ping = null, hideTag = false, name = null, onClick, ...props } = {}) => {
   if (!location) return null;
   let classes = [ 'location' ];
   let tag = null;
@@ -49,11 +56,10 @@ export const Location = ({ location, className, selected = false, favorite = nul
       ping = null;
     }
   }
-  var flag = (dpi = '') => `../assets/img/flags/24/${location.country.toLowerCase()}${dpi}.png`;
   return (
     <div className={classList(classes, className)} data-value={location.id} onClick={onClick} {...props}>
-      {location.country ? <img className="flag" src={flag()} srcSet={`${flag()} 1x, ${flag('@2x')} 2x`} alt=""/> : null}
-      <span data-tag={hideTag ? null : tag}>{location.name}</span>
+      {location.country ? <Flag country={location.country}/> : null}
+      <span data-tag={hideTag ? null : tag}>{name || location.name}</span>
       {ping ? <span className="ping-time">{ping}</span> : null}
       {favorite !== null ? <i className="cp-fav icon"></i> : null}
     </div>
@@ -98,14 +104,24 @@ export function groupLocationsByRegion(locations, regions, regionOrder, countryN
 }
 
 
-export const CypherPlayItem = ({ selected = false, disabled = false, hideTag = false, ...props }) =>
-  <div
-    key="cypherplay"
-    className={classList("cypherplay", { "selected": selected, "disabled" : disabled })}
-    {...props}
-    >
-    <RetinaImage src={CypherPlayIcon}/>CypherPlay&trade;{!hideTag ? <span>{disabled?"LOADING":"AUTO"}</span> : null}
-  </div>;
+const CYPHERPLAY = "CypherPlay\u2122";
+
+export const CypherPlayItem = ({ selected = false, disabled = false, hideTag = false, ...props }) => {
+  let title = hideTag ? CYPHERPLAY : "Fastest Location";
+  let suffix = hideTag ? null : <span><span>with</span> {CYPHERPLAY}</span>;
+  return (
+    <div
+      key="cypherplay"
+      className={classList("cypherplay", { "selected": selected, "disabled": disabled, "taggable" : !hideTag })}
+      {...props}
+      >
+      <RetinaImage src={CypherPlayIcon}/>{title}{suffix}
+    </div>
+  );
+};
+
+export const FastestItem = ({ location, ...props }) =>
+  <Location className="fastest" location={location} name="Fastest Location" hideTag={true} {...props}/>;
 
 export class LocationList extends DaemonAware(React.Component) {
   static defaultProps = {
@@ -154,7 +170,8 @@ export class LocationList extends DaemonAware(React.Component) {
           { (!this.props.selected) && <div className="title">Connect to</div> }
         </div>
         <div ref="list" className="list" onMouseLeave={() => { if (this.props.selected) this.props.onHover(this.props.selected); }}>
-          <CypherPlayItem key="cypherplay" disabled={!this.state.fastest} selected={this.props.selected === 'cypherplay'} onMouseEnter={() => this.props.onHover('cypherplay')} onClick={() => this.state.fastest && this.props.onClick('cypherplay:' + this.state.fastest)}/>
+          <CypherPlayItem key="cypherplay" disabled={!this.state.fastest} selected={this.props.selected === 'cypherplay'} onMouseEnter={() => this.props.onHover('cypherplay')} onClick={this.state.fastest ? () => this.props.onClick('cypherplay:' + this.state.fastest) : null}/>
+          <FastestItem key="fastest" disabled={!this.state.fastest} location={this.state.fastest ? this.state.locations[this.state.fastest] : null} selected={false} onMouseEnter={this.state.fastest ? () => this.props.onHover(this.state.fastest) : null} onClick={this.state.fastest ? () => this.props.onClick(this.state.fastest) : null}/>
           {
             Array.flatten(Object.mapToArray(grouping, (region, countries) => 
               [ <Header key={`header-${region}`} name={this.state.regionNames[region]}/> ]
