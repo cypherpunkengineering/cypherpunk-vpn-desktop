@@ -5,8 +5,10 @@ const { nodePromise } = require('./util.js');
 
 const sudoPrompt = require('sudo-prompt');
 
-const THIS_APP_PATH = path.resolve(__dirname, '../../..');
-const ICON_PATH = path.resolve(THIS_APP_PATH, 'Contents/Resources/electron.icns');
+export const debugBuild = __dirname.endsWith('client/app');
+
+const THIS_APP_PATH = debugBuild ? path.resolve(__dirname) : path.resolve(__dirname, '../../..');
+const ICON_PATH = debugBuild ? path.resolve(THIS_APP_PATH, '../../res/osx/logo5.icns') : path.resolve(THIS_APP_PATH, 'Contents/Resources/electron.icns');
 const DAEMON_ARCHIVE = path.resolve(__dirname, '../daemon.tar.bz2');
 
 const DAEMON_PATH_WHITELIST = [
@@ -49,8 +51,8 @@ function runAsRoot(options) {
   let group = checkGroup();
 
   let createGroup = group.gid === null || !group.hasEveryone;
-  let stopDaemon = installDaemon || createGroup;
-  startDaemon = startDaemon || installDaemon || createGroup;
+  let stopDaemon = installDaemon || (createGroup && !debugBuild);
+  startDaemon = startDaemon || stopDaemon || installDaemon || (createGroup && !debugBuild);
   let reloadPF = installDaemon || startDaemon || createGroup;
   fixPermissions = fixPermissions || createGroup || moveToApplications;
 

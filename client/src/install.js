@@ -34,7 +34,7 @@ function mac_check() {
   }
 
   var binaryPath = app.getPath('exe');
-  const debugBuild = !binaryPath.endsWith('.app/Contents/MacOS/Cypherpunk Privacy'); // developer builds will use an Electron binary
+  const debugBuild = require('./install_darwin.js').debugBuild;
   const clientVersion = app.getVersion();
 
   // 1. Check if the 'cypherpunk' group exists
@@ -84,7 +84,7 @@ function mac_check() {
 
 function mac_run(status) {
   let options = {};
-  options.installDaemon = (!status.daemonRunning || !(status.daemonInstalled && !status.debugBuild));
+  options.installDaemon = (!status.daemonRunning || !status.daemonInstalled) && !status.debugBuild;
   options.moveToApplications = !status.clientInstalled && !status.debugBuild;
   options.fixPermissions = !status.groupInstalled || !status.clientPermissions;
 
@@ -97,7 +97,15 @@ function mac_run(status) {
       defaultId: 0,
       cancelId: 1,
     };
-    if (!status.clientInstalled && status.existingClientVersion) {
+    if (status.debugBuild) {
+      if (!status.daemonRunning) {
+        dialog.showErrorBox("Service Not Running", "The Cypherpunk Privacy background service is required to run debug builds, but it is not running (or it is the wrong version).\n\nPlease run it manually from daemon/posix with the 'make all run' command and try again.");
+        return resolve({ exit: 0 });
+      }
+      msg.message = "Fix Electron Permissions";
+      msg.detail = "In order for the killswitch feature to work in debug builds, we need to adjust the permissions of the Electron binary.";
+      msg.buttons[0] = "Fix Now";
+    } else if (!status.clientInstalled && status.existingClientVersion) {
       let diff = compareVersions(status.clientVersion, status.existingClientVersion);
       if (diff == 0 && status.clientVersion !== status.existingClientVersion) {
         diff = status.clientVersion > status.existingClientVersion ? 10 : -10; // differs only by build identifier
