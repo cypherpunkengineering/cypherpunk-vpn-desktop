@@ -30,7 +30,7 @@ extern class Logger* g_logger;
 #ifdef _DEBUG
 #define STATIC_LOG_LEVELS LEVEL_ALL
 #else
-#define STATIC_LOG_LEVELS ((LogLevelMask)~(LogLevelMask)LogLevel::DEBUG)
+#define STATIC_LOG_LEVELS ((LogLevelMask)~(LogLevelMask)(1 << LogLevel::DEBUG))
 #endif
 #define STATIC_LOG_ENABLED(level) (STATIC_LOG_LEVELS & (1 << (int)(level)))
 
