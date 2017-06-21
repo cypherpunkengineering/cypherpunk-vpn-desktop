@@ -44,6 +44,7 @@ extern void WriteFile(const std::string& path, const char* text, size_t length);
 
 extern FILE* daemon_fopen(const char* filename, const char* mode);
 extern int daemon_fclose(FILE* file);
+extern int daemon_unlink(const char* filename);
 
 extern const char PATH_SEPARATOR;
 

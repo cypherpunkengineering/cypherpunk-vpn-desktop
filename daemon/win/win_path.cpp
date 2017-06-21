@@ -189,3 +189,8 @@ int daemon_fclose(FILE* file)
 {
 	return fclose(file);
 }
+
+int daemon_unlink(const char* filename)
+{
+	return _unlink(filename);
+}

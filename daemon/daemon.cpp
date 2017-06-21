@@ -45,8 +45,8 @@ public:
 	{
 		if (_file)
 		{
-			unlink(_name.c_str());
-			fclose(_file);
+			daemon_unlink(_name.c_str());
+			daemon_fclose(_file);
 		}
 	}
 	operator FILE*() const { return _file; }
