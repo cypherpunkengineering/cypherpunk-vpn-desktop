@@ -19,7 +19,7 @@ unset vDNS
 unset vOptions
 
 # wait for network to settle
-sleep 2
+#sleep 2
 
 while vForOptions=foreign_option_$nOptionIndex; [ -n "${!vForOptions}" ]; do
 	{
