@@ -68,34 +68,26 @@ else
     scutil <<- EOF
         open
         get State:/Network/Cypherpunk/OldDNS
-        set Setup:/Network/Service/${PSID}/DNS
+        set State:/Network/Service/${PSID}/DNS
         quit
 EOF
 fi
 
 if [ "${DNS_OLD_SETUP}" = "${CP_NO_SUCH_KEY}" ] ; then
-	if ${bAlsoUsingSetupKeys} ; then
-		echo "DEBUG: Removing 'Setup:' DNS key"
-		scutil <<-EOF
-			open
-			remove Setup:/Network/Service/${PSID}/DNS
-			quit
+	echo "DEBUG: Removing 'Setup:' DNS key"
+	scutil <<-EOF
+		open
+		remove Setup:/Network/Service/${PSID}/DNS
+		quit
 EOF
-	else
-		echo "DEBUG: Not removing 'Setup:' DNS key"
-	fi
 else
-	if ${bAlsoUsingSetupKeys} ; then
-		echo "DEBUG: Restoring 'Setup:' DNS key"
-		scutil <<-EOF
-			open
-			get State:/Network/Cypherpunk/OldDNSSetup
-			set Setup:/Network/Service/${PSID}/DNS
-			quit
+	echo "DEBUG: Restoring 'Setup:' DNS key"
+	scutil <<-EOF
+		open
+		get State:/Network/Cypherpunk/OldDNSSetup
+		set Setup:/Network/Service/${PSID}/DNS
+		quit
 EOF
-	else
-		echo "DEBUG: Not restoring 'Setup:' DNS key"
-	fi
 fi
 
 if [ "${SMB_OLD}" = "${CP_NO_SUCH_KEY}" ] ; then
