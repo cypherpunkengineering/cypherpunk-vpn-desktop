@@ -146,6 +146,7 @@ stage-client: client stage-daemon
 define DAEMON_MTREE
 #mtree
 Library/LaunchDaemons/$(DAEMON_NS).plist type=file mode=644
+Library/LaunchDaemons/$(LEASEWATCHER_NS).plist type=file mode=644
 usr/local/cypherpunk type=dir mode=755
 usr/local/cypherpunk/bin type=dir mode=755
 usr/local/cypherpunk/bin/$(DAEMON_FILENAME) type=file mode=755
