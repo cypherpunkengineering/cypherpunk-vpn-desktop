@@ -23,6 +23,7 @@ enum PredefinedFile
 	ConfigFile,
 	AccountFile,
 	SettingsFile,
+	DaemonPortFile,
 #ifdef WIN32
 	TapInstallExecutable,
 #endif
@@ -34,6 +35,7 @@ enum EnsureExistsTag
 };
 
 extern void InitPaths(std::string argv0);
+extern bool IsInstalled();
 extern std::string GetPredefinedFile(PredefinedFile file, EnsureExistsTag ensure_path_exists = DontEnsureExists);
 extern std::string GetPredefinedDirectory(PredefinedDirectory dir);
 extern std::string& EnsurePathExists(std::string& path);

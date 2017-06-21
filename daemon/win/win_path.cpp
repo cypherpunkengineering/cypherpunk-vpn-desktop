@@ -13,6 +13,7 @@ const char PATH_SEPARATOR = '\\';
 std::string g_argv0;
 std::string g_daemon_path;
 std::string g_client_executable;
+bool g_is_installed = true;
 
 static void SimplifyPathInPlace(std::string& path)
 {
@@ -59,10 +60,13 @@ void InitPaths(std::string argv0)
 		wchar_t cwd[MAX_PATH];
 		g_daemon_path = convert<char>(_wgetcwd(cwd, MAX_PATH));
 	}
+	g_is_installed = true;
 	// TODO: Whitelist the client executable by having each connecting client provide their path instead
 	g_client_executable = g_daemon_path + "\\CypherpunkPrivacy.exe";
 	if (!PathFileExists(convert<TCHAR>(g_client_executable).c_str()))
 	{
+		// If CypherpunkPrivacy.exe wasn't in the same directory, we're probably not installed but running a debug build
+		g_is_installed = false;
 #ifdef _DEBUG
 		g_client_executable = SimplifyPath(g_daemon_path + "\\..\\..\\..\\..\\..\\client\\node_modules\\electron\\dist\\electron.exe");
 		if (!PathFileExists(convert<TCHAR>(g_client_executable).c_str()))
@@ -72,6 +76,11 @@ void InitPaths(std::string argv0)
 			LOG(WARNING) << "Client executable not found";
 		}
 	}
+}
+
+bool IsInstalled()
+{
+	return g_is_installed;
 }
 
 std::string GetPredefinedFile(PredefinedFile file, EnsureExistsTag ensure_path_exists)
@@ -84,6 +93,7 @@ std::string GetPredefinedFile(PredefinedFile file, EnsureExistsTag ensure_path_e
 	case ConfigFile: return GetPath(SettingsDir, ensure_path_exists, "config.json");
 	case AccountFile: return GetPath(SettingsDir, ensure_path_exists, "account.json");
 	case SettingsFile: return GetPath(SettingsDir, ensure_path_exists, "settings.json");
+	case DaemonPortFile: return GetPath(BaseDir, "daemon.lock");
 	case TapInstallExecutable: return GetPath(TapDriverDir, ensure_path_exists, "tapinstall.exe");
 	default:
 		LOG(ERROR) << "Unknown file";

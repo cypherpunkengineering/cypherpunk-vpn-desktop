@@ -33,6 +33,11 @@ void InitPaths(std::string argv0)
 	}
 }
 
+bool IsInstalled()
+{
+	return g_is_installed;
+}
+
 std::string GetPredefinedFile(PredefinedFile file, EnsureExistsTag ensure_path_exists)
 {
 	switch (file)
@@ -48,6 +53,7 @@ std::string GetPredefinedFile(PredefinedFile file, EnsureExistsTag ensure_path_e
 	case ConfigFile: return GetPath(SettingsDir, ensure_path_exists, "config.json");
 	case AccountFile: return GetPath(SettingsDir, ensure_path_exists, "account.json");
 	case SettingsFile: return GetPath(SettingsDir, ensure_path_exists, "settings.json");
+	case DaemonPortFile: return g_is_installed ? GetPath(BaseDir, "var", ensure_path_exists, "daemon.lock") : GetPath(g_daemon_path, "daemon.lock");
 	default:
 		LOG(ERROR) << "Unknown file";
 		return std::string();

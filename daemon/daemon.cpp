@@ -32,6 +32,28 @@ unsigned short ServerPingerThinger::_global_sequence_number = 0;
 using namespace std::placeholders;
 
 
+class AutoDeleteFile
+{
+	FILE* _file;
+	std::string _name;
+public:
+	AutoDeleteFile(std::string path, const char* mode) : _file(NULL), _name(std::move(path))
+	{
+		_file = daemon_fopen(_name.c_str(), mode);
+	}
+	~AutoDeleteFile()
+	{
+		if (_file)
+		{
+			unlink(_name.c_str());
+			fclose(_file);
+		}
+	}
+	operator FILE*() const { return _file; }
+	bool operator !() const { return !_file; }
+};
+
+
 CypherDaemon::CypherDaemon()
 	: _rpc_client(_json_handler)
 	, _state(STARTING)
@@ -79,11 +101,6 @@ int CypherDaemon::Run()
 #endif
 	}
 
-	_ws_server.init_asio(&_io);
-	_ws_server.set_reuse_addr(true);
-	_ws_server.listen(asio::ip::tcp::endpoint(asio::ip::address::from_string("127.0.0.1"), 9337));
-	_ws_server.start_accept();
-
 	{
 		auto& d = _dispatcher;
 		d.AddMethod("get", &CypherDaemon::RPC_get, *this);
@@ -106,9 +123,55 @@ int CypherDaemon::Run()
 
 	_connection = std::make_shared<Connection>(_io, this);
 
+	int port;
+	try
+	{
+		_ws_server.init_asio(&_io);
+		_ws_server.set_reuse_addr(true);
+		try
+		{
+			_ws_server.listen(asio::ip::tcp::endpoint(asio::ip::address::from_string("127.0.0.1"), 9337));
+		}
+		catch (...)
+		{
+			// Debug builds can't run on anything but 9337; fail.
+			if (!IsInstalled()) throw;
+
+			// Failed to open default port 9337, use any port instead
+			_ws_server.listen(asio::ip::tcp::endpoint(asio::ip::address::from_string("127.0.0.1"), 0));
+		}
+		_ws_server.start_accept();
+
+		asio::error_code ec;
+		auto endpoint = _ws_server.get_local_endpoint(ec);
+		asio::detail::throw_error(ec, "get_local_endpoint");
+		port = endpoint.port();
+	}
+	catch (const std::exception& e)
+	{
+		LOG(ERROR) << "Unable to open a listening port: " << e;
+		return 1;
+	}
+
+	AutoDeleteFile port_file(GetFile(DaemonPortFile), "w");
+	if (!port_file || fprintf(port_file, "%d", port) < 0)
+	{
+		LOG(ERROR) << "Unable to write port file";
+		return 1;
+	}
+	fflush(port_file);
+	LOG(INFO) << "Listening on port " << port;
+
 	_state = INITIALIZED;
 
-	_ws_server.run(); // internally calls _io.run()
+	try
+	{
+		_ws_server.run(); // internally calls _io.run()
+	}
+	catch (const std::exception& e)
+	{
+		LOG(ERROR) << "Exception thrown in main loop: " << e;
+	}
 
 	return 0;
 }

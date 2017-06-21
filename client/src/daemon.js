@@ -188,8 +188,18 @@ function onpost(method, params) {
 
 // Finally put everything together and export the daemon instance
 
+const DEFAULT_PORT = 9337;
+let port = DEFAULT_PORT;
+if (__dirname.indexOf('/client/app/') < 0) { // installed build
+  let path = (process.platform === 'win32') ? require('path').resolve(app.getPath('exe'), '../daemon.lock') : '/usr/local/cypherpunk/var/daemon.lock';
+  try {
+    port = Number.parseInt(require('fs').readFileSync(path, 'utf8'), 10);
+    port = (port > 0) ? port : DEFAULT_PORT;
+  } catch(e) {}
+}
+
 ws = new WebSocketImpl(WebSocket, {
-  url: 'ws://127.0.0.1:9337/',
+  url: `ws://127.0.0.1:${port}/`,
   onerror: onerror,
   onopen: onopen,
   oncall: oncall,
