@@ -6,8 +6,6 @@ export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin"
 
 LEASEWATCHER_PLIST_PATH="/Library/LaunchDaemons/com.cypherpunk.privacy.leasewatcher.plist"
 
-ARG_RESTORE_ON_DNS_RESET="false"
-
 OSVER="$(sw_vers | grep 'ProductVersion:' | grep -o '10\.[0-9]*')"
 
 trim() {
@@ -107,7 +105,6 @@ scutil <<- EOF
 	d.add PID # ${PPID}
 	d.add Service ${PSID}
 	d.add LeaseWatcherPlistPath "${LEASEWATCHER_PLIST_PATH}"
-	d.add RestoreOnDNSReset   "${ARG_RESTORE_ON_DNS_RESET}"
 	set State:/Network/Cypherpunk
 
 	# First, back up the device's current DNS configurations

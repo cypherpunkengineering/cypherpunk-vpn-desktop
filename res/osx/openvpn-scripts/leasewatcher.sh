@@ -17,8 +17,6 @@ CYPHERPUNK_CONFIG="$( scutil <<-EOF
 EOF
 )"
 
-ARG_RESTORE_ON_DNS_RESET="$(echo "${CYPHERPUNK_CONFIG}" | grep -i '^[[:space:]]*RestoreOnDNSReset :' | sed -e 's/^.*: //g')"
-ARG_RESTORE_ON_WINS_RESET="$(echo "${CYPHERPUNK_CONFIG}" | grep -i '^[[:space:]]*RestoreOnWINSReset :' | sed -e 's/^.*: //g')"
 SCRIPT_LOG_FILE="/tmp/leasewatcher.log"
 PROCESS="$(echo "${CYPHERPUNK_CONFIG}" | grep -i '^[[:space:]]*PID :' | sed -e 's/^.*: //g')"
 PSID="$(echo "${CYPHERPUNK_CONFIG}" | grep -i '^[[:space:]]*Service :' | sed -e 's/^.*: //g')"
@@ -118,22 +116,13 @@ EOF
         echo "${DNS_CHANGES_MSG}" >> "${SCRIPT_LOG_FILE}"
         if [ "${DNS_NOW}" = "${DNS_OLD}" ] ; then
             # DNS changed, but to the pre-VPN settings
-            if ${ARG_RESTORE_ON_DNS_RESET} ; then
-                echo "Restoring the expected DNS settings." >> "${SCRIPT_LOG_FILE}"
-                scutil <<-EOF
-                    open
-                    get State:/Network/Cypherpunk/DNS
-                    set State:/Network/Service/${PSID}/DNS
-                    quit
+            echo "Restoring the expected DNS settings." >> "${SCRIPT_LOG_FILE}"
+            scutil <<-EOF
+                open
+                get State:/Network/Cypherpunk/DNS
+                set State:/Network/Service/${PSID}/DNS
+                quit
 EOF
-            else
-                echo "Sending USR1 to Cypherpunk (process ID ${PROCESS}) to restart the connection." >> "${SCRIPT_LOG_FILE}"
-                # sleep 1 so log message is displayed before we start getting log messages from Cypherpunk about the restart
-                sleep 1
-                kill -USR1 ${PROCESS}
-                # We're done here, so no need to wait around.
-                exit 0
-            fi
         else
             # DNS changed, but not to the pre-VPN settings
             echo "Sending USR1 to Cypherpunk (process ID ${PROCESS}) to restart the connection." >> "${SCRIPT_LOG_FILE}"
