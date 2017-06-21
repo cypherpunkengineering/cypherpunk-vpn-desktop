@@ -11,7 +11,6 @@ CYPHERPUNK_CONFIG="$(/usr/sbin/scutil <<-EOF
 	quit
 EOF
 )"
-ARG_MONITOR_NETWORK_CONFIGURATION="$(echo "${CYPHERPUNK_CONFIG}" | grep -i '^[[:space:]]*MonitorNetwork :' | sed -e 's/^.*: //g')"
 LEASEWATCHER_PLIST_PATH="$(echo "${CYPHERPUNK_CONFIG}" | grep -i '^[[:space:]]*LeaseWatcherPlistPath :' | sed -e 's/^.*: //g')"
 PSID="$(echo "${CYPHERPUNK_CONFIG}" | grep -i '^[[:space:]]*Service :' | sed -e 's/^.*: //g')"
 # Don't need: ARG_RESTORE_ON_DNS_RESET="$(echo "${CYPHERPUNK_CONFIG}" | grep -i '^[[:space:]]*RestoreOnDNSReset :' | sed -e 's/^.*: //g')"
@@ -27,9 +26,7 @@ EOF
 )"
 
 # Remove leasewatcher
-if ${ARG_MONITOR_NETWORK_CONFIGURATION} ; then
-    launchctl unload "${LEASEWATCHER_PLIST_PATH}"
-fi
+launchctl unload "${LEASEWATCHER_PLIST_PATH}"
 
 # Restore configurations
 DNS_OLD="$(/usr/sbin/scutil <<-EOF

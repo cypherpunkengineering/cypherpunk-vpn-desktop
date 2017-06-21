@@ -6,7 +6,6 @@ export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin"
 
 LEASEWATCHER_PLIST_PATH="/Library/LaunchDaemons/com.cypherpunk.privacy.leasewatcher.plist"
 
-ARG_MONITOR_NETWORK_CONFIGURATION="true"
 ARG_RESTORE_ON_DNS_RESET="false"
 
 OSVER="$(sw_vers | grep 'ProductVersion:' | grep -o '10\.[0-9]*')"
@@ -108,7 +107,6 @@ scutil <<- EOF
 	d.add PID # ${PPID}
 	d.add Service ${PSID}
 	d.add LeaseWatcherPlistPath "${LEASEWATCHER_PLIST_PATH}"
-	d.add MonitorNetwork "${ARG_MONITOR_NETWORK_CONFIGURATION}"
 	d.add RestoreOnDNSReset   "${ARG_RESTORE_ON_DNS_RESET}"
 	set State:/Network/Cypherpunk
 
@@ -168,8 +166,6 @@ scutil <<- EOF
 	quit
 EOF
 
-if ${ARG_MONITOR_NETWORK_CONFIGURATION} ; then
-	launchctl load "${LEASEWATCHER_PLIST_PATH}"
-fi
+launchctl load "${LEASEWATCHER_PLIST_PATH}"
 
 exit 0
