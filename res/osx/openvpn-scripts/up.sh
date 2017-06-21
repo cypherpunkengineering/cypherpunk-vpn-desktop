@@ -5,7 +5,6 @@ trap "" INT
 export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin"
 
 LEASEWATCHER_PLIST_PATH="/Library/LaunchDaemons/com.cypherpunk.privacy.leasewatcher.plist"
-REMOVE_LEASEWATCHER_PLIST="false"
 
 ARG_MONITOR_NETWORK_CONFIGURATION="true"
 ARG_RESTORE_ON_DNS_RESET="false"
@@ -109,7 +108,6 @@ scutil <<- EOF
 	d.add PID # ${PPID}
 	d.add Service ${PSID}
 	d.add LeaseWatcherPlistPath "${LEASEWATCHER_PLIST_PATH}"
-	d.add RemoveLeaseWatcherPlist "${REMOVE_LEASEWATCHER_PLIST}"
 	d.add MonitorNetwork "${ARG_MONITOR_NETWORK_CONFIGURATION}"
 	d.add RestoreOnDNSReset   "${ARG_RESTORE_ON_DNS_RESET}"
 	set State:/Network/Cypherpunk
