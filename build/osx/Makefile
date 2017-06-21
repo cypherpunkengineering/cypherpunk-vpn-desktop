@@ -158,7 +158,7 @@ usr/local/cypherpunk/etc/profiles type=dir mode=755
 usr/local/cypherpunk/etc/scripts type=dir mode=755
 $(subst +, ,$(subst $(SP),$(NL),$(patsubst $(ROOT)/res/osx/openvpn-scripts/%,usr/local/cypherpunk/etc/scripts/%+type=file+mode=755,$(OPENVPN_SCRIPTS))))
 usr/local/cypherpunk/var type=dir mode=755
-usr/local/cypherpunk/var/log type=dir mode=755
+usr/local/cypherpunk/var/log type=dir mode=1777
 endef
 export DAEMON_MTREE
 

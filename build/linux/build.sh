@@ -95,7 +95,7 @@ mkdir -p "./${APP_PATH_RELATIVE}/etc/scripts/"
 mkdir -p "./${APP_PATH_RELATIVE}/var/log"
 mkdir -p "./usr/share/applications/"
 
-chmod 777 "./${APP_PATH_RELATIVE}/var/log"
+chmod 1777 "./${APP_PATH_RELATIVE}/var/log"
 touch "./${APP_PATH_RELATIVE}/var/log/.logs"
 
 # get app bundle

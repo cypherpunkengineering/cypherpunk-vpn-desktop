@@ -276,10 +276,10 @@ int main(int argc, char **argv)
 	InitPaths(argc > 0 ? argv[0] : "cypherpunk-privacy-service");
 
 	// Set up logging
-	g_file_logger.Open(GetFile(LogDir, EnsureExists, "daemon.log"));
+	chmod(GetPath(LogDir, EnsureExists).c_str(), 01777); // fix any permission problem
+	g_file_logger.Open(GetFile(LogDir, "daemon.log"));
 	Logger::Push(&g_file_logger);
 	Logger::Push(&g_stderr_logger);
-	chmod(GetPath(LogDir).c_str(), 0777); // fix any permission problem
 
 	// Instantiate the posix version of the daemon
 	g_daemon = new PosixCypherDaemon();
