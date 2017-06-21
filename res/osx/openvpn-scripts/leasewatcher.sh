@@ -27,7 +27,7 @@ PSID="$(echo "${CYPHERPUNK_CONFIG}" | grep -i '^[[:space:]]*Service :' | sed -e 
 # ..._GOOD is the expected (computed) post-VPN value
 
 # wait for network to settle
-sleep 1
+sleep 0.5
 
 if (( M=${PROCESS:-0} )) ; then
     # This is what scutil returns for a non-existant key
@@ -99,17 +99,15 @@ EOF
     NOTHING_DISPLAYED="true"
 	if [ "${DNS_GOOD}" != "${DNS_NOW}" ] ; then
         NOTHING_DISPLAYED="false"
-        echo "$(date '+%a %b %e %T %Y') *Cypherpunk leasewatch: A network configuration change was detected" >> "${SCRIPT_LOG_FILE}"
+        echo "A network configuration change was detected" >> "${SCRIPT_LOG_FILE}"
 
         DNS_CHANGES_MSG="			DNS configuration has changed:
 			--- BEGIN EXPECTED DNS CFG ---
 			${DNS_GOOD}
 			---- END EXPECTED DNS CFG ----
-
 			--- BEGIN CURRENT DNS CFG ---
 			${DNS_NOW}
 			---- END CURRENT DNS CFG ----
-
 			--- BEGIN PRE-VPN DNS CFG ---
 			${DNS_OLD}
 			---- END PRE-VPN DNS CFG ----"
@@ -126,8 +124,8 @@ EOF
         else
             # DNS changed, but not to the pre-VPN settings
             echo "Sending USR1 to Cypherpunk (process ID ${PROCESS}) to restart the connection." >> "${SCRIPT_LOG_FILE}"
-            # sleep 1 so log message is displayed before we start getting log messages from Cypherpunk about the restart
-            sleep 1
+            # sleep so log message is displayed before we start getting log messages from Cypherpunk about the restart
+            sleep 0.2
             kill -USR1 ${PROCESS}
             # We're done here, so no need to wait around.
             exit 0
@@ -135,20 +133,7 @@ EOF
 	fi
 
     if ${NOTHING_DISPLAYED} ; then
-        echo "$(date '+%a %b %e %T %Y') *Cypherpunk leasewatch: A system configuration change was ignored because it was not relevant" >> "${SCRIPT_LOG_FILE}"
-        DNS_CHANGES_MSG="			DNS configuration NOT changed:
-			--- BEGIN EXPECTED DNS CFG ---
-			${DNS_GOOD}
-			---- END EXPECTED DNS CFG ----
-
-			--- BEGIN CURRENT DNS CFG ---
-			${DNS_NOW}
-			---- END CURRENT DNS CFG ----
-
-			--- BEGIN PRE-VPN DNS CFG ---
-			${DNS_OLD}
-			---- END PRE-VPN DNS CFG ----"
-        echo "${DNS_CHANGES_MSG}" >> "${SCRIPT_LOG_FILE}"
+        echo "A system configuration change was ignored because it was not relevant" >> "${SCRIPT_LOG_FILE}"
     fi
 fi
 

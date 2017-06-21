@@ -16,12 +16,20 @@ PSID="$(echo "${CYPHERPUNK_CONFIG}" | grep -i '^[[:space:]]*Service :' | sed -e 
 # Don't need: PROCESS="$(echo "${CYPHERPUNK_CONFIG}" | grep -i '^[[:space:]]*PID :' | sed -e 's/^.*: //g')"
 
 # Issue warning if the primary service ID has changed
-PSID_CURRENT="$( (scutil | grep Service | sed -e 's/.*Service : //')<<- EOF
+# "grep" will return error status (1) if no matches are found, so don't fail if not found
+set +e
+PSID_CURRENT="$( scutil <<-EOF |
 	open
 	show State:/Network/Cypherpunk
 	quit
 EOF
+grep 'Service : ' | sed -e 's/.*Service : //'
 )"
+# resume abort on error
+set -e
+if [ "${PSID}" != "${PSID_CURRENT}" ] ; then
+	echo "down.sh: Ignoring change of Network Primary Service from ${PSID} to ${PSID_CURRENT}"
+fi
 
 # Remove leasewatcher
 launchctl unload "${LEASEWATCHER_PLIST_PATH}"
@@ -65,14 +73,14 @@ EOF
 fi
 
 if [ "${DNS_OLD_SETUP}" = "${CP_NO_SUCH_KEY}" ] ; then
-	echo "DEBUG: Removing 'Setup:' DNS key"
+	echo "down.sh: Removing 'Setup:' DNS key"
 	scutil <<-EOF
 		open
 		remove Setup:/Network/Service/${PSID}/DNS
 		quit
 EOF
 else
-	echo "DEBUG: Restoring 'Setup:' DNS key"
+	echo "down.sh: Restoring 'Setup:' DNS key"
 	scutil <<-EOF
 		open
 		get State:/Network/Cypherpunk/OldDNSSetup
@@ -91,7 +99,7 @@ else
     scutil <<- EOF
         open
         get State:/Network/Cypherpunk/OldSMB
-        set Setup:/Network/Service/${PSID}/SMB
+        set State:/Network/Service/${PSID}/SMB
         quit
 EOF
 fi

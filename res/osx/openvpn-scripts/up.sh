@@ -6,8 +6,6 @@ export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin"
 
 LEASEWATCHER_PLIST_PATH="/Library/LaunchDaemons/com.cypherpunk.privacy.leasewatcher.plist"
 
-OSVER="$(sw_vers | grep 'ProductVersion:' | grep -o '10\.[0-9]*')"
-
 trim() {
 	echo ${@}
 }
@@ -19,7 +17,7 @@ unset vDNS
 unset vOptions
 
 # wait for network to settle
-#sleep 2
+sleep 0.5
 
 while vForOptions=foreign_option_$nOptionIndex; [ -n "${!vForOptions}" ]; do
 	{
@@ -58,31 +56,8 @@ if [ ${#vDNS[*]} -eq 0 ] ; then
 	DYN_DNS="false"
 	ALL_DNS="${STATIC_DNS}"
 elif [ -n "${STATIC_DNS}" ] ; then
-	case "${OSVER}" in
-		10.6 | 10.7 )
-			# Do nothing - in 10.6 we don't aggregate our configurations, apparently
-			DYN_DNS="false"
-			ALL_DNS="${STATIC_DNS}"
-			;;
-		10.4 | 10.5 )
-			DYN_DNS="true"
-			# We need to remove duplicate DNS entries, so that our reference list matches MacOSX's
-			SDNS="$(echo "${STATIC_DNS}" | tr ' ' '\n')"
-			(( i=0 ))
-			for n in "${vDNS[@]}" ; do
-				if echo "${SDNS}" | grep -q "${n}" ; then
-					unset vDNS[${i}]
-				fi
-				(( i++ ))
-			done
-			if [ ${#vDNS[*]} -gt 0 ] ; then
-				ALL_DNS="$(trim "${STATIC_DNS}" "${vDNS[*]}")"
-			else
-				DYN_DNS="false"
-				ALL_DNS="${STATIC_DNS}"
-			fi
-			;;
-	esac
+	DYN_DNS="false"
+	ALL_DNS="${STATIC_DNS}"
 else
 	DYN_DNS="true"
 	ALL_DNS="$(trim "${vDNS[*]}")"
@@ -141,7 +116,7 @@ scutil <<- EOF
 EOF
 
 # wait for settings to propagate
-sleep 1
+sleep 0.5
 
 scutil <<- EOF
 	open

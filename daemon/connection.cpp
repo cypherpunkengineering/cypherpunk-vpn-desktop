@@ -588,8 +588,6 @@ void Connection::DoConnect()
 	args.push_back(GetPath(ScriptsDir, "up.sh"));
 	args.push_back("--down");
 	args.push_back(GetPath(ScriptsDir, "down.sh"));
-	args.push_back("--route-pre-down");
-	args.push_back(GetPath(ScriptsDir, "route-pre-down.sh"));
 #elif OS_LINUX
 	args.push_back("--script-security");
 	args.push_back("2");
