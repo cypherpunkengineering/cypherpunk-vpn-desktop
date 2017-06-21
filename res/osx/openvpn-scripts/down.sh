@@ -4,11 +4,6 @@ trap "" HUP
 trap "" INT
 export PATH="/bin:/sbin:/usr/sbin:/usr/bin"
 
-# Do something only if the server pushed something
-if [ "$foreign_option_1" == "" ]; then
-	exit 0
-fi
-
 # Get info saved by the up script
 CYPHERPUNK_CONFIG="$(/usr/sbin/scutil <<-EOF
 	open
@@ -80,18 +75,18 @@ fi
 
 if [ "${DNS_OLD_SETUP}" = "${CP_NO_SUCH_KEY}" ] ; then
 	if ${bAlsoUsingSetupKeys} ; then
-		logDebugMessage "DEBUG: Removing 'Setup:' DNS key"
+		echo "DEBUG: Removing 'Setup:' DNS key"
 		scutil <<-EOF
 			open
 			remove Setup:/Network/Service/${PSID}/DNS
 			quit
 EOF
 	else
-		logDebugMessage "DEBUG: Not removing 'Setup:' DNS key"
+		echo "DEBUG: Not removing 'Setup:' DNS key"
 	fi
 else
 	if ${bAlsoUsingSetupKeys} ; then
-		logDebugMessage "DEBUG: Restoring 'Setup:' DNS key"
+		echo "DEBUG: Restoring 'Setup:' DNS key"
 		scutil <<-EOF
 			open
 			get State:/Network/Cypherpunk/OldDNSSetup
@@ -99,7 +94,7 @@ else
 			quit
 EOF
 	else
-		logDebugMessage "DEBUG: Not restoring 'Setup:' DNS key"
+		echo "DEBUG: Not restoring 'Setup:' DNS key"
 	fi
 fi
 
