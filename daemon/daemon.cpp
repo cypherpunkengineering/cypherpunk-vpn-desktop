@@ -164,6 +164,8 @@ int CypherDaemon::Run()
 
 	_state = INITIALIZED;
 
+	OnBeforeRun();
+
 	try
 	{
 		_ws_server.run(); // internally calls _io.run()
@@ -172,6 +174,8 @@ int CypherDaemon::Run()
 	{
 		LOG(ERROR) << "Exception thrown in main loop: " << e;
 	}
+
+	OnAfterRun();
 
 	return 0;
 }

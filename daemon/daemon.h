@@ -74,6 +74,9 @@ public:
 	// the daemon or from another thread.
 	virtual void RequestShutdown();
 
+	virtual void OnBeforeRun() {}
+	virtual void OnAfterRun() {}
+
 	virtual void OnOpenVPNCallback(OpenVPNProcess* process, std::string line) override {}
 	virtual void OnConfigChanged(const char* name);
 	virtual void OnAccountChanged(const char* name);

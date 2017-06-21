@@ -60,8 +60,14 @@ public:
 		_signals.add(SIGINT);
 		_signals.add(SIGTERM);		
 		_signals.async_wait(THIS_CALLBACK(OnSignal));
-
+	}
+	virtual void OnBeforeRun() override
+	{
 		firewall_install();
+	}
+	virtual void OnAfterRun() override
+	{
+
 	}
 	virtual int GetAvailablePort(int hint) override
 	{
