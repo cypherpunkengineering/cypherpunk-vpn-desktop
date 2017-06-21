@@ -362,9 +362,13 @@ private:
 		// on failure the child will write an error code back to the parent.
 		status_pipe.write.SetCloseOnExec();
 
+		_io.notify_fork(asio::io_service::fork_prepare);
+
 		pid_t pid = POSIX_CHECK(fork, ());
 		if (pid == 0) // Child
 		{
+			_io.notify_fork(asio::io_service::fork_child);
+
 			try
 			{
 				// Redirect stdin to the read end of stdin_pipe and close the other handles.
@@ -410,6 +414,8 @@ private:
 		}
 		else // Parent
 		{
+			_io.notify_fork(asio::io_service::fork_parent);
+
 			// Close unused ends of standard stream pipes.
 			stdin_pipe.read.Close();
 			stdout_pipe.write.Close();
