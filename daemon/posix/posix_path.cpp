@@ -143,21 +143,38 @@ void WriteFile(const std::string& path, const char* text, size_t length)
 
 FILE* daemon_fopen(const char* filename, const char* mode)
 {
-	FILE* file = fopen(filename, mode);
-	if (file)
+	int flags = O_CLOEXEC | O_NOFOLLOW;
+	if (mode) for (const char* m = mode; *m; m++)
 	{
-		int fd = fileno(file);
-		if (fd != -1)
+		switch (*m)
 		{
-			int flags = fcntl(fd, F_GETFD);
-			if (flags != -1)
-			{
-				// Set the close-on-exec flag on the file so it's not inherited by forked processes
-				fcntl(fd, F_SETFD, flags | FD_CLOEXEC);
-			}
+			case 'r':
+				if (flags & (O_RDONLY | O_WRONLY | O_RDWR)) return NULL;
+				flags |= O_RDONLY;
+				break;
+			case 'w':
+				if (flags & (O_RDONLY | O_WRONLY | O_RDWR)) return NULL;
+				flags |= O_WRONLY | O_CREAT | O_TRUNC;
+				break;
+			case 'a':
+				if (flags & (O_RDONLY | O_WRONLY | O_RDWR)) return NULL;
+				flags |= O_WRONLY | O_CREAT | O_APPEND;
+				break;
+			case '+':
+				if ((flags & (O_RDONLY | O_WRONLY | O_RDWR)) == 0) return NULL;
+				flags &= ~(O_RDONLY | O_WRONLY | O_RDWR);
+				flags |= O_RDWR;
+				break;
+			case 'x':
+				flags |= O_EXCL;
+				break;
 		}
 	}
-	return file;
+
+	int fd = open(filename, flags, 0644);
+	if (fd < 0) return NULL;
+
+	return fdopen(fd, mode);
 }
 
 int daemon_fclose(FILE* file)

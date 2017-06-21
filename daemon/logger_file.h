@@ -65,8 +65,8 @@ public:
 					if (!s)
 					{
 						fflush(f);
-						fseek(_file, 0, SEEK_SET);
-						_file = freopen(_name.c_str(), "w+", _file); // truncate current file
+						daemon_fclose(_file);
+						_file = daemon_fopen(_name.c_str(), "w+");
 						if (_file) fflush(_file);
 					}
 					fclose(f);
