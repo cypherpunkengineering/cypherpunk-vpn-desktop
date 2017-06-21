@@ -2,11 +2,14 @@ const { ipcMain, app } = require('electron');
 const EventEmitter = require('events');
 const { RPC, WebSocketImpl, ERROR_METHOD_NOT_FOUND } = require('./rpc.js');
 const WebSocket = require('ws');
+const { compareVersions } = require('util');
 //const WebSocket = require('websocket').client;
 
 if (!app.isReady()) {
   throw new Error('Initialization order error');
 }
+
+const debugBuild = __dirname.indexOf('/client/app/') >= 0;
 
 var callbacks = {};
 var handlers = {};
@@ -137,7 +140,7 @@ function oncall(method, params, id) {
 function onpost(method, params) {
   if (!isopen) {
     if (method === 'data' && typeof params[0] === 'object' && params[0].hasOwnProperty('version')) {
-      if (params[0].version !== app.getVersion()) {
+      if (params[0].version !== app.getVersion() && (!(debugBuild || args.debug) || compareVersions(params[0].version, app.getVersion()) != 0)) {
         if (connectReject) {
           connectReject(Object.assign(new Error("Daemon version mismatch"), { daemonVersion: params[0].version }));
         } else {
@@ -190,7 +193,7 @@ function onpost(method, params) {
 
 const DEFAULT_PORT = 9337;
 let port = DEFAULT_PORT;
-if (__dirname.indexOf('/client/app/') < 0) { // installed build
+if (!debugBuild) { // installed build
   let path = (process.platform === 'win32') ? require('path').resolve(app.getPath('exe'), '../daemon.lock') : '/usr/local/cypherpunk/var/daemon.lock';
   try {
     port = Number.parseInt(require('fs').readFileSync(path, 'utf8'), 10);
