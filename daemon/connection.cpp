@@ -707,6 +707,10 @@ void Connection::WriteOpenVPNProfile(std::ostream& out)
 		// TODO: one day, redirect ipv6 traffic as well
 		// out << " ipv6";
 		out << endl;
+
+		// for now, null route ipv6 instead
+		out << "ifconfig-ipv6 fd25::1/64 ::1" << endl;
+		out << "route-ipv6 ::/0 ::1" << endl;
 	}
 
 	// Local port setting
