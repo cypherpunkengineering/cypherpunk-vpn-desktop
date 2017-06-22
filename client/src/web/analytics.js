@@ -74,9 +74,9 @@ function cancelQueue() {
   items.forEach(i => i.reject(err));
 }
 
-function send(type, payload) {
+function sendInternal(type, payload) {
   if (Array.isArray(payload)) {
-    return Promise.all(payload.map(p => send(type, p)));
+    return Promise.all(payload.map(p => sendInternal(type, p)));
   } else if (payload && typeof payload === 'object') {
     return new Promise((resolve, reject) => {
       let props = { t: type, v: 1, tid: trackingID, cid: clientID, ds: 'app', an: 'Cypherpunk Privacy', av: version, ul: language };
@@ -97,6 +97,10 @@ function send(type, payload) {
   } else {
     return Promise.reject(new Error("Invalid analytics payload"));
   }
+}
+
+function send(type, payload) {
+  return sendInternal(type, payload).catch(e => undefined);
 }
 
 
