@@ -43,13 +43,7 @@ std::string GetPredefinedFile(PredefinedFile file, EnsureExistsTag ensure_path_e
 	switch (file)
 	{
 	case DaemonExecutable: return g_argv0;
-	case OpenVPNExecutable: return g_is_installed
-		? "/usr/local/cypherpunk/bin/cypherpunk-privacy-openvpn"
-#if OS_LINUX
-		: GetPath(BaseDir, "daemon", "third_party", "openvpn_linux", "64", "openvpn");
-#else
-		: GetPath(BaseDir, "daemon", "third_party", "openvpn_osx", "openvpn");
-#endif
+	case OpenVPNExecutable: return g_is_installed ? GetPath(OpenVPNDir, "cypherpunk-privacy-openvpn") : GetPath(OpenVPNDir, "openvpn");
 	case ConfigFile: return GetPath(SettingsDir, ensure_path_exists, "config.json");
 	case AccountFile: return GetPath(SettingsDir, ensure_path_exists, "account.json");
 	case SettingsFile: return GetPath(SettingsDir, ensure_path_exists, "settings.json");
@@ -65,16 +59,29 @@ std::string GetPredefinedDirectory(PredefinedDirectory dir)
 	switch (dir)
 	{
 	case BaseDir: return g_is_installed ? "/usr/local/cypherpunk" : (g_daemon_path + "/../../..");
+	case ScriptsDir: return g_is_installed
+		? GetPath(BaseDir, "etc", "scripts")
+		: GetPath(BaseDir, "res",
 #if OS_LINUX
-	case ScriptsDir: return g_is_installed ? GetPath(BaseDir, "etc", "scripts") : GetPath(BaseDir, "res", "linux", "openvpn-scripts");
+			"linux", "openvpn-scripts"
 #else
-	case ScriptsDir: return g_is_installed ? GetPath(BaseDir, "etc", "scripts") : GetPath(BaseDir, "res", "osx", "openvpn-scripts");
+			"osx", "openvpn-scripts"
 #endif
+		);
 	case SettingsDir: return g_is_installed ? GetPath(BaseDir, "etc") : g_daemon_path;
 	case LogDir: return g_is_installed ? GetPath(BaseDir, "var", "log") : g_daemon_path;
 	case ProfileDir: return g_is_installed ? GetPath(BaseDir, "etc", "profiles") : g_daemon_path;
+	case OpenVPNDir: return g_is_installed
+		? GetPath(BaseDir, "bin")
+		: GetPath(BaseDir, "daemon", "third_party",
+#if OS_LINUX
+			"openvpn_linux", "64"
+#else
+			"openvpn_osx"
+#endif
+		);
 	default:
-		LOG(ERROR) << "Unknown path";
+		LOG(ERROR) << "Unknown path: " << dir;
 		return std::string();
 	}
 }
