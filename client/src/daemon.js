@@ -2,7 +2,7 @@ const { ipcMain, app } = require('electron');
 const EventEmitter = require('events');
 const { RPC, WebSocketImpl, ERROR_METHOD_NOT_FOUND } = require('./rpc.js');
 const WebSocket = require('ws');
-const { compareVersions } = require('util');
+const { compareVersions } = require('./util.js');
 //const WebSocket = require('websocket').client;
 
 if (!app.isReady()) {
