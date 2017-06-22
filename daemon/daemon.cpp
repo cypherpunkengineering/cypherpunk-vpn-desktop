@@ -194,12 +194,21 @@ void CypherDaemon::RequestShutdown()
 void CypherDaemon::DoShutdown()
 {
 	// 1. Shut down any existing OpenVPN process
+	if (_shouldConnect)
+	{
+		_shouldConnect = false;
+		OnStateChanged(CONNECT);
+	}
 	if (_connection && _connection->GetState() != Connection::DISCONNECTED)
 	{
 		LOG(INFO) << "Killing OpenVPN";
 		_connection->Disconnect();
 		return; // OnConnectionStateChanged will call DoShutdown again
 	}
+	// Give the killswitch one additional chance to notice and disengage,
+	// as it may not have received the CONNECT state change notification.
+	NotifyChanges();
+
 	// 2. Disconnect all clients
 	if (!_connections.empty())
 	{
@@ -211,6 +220,7 @@ void CypherDaemon::DoShutdown()
 		}
 		return; // OnLastClientDisconnected will call DoShutdown again
 	}
+
 	// 3. Finally, kill the message loop
 	LOG(INFO) << "Stopping message loop";
 	if (!_ws_server.stopped())
@@ -284,7 +294,11 @@ void CypherDaemon::OnClientDisconnected(ClientConnection c)
 
 void CypherDaemon::OnLastClientDisconnected()
 {
-	_shouldConnect = false;
+	if (_shouldConnect)
+	{
+		_shouldConnect = false;
+		OnStateChanged(CONNECT);
+	}
 	if (_state == INITIALIZED)
 		_connection->Disconnect();
 
