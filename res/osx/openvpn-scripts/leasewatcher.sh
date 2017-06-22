@@ -22,6 +22,7 @@ EOF
 # parse variables from configuration
 PROCESS="$(echo "${CYPHERPUNK_CONFIG}" | grep -i '^[[:space:]]*PID :' | sed -e 's/^.*: //g')"
 PSID="$(echo "${CYPHERPUNK_CONFIG}" | grep -i '^[[:space:]]*Service :' | sed -e 's/^.*: //g')"
+PSSRC="$(echo "${CYPHERPUNK_CONFIG}" | grep -i '^[[:space:]]*SourceAddress :' | sed -e 's/^.*: //g')"
 
 # if we have a process, get the three DNS configuration values:
 # OLD is the pre-VPN value
@@ -29,33 +30,62 @@ PSID="$(echo "${CYPHERPUNK_CONFIG}" | grep -i '^[[:space:]]*Service :' | sed -e 
 # GOOD is the expected (computed) post-VPN value
 
 # wait for network to settle
-sleep 0.5
+sleep 0.25
+
+# log date of notification
+date >> "${SCRIPT_LOG_FILE}"
+
+# start by assuming ths notification was not relevant
+CHANGE_NOT_RELEVANT="true"
 
 # check if we have a process
 if (( M=${PROCESS:-0} )) ; then
     # scutil return value for a non-existant key
     SCUTIL_NO_SUCH_KEY="  No such key"
 
-    # This is what up.sh stores into State:/Network/Cypherpunk/OldDNS and State:/Network/Cypherpunk/OldSMB for a non-existant key
+    # This is what up.sh stores for a non-existant key
     # DON'T CHANGE the indenting of the 2nd and 3rd lines; they are part of the string:
     CP_NO_SUCH_KEY="<dictionary> {
   CypherpunkNoSuchKey : true
 }"
-	# get the expected value
+
+	# get PS network source address from scutil output
+	PSSRC_NOW="$( (scutil | grep -A 1 Addresses | tail -1 | awk '{print $3}' )<<- EOF
+	open
+	show State:/Network/Service/${PSID}/IPv4
+	quit
+EOF
+)"
+
+    # check if the PSSRC has changed
+	if [ "${PSSRC}" != "${PSSRC_NOW}" ] ; then
+        CHANGE_NOT_RELEVANT="false"
+        echo "The primary network source address change was detected:
+***** Pre-VPN:
+-${PSSRC}-
+***** Currently:
+-${PSSRC_NOW}-" >> "${SCRIPT_LOG_FILE}"
+        # kill openvpn and exit
+        echo "Sending SIGTERM to cypherpunk-privacy-openvpn PID ${PROCESS} to restart the connection" >> "${SCRIPT_LOG_FILE}"
+        kill ${PROCESS}
+        exit 0
+	fi
+
+	# get cypherpunk DNS "state"
 	DNS_GOOD="$(/usr/sbin/scutil <<-EOF
 		open
 		show State:/Network/Cypherpunk/DNS
 		quit
 EOF
 )"
-    # get the pre-VPN value
+    # get pre-cypherpunk DNS "state"
     DNS_OLD="$(/usr/sbin/scutil <<-EOF
         open
         show State:/Network/Cypherpunk/OldDNS
         quit
 EOF
 )"
-	# get the current value
+	# get current DNS "state"
 	DNS_NOW="$(/usr/sbin/scutil <<-EOF
 		open
 		show State:/Network/Global/DNS
@@ -68,19 +98,18 @@ EOF
     fi
 
     # check if the DNS configuration has changed
-    CHANGE_NOT_RELEVANT="true"
 	if [ "${DNS_GOOD}" != "${DNS_NOW}" ] ; then
         CHANGE_NOT_RELEVANT="false"
         echo "A network configuration change was detected" >> "${SCRIPT_LOG_FILE}"
 
 		# print the 3 values to debug log
         DNS_CHANGES_MSG="DNS configuration has changed:
-Expected:
-			${DNS_GOOD}
-Current:
-			${DNS_NOW}
-Pre-VPN:
+***** Pre-VPN:
 			${DNS_OLD}
+***** Post-VPN:
+			${DNS_GOOD}
+***** Currently:
+			${DNS_NOW}
 "
         echo "${DNS_CHANGES_MSG}" >> "${SCRIPT_LOG_FILE}"
 

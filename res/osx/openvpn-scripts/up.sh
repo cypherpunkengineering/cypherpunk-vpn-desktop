@@ -40,6 +40,14 @@ PSID=$( (scutil | grep PrimaryService | sed -e 's/.*PrimaryService : //')<<- EOF
 EOF
 )
 
+# get PS network signature from scutil output
+PSSRC="$( (scutil | grep -A 1 Addresses | tail -1 | awk '{print $3}' )<<- EOF
+	open
+	show State:/Network/Service/${PSID}/IPv4
+	quit
+EOF
+)"
+
 # get DNS from scutil output
 STATIC_DNS_CONFIG="$( (scutil | sed -e 's/^[[:space:]]*[[:digit:]]* : //g' | tr '\n' ' ')<<- EOF
 	open
@@ -89,6 +97,7 @@ scutil <<- EOF
 	# the '#' in the next line is not a comment; it indicates to scutil that a number follows it
 	d.add PID # ${PPID}
 	d.add Service ${PSID}
+	d.add SourceAddress ${PSSRC}
 	d.add LeaseWatcherPlistPath "${LEASEWATCHER_PLIST_PATH}"
 	set State:/Network/Cypherpunk
 
