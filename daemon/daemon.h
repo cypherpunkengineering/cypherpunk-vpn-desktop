@@ -133,7 +133,7 @@ protected:
 
 	asio::io_service _io;
 	WebSocketServer _ws_server;
-	ClientConnectionMap _connections;
+	ClientConnectionList _connections;
 	jsonrpc::JsonFormatHandler _json_handler;
 	JsonRPCDispatcher _dispatcher;
 	JsonRPCClient _rpc_client;
@@ -166,7 +166,6 @@ protected:
 	bool _notify_scheduled;
 	//std::map<std::string, ServerInfo> _servers;
 
-	size_t _valid_client_count;
 	asio::basic_waitable_timer<std::chrono::steady_clock> _ping_timer;
 	std::chrono::steady_clock::time_point _last_ping_round;
 	bool _next_ping_scheduled;

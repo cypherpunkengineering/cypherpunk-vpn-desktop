@@ -60,7 +60,6 @@ CypherDaemon::CypherDaemon()
 	, _shouldConnect(false)
 	, _needsReconnect(false)
 	, _notify_scheduled(false)
-	, _valid_client_count(0)
 	, _ping_timer(_io)
 	, _next_ping_scheduled(false)
 {
@@ -74,15 +73,13 @@ int CypherDaemon::Run()
 	_ws_server.set_message_handler(std::bind(&CypherDaemon::OnReceiveMessage, this, _1, _2));
 	_ws_server.set_open_handler([this](ClientConnection c) {
 		bool first = _connections.empty();
-		_connections.insert(std::make_pair(c, false));
+		_connections.insert(c);
 		if (first) OnFirstClientConnected();
 		OnClientConnected(c);
 	});
 	_ws_server.set_close_handler([this](ClientConnection c) {
 		try
 		{
-			if (_connections.at(c))
-				--_valid_client_count;
 			_connections.erase(c);
 		}
 		catch (...) {}
@@ -163,6 +160,7 @@ int CypherDaemon::Run()
 	LOG(INFO) << "Listening on port " << port;
 
 	_state = INITIALIZED;
+	int result = 0;
 
 	OnBeforeRun();
 
@@ -173,25 +171,47 @@ int CypherDaemon::Run()
 	catch (const std::exception& e)
 	{
 		LOG(ERROR) << "Exception thrown in main loop: " << e;
+		result = 1;
 	}
 
 	OnAfterRun();
 
-	return 0;
+	_state = EXITED;
+
+	return result;
 }
 
 void CypherDaemon::RequestShutdown()
 {
 	if (_state < EXITING)
+	{
 		_state = EXITING;
-	if (_connection->GetState() != Connection::DISCONNECTED)
-		_connection->Disconnect();
-	else
-		_io.post([this]() { DoShutdown(); });
+		OnStateChanged(STATE);
+	}
+	_io.post([this]() { DoShutdown(); });
 }
 
 void CypherDaemon::DoShutdown()
 {
+	// 1. Shut down any existing OpenVPN process
+	if (_connection && _connection->GetState() != Connection::DISCONNECTED)
+	{
+		LOG(INFO) << "Killing OpenVPN";
+		_connection->Disconnect();
+		return; // OnConnectionStateChanged will call DoShutdown again
+	}
+	// 2. Disconnect all clients
+	if (!_connections.empty())
+	{
+		LOG(INFO) << "Disconnecting all clients";
+		for (auto& c : _connections)
+		{
+			_ws_server.pause_reading(c);
+			_ws_server.close(c, websocketpp::close::status::going_away, "");
+		}
+		return; // OnLastClientDisconnected will call DoShutdown again
+	}
+	// 3. Finally, kill the message loop
 	LOG(INFO) << "Stopping message loop";
 	if (!_ws_server.stopped())
 		_ws_server.stop();
@@ -229,8 +249,8 @@ void CypherDaemon::SendToClient(ClientConnection connection, const std::shared_p
 
 void CypherDaemon::SendToAllClients(const std::shared_ptr<jsonrpc::FormattedData>& data)
 {
-	for (const auto& it : _connections)
-		SendToClient(it.first, data);
+	for (auto& c : _connections)
+		SendToClient(c, data);
 }
 
 void CypherDaemon::SendErrorToAllClients(const std::string& name, const std::string& description)
@@ -275,6 +295,9 @@ void CypherDaemon::OnLastClientDisconnected()
 	// the last client disconnects (this also happens above inside OnStateChanged(STATE))
 	if (g_settings.firewall() == "on")
 		ApplyFirewallSettings();
+
+	if (_state == EXITING)
+		_io.post([this]() { DoShutdown(); });
 }
 
 void CypherDaemon::OnReceiveMessage(ClientConnection connection, WebSocketServer::message_ptr msg)
@@ -682,25 +705,6 @@ static inline const T& GetMember(const jsonrpc::Value::Struct& obj, const char* 
 		return default_value;
 	}
 }
-
-/*
-bool CypherDaemon::RPC_setFirewall(const jsonrpc::Value::Struct& params)
-{
-	FirewallFlags flags = Nothing;
-
-	auto mode = GetMember<std::string>(params, "mode", "off");
-	auto allowLAN = GetMember<bool>(params, "allowLAN", true);
-	if (mode != g_settings.killswitchMode() || allowLAN != g_settings.allowLAN())
-	{
-		g_settings.killswitchMode(mode);
-		g_settings.allowLAN(allowLAN);
-		g_settings.OnChanged();
-		ApplyFirewallSettings();
-	}
-
-	return true;
-}
-*/
 
 void CypherDaemon::PingServers()
 {
