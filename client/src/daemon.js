@@ -139,17 +139,25 @@ function oncall(method, params, id) {
 
 function onpost(method, params) {
   if (!isopen) {
-    if (method === 'data' && typeof params[0] === 'object' && params[0].hasOwnProperty('version')) {
-      if (params[0].version !== app.getVersion() && (!(debugBuild || args.debug) || compareVersions(params[0].version, app.getVersion()) != 0)) {
+    let data = params[0];
+    if (method === 'data' &&
+      typeof data === 'object' &&
+      data.hasOwnProperty('account') &&
+      data.hasOwnProperty('config') &&
+      data.hasOwnProperty('settings') &&
+      data.hasOwnProperty('state')) {
+      // Initial handshake sending all the daemon data (probably)
+      if (!data.hasOwnProperty('version') || (data.version !== app.getVersion() && (!(debugBuild || args.debug) || compareVersions(data.version, app.getVersion()) != 0))) {
+        // Version mismatch, or no version property sent (old daemon version)
         if (connectReject) {
-          connectReject(Object.assign(new Error("Daemon version mismatch"), { daemonVersion: params[0].version }));
+          connectReject(Object.assign(new Error("Daemon version mismatch"), { daemonVersion: data.version }));
         } else {
-          daemon.emit('error', { message: "Daemon version mismatch", daemonVersion: params[0].version });
+          daemon.emit('error', { message: "Daemon version mismatch", daemonVersion: data.version });
         }
         daemon.disconnect();
         return;
       }
-      delete params[0].version;
+      delete params[0].version; // Don't include the version field when passing on to rest of app
       isopen = true;
       if (connectResolve) {
         connectResolve();

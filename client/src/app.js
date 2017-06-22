@@ -75,14 +75,14 @@ app.on('will-quit', event => {
 
 let daemonPromise = null;
 
-function connectToDaemon() {
+function connectToDaemon(timeout = 2000) {
   if (!daemon) daemon = require('./daemon.js');
   if (!daemonPromise) {
     daemonPromise = timeoutPromise(Promise.all([
       daemon.connect(),
       eventPromise(daemon, 'up'),
       eventPromise(daemon, 'data'),
-    ]), 10000);
+    ]), timeout);
   }
   return daemonPromise;
 }
