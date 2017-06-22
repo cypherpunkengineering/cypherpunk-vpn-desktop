@@ -359,13 +359,15 @@ export class ConfirmationStep extends Page {
 }
 
 
+const POST_ANALYTICS_STEP = '/main'; // '/tutorial/0';
+
 export class AnalyticsStep extends Page {
   static elements = [ AnalyticsPageBackground ];
   onAllow() {
-    daemon.call.applySettings({ enableAnalytics: true }).then(() => { analytics.activate(); History.push('/tutorial/0'); });
+    daemon.call.applySettings({ enableAnalytics: true }).then(() => { analytics.activate(); History.push(POST_ANALYTICS_STEP); });
   }
   onDisallow() {
-    daemon.call.applySettings({ enableAnalytics: false }).then(() => History.push('/tutorial/0'));
+    daemon.call.applySettings({ enableAnalytics: false }).then(() => History.push(POST_ANALYTICS_STEP));
   }
   render() {
     return (
