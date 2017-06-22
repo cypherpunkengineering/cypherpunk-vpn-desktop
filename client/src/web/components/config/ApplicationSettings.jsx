@@ -7,23 +7,29 @@ import analytics from '../../analytics';
 
 import { CheckboxSetting, LinkSetting, InputSetting } from './Settings';
 
-export default class ApplicationSettings extends React.Component {
-  constructor(props) {
-    super(props);
-    this.listeners = {
-      autostart: (event, enabled) => this.onAutoStartSettingChanged(enabled),
-    };
+let autostartEnabled = false;
+let autostartListeners = [];
+
+ipc.on('autostart-value', (event, enabled) => {
+  autostartEnabled = enabled;
+  for (let listener of autostartListeners) {
+    if (listener.onAutoStartSettingChanged) listener.onAutoStartSettingChanged(enabled);
   }
+});
+
+
+export default class ApplicationSettings extends React.Component {
   componentWillMount() {
-    ipc.on('autostart-value', this.listeners.autostart);
-    ipc.send('autostart-get');
+    ipc.send('autostart-get'); // refresh autostart value
   }
   componentDidMount() {
     var self = this;
     $(this.refs.runOnStartup).checkbox({ onChange: function() { self.onAutoStartSettingClicked(this.checked); } });
+    this.onAutoStartSettingChanged(autostartEnabled);
+    autostartListeners.push(this);
   }
   componentWillUnmount() {
-    ipc.removeListener('autostart-value', this.listeners.autostart);
+    autostartListeners = autostartListeners.filter(l => l !== this);
   }
   onAutoStartSettingChanged(enabled) {
     $(this.refs.runOnStartup).checkbox('set ' + (enabled ? 'checked' : enabled === null ? 'indeterminate' : 'unchecked'));
