@@ -4,20 +4,28 @@ trap "" HUP
 trap "" INT
 export PATH="/bin:/sbin:/usr/sbin:/usr/bin"
 
-# Get info saved by the up script
+# check if configuration is present
+if ! scutil -w State:/Network/Cypherpunk &>/dev/null -t 1 ; then
+	# if not, don't do anything
+	exit 0
+fi
+
+# get saved configuration
 CYPHERPUNK_CONFIG="$(/usr/sbin/scutil <<-EOF
 	open
 	show State:/Network/Cypherpunk
 	quit
 EOF
 )"
+
+# parse variables from configuration
 LEASEWATCHER_PLIST_PATH="$(echo "${CYPHERPUNK_CONFIG}" | grep -i '^[[:space:]]*LeaseWatcherPlistPath :' | sed -e 's/^.*: //g')"
 PSID="$(echo "${CYPHERPUNK_CONFIG}" | grep -i '^[[:space:]]*Service :' | sed -e 's/^.*: //g')"
-# Don't need: PROCESS="$(echo "${CYPHERPUNK_CONFIG}" | grep -i '^[[:space:]]*PID :' | sed -e 's/^.*: //g')"
 
-# Issue warning if the primary service ID has changed
 # "grep" will return error status (1) if no matches are found, so don't fail if not found
 set +e
+
+# parse current PSID
 PSID_CURRENT="$( scutil <<-EOF |
 	open
 	show State:/Network/Cypherpunk
@@ -25,16 +33,19 @@ PSID_CURRENT="$( scutil <<-EOF |
 EOF
 grep 'Service : ' | sed -e 's/.*Service : //'
 )"
+
 # resume abort on error
 set -e
+
+# log a warning if the primary service ID has changed
 if [ "${PSID}" != "${PSID_CURRENT}" ] ; then
-	echo "down.sh: Ignoring change of Network Primary Service from ${PSID} to ${PSID_CURRENT}"
+	echo "down.sh: ignoring change of network primary service from ${PSID} to ${PSID_CURRENT}"
 fi
 
-# Remove leasewatcher
+# unload leasewatcher plist
 launchctl unload "${LEASEWATCHER_PLIST_PATH}"
 
-# Restore configurations
+# get previously saved DNS and SMB configurations
 DNS_OLD="$(/usr/sbin/scutil <<-EOF
     open
     show State:/Network/Cypherpunk/OldDNS
@@ -57,12 +68,14 @@ CP_NO_SUCH_KEY="<dictionary> {
   CypherpunkNoSuchKey : true
 }"
 
+# if DNS "state" was empty, remove empty tag
 if [ "${DNS_OLD}" = "${CP_NO_SUCH_KEY}" ] ; then
     scutil <<- EOF
         open
         remove State:/Network/Service/${PSID}/DNS
         quit
 EOF
+# otherwise, restore the old DNS "state"
 else
     scutil <<- EOF
         open
@@ -72,6 +85,7 @@ else
 EOF
 fi
 
+# if DNS "setup" was empty, remove empty tag
 if [ "${DNS_OLD_SETUP}" = "${CP_NO_SUCH_KEY}" ] ; then
 	echo "down.sh: Removing 'Setup:' DNS key"
 	scutil <<-EOF
@@ -79,6 +93,8 @@ if [ "${DNS_OLD_SETUP}" = "${CP_NO_SUCH_KEY}" ] ; then
 		remove Setup:/Network/Service/${PSID}/DNS
 		quit
 EOF
+
+# otherwise, restore the old DNS "setup"
 else
 	echo "down.sh: Restoring 'Setup:' DNS key"
 	scutil <<-EOF
@@ -89,12 +105,14 @@ else
 EOF
 fi
 
+# if SMB "state" was empty, remove empty tag
 if [ "${SMB_OLD}" = "${CP_NO_SUCH_KEY}" ] ; then
     scutil <<- EOF
         open
         remove State:/Network/Service/${PSID}/SMB
         quit
 EOF
+# otherwise, restore the old SMB "state"
 else
     scutil <<- EOF
         open
@@ -104,7 +122,7 @@ else
 EOF
 fi
 
-# Remove our system configuration data
+# cleanup cypherpunk configuration values
 scutil <<- EOF
 	open
 	remove State:/Network/Cypherpunk/SMB
@@ -116,4 +134,5 @@ scutil <<- EOF
 	quit
 EOF
 
+# done
 exit 0

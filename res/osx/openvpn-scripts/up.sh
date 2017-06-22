@@ -32,6 +32,7 @@ while vForOptions=foreign_option_$nOptionIndex; [ -n "${!vForOptions}" ]; do
 	}
 done
 
+# get PSID from scutil output
 PSID=$( (scutil | grep PrimaryService | sed -e 's/.*PrimaryService : //')<<- EOF
 	open
 	show State:/Network/Global/IPv4
@@ -39,19 +40,25 @@ PSID=$( (scutil | grep PrimaryService | sed -e 's/.*PrimaryService : //')<<- EOF
 EOF
 )
 
+# get DNS from scutil output
 STATIC_DNS_CONFIG="$( (scutil | sed -e 's/^[[:space:]]*[[:digit:]]* : //g' | tr '\n' ' ')<<- EOF
 	open
 	show Setup:/Network/Service/${PSID}/DNS
 	quit
 EOF
 )"
+
+# check if static DNS servers are configured
 if echo "${STATIC_DNS_CONFIG}" | grep -q "ServerAddresses" ; then
 	readonly STATIC_DNS="$(trim "$( echo "${STATIC_DNS_CONFIG}" | sed -e 's/^.*ServerAddresses[^{]*{[[:space:]]*\([^}]*\)[[:space:]]*}.*$/\1/g' )")"
 fi
+
+# check if static DNS search domains are configured
 if echo "${STATIC_DNS_CONFIG}" | grep -q "SearchDomains" ; then
 	readonly STATIC_SEARCH="$(trim "$( echo "${STATIC_DNS_CONFIG}" | sed -e 's/^.*SearchDomains[^{]*{[[:space:]]*\([^}]*\)[[:space:]]*}.*$/\1/g' )")"
 fi
 
+# evaluate to use static DNS or dynamic DNS
 if [ ${#vDNS[*]} -eq 0 ] ; then
 	DYN_DNS="false"
 	ALL_DNS="${STATIC_DNS}"
@@ -64,6 +71,7 @@ else
 fi
 readonly DYN_DNS ALL_DNS
 
+# comment out lines below depending on above logic
 if ! ${DYN_DNS} ; then
 	NO_DNS="#"
 fi
@@ -71,64 +79,76 @@ if [ -z "${ALL_DNS}" ] ; then
 	AGG_DNS="#"
 fi
 
+# first scutil configuration
 scutil <<- EOF
 	open
 
-	# Store our variables for the other scripts (leasewatch, down, etc.) to use
+##### store cypherpunk variables for other scripts (leasewatch, down, etc.) to use
+
 	d.init
-	# The '#' in the next line does NOT start a comment; it indicates to scutil that a number follows it (as opposed to a string or an array)
+	# the '#' in the next line is not a comment; it indicates to scutil that a number follows it
 	d.add PID # ${PPID}
 	d.add Service ${PSID}
 	d.add LeaseWatcherPlistPath "${LEASEWATCHER_PLIST_PATH}"
 	set State:/Network/Cypherpunk
 
-	# First, back up the device's current DNS configurations
+##### backup the current DNS configurations
+
 	# Indicate 'no such key' by a dictionary with a single entry: "CypherpunkNoSuchKey : true"
 	# If there isn't a key, "CypherpunkNoSuchKey : true" won't be removed.
 	# If there is a key, "CypherpunkNoSuchKey : true" will be removed and the key's contents will be used
+
+	# backup DNS "state"
 	d.init
 	d.add CypherpunkNoSuchKey true
 	get State:/Network/Service/${PSID}/DNS
 	set State:/Network/Cypherpunk/OldDNS
 
+	# backup DNS "setup"
 	d.init
 	d.add CypherpunkNoSuchKey true
 	get Setup:/Network/Service/${PSID}/DNS
 	set State:/Network/Cypherpunk/OldDNSSetup
 
+	# backup SMB "state"
 	d.init
 	d.add CypherpunkNoSuchKey true
 	get State:/Network/Service/${PSID}/SMB
 	set State:/Network/Cypherpunk/OldSMB
 
-	# Second, initialize the new DNS map
+##### set the cypherpunk VPN provided DNS configuration
+
+	# set DNS "state"
 	d.init
 	${NO_DNS}d.add ServerAddresses * ${vDNS[*]}
 	set State:/Network/Service/${PSID}/DNS
 
-	# set the Setup: as well
+	# set DNS "setup"
 	d.init
 	${NO_DNS}d.add ServerAddresses * ${vDNS[*]}
 	set Setup:/Network/Service/${PSID}/DNS
 
-	# We're done
+	# done
 	quit
 EOF
 
-# wait for settings to propagate
-sleep 0.5
+# wait for settings to propagate to "Global"
+sleep 0.25
 
+# second scutil configuration
 scutil <<- EOF
 	open
 
-	# Now, initialize the maps that will be compared against the system-generated map
-	# which means that we will have to aggregate configurations of statically-configured
-	# nameservers
+##### store values for leasewatcher/down to compare against
+##### remember to aggregate configurations of statically-configured nameservers later
+
+	# set the DNS map
 	d.init
 	d.add CypherpunkNoSuchKey true
 	get State:/Network/Global/DNS
 	set State:/Network/Cypherpunk/DNS
 
+	# set the SMB map
 	d.init
 	d.add CypherpunkNoSuchKey true
 	get State:/Network/Global/SMB
@@ -138,6 +158,7 @@ scutil <<- EOF
 	quit
 EOF
 
+# load leasewatcher plist
 launchctl load "${LEASEWATCHER_PLIST_PATH}"
 
 exit 0
