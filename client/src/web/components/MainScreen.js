@@ -16,8 +16,11 @@ import LocationList, { Location, CypherPlayItem } from './LocationList';
 import { Panel, PanelContent, PanelOverlay } from './Panel';
 
 
+const CACHED_COORDINATES = {
+  'cypherplay': { lat: 30, long: 0, scale: 0.5 },
+};
+
 const GPS = {
-  'cypherplay': { lat: -30, long: 0, scale: 0.5 },
   'amsterdam': { lat: -52.3702, long: 4.8952, scale: 1.5 },
   'atlanta': { lat: -33.7490, long: -84.3880, scale: 1 },
   'chennai': { lat: -13.0827, long: 80.2707, scale: 1 },
@@ -246,7 +249,7 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
           <Link className="left account page-link" to={panelOpen?"/main":"/account"} tabIndex={tabIndex} data-tooltip="My Account" data-position="bottom left"><RetinaImage src={AccountIcon}/></Link>
           <Link className="right settings page-link" to={panelOpen?"/main":"/configuration"} tabIndex={tabIndex} data-tooltip="Configuration" data-position="bottom right"><i className="settings icon"/></Link>
 
-          <WorldMap locations={GPS} location={this.state.locationListOpen && this.state.mapLocation || (this.state.locationFlag === 'cypherplay' ? 'cypherplay' : this.state.location)} className={classList({ "side": this.state.locationListOpen })}/>
+          <WorldMap locations={Object.assign(CACHED_COORDINATES, this.state.locations)} location={this.state.locationListOpen && this.state.mapLocation || (this.state.locationFlag === 'cypherplay' ? 'cypherplay' : this.state.location)} className={classList({ "side": this.state.locationListOpen })}/>
 
           <LocationList
             open={this.state.locationListOpen}

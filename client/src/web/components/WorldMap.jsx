@@ -36,8 +36,8 @@ vanDerGrinten3Raw.invert = function(x, y) {
   ];
 };
 
-function transformToXY(lat, long) {
-  var coords = vanDerGrinten3Raw((long - LONG_OFFSET) * pi / 180, lat * pi / 180);
+function transformToXY(lat, lon) {
+  var coords = vanDerGrinten3Raw((lon - LONG_OFFSET) * pi / 180, -lat * pi / 180);
   coords[0] = (coords[0] * 150 + (920 / 2)) * (MAP_SIZE / 920);
   coords[1] = (coords[1] * 150 + (500 / 2 + 500 * 0.15)) * (MAP_SIZE / 920);
   return coords;
@@ -51,7 +51,7 @@ function transformToLatLong(x, y) {
 export class WorldMap extends React.Component {
   static defaultProps = {
     lat: 0,
-    long: 0,
+    lon: 0,
     scale: 1,
     location: null,
     locations: {},
@@ -74,9 +74,9 @@ export class WorldMap extends React.Component {
     if (locations) {
       for (let id of Object.keys(locations)) {
         let loc = locations[id];
-        if (!loc.hasOwnProperty('lat') || !loc.hasOwnProperty('long'))
+        if (!loc.hasOwnProperty('lat') || !loc.hasOwnProperty('lon'))
           continue;
-        let [ x, y ] = transformToXY(loc.lat, loc.long);
+        let [ x, y ] = transformToXY(loc.lat, loc.lon);
         locs[id] = { x, y, scale: loc.scale || 1 };
       }
     }
@@ -84,8 +84,8 @@ export class WorldMap extends React.Component {
   }
   translateLocation(props, state) {
     if (!state) state = {};
-    var { lat = null, long = null, scale = 1.0 } = (props.locations && props.location) ? props.locations[props.location] || {} : props;
-    var [ x, y ] = (lat !== null && long !== null) ? transformToXY(lat, long) : [ null, null ];
+    var { lat = null, lon = null, scale = 1.0 } = (props.locations && props.location) ? props.locations[props.location] || {} : props;
+    var [ x, y ] = (lat !== null && lon !== null) ? transformToXY(lat, lon) : [ null, null ];
     state.x = x;
     state.y = y;
     state.scale = scale;
@@ -97,7 +97,7 @@ export class WorldMap extends React.Component {
       state.locations = this.translateLocations(props.locations);
       update = true;
     }
-    if (props.location !== this.props.location || (!props.location && (props.lat !== this.props.lat || props.long !== this.props.long || props.scale !== this.props.scale))) {
+    if (props.location !== this.props.location || (!props.location && (props.lat !== this.props.lat || props.lon !== this.props.lon || props.scale !== this.props.scale))) {
       this.translateLocation(props, state);
       update = true;
     }
