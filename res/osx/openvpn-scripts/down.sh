@@ -4,6 +4,15 @@ trap "" HUP
 trap "" INT
 export PATH="/bin:/sbin:/usr/sbin:/usr/bin"
 
+flushDNSCache()
+{
+	set +e
+	/usr/bin/dscacheutil -flushcache 2>/dev/null
+	/usr/sbin/discoveryutil udnsflushcaches 2>/dev/null
+	/usr/sbin/discoveryutil mdnsflushcache 2>/dev/null
+	set -e
+}
+
 # check if configuration is present
 if ! scutil -w State:/Network/Cypherpunk &>/dev/null -t 1 ; then
 	# if not, don't do anything
@@ -125,6 +134,9 @@ if [ "${USE_CYPHERPUNK_DNS}" = "true" ];then
 			quit
 	EOF
 	fi
+
+	# flush DNS cache
+	flushDNSCache
 fi
 
 # cleanup cypherpunk configuration values

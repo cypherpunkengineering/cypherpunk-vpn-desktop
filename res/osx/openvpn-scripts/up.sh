@@ -10,6 +10,15 @@ trim() {
 	echo ${@}
 }
 
+flushDNSCache()
+{
+	set +e
+	/usr/bin/dscacheutil -flushcache 2>/dev/null
+	/usr/sbin/discoveryutil udnsflushcaches 2>/dev/null
+	/usr/sbin/discoveryutil mdnsflushcache 2>/dev/null
+	set -e
+}
+
 # check if DNS servers were provided via OpenVPN variables
 if [ "$foreign_option_1" == "" ]; then
 	USE_CYPHERPUNK_DNS="false"
@@ -162,6 +171,9 @@ if [ "${USE_CYPHERPUNK_DNS}" = "true" ];then
 
 	# wait for settings to propagate to "Global"
 	sleep 0.2
+
+	# flush DNS cache so it uses new settings
+	flushDNSCache
 
 	# third scutil configuration
 	scutil <<- EOF
