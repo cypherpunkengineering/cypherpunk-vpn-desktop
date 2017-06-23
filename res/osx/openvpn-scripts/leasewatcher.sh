@@ -30,9 +30,6 @@ USE_CYPHERPUNK_DNS="$(echo "${CYPHERPUNK_CONFIG}" | grep -i '^[[:space:]]*UseCyp
 # NOW is the current value
 # GOOD is the expected (computed) post-VPN value
 
-# wait for network to settle
-sleep 0.2
-
 # log date of notification
 date >> "${SCRIPT_LOG_FILE}"
 
