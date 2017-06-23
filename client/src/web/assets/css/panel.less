@@ -307,8 +307,9 @@
         > * {
           //flex-grow: 1;
         }
-        label {
+        label, .ui.checkbox input ~ label {
           cursor: pointer;
+          color: inherit !important;
         }
 
         > a, > .text {
@@ -467,10 +468,9 @@
           pointer-events: none !important;
           > * {
             opacity: 0.3;
-          }
-          label {
-            color: inherit !important;
-            opacity: 1;
+            label {
+              opacity: 1;
+            }
           }
         }
         &.inert {
@@ -535,7 +535,8 @@
         }
 
         &.advanced {
-          background-color: rgba(0,0,0,0.2);
+          background-color: rgba(64,48,0,0.2);
+          color: rgba(240,240,220,0.75);
           > a, > .ui.checkbox > label {
             margin-left: 10px !important;
           }
@@ -552,6 +553,7 @@
             background-image: repeating-linear-gradient(45deg, #fb0 0px, #fb0 5px, transparent 5px, transparent 10px);
             background-origin: border-box;
             border: 1px outset rgba(0,0,0,0.5);
+            border-top: 1px solid rgba(255,255,255,0.25);
             opacity: 0.6;
             z-index: 1;
           }
