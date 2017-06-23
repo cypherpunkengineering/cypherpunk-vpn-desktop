@@ -438,6 +438,28 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
       font-size: 16px;
       text-transform: uppercase;
     }
+    .killswitch-warning {
+      [data-tooltip] {
+        display: inline-block;
+        width: 25px;
+        margin-right: -25px;
+        text-align: center;
+        color: #fd6;
+        &:before {
+          right: 7px;
+          top: auto;
+          bottom: -17px;
+        }
+        &:after {
+          position: fixed;
+          right: 25px;
+          left: 25px;
+          top: initial;
+          margin-top: 29px;
+          white-space: normal;
+        }
+      }
+    }
     .fadeInTransition(0.5s, ease-in, 0.3s);
     &.hidden { .fadeOutTransition(0.5s, ease-out); }
   }

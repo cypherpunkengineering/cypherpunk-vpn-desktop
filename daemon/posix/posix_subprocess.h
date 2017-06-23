@@ -352,6 +352,9 @@ private:
 	}
 	void RunInternal(const char* executable, const char* const* args, const char* cwd, const char* const* env, unsigned int flags)
 	{
+		LOG(INFO) << "Executable: " << executable;
+		LOG(INFO) << "Directory: " << cwd;
+
 		PosixPipe stdin_pipe;
 		PosixPipe stdout_pipe;
 		PosixPipe stderr_pipe;

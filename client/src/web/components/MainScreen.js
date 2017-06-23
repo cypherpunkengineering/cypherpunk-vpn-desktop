@@ -214,7 +214,7 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
     super(props);
     this.daemonSubscribeState({
       config: { locations: true, regions: true, countryNames: true, regionNames: true, regionOrder: true },
-      settings: { location: true, locationFlag: true, favorites: v => ({ favorites: Array.toDict(v, f => f, f => true) }), lastConnected: true, overrideDNS: true },
+      settings: { location: true, locationFlag: true, favorites: v => ({ favorites: Array.toDict(v, f => f, f => true) }), lastConnected: true, overrideDNS: true, firewall: true },
       state: { state: v => ({ state: v, connectionState: simplifyConnectionState(v) }), connect: true, pingStats: true, bytesReceived: true, bytesSent: true },
     });
   }
@@ -239,6 +239,10 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
   render() {
     let panelOpen = !!this.props.children;
     let tabIndex = panelOpen ? "-1" : "0";
+    let connectionStatus = describeConnectionState(this.state.state);
+    if (this.state.state === 'DISCONNECTED' && this.state.firewall === 'on') {
+      connectionStatus = <span className="killswitch-warning">Killswitch Active <Link to="/configuration/firewall" data-tooltip="In order to preserve your privacy, your computer is being prevented from connecting to the internet. To regain connectivity, click here to access your settings." data-position="bottom right"><i class="info circle fitted icon"/></Link></span>;
+    }
     return(
       <Panel id="main-screen-container" transition={getTransition}>
         <ReconnectButton key="reconnect"/>
@@ -268,7 +272,7 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
 
           <div className={classList("connect-status", { "hidden": this.state.locationListOpen })}>
             <span>Status</span>
-            <span>{describeConnectionState(this.state.state)}</span>
+            <span>{connectionStatus}</span>
           </div>
 
           <div className={classList("location-selector", { "hidden": this.state.locationListOpen })} onClick={() => this.setState({ locationListOpen: true, locationListSelection: this.state.connect && (this.state.locationFlag === 'cypherplay' ? 'cypherplay' : this.state.location) || null })}>
