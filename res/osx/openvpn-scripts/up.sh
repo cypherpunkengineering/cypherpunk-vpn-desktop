@@ -200,6 +200,9 @@ if [ "${USE_CYPHERPUNK_DNS}" = "true" ];then
 fi
 
 # finally, load leasewatcher plist
-launchctl load "${LEASEWATCHER_PLIST_PATH}"
+if [[ $0 == /usr/local/cypherpunk/* ]] ;
+then
+	launchctl load "${LEASEWATCHER_PLIST_PATH}"
+fi
 
 exit 0

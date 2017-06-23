@@ -53,7 +53,7 @@ if [ "${PSID}" != "${PSID_CURRENT}" ] ; then
 fi
 
 # unload leasewatcher plist
-launchctl unload "${LEASEWATCHER_PLIST_PATH}"
+launchctl unload "${LEASEWATCHER_PLIST_PATH}" || true
 
 # don't modify the indentation below
 CP_NO_SUCH_KEY="<dictionary> {
