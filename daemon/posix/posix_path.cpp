@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <limits.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
 #include <system_error>
 #include <fcntl.h>
@@ -30,6 +31,14 @@ void InitPaths(std::string argv0)
 	{
 		char cwd[PATH_MAX];
 		g_daemon_path = getcwd(cwd, PATH_MAX);
+	}
+	if (!g_daemon_path.empty() && g_daemon_path[0])
+	{
+		if (char* real = realpath(g_daemon_path.c_str(), NULL))
+		{
+			g_daemon_path = real;
+			free(real);
+		}
 	}
 }
 
