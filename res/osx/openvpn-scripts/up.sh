@@ -10,15 +10,20 @@ trim() {
 	echo ${@}
 }
 
+# don't touch any DNS settings if no DNS servers are provided from OpenVPN
+if [ "$foreign_option_1" == "" ]; then
+	exit 0
+fi
+
+# wait for network to settle
+sleep 0.5
+
+# parse DNS servers from OpenVPN's foreign_option_* variables
 nOptionIndex=1
 nNameServerIndex=1
 unset vForOptions
 unset vDNS
 unset vOptions
-
-# wait for network to settle
-sleep 0.5
-
 while vForOptions=foreign_option_$nOptionIndex; [ -n "${!vForOptions}" ]; do
 	{
 	vOptions[nOptionIndex-1]=${!vForOptions}
@@ -40,7 +45,7 @@ PSID=$( (scutil | grep PrimaryService | sed -e 's/.*PrimaryService : //')<<- EOF
 EOF
 )
 
-# get PS network signature from scutil output
+# get PS source address from scutil output
 PSSRC="$( (scutil | grep -A 1 Addresses | tail -1 | awk '{print $3}' )<<- EOF
 	open
 	show State:/Network/Service/${PSID}/IPv4
