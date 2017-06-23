@@ -41,12 +41,12 @@ CHANGE_NOT_RELEVANT="true"
 
 # check if we have a process
 if (( M=${PROCESS:-0} )) ; then
-    # scutil return value for a non-existant key
-    SCUTIL_NO_SUCH_KEY="  No such key"
+	# scutil return value for a non-existant key
+	SCUTIL_NO_SUCH_KEY="  No such key"
 
-    # This is what up.sh stores for a non-existant key
-    # DON'T CHANGE the indenting of the 2nd and 3rd lines; they are part of the string:
-    CP_NO_SUCH_KEY="<dictionary> {
+	# This is what up.sh stores for a non-existant key
+	# DON'T CHANGE the indenting of the 2nd and 3rd lines; they are part of the string:
+	CP_NO_SUCH_KEY="<dictionary> {
   CypherpunkNoSuchKey : true
 }"
 
@@ -58,18 +58,18 @@ if (( M=${PROCESS:-0} )) ; then
 EOF
 )"
 
-    # check if the PSSRC has changed
+	# check if the PSSRC has changed
 	if [ "${PSSRC}" != "${PSSRC_NOW}" ] ; then
-        CHANGE_NOT_RELEVANT="false"
-        echo "The primary network source address change was detected:
+		CHANGE_NOT_RELEVANT="false"
+		echo "The primary network source address change was detected:
 ***** Pre-VPN:
 -${PSSRC}-
 ***** Currently:
 -${PSSRC_NOW}-" >> "${SCRIPT_LOG_FILE}"
-        # kill openvpn and exit
-        echo "Sending SIGTERM to cypherpunk-privacy-openvpn PID ${PROCESS} to restart the connection" >> "${SCRIPT_LOG_FILE}"
-        kill ${PROCESS}
-        exit 0
+		# kill openvpn and exit
+		echo "Sending SIGTERM to cypherpunk-privacy-openvpn PID ${PROCESS} to restart the connection" >> "${SCRIPT_LOG_FILE}"
+		kill ${PROCESS}
+		exit 0
 	fi
 
 	if [ "${USE_CYPHERPUNK_DNS}" = "true" ];then
@@ -80,11 +80,11 @@ EOF
 			quit
 		EOF
 		)"
-	    # get pre-cypherpunk DNS "state"
-	    DNS_OLD="$(/usr/sbin/scutil <<-EOF
-	        open
-	        show State:/Network/Cypherpunk/OldDNS
-	        quit
+		# get pre-cypherpunk DNS "state"
+		DNS_OLD="$(/usr/sbin/scutil <<-EOF
+			open
+			show State:/Network/Cypherpunk/OldDNS
+			quit
 		EOF
 		)"
 		# get current DNS "state"
@@ -94,18 +94,18 @@ EOF
 			quit
 		EOF
 		)"
-	    # if there is no such key, normalize the value
+		# if there is no such key, normalize the value
 		if [ "${DNS_NOW}" = "${SCUTIL_NO_SUCH_KEY}" ] ; then
-	        DNS_NOW="${CP_NO_SUCH_KEY}"
-	    fi
+			DNS_NOW="${CP_NO_SUCH_KEY}"
+		fi
 
-	    # check if the DNS configuration has changed
+		# check if the DNS configuration has changed
 		if [ "${DNS_GOOD}" != "${DNS_NOW}" ] ; then
-	        CHANGE_NOT_RELEVANT="false"
-	        echo "A network configuration change was detected" >> "${SCRIPT_LOG_FILE}"
+			CHANGE_NOT_RELEVANT="false"
+			echo "A network configuration change was detected" >> "${SCRIPT_LOG_FILE}"
 
 			# print the 3 values to debug log
-	        DNS_CHANGES_MSG="DNS configuration has changed:
+			DNS_CHANGES_MSG="DNS configuration has changed:
 	***** Pre-VPN:
 				${DNS_OLD}
 	***** Post-VPN:
@@ -113,32 +113,32 @@ EOF
 	***** Currently:
 				${DNS_NOW}
 	"
-	        echo "${DNS_CHANGES_MSG}" >> "${SCRIPT_LOG_FILE}"
+			echo "${DNS_CHANGES_MSG}" >> "${SCRIPT_LOG_FILE}"
 
 			# if DNS changed to the pre-VPN value, restore to the post-VPN value
-	        if [ "${DNS_NOW}" = "${DNS_OLD}" ] ; then
-	            # it changed to the pre-VPN value
-	            echo "Restoring DNS settings to the post-VPN value" >> "${SCRIPT_LOG_FILE}"
-	            scutil <<-EOF
-	                open
-	                get State:/Network/Cypherpunk/DNS
-	                set State:/Network/Service/${PSID}/DNS
-	                quit
+			if [ "${DNS_NOW}" = "${DNS_OLD}" ] ; then
+				# it changed to the pre-VPN value
+				echo "Restoring DNS settings to the post-VPN value" >> "${SCRIPT_LOG_FILE}"
+				scutil <<-EOF
+					open
+					get State:/Network/Cypherpunk/DNS
+					set State:/Network/Service/${PSID}/DNS
+					quit
 	EOF
 			# if DNS changed to something other than the pre-VPN value, network must have changed
-	        else
-	            # kill openvpn and exit
-	            echo "Sending SIGTERM to cypherpunk-privacy-openvpn PID ${PROCESS} to restart the connection" >> "${SCRIPT_LOG_FILE}"
-	            kill ${PROCESS}
-	            exit 0
-	        fi
+			else
+				# kill openvpn and exit
+				echo "Sending SIGTERM to cypherpunk-privacy-openvpn PID ${PROCESS} to restart the connection" >> "${SCRIPT_LOG_FILE}"
+				kill ${PROCESS}
+				exit 0
+			fi
 		fi
 	fi
 
 	# apparently the changes weren't relevant; just log and exit
-    if ${CHANGE_NOT_RELEVANT} ; then
-        echo "A system configuration change was ignored because it was not relevant" >> "${SCRIPT_LOG_FILE}"
-    fi
+	if ${CHANGE_NOT_RELEVANT} ; then
+		echo "A system configuration change was ignored because it was not relevant" >> "${SCRIPT_LOG_FILE}"
+	fi
 fi
 
 # done

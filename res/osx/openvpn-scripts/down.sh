@@ -54,9 +54,9 @@ CP_NO_SUCH_KEY="<dictionary> {
 if [ "${USE_CYPHERPUNK_DNS}" = "true" ];then
 	# get previously saved DNS and SMB configurations
 	DNS_OLD="$(/usr/sbin/scutil <<-EOF
-	    open
-	    show State:/Network/Cypherpunk/OldDNS
-	    quit
+		open
+		show State:/Network/Cypherpunk/OldDNS
+		quit
 	EOF
 	)"
 	SMB_OLD="$( scutil <<-EOF
@@ -74,18 +74,18 @@ if [ "${USE_CYPHERPUNK_DNS}" = "true" ];then
 
 	# if DNS "state" was empty, remove empty tag
 	if [ "${DNS_OLD}" = "${CP_NO_SUCH_KEY}" ] ; then
-	    scutil <<- EOF
-	        open
-	        remove State:/Network/Service/${PSID}/DNS
-	        quit
+		scutil <<- EOF
+			open
+			remove State:/Network/Service/${PSID}/DNS
+			quit
 	EOF
 	# otherwise, restore the old DNS "state"
 	else
-	    scutil <<- EOF
-	        open
-	        get State:/Network/Cypherpunk/OldDNS
-	        set State:/Network/Service/${PSID}/DNS
-	        quit
+		scutil <<- EOF
+			open
+			get State:/Network/Cypherpunk/OldDNS
+			set State:/Network/Service/${PSID}/DNS
+			quit
 	EOF
 	fi
 
@@ -111,18 +111,18 @@ if [ "${USE_CYPHERPUNK_DNS}" = "true" ];then
 
 	# if SMB "state" was empty, remove empty tag
 	if [ "${SMB_OLD}" = "${CP_NO_SUCH_KEY}" ] ; then
-	    scutil <<- EOF
-	        open
-	        remove State:/Network/Service/${PSID}/SMB
-	        quit
+		scutil <<- EOF
+			open
+			remove State:/Network/Service/${PSID}/SMB
+			quit
 	EOF
 	# otherwise, restore the old SMB "state"
 	else
-	    scutil <<- EOF
-	        open
-	        get State:/Network/Cypherpunk/OldSMB
-	        set State:/Network/Service/${PSID}/SMB
-	        quit
+		scutil <<- EOF
+			open
+			get State:/Network/Cypherpunk/OldSMB
+			set State:/Network/Service/${PSID}/SMB
+			quit
 	EOF
 	fi
 fi
