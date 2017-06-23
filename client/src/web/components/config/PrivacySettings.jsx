@@ -22,6 +22,7 @@ export default class PrivacySettings extends DaemonAware(React.Component) {
         <CheckmarkSetting label="DNS Leak Protection" checked={this.state.overrideDNS}/>
         <CheckmarkSetting label="IPv6 Leak Protection" checked={true}/>
         <LinkSetting name="firewall" to="/configuration/firewall" label="Internet Killswitch" formatValue={v => ({ 'on': "Always On", 'auto' : "Auto", 'off': "Off" })[v]}/>
+        <CheckboxSetting name="allowLAN" className="advanced" indented={true} hidden={!this.props.advanced} disabled={this.state.firewall !== 'off'} label="Always Allow LAN Traffic"/>
       </div>
     );
   }
