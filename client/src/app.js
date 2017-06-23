@@ -224,7 +224,7 @@ function createMainWindow() {
       window.hide();
       onHideWindow();
       if (!displayedHideNotification) {
-        displayedHideNotification = new Notification({ body: "Cypherpunk Privacy will keep running in the background - control it from the system tray." }).success;
+        displayedHideNotification = new Notification({ body: "Cypherpunk Privacy will keep running in the background - control it from the system tray.", tray: true, force: true }).success;
       }
     }
   });

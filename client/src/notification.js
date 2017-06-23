@@ -7,10 +7,10 @@ export default class Notification
   constructor(title = "Cypherpunk Privacy", options = {}) {
     this.success = true;
 
-    if (!daemon || daemon.settings.showNotifications) {
+    if (!options.force && (!daemon || !daemon.settings.showNotifications)) {
       this.success = false;
     } else {
-
+      delete options.force;
       if (typeof(title) !== 'string') {
         options = Object.assign(title, options);
         title = "Cypherpunk Privacy";
