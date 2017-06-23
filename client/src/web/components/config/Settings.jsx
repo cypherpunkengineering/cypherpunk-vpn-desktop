@@ -7,7 +7,7 @@ import analytics from '../../analytics';
 
 import { classList } from '../../util.js';
 
-const SettingLine = ({ className = null, hidden = false, indented = false, disabled = false, ...props } = {}) => <div className={classList('setting', { 'hidden': hidden, 'indented': indented, 'disabled': disabled }, className)} {...props}/>;
+const SettingLine = ({ className = null, hidden = false, indented = false, disabled = false, inert = false, ...props } = {}) => <div className={classList('setting', { 'hidden': hidden, 'indented': indented, 'disabled': disabled, 'inert': inert }, className)} {...props}/>;
 
 const Setting = DaemonAware(React.Component);
 
@@ -145,6 +145,16 @@ export class LinkSetting extends Setting {
     return (
       <SettingLine className={this.props.className} hidden={this.props.hidden} indented={this.props.indented} disabled={this.props.disabled}>
         <Link to={this.props.to} tabIndex={this.props.disabled ? "-1" : "0"} onClick={!this.props.disabled && this.props.onClick} data-value={this.props.formatValue(daemon.settings[this.props.name])} ref="link">{this.props.label}{this.props.caption ? <small>{this.props.caption}</small> : null}</Link>
+      </SettingLine>
+    );
+  }
+}
+
+export class CheckmarkSetting extends Setting {
+  render() {
+    return (
+      <SettingLine className={this.props.className} hidden={this.props.hidden} indented={this.props.indented} inert={true} disabled={!this.props.checked}>
+        <div className="text">{this.props.label}<i className={`${this.props.checked ? 'checkmark' : 'remove'} fitted icon`}/></div>
       </SettingLine>
     );
   }

@@ -311,7 +311,7 @@
           cursor: pointer;
         }
 
-        > a {
+        > a, > .text {
           display: flex;
           align-self: stretch;
           align-items: center;
@@ -319,6 +319,25 @@
           flex-grow: 1;
           padding: 8px @rightPadding 9px @leftPadding;
           color: inherit;
+
+          > i.icon {
+            flex-grow: 0;
+            order: 2;
+            font-size: 25px;
+            color: rgba(255,255,255,0.75);
+            margin-left: 10px;
+
+            &.checkmark {
+              color: rgba(60,255,100,0.75);
+            }
+            &.remove {
+              color: rgba(255,100,60,0.75);
+              margin-right: 3px;
+            }
+          }
+        }
+
+        > a {          
           &:after {
             .semanticIcon("\f105");
             flex-grow: 0;
@@ -357,6 +376,16 @@
               text-shadow: 0 0 10px #fff;
             }
           }
+        }
+
+        > .text {
+          display: flex;
+          align-self: stretch;
+          align-items: center;
+          justify-content: space-between;
+          flex-grow: 1;
+          padding: 8px @rightPadding 9px @leftPadding;
+          color: inherit;
         }
 
         // See also: semantic/src/site/modules/checkbox.overrides
@@ -443,6 +472,9 @@
             color: inherit !important;
             opacity: 1;
           }
+        }
+        &.inert {
+          pointer-events: none !important;
         }
 
         /*
