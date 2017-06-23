@@ -14,6 +14,7 @@ import QuickPanel from './QuickPanel';
 import WorldMap from './WorldMap';
 import LocationList, { Location, CypherPlayItem } from './LocationList';
 import { Panel, PanelContent, PanelOverlay } from './Panel';
+import { getAccountStatus } from './AccountScreen';
 
 
 const CACHED_COORDINATES = {
@@ -239,9 +240,15 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
   render() {
     let panelOpen = !!this.props.children;
     let tabIndex = panelOpen ? "-1" : "0";
+    let accountStatus = getAccountStatus();
     let connectionStatus = describeConnectionState(this.state.state);
     if (this.state.state === 'DISCONNECTED' && this.state.firewall === 'on') {
       connectionStatus = <span className="killswitch-warning">Killswitch Active <Link to="/configuration/firewall" data-tooltip="In order to preserve your privacy, your computer is being prevented from connecting to the internet. To regain connectivity, click here to access your settings." data-position="bottom right"><i class="info circle fitted icon"/></Link></span>;
+    }
+    switch (accountStatus) {
+      case 'expired': connectionStatus = "Account Expired"; break;
+      case 'invalid': connectionStatus = "Invalid Account"; break;
+      case 'inactive': connectionStatus = "Inactive Account"; break;
     }
     return(
       <Panel id="main-screen-container" transition={getTransition}>
@@ -267,7 +274,7 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
             on={this.state.connect}
             connectionState={this.state.connectionState}
             onClick={() => this.handleConnectClick()}
-            hidden={this.state.locationListOpen}
+            hidden={this.state.locationListOpen || accountStatus !== 'active'}
           />
 
           <div className={classList("connect-status", { "hidden": this.state.locationListOpen })}>

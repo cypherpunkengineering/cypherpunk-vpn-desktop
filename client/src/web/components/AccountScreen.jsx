@@ -43,7 +43,20 @@ const SUBSCRIPTION_SCHEDULE_DAYS = {
   '1m': 30,
 };
 
-function describeRelativeDate(date, now) {
+export function getAccountStatus(account) {
+  if (!account) account = daemon.account;
+  let { subscription } = account;
+  if (!subscription) return 'invalid';
+  let active = subscription.active;
+  let plan = subscription.renewal || '';
+  let expiration = subscription.expiration;
+  expiration = +expiration && new Date(expiration) || null; // TODO: UTC?
+
+  if (expiration && expiration < new Date()) return 'expired';
+  return active ? 'active' : 'inactive';
+}
+
+export function describeRelativeDate(date, now) {
   if (!now) now = new Date();
   let future = date >= now;
   let diff = (date.getTime() - now.getTime()) / (60 * 60 * 1000); // hours
