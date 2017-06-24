@@ -6,10 +6,16 @@ import { PanelTitlebar } from './Titlebar';
 import { Subpanel, PanelContent } from './Panel';
 import daemon, { DaemonAware } from '../daemon';
 import RouteTransition from './Transition';
+import RetinaImage from './Image';
 import analytics from '../analytics';
 const { shell } = require('electron').remote;
 
 import AccountIcon from '../assets/img/icon-account-big.svg';
+
+const AccountBanner = {
+  free: require('../assets/img/account_banner_free.png'),
+  premium: require('../assets/img/account_banner_premium.png'),
+};
 
 
 const WEBSITE_ROOT = 'https://cypherpunk.com';
@@ -119,8 +125,10 @@ export function describeRelativeDate(date, now) {
 }
 
 
-const AccountIllustration = ({ ...props }) => (
-  <div className="background"/>
+const AccountIllustration = ({ src, ...props }) => (
+  <div className="background" {...props}>
+    <RetinaImage src={src}/>
+  </div>
 );
 const AccountUserField = ({ text, ...props }) => (
   <div className="user row">
@@ -186,7 +194,7 @@ const AccountUserPane = ({ account, ...props }) => {
   }
   return (
     <div className="user pane" {...props}>
-      <AccountIllustration/>
+      <AccountIllustration src={type==='free'?AccountBanner.free:AccountBanner.premium}/>
       <AccountUserField text={username}/>
       <AccountPlanField
         className={ACCOUNT_TYPE_NAMES.hasOwnProperty(type) ? type : null}
