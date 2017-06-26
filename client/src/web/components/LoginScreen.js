@@ -213,8 +213,8 @@ export class EmailStep extends Page {
     var email = this.refs.email.value;
     $(this.refs.email).prop('disabled', true).parent().addClass('loading');
     server.post('/api/v1/account/identify/email', { email: email }).then({
-      200: response => History.push({ pathname: '/login/password', query: { email: email }}),
-      401: response => History.push({ pathname: '/login/register', query: { email: email }})
+      200: response => History.push({ pathname: '/login/password', query: { email }}),
+      401: response => History.push({ pathname: '/login/register', query: { email }})
     }).catch(err => {
       if (!err.handled) {
         alert(err.message);
@@ -288,7 +288,7 @@ export class RegisterStep extends Page {
     $(this.refs.password).prop('disabled', true);
     $(this.refs.register).hide();
     $(this.refs.loader).addClass('active');
-    server.post('/api/v1/account/register/signup', { email: this.props.location.query.email, password: password }).then(response => {
+    server.post('/api/v1/account/register/signup', { email: this.props.location.query.email, password }).then(response => {
       return setAccount(response.data);
     }).catch(err => {
       if (!err.handled) {
