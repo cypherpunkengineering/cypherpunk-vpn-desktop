@@ -19,6 +19,30 @@ flushDNSCache()
 	set -e
 }
 
+disable_ipv6() {
+# for each enabled network service that has ipv6 = automatic, set to ipv6 = off
+# outputs one network service per line, for use by down.sh
+
+	# Get list of services and remove the first line which contains a heading
+	dipv6_services="$( networksetup  -listallnetworkservices | sed -e '1,1d')"
+
+	# Go through the list disabling IPv6 for enabled services, and outputting lines with the names of the services
+	printf %s "$dipv6_services
+" | \
+	while IFS= read -r dipv6_service ; do
+
+		# If first character of a line is an asterisk, the service is disabled, so we skip it
+		if [ "${dipv6_service:0:1}" != "*" ] ; then
+			dipv6_ipv6_status="$( networksetup -getinfo "$dipv6_service" | grep 'IPv6: ' | sed -e 's/IPv6: //')"
+			if [ "$dipv6_ipv6_status" = "Automatic" ] ; then
+				networksetup -setv6off "$dipv6_service"
+				echo "$dipv6_service"
+			fi
+		fi
+
+	done
+}
+
 # check if DNS servers were provided via OpenVPN variables
 if [ "$foreign_option_1" == "" ]; then
 	USE_CYPHERPUNK_DNS="false"
@@ -44,6 +68,19 @@ else
 		}
 	done
 fi
+
+ipv6_disabled_services=""
+ipv6_disabled_services="$( disable_ipv6 )"
+if [ "$ipv6_disabled_services" != "" ] ; then
+	printf %s "$ipv6_disabled_services
+" | \
+	while IFS= read -r dipv6_service ; do
+		echo "Disabled IPv6 for '$dipv6_service'"
+	done
+fi
+readonly ipv6_disabled_services
+# Note '\n' is translated into '\t' so it is all on one line, because grep and sed only work with single lines
+readonly ipv6_disabled_services_encoded="$( echo "$ipv6_disabled_services" | tr '\n' '\t' )"
 
 # wait for network to settle
 sleep 0.2
@@ -118,6 +155,7 @@ scutil <<- EOF
 	d.add SourceAddress ${PSSRC}
 	d.add UseCypherpunkDNS ${USE_CYPHERPUNK_DNS}
 	d.add LeaseWatcherPlistPath "${LEASEWATCHER_PLIST_PATH}"
+	d.add RestoreIpv6Services "$ipv6_disabled_services_encoded"
 	set State:/Network/Cypherpunk
 
 	# done

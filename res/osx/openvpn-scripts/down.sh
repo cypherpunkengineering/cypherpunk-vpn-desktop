@@ -13,6 +13,19 @@ flushDNSCache()
 	set -e
 }
 
+# @param String list - list of network service names, output from disable_ipv6()
+# sets all network services in list to ipv6 mode = automatic
+restore_ipv6() {
+	[ "$1" = "" ] && return
+
+	printf %s "$1
+" | \
+	while IFS= read -r ripv6_service ; do
+		networksetup -setv6automatic "$ripv6_service"
+		echo "Re-enabled IPv6 (automatic) for '$ripv6_service'"
+	done
+}
+
 # check if configuration is present
 if ! scutil -w State:/Network/Cypherpunk &>/dev/null -t 1 ; then
 	# if not, don't do anything
@@ -31,6 +44,8 @@ EOF
 LEASEWATCHER_PLIST_PATH="$(echo "${CYPHERPUNK_CONFIG}" | grep -i '^[[:space:]]*LeaseWatcherPlistPath :' | sed -e 's/^.*: //g')"
 USE_CYPHERPUNK_DNS="$(echo "${CYPHERPUNK_CONFIG}" | grep -i '^[[:space:]]*UseCypherpunkDNS :' | sed -e 's/^.*: //g')"
 PSID="$(echo "${CYPHERPUNK_CONFIG}" | grep -i '^[[:space:]]*Service :' | sed -e 's/^.*: //g')"
+# Note: '\n' was translated into '\t', so we translate it back (it was done because grep and sed only work with single lines)
+sRestoreIpv6Services="$(echo "${CYPHERPUNK_CONFIG}" | grep -i '^[[:space:]]*RestoreIpv6Services :' | sed -e 's/^.*: //g' | tr '\t' '\n')"
 
 # "grep" will return error status (1) if no matches are found, so don't fail if not found
 set +e
@@ -138,6 +153,9 @@ if [ "${USE_CYPHERPUNK_DNS}" = "true" ];then
 	# flush DNS cache
 	flushDNSCache
 fi
+
+# re-enable ipv6 on devices that we disabled it on
+restore_ipv6 "$sRestoreIpv6Services"
 
 # cleanup cypherpunk configuration values
 scutil >/dev/null <<- EOF
