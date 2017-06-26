@@ -102,6 +102,10 @@ function mac_run(status) {
         dialog.showErrorBox("Service Not Running", "The Cypherpunk Privacy background service is required to run debug builds, but it is not running (or it is the wrong version).\n\nPlease run it manually from daemon/posix with the 'make all run' command and try again.");
         return resolve({ exit: 0 });
       }
+      if (!status.daemonInstalled && status.daemonVersion) {
+        dialog.showErrorBox("Daemon Version Mismatch", "The currently running daemon is the wrong version; restart and/or reinstall it.");
+        return resolve({ exit: 0 });
+      }
       msg.message = "Fix Electron Permissions";
       msg.detail = "In order for the killswitch feature to work in debug builds, we need to adjust the permissions of the Electron binary.";
       msg.buttons[0] = "Fix Now";
