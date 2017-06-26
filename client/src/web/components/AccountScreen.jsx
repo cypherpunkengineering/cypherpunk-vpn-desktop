@@ -29,14 +29,14 @@ const ACCOUNT_TYPE_NAMES = {
   'developer': "Developer",
 };
 const SUBSCRIPTION_SCHEDULE_NAMES = {
-  'annually': "annually",
-  'semiannually': "semiannually",
-  'monthly': "monthly",
-  '12m': "annually",
-  '1y': "annually",
-  '6m': "semiannually",
-  '3m': "quarterly",
-  '1m': "monthly",
+  'annually': "12 Month Plan",
+  'semiannually': "6 Month Plan",
+  'monthly': "1 Month Plan",
+  '12m': "12 Month Plan",
+  '1y': "12 Month Plan",
+  '6m': "6 Month Plan",
+  '3m': "3 Month Plan",
+  '1m': "1 Month Plan",
 };
 const SUBSCRIPTION_SCHEDULE_DAYS = {
   'annually': 365,
@@ -49,14 +49,20 @@ const SUBSCRIPTION_SCHEDULE_DAYS = {
   '1m': 30,
 };
 
+function parseExpirationString(value) {
+  if (+value == 0) return null;
+  value = new Date(value);
+  if (isNaN(value.getTime())) return null;
+  return value;
+}
+
 export function getAccountStatus(account) {
   if (!account) account = daemon.account;
   let { subscription } = account;
   if (!subscription) return 'invalid';
   let active = subscription.active;
   let plan = subscription.renewal || '';
-  let expiration = subscription.expiration;
-  expiration = +expiration && new Date(expiration) || null; // TODO: UTC?
+  let expiration = parseExpirationString(subscription.expiration);
 
   if (expiration && expiration < new Date()) return 'expired';
   return active ? 'active' : 'inactive';
@@ -157,12 +163,12 @@ const AccountUserPane = ({ account, ...props }) => {
     type = account.account.type;
   }
   if (account.subscription) {
-    plan = account.subscription.renewal || '';
-    expiration = account.subscription.expiration;
-    expiration = +expiration && new Date(expiration) || null; // TODO: UTC?
+    plan = account.subscription.type || '';
+    renews = !!account.subscription.renews;
+    expiration = parseExpirationString(account.subscription.expiration);
   }
 
-  if (!plan || plan === 'free') {
+  if (!type || type === 'free') {
     upgradeString = "Upgrade Now";
     upgradeURL = '/account/upgrade';
   }
@@ -177,7 +183,7 @@ const AccountUserPane = ({ account, ...props }) => {
       if (diff <= limitDays) {
         expirationString = (renews ? "Renews " : "Expires ") + describeRelativeDate(expiration, now);
       }
-      if (diff <= 7) {
+      if (!renews && diff <= 7) {
         expirationClassName = 'expiring';
       }
     }
@@ -187,6 +193,10 @@ const AccountUserPane = ({ account, ...props }) => {
     }
   } else {
     expirationString = "Lifetime";
+  }
+
+  if (!expirationString && SUBSCRIPTION_SCHEDULE_NAMES.hasOwnProperty(plan)) {
+    expirationString = SUBSCRIPTION_SCHEDULE_NAMES[plan];
   }
 
   if (upgradeURL) {
