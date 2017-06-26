@@ -41,7 +41,9 @@
   */
 
   .fadeInTransition(0.5s, ease-in, 0.3s);
-  &.hidden { .fadeOutTransition(0.5s, ease-out); }
+  &.hidden { .fadeOutTransition(0.5s, ease-out); pointer-events: none; }
+  &.faded { .fadeOutTransition(0.5s, ease-out); visibility: visible; opacity: 0.3; pointer-events: none; }
+  &.disabled { pointer-events: none; }
 
   .bg {
     opacity: 0.25;

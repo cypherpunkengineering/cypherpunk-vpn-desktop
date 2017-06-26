@@ -128,7 +128,9 @@ class ConnectButton extends React.Component {
     lower: PIPE_LOWER_TEXT,
     on: false,
     connectionState: 'disconnected',
+    disabled: false,
     hidden: false,
+    faded: false,
     onClick: function() {}
   }
   onClick(e) {
@@ -146,8 +148,9 @@ class ConnectButton extends React.Component {
     }
   }
   render() {
+    let disabled = this.props.disabled || this.props.hidden || this.props.faded;
     return (
-      <div className={classList("connect-button", { 'on': this.props.on, 'off': !this.props.on, 'hidden': this.props.hidden }, this.props.connectionState)} onClick={e => this.onClick(e)} onKeyDown={e => this.onKeyDown(e)} tabIndex={this.props.hidden ? -1 : 0}>
+      <div className={classList("connect-button", { 'on': this.props.on, 'off': !this.props.on, 'hidden': this.props.hidden, 'faded': this.props.faded, 'disabled': this.props.disabled }, this.props.connectionState)} onClick={disabled ? null : e => this.onClick(e)} onKeyDown={disabled ? null : e => this.onKeyDown(e)} tabIndex={disabled ? -1 : 0}>
         <div className="bg">
           <div className="pipe"/>
           <div className="dot"/>
@@ -274,7 +277,9 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
             on={this.state.connect}
             connectionState={this.state.connectionState}
             onClick={() => this.handleConnectClick()}
-            hidden={this.state.locationListOpen || accountStatus !== 'active'}
+            hidden={this.state.locationListOpen}
+            faded={accountStatus !== 'active'}
+            disabled={accountStatus !== 'active'}
           />
 
           <div className={classList("connect-status", { "hidden": this.state.locationListOpen })}>
