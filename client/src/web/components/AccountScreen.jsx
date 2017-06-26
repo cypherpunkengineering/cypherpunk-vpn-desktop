@@ -27,6 +27,7 @@ const ACCOUNT_TYPE_NAMES = {
   'enterprise': "Enterprise Account",
   'staff': "Staff",
   'developer': "Developer",
+  'expired': "Expired Account",
 };
 const SUBSCRIPTION_SCHEDULE_NAMES = {
   'annually': "12 Month Plan",
