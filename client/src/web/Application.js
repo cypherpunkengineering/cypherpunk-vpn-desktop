@@ -69,13 +69,13 @@ export default class Application {
     Application.checkForUpdates();
   }
   static checkForUpdates() {
-    server.get('/api/v1/app/versions').then(response => {
+    server.get('/api/v1/app/versions' + (daemon.account.account && daemon.account.account.type === 'developer' ? '/developer' : '')).then(response => {
       var version = response.data[({ 'darwin':'macos', 'win32':'windows', 'linux':'debian' })[process.platform]];
       if (version !== undefined) {
         function downloadAndInstall() {
           return new Promise((resolve, reject) => {
-            if (false && version.url) { // TODO: Download to temporary directory and run installer
-
+            if (version.url) {
+              remote.shell.openExternal(version.url);
             } else {
               remote.shell.openExternal('https://cypherpunk.com/download');
             }
@@ -83,12 +83,16 @@ export default class Application {
           });
         }
         var current = remote.app.getVersion();
+        let messageSuffix = '';
+        if (typeof version.description === 'string' && version.description !== '') {
+          messageSuffix += '\n\n' + version.description;
+        }
         if (compareVersions(version.required, current) > 0) {
           Application.showMessageBox({
             type: 'warning',
             title: "Update required",
-            message: "In order to keep using Cypherpunk Privacy, a software update is required.\n\n" + current + " -> " + version.latest,
-            buttons: [ version.url ? "Download and install" : "Go to download page", "Quit" ],
+            message: "In order to keep using Cypherpunk Privacy, a software update is required." + messageSuffix,
+            buttons: [ version.url ? "Download" : "Go to download page", "Quit" ],
             defaultId : 0,
             cancelId: 1,
           }, button => {
@@ -103,17 +107,19 @@ export default class Application {
         } else {
           let diff = compareVersions(version.latest, current), title, message;
           if (diff > 0) {
-            let strings = {
-              '1': ["Install important update?", "A major update is available; would you like to install it?"],
-              '2': ["Install recommended update?", "A recommended update is available; would you like to install it?"],
-              '3': ["Install update?", "An update is available; would you like to install it?"],
-            };
-            let [title, message] = strings[diff] || strings[3];
+            let title, message;
+            switch (diff) {
+              case 1: [ title, message ] = [ "Install important update?", "A major update is available; would you like to install it?" ]; break;
+              case 2: [ title, message ] = [ "Install recommended update?", "A recommended update is available; would you like to install it?" ]; break;
+              default:
+              case 3: [ title, message ] = [ "Install update?", "An update is available; would you like to install it?" ]; break;
+            }
+            message += messageSuffix;
             Application.showMessageBox({
               type: 'info',
               title,
               message,
-              buttons: [ version.url ? "Download and install" : "Go to download page", "Ignore" ],
+              buttons: [ version.url ? "Download" : "Go to download page", "Ignore" ],
               defaultId: 0,
               cancelId: 1,
             }, button => {
