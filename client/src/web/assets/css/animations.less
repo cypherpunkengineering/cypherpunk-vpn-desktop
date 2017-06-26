@@ -200,3 +200,13 @@ body {
   0% { background-position: -100vw 0; }
   100% { background-position: 100vw 0; }
 }
+
+@keyframes horizontal-shake {
+  0% { transform: translateX(0); }
+  10% { transform: translateX(-5px); }
+  30% { transform: translateX( 5px); }
+  50% { transform: translateX(-5px); }
+  70% { transform: translateX( 5px); }
+  90% { transform: translateX(-5px); }
+  100% { transform: translateX(0); }
+}

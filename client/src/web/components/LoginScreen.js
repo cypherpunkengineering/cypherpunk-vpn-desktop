@@ -238,18 +238,30 @@ export class EmailStep extends Page {
 
 export class PasswordStep extends Page {
   static elements = [ DefaultPageElements, BackLink({ key: 'back-from-password', to: '/login/email' }) ];
+  state = {}
   onSubmit() {
     var password = this.refs.password.value;
     $(this.refs.password).prop('disabled', true).parent().addClass('loading');
-    server.post('/api/v1/account/authenticate/password', { /*email: this.props.location.query.email,*/ password: password }).then(response => {
-      return setAccount(response.data);
+    server.post('/api/v1/account/authenticate/password', { password }).then({
+      200: response => setAccount(response.data),
+      401: response => { this.displayWrongPasswordMessage(); throw null; },
     }).catch(err => {
-      if (!err.handled) {
+      if (err && !err.handled) {
         alert(err.message);
         console.dir(err);
       }
       $(this.refs.password).prop('disabled', false).focus().select().parent().removeClass('loading');
     });
+  }
+  displayWrongPasswordMessage() {
+    this.setState({ wrongPassword: setTimeout(() => this.hideWrongPasswordMessage(), 1000) });
+  }
+  hideWrongPasswordMessage() {
+    if (this.state.wrongPassword) clearTimeout(this.state.wrongPassword);
+    this.setState({ wrongPassword: null });
+  }
+  componentWillUnmount() {
+    if (this.state.wrongPassword) clearTimeout(this.state.wrongPassword);
   }
   render() {
     return(
@@ -258,7 +270,7 @@ export class PasswordStep extends Page {
           <div className="welcome">Welcome back,</div>
           <div className="text">{this.props.location.query.email}!</div>
         </PageTitle>
-        <div className="ui icon input">
+        <div className={classList("ui icon input", { 'wrong-password' : this.state.wrongPassword })}>
           <input type="password" placeholder="Password" required autoFocus="true" ref="password" onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
           <i className="chevron right link icon" onClick={() => this.onSubmit()}></i>
         </div>

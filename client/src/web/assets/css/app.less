@@ -827,6 +827,26 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
       margin-top: 5px;
       margin-right: 5px;
     }
+    > .wrong-password {
+      animation: 0.3s horizontal-shake;
+      > input {
+        transition: 0.2s background-color, 0.2s border-color;
+        background-color: rgba(255,0,0,0.25);
+        border-color: rgba(255,0,0,0.8);
+      }
+      &::after {
+        content: "Wrong password!";
+        display: block;
+        position: absolute;
+        left: 0;
+        top: 100%;
+        color: rgba(255,0,0,0.8);
+        margin-left: 5px;
+        margin-top: 5px;
+        padding: 2px 0;
+        font-weight: 600;
+      }
+    }
   }
 
   .login-register {
