@@ -169,7 +169,7 @@ export class LocationList extends DaemonAware(React.Component) {
           { (this.props.selected) && <div className="title">Switch to</div> }
           { (!this.props.selected) && <div className="title">Connect to</div> }
         </div>
-        <div ref="list" className="list" onMouseLeave={() => { if (this.props.selected) this.props.onHover(this.props.selected); }}>
+        <div ref="list" className="list" onMouseLeave={() => { this.props.onHover(this.props.selected || null); }}>
           <CypherPlayItem key="cypherplay" disabled={!this.state.fastest} selected={this.props.selected === 'cypherplay'} onMouseEnter={() => this.props.onHover('cypherplay')} onClick={this.state.fastest ? () => this.props.onClick('cypherplay:' + this.state.fastest) : null}/>
           <FastestItem key="fastest" disabled={!this.state.fastest} location={this.state.fastest ? this.state.locations[this.state.fastest] : null} selected={false} onMouseEnter={this.state.fastest ? () => this.props.onHover(this.state.fastest) : null} onClick={this.state.fastest ? () => this.props.onClick(this.state.fastest) : null}/>
           {

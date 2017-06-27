@@ -55,6 +55,7 @@ export class WorldMap extends React.Component {
     scale: 1,
     location: null,
     locations: {},
+    hideMarker: false,
   }
   constructor(props) {
     super(props);
@@ -134,7 +135,7 @@ export class WorldMap extends React.Component {
             return id === 'cypherplay' ? null : <div key={id} className={classList("point", { 'selected': this.props.location === id })} style={{ left: `${gps.x}px`, top: `${gps.y}px`, transform: `translate(-50%,-50%) scale(${1/*/gps.scale*/})` }}/>;
           }).filter(x => x)}
         </div>
-        <i className={classList("marker icon", { up: this.state.up, hidden: (this.state.x === null || this.state.y === null || this.props.location === 'cypherplay') })}/>
+        <i className={classList("marker icon", { up: this.state.up, hidden: (this.props.hideMarker || this.state.x === null || this.state.y === null || this.props.location === 'cypherplay') })}/>
       </div>
     );
   }

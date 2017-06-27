@@ -263,7 +263,7 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
           <Link className="left account page-link" to={panelOpen?"/main":"/account"} tabIndex={tabIndex} data-tooltip="My Account" data-position="bottom left"><RetinaImage src={AccountIcon}/></Link>
           <Link className="right settings page-link" to={panelOpen?"/main":"/configuration"} tabIndex={tabIndex} data-tooltip="Configuration" data-position="bottom right"><i className="settings icon"/></Link>
 
-          <WorldMap locations={Object.assign(CACHED_COORDINATES, this.state.locations)} location={this.state.locationListOpen && this.state.mapLocation || (this.state.locationFlag === 'cypherplay' ? 'cypherplay' : this.state.location)} className={classList({ "side": this.state.locationListOpen })}/>
+          <WorldMap locations={Object.assign(CACHED_COORDINATES, this.state.locations)} location={(this.state.locationListOpen ? this.state.mapLocation : (this.state.locationFlag === 'cypherplay' ? 'cypherplay' : this.state.location)) || 'cypherplay'} className={classList({ "side": this.state.locationListOpen })}/>
 
           <LocationList
             open={this.state.locationListOpen}
@@ -287,7 +287,7 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
             <span>{connectionStatus}</span>
           </div>
 
-          <div className={classList("location-selector", { "hidden": this.state.locationListOpen })} onClick={() => this.setState({ locationListOpen: true, locationListSelection: this.state.connect && (this.state.locationFlag === 'cypherplay' ? 'cypherplay' : this.state.location) || null })}>
+          <div className={classList("location-selector", { "hidden": this.state.locationListOpen })} onClick={() => this.handleLocationClick()}>
             { this.state.locationFlag === 'cypherplay' ? <CypherPlayItem hideTag={true}/> : <Location location={this.state.locations[this.state.location]} hideTag={true}/> }
           </div>
 
@@ -308,6 +308,12 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
         daemon.post.get('state');
       });
     }
+  }
+
+  handleLocationClick() {
+    let currentLocation = this.state.locationFlag === 'cypherplay' ? 'cypherplay' : this.state.location;
+    let connectedLocation = this.state.connect && currentLocation || null;
+    this.setState({ locationListOpen: true, locationListSelection: connectedLocation, mapLocation: currentLocation });
   }
 
   onCypherPlayClick(fastest) {
