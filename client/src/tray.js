@@ -2,22 +2,33 @@ import { app, dialog, BrowserWindow, Tray as ElectronTray, Menu, nativeImage as 
 import fs from 'fs';
 import './util.js';
 
-let os = ({ 'win32': '_win', 'darwin': '_osx', 'linux': '_lin' })[process.platform] || '';
-
-function getOSResource(name) {
-  name = `${__dirname}/${name}`;
-  var os_name = name.replace(/\.[^.]*$/, os + '$&');
-  if (os === '_win' && name.endsWith('.png')) {
-    let ico = os_name.replace(/\.png$/, '.ico');
-    if (fs.existsSync(ico)) return ico;
+function findFirstExisting(files) {
+  for (let f of files) {
+    if (fs.existsSync(f)) {
+      return f;
+    }
   }
-  return fs.existsSync(os_name) ? os_name : name;
+  return undefined;
 }
-function getResource(name) {
-  return `${__dirname}/${name}`;
+function getAsset(name) {
+  let path = `${__dirname}/assets/${name}`;
+  let os_path = `${__dirname}/assets/platform/${process.platform}/${name}`;
+  return findFirstExisting([ os_path, path ]);
 }
+function getIconAsset(name) {
+  let paths = [];
+  switch (process.platform) {
+    case 'darwin': paths.push(`${__dirname}/assets/platform/darwin/${name}.icns`); break;
+    case 'win32': paths.push(`${__dirname}/assets/platform/win32/${name}.ico`); break;
+    case 'linux': break;
+  }
+  paths.push(`${__dirname}/assets/platform/${process.platform}/${name}.png`);
+  paths.push(`${__dirname}/assets/${name}.png`);
+  return findFirstExisting(paths);
+}
+
 function getFlag(country) {
-  return getResource(`assets/img/flags/16/${country.toLowerCase()}.png`);
+  return `${__dirname}/assets/img/flags/16/${country.toLowerCase()}.png`;
 }
 
 
@@ -50,11 +61,11 @@ class Tray {
   };
   constructor() {
     this.icons = {
-      connecting: NativeImage.createFromPath(getOSResource('assets/img/tray_connecting.png')),
-      connected: NativeImage.createFromPath(getOSResource('assets/img/tray_connected.png')),
-      disconnected: NativeImage.createFromPath(getOSResource('assets/img/tray_disconnected.png')),
-      killswitch: NativeImage.createFromPath(getOSResource('assets/img/tray_killswitch.png')),
-      error: NativeImage.createFromPath(getOSResource('assets/img/tray_error.png')),
+      connecting: NativeImage.createFromPath(getIconAsset('img/tray_connecting')),
+      connected: NativeImage.createFromPath(getIconAsset('img/tray_connected')),
+      disconnected: NativeImage.createFromPath(getIconAsset('img/tray_disconnected')),
+      killswitch: NativeImage.createFromPath(getIconAsset('img/tray_killswitch')),
+      error: NativeImage.createFromPath(getIconAsset('img/tray_error')),
     };
     if (process.platform === 'darwin') {
       Object.keys(this.icons).forEach(k => this.icons[k].setTemplateImage(true));

@@ -172,7 +172,7 @@ gulp.task('build-main', ['build-main-assets'], function() {
   return p.pipe(gulp.dest('app'));
 });
 gulp.task('build-main-assets', function() {
-  return gulp.src('src/assets/**/*')
+  return gulp.src(['src/assets/**/*', '!src/assets/platform/!(' + process.platform + '){,/**}'])
     .pipe(newer('app/assets'))
     .pipe(gulp.dest('app/assets'));
 })
