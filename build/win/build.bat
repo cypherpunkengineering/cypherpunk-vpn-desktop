@@ -49,7 +49,7 @@ call node_modules\.bin\electron-rebuild.cmd --arch=ia32
 if errorlevel 1 goto error
 
 echo * Packaging Electron app...
-call node_modules\.bin\electron-packager.cmd .\app\ CypherpunkPrivacy --overwrite --platform=win32 --arch=ia32 --icon=..\res\win\logo2.ico --out=..\out\win\client\ --prune --asar --version-string.FileDescription="Cypherpunk Privacy" --version-string.CompanyName="Cypherpunk Partners, slf." --version-string.LegalCopyright="Copyright (C) 2017 Cypherpunk Partners, slf. All rights reserved." --version-string.OriginalFilename="CypherpunkPrivacy.exe" --version-string.ProductName="Cypherpunk Privacy" --version-string.InternalName="CypherpunkPrivacy"
+call node_modules\.bin\electron-packager.cmd .\app\ CypherpunkPrivacy --overwrite --platform=win32 --arch=ia32 --icon=..\res\win\logo3.ico --out=..\out\win\client\ --prune --asar --version-string.FileDescription="Cypherpunk Privacy" --version-string.CompanyName="Cypherpunk Partners, slf." --version-string.LegalCopyright="Copyright (C) 2017 Cypherpunk Partners, slf. All rights reserved." --version-string.OriginalFilename="CypherpunkPrivacy.exe" --version-string.ProductName="Cypherpunk Privacy" --version-string.InternalName="CypherpunkPrivacy"
 if errorlevel 1 goto error
 
 cd ..\daemon
