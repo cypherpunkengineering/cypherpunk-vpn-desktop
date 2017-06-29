@@ -1,6 +1,8 @@
+import { app } from 'electron';
 import tray from './tray.js';
+import path from 'path';
 
-const DEFAULT_NOTIFICATION_ICON = `${__dirname}/assets/img/`
+const DEFAULT_NOTIFICATION_ICON = `assets/img/icon_128.png`;
 
 export default class Notification
 {
@@ -16,12 +18,19 @@ export default class Notification
         title = "Cypherpunk Privacy";
       }
       do {
-        //if (!options.icon) options.icon = DEFAULT_NOTIFICATION_ICON;
+        if (!options.icon) options.icon = DEFAULT_NOTIFICATION_ICON;
+        // Make paths absolute
+        ['badge','icon','image'].forEach(attr => {
+          if (options[attr] && options[attr].indexOf(':') < 0 && !options[attr].startsWith('/')) {
+            options[attr] = path.resolve(__dirname, options[attr]);
+          }
+        });
+        // Use tray.displayBalloon if applicable
         if (options.tray || !window)
         {
           if (process.platform === 'win32' && tray) {
             tray.getElectronTray().displayBalloon({
-              icon: options.icon && `${__dirname}/${options.icon}`,
+              icon: options.icon,
               title: title,
               content: options.body
             });
@@ -31,13 +40,10 @@ export default class Notification
           }
         }
         if (window) {
-          // Adjust image URLs
-          ['badge','icon','image'].forEach(attr => {
-            if (options[attr] && options[attr].indexOf(':') < 0)
-              options[attr] = '../' + options[attr];
-          });
-          options.silent = true;
+          if (!options.hasOwnProperty('silent')) options.silent = true;
           window.webContents.executeJavaScript(`new Notification(${JSON.stringify(title)}, ${JSON.stringify(options)});`);
+        } else {
+          this.success = false;
         }
       } while (false);
     }
