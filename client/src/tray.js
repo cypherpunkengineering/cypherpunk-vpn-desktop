@@ -108,6 +108,9 @@ class Tray {
     });
     if (changed) this.refresh();
   }
+  getElectronTray() {
+    return this.electronTray;
+  }
   destroy() {
     if (this.electronTray) {
       this.electronTray.destroy();

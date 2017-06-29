@@ -20,7 +20,7 @@ export default class Notification
         if (options.tray || !window)
         {
           if (process.platform === 'win32' && tray) {
-            tray.displayBalloon({
+            tray.getElectronTray().displayBalloon({
               icon: options.icon && `${__dirname}/${options.icon}`,
               title: title,
               content: options.body
