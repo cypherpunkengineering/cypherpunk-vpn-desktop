@@ -7,6 +7,10 @@ let os = ({ 'win32': '_win', 'darwin': '_osx', 'linux': '_lin' })[process.platfo
 function getOSResource(name) {
   name = `${__dirname}/${name}`;
   var os_name = name.replace(/\.[^.]*$/, os + '$&');
+  if (os === '_win' && name.endsWith('.png')) {
+    let ico = os_name.replace(/\.png$/, '.ico');
+    if (fs.existsSync(ico)) return ico;
+  }
   return fs.existsSync(os_name) ? os_name : name;
 }
 function getResource(name) {
