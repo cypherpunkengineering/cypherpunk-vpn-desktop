@@ -784,8 +784,13 @@ void Connection::WriteOpenVPNProfile(std::ostream& out)
 
 	// Tell OpenVPN to always ignore the pushed DNS (10.10.10.10),
 	// which is simply there as a sensible default for dumb clients.
+	out << "pull-filter ignore \"dhcp-option DOMAIN local\"" << endl;
 	out << "pull-filter ignore \"dhcp-option DNS 10.10.10.10\"" << endl;
+	out << "pull-filter ignore \"dhcp-option DNS 10.10.11.10\"" << endl;
+	out << "pull-filter ignore \"dhcp-option DNS 10.10.12.10\"" << endl;
 	out << "pull-filter ignore \"route 10.10.10.10 255.255.255.255\"" << endl;
+	out << "pull-filter ignore \"route 10.10.11.10 255.255.255.255\"" << endl;
+	out << "pull-filter ignore \"route 10.10.12.10 255.255.255.255\"" << endl;
 
 	// Ignore ping settings pushed from the server.
 	out << "pull-filter ignore \"ping \"" << endl;
@@ -799,15 +804,16 @@ void Connection::WriteOpenVPNProfile(std::ostream& out)
 			+ (g_settings.blockMalware() ? 2 : 0)
 			+ (g_settings.optimizeDNS() || g_settings.locationFlag() == "cypherplay" ? 4 : 0);
 		std::string dns_string = std::to_string(dns_index);
+		// set domain name to push any prior DOMAIN out
+		out << "dhcp-option DOMAIN local" << endl;
+		// simulate secondary/tertiary DNS servers in order to push any prior DNS out of the list
 		out << "dhcp-option DNS 10.10.10." << dns_string << endl;
-		out << "route 10.10.10." << dns_string << endl;
-#if OS_LINUX
-		// On Linux, simulate secondary/tertiary DNS servers in order to push any prior DNS out of the list
 		out << "dhcp-option DNS 10.10.11." << dns_string << endl;
 		out << "dhcp-option DNS 10.10.12." << dns_string << endl;
+		out << "route 10.10.10." << dns_string << endl;
 		out << "route 10.10.11." << dns_string << endl;
 		out << "route 10.10.12." << dns_string << endl;
-#elif OS_WIN
+#if OS_WIN
 		// On Windows, add some additional convenience/robustness switches
 		out << "register-dns" << endl;
 		if (g_settings.routeDefault())
