@@ -1,3 +1,12 @@
+const EventEmitter = require('events');
+
+EventEmitter.prototype.safeEmit = function safeEmit(eventName, args) {
+  try {
+    this.emit(...arguments);
+  } catch (e) {
+    console.warn(`Error while emitting event '${eventName}': ${e}`);
+  }
+};
 
 export function eventPromise(emitter, name) {
   return new Promise((resolve, reject) => {

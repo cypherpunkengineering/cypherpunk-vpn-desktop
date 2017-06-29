@@ -113,7 +113,7 @@ function onopen() {
 
 function onerror() {
   isopen = false;
-  daemon.emit('down');
+  daemon.safeEmit('down');
   if (window) window.webContents.send('daemon-down', buildStatusReply());
   return true;
 }
@@ -152,7 +152,7 @@ function onpost(method, params) {
         if (connectReject) {
           connectReject(Object.assign(new Error("Daemon version mismatch"), { daemonVersion: data.version }));
         } else {
-          daemon.emit('error', { message: "Daemon version mismatch", daemonVersion: data.version });
+          daemon.safeEmit('error', { message: "Daemon version mismatch", daemonVersion: data.version });
         }
         daemon.disconnect();
         return;
@@ -163,7 +163,7 @@ function onpost(method, params) {
         connectResolve();
         connectResolve = null;
       }
-      daemon.emit('up');
+      daemon.safeEmit('up');
       if (window) window.webContents.send('daemon-up', buildStatusReply());
     } else {
       return;
@@ -176,9 +176,7 @@ function onpost(method, params) {
         if (params[0].hasOwnProperty(type)) {
           filterChanges(daemon[type], params[0][type]);
           Object.assign(daemon[type], params[0][type]);
-          try {
-            daemon.emit(type, params[0][type]); // deprecated
-          } catch(e) {}
+          daemon.safeEmit(type, params[0][type]); // deprecated
         }
       });
       break;
@@ -191,10 +189,8 @@ function onpost(method, params) {
       Object.assign(daemon[method], params[0]);
       break;
   }
-  try {
-    if (window) window.webContents.send('daemon-post', method, params);
-    daemon.emit(method, ...params);
-  } catch(e) {}
+  if (window) window.webContents.send('daemon-post', method, params);
+  daemon.safeEmit(method, ...params);
 }
 
 // Finally put everything together and export the daemon instance
