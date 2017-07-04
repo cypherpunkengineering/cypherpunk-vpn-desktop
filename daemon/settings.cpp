@@ -43,7 +43,7 @@ bool Settings::WriteToDisk() const
 
 
 static const JsonArray g_certificate_authorities {
-	JsonArray {
+	(JsonValue) JsonArray {
 		"-----BEGIN CERTIFICATE-----",
 		"MIICPzCCAcagAwIBAgIJAMLqTfX9NxfOMAoGCCqGSM49BAMCMF4xCzAJBgNVBAYT",
 		"AklTMSIwIAYDVQQKDBlDeXBoZXJwdW5rIFBhcnRuZXJzLCBTbGYuMSswKQYDVQQD",
