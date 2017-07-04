@@ -690,7 +690,7 @@ void Connection::WriteOpenVPNProfile(std::ostream& out)
 	out << "tls-exit" << endl;
 
 	// Default security settings
-	out << "tls-cipher TLS-DHE-RSA-WITH-AES-256-GCM-SHA384:TLS-DHE-RSA-WITH-AES-256-CBC-SHA256:TLS-DHE-RSA-WITH-AES-128-GCM-SHA256:TLS-DHE-RSA-WITH-AES-128-CBC-SHA256" << endl;
+	out << "tls-cipher TLS-ECDHE-RSA-WITH-AES-256-GCM-SHA384:TLS-ECDHE-RSA-WITH-AES-256-CBC-SHA256:TLS-ECDHE-RSA-WITH-AES-128-GCM-SHA256:TLS-ECDHE-RSA-WITH-AES-128-CBC-SHA256" << endl;
 	out << "auth SHA256" << endl;
 	out << "tls-version-min 1.2" << endl;
 	out << "remote-cert-eku \"TLS Web Server Authentication\"" << endl;
