@@ -142,6 +142,15 @@ if [ "${USE_CYPHERPUNK_DNS}" = "true" ];then
 	fi
 fi
 
+# save previous DNS values
+SCUTIL_NO_SUCH_KEY="  No such key"
+DNS_BEFORE="$( scutil <<-EOF
+	open
+	show State:/Network/Global/DNS
+	quit
+EOF
+)"
+
 # first scutil configuration
 scutil <<- EOF
 	open
@@ -163,8 +172,16 @@ scutil <<- EOF
 EOF
 
 if [ "${USE_CYPHERPUNK_DNS}" = "true" ];then
+	SCUTIL_NO_SUCH_KEY="  No such key"
+	DNS_NOW="$( scutil <<-EOF
+		open
+		show State:/Network/Global/DNS
+		quit
+	EOF
+	)"
+
 	# second scutil configuration
-	scutil <<- EOF
+	scutil >/dev/null <<- EOF
 		open
 
 	##### backup the current DNS configurations
@@ -208,7 +225,33 @@ if [ "${USE_CYPHERPUNK_DNS}" = "true" ];then
 	EOF
 
 	# wait for settings to propagate to "Global"
-	sleep 0.2
+	ATTEMPTS_MAX=20
+	ATTEMPTS=0
+	while true;do
+		# bail out after X attempts
+		ATTEMPTS=$(($ATTEMPTS + 1))
+		if [ "${ATTEMPTS}" -gt "${ATTEMPTS_MAX}" ];then
+			echo "Max attempts reached!"
+			exit 1
+		fi
+
+		# get current DNS settings
+		DNS_AFTER="$( scutil <<-EOF
+			open
+			show State:/Network/Global/DNS
+			quit
+		EOF
+		)"
+
+		# check if propagated
+		if [ "${DNS_BEFORE}" != "${DNS_AFTER}" ];then
+			echo "DNS configuration propagated successfully after ${ATTEMPTS} attempts."
+			break
+		fi
+
+		# not propagated yet, wait a while and try again
+		sleep 0.1
+	done
 
 	# flush DNS cache so it uses new settings
 	flushDNSCache
