@@ -231,8 +231,8 @@ if [ "${USE_CYPHERPUNK_DNS}" = "true" ];then
 		# bail out after X attempts
 		ATTEMPTS=$(($ATTEMPTS + 1))
 		if [ "${ATTEMPTS}" -gt "${ATTEMPTS_MAX}" ];then
-			echo "Max attempts reached!"
-			exit 1
+			echo "DNS configuration propagation timeout after ${ATTEMPTS} attempts."
+			break
 		fi
 
 		# get current DNS settings
