@@ -6,7 +6,7 @@ export PATH="/bin:/sbin:/usr/sbin:/usr/bin"
 readonly SCRIPT_LOG_FILE="/usr/local/cypherpunk/var/log/leasewatcher.log"
 
 # check if configuration is present
-if ! scutil -w State:/Network/Cypherpunk &>/dev/null -t 1 ; then
+if ! scutil -w State:/Network/Cypherpunk -t 1 >/dev/null 2>&1; then
 	# if not, don't do anything
 	exit 0
 fi
@@ -116,12 +116,12 @@ EOF
 			if [ "${DNS_NOW}" = "${DNS_OLD}" ] ; then
 				# it changed to the pre-VPN value
 				echo "Restoring DNS settings to the post-VPN value" >> "${SCRIPT_LOG_FILE}"
-				scutil <<-EOF
+				scutil >/dev/null <<-EOF
 					open
 					get State:/Network/Cypherpunk/DNS
 					set State:/Network/Service/${PSID}/DNS
 					quit
-	EOF
+				EOF
 			# if DNS changed to something other than the pre-VPN value, network must have changed
 			else
 				# kill openvpn and exit

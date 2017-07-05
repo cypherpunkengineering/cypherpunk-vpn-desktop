@@ -257,7 +257,7 @@ if [ "${USE_CYPHERPUNK_DNS}" = "true" ];then
 	flushDNSCache
 
 	# third scutil configuration
-	scutil <<- EOF
+	scutil >/dev/null <<- EOF
 		open
 
 	##### store values for leasewatcher/down to compare against
