@@ -38,7 +38,7 @@ export default class PrivacyScreen extends DaemonAware(React.Component)  {
                   <input type="radio" name="encryption" value="default" id="encryption-default"/>
                   <label>Recommended Default
                   <small>Good balance of speed and privacy.</small>
-                  <div className="encryption-details"><span data-title="Cipher">AES-128-GCM</span><span data-title="Auth">SHA-256</span><span data-title="Key">RSA-4096</span></div>
+                  <div className="encryption-details">128-bit AES</div>
                   </label>
                 </div>
               </div>
@@ -46,8 +46,8 @@ export default class PrivacyScreen extends DaemonAware(React.Component)  {
                 <div className="ui left top radio checkbox">
                   <input type="radio" name="encryption" value="none" id="encryption-none"/>
                   <label>Max Speed
-                  <small>Fastest speed by using no additional encryption.</small>
-                  <div className="encryption-details"><span data-title="Cipher">NONE</span><span data-title="Auth">SHA-256</span><span data-title="Key">RSA-4096</span></div>
+                  <small>Fastest speed by disabling encryption.</small>
+                  <div className="encryption-details" data-position="bottom left" data-tooltip="Your traffic will be sent unencrypted and could be intercepted by hostile parties."><i className="fitted warning sign icon"/> UNENCRYPTED</div>
                   </label>
                 </div>
               </div>
@@ -55,17 +55,17 @@ export default class PrivacyScreen extends DaemonAware(React.Component)  {
                 <div className="ui left top radio checkbox">
                   <input type="radio" name="encryption" value="strong" id="encryption-strong"/>
                   <label>Max Privacy
-                  <small>Higher security by using stronger encryption.</small>
-                  <div className="encryption-details"><span data-title="Cipher">AES-256-GCM</span><span data-title="Auth">SHA-256</span><span data-title="Key">RSA-4096</span></div>
+                  <small>Use strongest available encryption.</small>
+                  <div className="encryption-details">256-bit AES</div>
                   </label>
                 </div>
               </div>
               <div className="setting">
                 <div className="ui left top radio checkbox">
                   <input type="radio" name="encryption" value="stealth" id="encryption-stealth"/>
-                  <label>Max Stealth
-                  <small>Anti-censorship stealth encryption.</small>
-                  <div className="encryption-details"><span data-title="Cipher">AES-128-GCM</span><span data-title="Auth">SHA-256</span><span data-title="Key">RSA-4096</span></div>
+                  <label>Max Freedom
+                  <small>Anti-censorship for hostile networks.</small>
+                  <div className="encryption-details">128-bit AES + XOR on HTTPS port</div>
                   </label>
                 </div>
               </div>
