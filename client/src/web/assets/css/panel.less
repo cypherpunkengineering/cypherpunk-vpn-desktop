@@ -464,6 +464,33 @@
           }
         }
 
+        > .ui.radio {
+          input {
+            ~ .box, ~ label {
+              &::before {
+                background: rgba(0,0,0,0.1);
+                border: 1px solid rgba(200,255,255,0.25);
+              }
+              &::after {
+
+              }
+            }            
+          }
+          input:checked {
+            ~ .box, ~ label {
+              &::before {
+                background: none;
+                box-shadow: 0 0 1px 2px rgba(255,255,255,0.8);
+              }
+              &::after {
+                transform: scale(0.8);
+                border: none;
+                background: #fd2 linear-gradient(135deg, transparent 45%, rgba(0,0,0,0.2) 55%);
+              }
+            }
+          }
+        }
+
         &.disabled {
           pointer-events: none !important;
           > * {
