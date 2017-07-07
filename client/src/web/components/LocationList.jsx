@@ -182,7 +182,7 @@ export class LocationList extends DaemonAware(React.Component) {
                     selected={this.props.selected === l.id}
                     ping={this.state.pingStats ? this.state.pingStats[l.id] : null}
                     onMouseEnter={() => this.props.onHover(l.id)}
-                    onClick={() => this.props.onClick(l.id)}
+                    onClick={() => !l.disabled && this.props.onClick(l.id)}
                   />
                 ))))
             ))
