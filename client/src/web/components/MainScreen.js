@@ -239,6 +239,11 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
     super.componentWillUnmount();
     this.dom.removeEventListener('keydown', this.tabBlocker, false);
   }
+  componentWillReceiveProps(props) {
+    if (props.children && this.state.locationListOpen) {
+      this.setState({ locationListOpen: false, mapLocation: null });
+    }
+  }
 
   render() {
     let panelOpen = !!this.props.children;
