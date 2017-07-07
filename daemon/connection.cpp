@@ -89,6 +89,7 @@ bool Connection::EnumFromString(const std::string& str, OpenVPNState& value)
 {
 	#define VALUE(name) if (str == "OPENVPN_"#name) { value = OPENVPN_##name; return true; }
 	VALUE(CONNECTING)
+	VALUE(TCP_CONNECT)
 	VALUE(WAIT)
 	VALUE(AUTH)
 	VALUE(GET_CONFIG)
@@ -195,7 +196,7 @@ void Connection::OnOpenVPNManagement(OpenVPNProcess* process, const asio::error_
 		if (params.size() >= 5) remote_ip = std::move(params[4]);
 
 		OpenVPNState state;
-		if (!EnumFromString("OPENVPN_" + params[1], state)) { LOG(WARNING) << "Unrecognied OpenVPN state: " << params[1]; return; }
+		if (!EnumFromString("OPENVPN_" + params[1], state)) { LOG(WARNING) << "Unrecognized OpenVPN state: " << params[1]; return; }
 		SetOpenVPNState(state);
 	}
 	else if (StartsWith(line, ">HOLD:"))
