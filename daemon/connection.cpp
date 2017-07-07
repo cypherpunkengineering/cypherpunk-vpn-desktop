@@ -628,6 +628,12 @@ void Connection::WriteOpenVPNProfile(std::ostream& out)
 	// Parse out protocol and remote port from remotePort setting
 	std::string protocol;
 	std::string remotePort;
+	if (g_settings.encryption() == "stealth")
+	{
+		protocol = "tcp";
+		remotePort = "443";
+	}
+	else
 	{
 		auto both = SplitToVector(g_settings.remotePort(), ':', 1);
 		protocol = std::move(both[0]);
