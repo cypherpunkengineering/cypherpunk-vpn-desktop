@@ -157,7 +157,13 @@ export class LocationList extends DaemonAware(React.Component) {
       .filter(l => l.enabled && !l.disabled && l.region !== 'DEV')
       .map(l => l.id)
       .sort((a, b) => (ping(a) - ping(b) || last(b) - last(a)));
-    return fastest.length ? fastest[0] : null;
+    if (fastest.length) {
+      if ((fastest[0] || '') !== daemon.settings.fastest) {
+        daemon.post.applySettings({ fastest: (fastest[0] || '') });
+      }
+      return fastest[0];
+    }
+    return null;
   }
   render() {
     let grouping = groupLocationsByRegion(this.state.locations, this.state.regions, this.state.regionOrder, this.state.countryNames);

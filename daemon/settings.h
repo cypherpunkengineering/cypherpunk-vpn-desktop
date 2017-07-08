@@ -42,6 +42,7 @@ public:
 	JsonField(std::string, remotePort, "udp:7133")
 	JsonField(std::string, location, "tokyodev") // FIXME: don't hardcode
 	JsonField(std::string, locationFlag, "") // "cypherplay", "fastest", "fastest-us", "fastest-uk" or empty
+	JsonField(std::string, fastest, "") // a cached fastest server which the daemon may switch to when (re)connecting if locationFlag is being used
 	JsonField(int, localPort, 0)
 	JsonField(int, mtu, 1500)
 	JsonField(std::string, encryption, "default") // "none", "default", "strong" or "stealth"

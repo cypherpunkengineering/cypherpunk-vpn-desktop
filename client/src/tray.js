@@ -232,7 +232,7 @@ class Tray {
             {
               label: cypherplayName,
               enabled: !!cypherplayLocation,
-              click: cypherplayLocation ? reconnectHandler({ location: cypherplayLocation, locationFlag: 'cypherplay' }) : null
+              click: cypherplayLocation ? reconnectHandler({ location: cypherplayLocation, fastest: cypherplayLocation, locationFlag: 'cypherplay' }) : null
             },
             { type: 'separator' }
           ].concat(

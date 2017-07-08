@@ -406,6 +406,16 @@ void Connection::CopySettings()
 	}
 	_cypherplay = g_settings.locationFlag() == "cypherplay";
 	_server = g_settings.currentLocation();
+	try
+	{
+		// If the client has specified a new fastest server, we are allowed to switch to it here
+		if (_cypherplay && g_settings.fastest() != "" && g_settings.fastest() != g_settings.location())
+		{
+			_server = g_config.locations().at(g_settings.fastest()).AsObject();
+		}
+	}
+	catch (...) {}
+
 	const JsonObject& login = g_account.privacy();
 	_username = login.at("username").AsString();
 	_password = login.at("password").AsString();
