@@ -88,7 +88,6 @@ public:
 		SLOW_RECONNECTION_ATTEMPT_INTERVAL = 10,
 	};
 
-private:
 	enum OpenVPNState
 	{
 		OPENVPN_CONNECTING,
@@ -103,11 +102,6 @@ private:
 		OPENVPN_EXITING,
 		OPENVPN_EXITED, // Process has exited
 	};
-
-	static bool EnumFromString(const std::string& str, State& value);
-	static const char* EnumToString(State value);
-	static bool EnumFromString(const std::string& str, OpenVPNState& value);
-	static const char* EnumToString(OpenVPNState value);
 
 private:
 	asio::io_service& _io;
@@ -175,3 +169,9 @@ public:
 	virtual void OnConnectionAttempt(Connection* connection, int attempt_number) {}
 	virtual void OnOpenVPNCallback(OpenVPNProcess* process, std::string line) {}
 };
+bool EnumFromString(const std::string& str, Connection::State& value);
+const char* EnumToString(Connection::State value);
+bool EnumFromString(const std::string& str, Connection::OpenVPNState& value);
+const char* EnumToString(Connection::OpenVPNState value);
+bool EnumFromString(const std::string& str, Connection::ErrorCode& value);
+const char* EnumToString(Connection::ErrorCode value);

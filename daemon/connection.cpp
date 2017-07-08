@@ -50,9 +50,9 @@ Connection::~Connection()
 	_connection_interval_timer.cancel();
 }
 
-bool Connection::EnumFromString(const std::string& str, State& value)
+bool EnumFromString(const std::string& str, Connection::State& value)
 {
-	#define VALUE(name) if (str == #name) { value = name; return true; }
+	#define VALUE(name) if (str == #name) { value = Connection::name; return true; }
 	VALUE(CONNECTING)
 	VALUE(STILL_CONNECTING)
 	VALUE(CONNECTED)
@@ -66,11 +66,11 @@ bool Connection::EnumFromString(const std::string& str, State& value)
 	return false;	
 }
 
-const char* Connection::EnumToString(State value)
+const char* EnumToString(Connection::State value)
 {
 	switch (value)
 	{
-		#define VALUE(name) case name: return #name;
+		#define VALUE(name) case Connection::name: return #name;
 		VALUE(CONNECTING)
 		VALUE(STILL_CONNECTING)
 		VALUE(CONNECTED)
@@ -85,9 +85,9 @@ const char* Connection::EnumToString(State value)
 	}
 }
 
-bool Connection::EnumFromString(const std::string& str, OpenVPNState& value)
+bool EnumFromString(const std::string& str, Connection::OpenVPNState& value)
 {
-	#define VALUE(name) if (str == "OPENVPN_"#name) { value = OPENVPN_##name; return true; }
+	#define VALUE(name) if (str == "OPENVPN_"#name) { value = Connection::OPENVPN_##name; return true; }
 	VALUE(CONNECTING)
 	VALUE(TCP_CONNECT)
 	VALUE(WAIT)
@@ -103,11 +103,11 @@ bool Connection::EnumFromString(const std::string& str, OpenVPNState& value)
 	return false;
 }
 
-const char* Connection::EnumToString(OpenVPNState value)
+const char* EnumToString(Connection::OpenVPNState value)
 {
 	switch (value)
 	{
-		#define VALUE(name) case OPENVPN_##name: return #name;
+		#define VALUE(name) case Connection::OPENVPN_##name: return #name;
 		VALUE(CONNECTING)
 		VALUE(WAIT)
 		VALUE(AUTH)
