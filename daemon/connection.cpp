@@ -222,7 +222,13 @@ void Connection::OnOpenVPNManagement(OpenVPNProcess* process, const asio::error_
 
 		OpenVPNState state;
 		if (!EnumFromString("OPENVPN_" + params[1], state)) { LOG(WARNING) << "Unrecognized OpenVPN state: " << params[1]; return; }
-		SetOpenVPNState(state);
+		if (process == _openvpn_process.get()) // avoid overwriting EXITED with EXITING
+			SetOpenVPNState(state);
+
+		if (state == OPENVPN_EXITING)
+		{
+			if (description == "tls-error") SignalError(TLS_HANDSHAKE_ERROR);
+		}
 	}
 	else if (StartsWith(line, ">HOLD:"))
 	{
@@ -230,14 +236,21 @@ void Connection::OnOpenVPNManagement(OpenVPNProcess* process, const asio::error_
 	}
 	else if (StartsWith(line, ">PASSWORD:"))
 	{
-		size_t q1 = line.find('\'', 10);
-		if (q1 == line.npos) { LOG(ERROR) << "Invalid password request"; return; }
-		size_t q2 = line.find('\'', q1 + 1);
-		if (q2 == line.npos) { LOG(ERROR) << "Invalid password request"; return; }
-		auto id = line.substr(q1 + 1, q2 - q1 - 1);
-		process->SendManagementCommand(
-			"username \"" + id + "\" \"" + _username + "\"\n"
-			"password \"" + id + "\" \"" + _password + "\"");
+		if (StartsWith(line, ">PASSWORD:Need "))
+		{
+			size_t q1 = line.find('\'', 10);
+			if (q1 == line.npos) { LOG(ERROR) << "Invalid password request"; return; }
+			size_t q2 = line.find('\'', q1 + 1);
+			if (q2 == line.npos) { LOG(ERROR) << "Invalid password request"; return; }
+			auto id = line.substr(q1 + 1, q2 - q1 - 1);
+			process->SendManagementCommand(
+				"username \"" + id + "\" \"" + _username + "\"\n"
+				"password \"" + id + "\" \"" + _password + "\"");
+		}
+		else if (StartsWith(line, ">PASSWORD:Verification Failed: "))
+			SignalError(AUTHENTICATION_FAILED);
+		else
+			SignalError(UNKNOWN_CRITICAL_ERROR);
 	}
 	else if (StartsWith(line, ">BYTECOUNT:"))
 	{
@@ -545,7 +558,7 @@ void Connection::Disconnect()
 			return;
 		default:
 			SetState(DISCONNECTING);
-			if (_openvpn_process)
+			if (_openvpn_process && _openvpn_state < OPENVPN_EXITING)
 				_openvpn_process->Shutdown();
 			if (_openvpn_state == OPENVPN_EXITED)
 				SetState(DISCONNECTED);
