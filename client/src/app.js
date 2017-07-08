@@ -2,7 +2,7 @@ const electron = require('electron');
 const { app, dialog, BrowserWindow, Tray, Menu, nativeImage: NativeImage, ipcMain: ipc } = electron;
 
 import fs from 'fs';
-import { eventPromise, timeoutPromise } from './util.js';
+import { eventPromise } from './util.js';
 import Notification from './notification.js';
 import AutoLaunch from './autostart.js';
 
@@ -78,11 +78,14 @@ let daemonPromise = null;
 function connectToDaemon(timeout = 2000) {
   if (!daemon) daemon = require('./daemon.js');
   if (!daemonPromise) {
-    daemonPromise = timeoutPromise(Promise.all([
-      daemon.connect(),
-      eventPromise(daemon, 'up'),
-      eventPromise(daemon, 'data'),
-    ]), timeout);
+    daemonPromise = Promise.race([
+      Promise.all([
+        daemon.connect(),
+        eventPromise(daemon, 'up'),
+        eventPromise(daemon, 'data'),
+      ]),
+      Promise.delay(timeout).then(() => { throw new Error("Unable to connect to the Cypherpunk Privacy background service; please try reinstalling the application."); }),
+    ]);
   }
   return daemonPromise;
 }
@@ -185,7 +188,10 @@ eventPromise(app, 'ready').then(() => {
   tray.create();
 }).catch(err => {
   if (err) {
-    dialog.showErrorBox("Initialization Error", "An unexpected error happened while launching Cypherpunk Privacy:\n\n" + (err.stack || require('util').inspect(err)));
+    dialog.showErrorBox(
+      err.name !== "Error" && err.name || "Initialization Error",
+      err.message || ("An unexpected error happened while launching Cypherpunk Privacy:\n\n" + (err.stack || require('util').inspect(err)))
+    );
     return exit(1);
   }
   return exit();

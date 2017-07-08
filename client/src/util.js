@@ -8,16 +8,28 @@ EventEmitter.prototype.safeEmit = function safeEmit(eventName, args) {
   }
 };
 
-export function eventPromise(emitter, name) {
-  return new Promise((resolve, reject) => {
-    emitter.once(name, resolve);
+Promise.delay = function delay(ms) {
+  let timeout;
+  let result = new Promise((resolve, reject) => {
+    timeout = setTimeout(() => { timeout = null; resolve(); }, ms);
+  });
+  result.cancel = function cancel() { if (timeout) { clearTimeout(timeout); timeout = null; } };
+  return result;
+}
+
+Promise.race = function race(iterable) {
+  return new Promise(function (resolve, reject) {
+    let promises = [ ...iterable ];
+    let inner = function(fn, n) { return function(v) { for (let i = 0; i < promises.length; i++) { if (i !== n && typeof promises[i].cancel === 'function') promises[i].cancel(); } fn(v); }; };
+    for (let i = 0; i < promises.length; i++) {
+      Promise.resolve(promises[i]).then(inner(resolve, i), inner(reject, i));
+    }
   });
 }
 
-export function timeoutPromise(promise, delay, timeoutIsSuccess = false) {
+export function eventPromise(emitter, name) {
   return new Promise((resolve, reject) => {
-    var timeout = setTimeout(() => { if (timeoutIsSuccess) resolve(); else reject(); }, delay);
-    promise.then(val => { clearTimeout(timeout); resolve(val); }, reject);
+    emitter.once(name, resolve);
   });
 }
 
