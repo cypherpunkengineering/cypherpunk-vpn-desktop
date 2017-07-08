@@ -229,10 +229,19 @@ void CypherDaemon::DoShutdown()
 
 void CypherDaemon::OnConnectionStateChanged(Connection* connection, Connection::State state)
 {
-	if (_state == INITIALIZED)
-		OnStateChanged(STATE);
-	else if (_state == EXITING && state == Connection::DISCONNECTED)
+	if (_state == EXITING && state == Connection::DISCONNECTED)
+	{
 		_io.post([this]() { DoShutdown(); });
+	}
+	else if (_state == INITIALIZED)
+	{
+		OnStateChanged(STATE);
+		if (state == Connection::DISCONNECTED && _shouldConnect)
+		{
+			_shouldConnect = false;
+			OnStateChanged(CONNECT);
+		}
+	}
 }
 
 void CypherDaemon::OnTrafficStatsUpdated(Connection* connection, uint64_t downloaded, uint64_t uploaded)
@@ -263,9 +272,13 @@ void CypherDaemon::SendToAllClients(const std::shared_ptr<jsonrpc::FormattedData
 		SendToClient(c, data);
 }
 
-void CypherDaemon::SendErrorToAllClients(const std::string& name, const std::string& description)
+void CypherDaemon::SendErrorToAllClients(std::string name, bool critical, std::string message)
 {
-	SendToAllClients(_rpc_client.BuildNotificationData("error", name, description));
+	JsonObject desc;
+	desc["name"] = std::move(name);
+	desc["critical"] = critical;
+	desc["message"] = std::move(message);
+	SendToAllClients(_rpc_client.BuildNotificationData("error", std::move(desc)));
 }
 
 void CypherDaemon::OnFirstClientConnected()

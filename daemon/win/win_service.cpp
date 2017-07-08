@@ -253,9 +253,8 @@ public:
 		if (error)
 		{
 			_io.post([this]() {
-				SendErrorToAllClients("firewall", "Unable to apply firewall rules; the firewall feature has been disabled.");
+				SendErrorToAllClients("FIREWALL_FAILURE", false, "Unable to activate killswitch; you will not be protected in case of accidental disconnections.");
 				g_settings.firewall("off");
-				g_settings.OnChanged({ "firewall" });
 			});
 		}
 	}
