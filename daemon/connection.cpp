@@ -123,6 +123,31 @@ const char* EnumToString(Connection::OpenVPNState value)
 	}
 }
 
+bool EnumFromString(const std::string& str, Connection::ErrorCode& value)
+{
+	#define VALUE(name) if (str == #name) { value = Connection::name; return true; }
+	VALUE(UNKNOWN_CRITICAL_ERROR)
+	VALUE(TLS_HANDSHAKE_ERROR)
+	VALUE(AUTHENTICATION_FAILED)
+	VALUE(UNKNOWN_ERROR)
+	#undef VALUE
+	return false;
+}
+
+const char* EnumToString(Connection::ErrorCode value)
+{
+	switch (value)
+	{
+		#define VALUE(name) case Connection::name: return #name;
+		VALUE(UNKNOWN_CRITICAL_ERROR)
+		VALUE(TLS_HANDSHAKE_ERROR)
+		VALUE(AUTHENTICATION_FAILED)
+		VALUE(UNKNOWN_ERROR)
+		#undef VALUE
+		default: return "";
+	}
+}
+
 
 Connection::State Connection::GetState()
 {
@@ -350,6 +375,25 @@ void Connection::SetState(State new_state)
 		_state = new_state;
 		if (_listener) _listener->OnConnectionStateChanged(this, _state);
 	}
+}
+
+void Connection::SignalError(ErrorCode error, std::string message)
+{
+	bool critical = error < UNKNOWN_ERROR;
+	if (message.empty())
+	{
+		switch (error)
+		{
+		case TLS_HANDSHAKE_ERROR: message = "Unable to establish a secure connection to the selected server. We may be experiencing temporary network issues."; break;
+		case AUTHENTICATION_FAILED: message = "An authentication failure occurred while connecting. Your subscription may have expired, or we might be having temporary network issues."; break;
+
+		case UNKNOWN_CRITICAL_ERROR: message = "An unknown critical error occurred while connecting."; break;
+		case UNKNOWN_ERROR: message = "An unknown error occurred while connecting."; break;
+		default: message = (error < UNKNOWN_ERROR) ? "A critical error occurred while connecting." : "An error occurred while connecting."; break;
+		}
+	}
+	if (_listener) _listener->OnConnectionError(this, error, critical, std::move(message));
+	if (critical) Disconnect();
 }
 
 void Connection::StartConnectionTimer(duration timeout)

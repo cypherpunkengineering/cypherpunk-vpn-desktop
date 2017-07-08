@@ -100,6 +100,7 @@ protected:
 	virtual void OnConnectionStateChanged(Connection* connection, Connection::State state) override;
 	virtual void OnTrafficStatsUpdated(Connection* connection, uint64_t downloaded, uint64_t uploaded) override;
 	virtual void OnConnectionAttempt(Connection* connection, int attempt) override;
+	virtual void OnConnectionError(Connection* connection, Connection::ErrorCode error, bool critical, std::string message) override;
 
 	void NotifyChanges();
 

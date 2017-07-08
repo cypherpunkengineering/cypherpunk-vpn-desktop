@@ -260,6 +260,11 @@ void CypherDaemon::OnConnectionAttempt(Connection* connection, int attempt)
 	}
 }
 
+void CypherDaemon::OnConnectionError(Connection* connection, Connection::ErrorCode error, bool critical, std::string message)
+{
+	SendErrorToAllClients(EnumToString(error), critical, std::move(message));
+}
+
 void CypherDaemon::SendToClient(ClientConnection connection, const std::shared_ptr<jsonrpc::FormattedData>& data)
 {
 	LOG(DEBUG) << "Sending RPC message: " << std::string(data->GetData(), data->GetSize());

@@ -88,6 +88,17 @@ public:
 		SLOW_RECONNECTION_ATTEMPT_INTERVAL = 10,
 	};
 
+	// Error codes for connection errors
+	enum ErrorCode
+	{
+		UNKNOWN_CRITICAL_ERROR = 0,
+		TLS_HANDSHAKE_ERROR, // Certificate problem or other TLS handshake error
+		AUTHENTICATION_FAILED, // OpenVPN auth username/password rejected; expired subscription or server misconfiguration
+
+		// Errors after this are not critical, i.e. do not necessarily mean the connection gets terminated
+		UNKNOWN_ERROR = 100,
+	};
+
 	enum OpenVPNState
 	{
 		OPENVPN_CONNECTING,
@@ -139,6 +150,7 @@ private:
 
 	void SetState(State new_state);
 	void SetOpenVPNState(OpenVPNState new_openvpn_state);
+	void SignalError(ErrorCode error, std::string message = std::string());
 
 	void StartConnectionTimer(duration timeout);
 	void OnSlowConnectionTimeout(const asio::error_code& error);
@@ -167,8 +179,10 @@ public:
 	virtual void OnConnectionStateChanged(Connection* connection, Connection::State state) {}
 	virtual void OnTrafficStatsUpdated(Connection* connection, uint64_t downloaded, uint64_t uploaded) {}
 	virtual void OnConnectionAttempt(Connection* connection, int attempt_number) {}
+	virtual void OnConnectionError(Connection* connection, Connection::ErrorCode error, bool critical, std::string message) {}
 	virtual void OnOpenVPNCallback(OpenVPNProcess* process, std::string line) {}
 };
+
 bool EnumFromString(const std::string& str, Connection::State& value);
 const char* EnumToString(Connection::State value);
 bool EnumFromString(const std::string& str, Connection::OpenVPNState& value);
