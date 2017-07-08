@@ -35,6 +35,13 @@ import server from './server.js';
 import analytics from './analytics.js';
 import { compareVersions } from './util.js';
 
+const ERROR_NAMES = {
+  'TLS_HANDSHAKE_ERROR': "Server handshake error",
+  'AUTHENTICATION_FAILURE': "Server authentication failure",
+  'UNKNOWN_CRITICAL_ERROR': "Unknown error",
+  'UNKNOWN_ERROR': "Unknown error",
+};
+
 function getTransition(diff) {
   if (diff.login === 'leave' && diff.main === 'enter') return 'fadeIn';
   if (diff.login === 'enter' || diff.root === 'enter') return null;
@@ -59,6 +66,7 @@ export default class Application {
 
     // Listen for daemon state changes
     daemon.on('state', Application.daemonStateChanged);
+    daemon.on('error', Application.daemonError);
 
     if (daemon.settings.enableAnalytics) {
       analytics.activate();
@@ -165,6 +173,13 @@ export default class Application {
           break;
       }
     }
+  }
+  static daemonError(error) {
+    Application.showMessageBox({
+      title: ERROR_NAMES[error.name] || error.name,
+      message: error.message,
+      type: error.critical ? 'error' : 'warning',
+    });
   }
   static render() {
     return (
