@@ -35,6 +35,7 @@ class Daemon extends EventEmitter {
     this.settings = {};
     this.state = {};
     this.setMaxListeners(0);
+    this.on('error', function() {}); // dummy listener to silence Node.js error detection
   }
   registerMethod(method, callback) {
     rpc.registerMethod(method, callback);

@@ -22,6 +22,8 @@ class WebSocketImpl extends EventEmitter {
     self._callbacks = {};
     self._handlers = {};
 
+    self.on('error', function() {}); // dummy listener to silence Node.js error detection
+
     // Helper function to connect to the websocket
     function connect() {
 
@@ -255,6 +257,9 @@ if (!process || process.type === 'renderer') {
       this._nextId = 0;
       this._callbacks = {};
       this._handlers = {};
+
+      this.on('error', function() {}); // dummy listener to silence Node.js error detection
+
       ipcRenderer.on('daemon-call', (event, method, params, id) => {
         try {
           var result;
