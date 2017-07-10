@@ -11,7 +11,7 @@ global.exiting = false;
 global.args = {
   debug: false,
   showWindowOnStart: true,
-  clean: null,
+  apiHost: 'api.cypherpunk.com',
 };
 
 global.exit = function exit(code) {
@@ -36,6 +36,7 @@ process.on('unhandledrejection', function (err, promise) {
     switch (a.shift()) {
       case '--debug': args.debug = true; break;
       case '--background': args.showWindowOnStart = false; break;
+      case '--test-api': args.apiHost = 'test-api.cypherpunk.engineering'; break;
     }
   }
 }

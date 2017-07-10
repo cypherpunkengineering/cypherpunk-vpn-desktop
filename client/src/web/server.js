@@ -1,5 +1,6 @@
+const { remote } = require('electron');
 
-const SERVER = "https://api.cypherpunk.com";
+const SERVER = `https://${remote.getGlobal('args').apiHost}`;
 
 const server = {};
 
