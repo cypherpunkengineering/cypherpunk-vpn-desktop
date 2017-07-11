@@ -34,15 +34,9 @@ if (process.platform == 'win32') {
   const runAppleScript = what => new Promise((resolve, reject) => {
     applescript.execString(`tell application "System Events" to ${what}`, (err, result) => { if (err) reject(err); else resolve(result); });
   });
-  AutoStart.enable = () => new Promise((resolve, reject) => {
-    return runAppleScript(`make login item at end with properties { path: ${JSON.stringify(execPath)}, name: ${JSON.stringify(appName)}, kind: "Application", hidden: true }`);
-  });
-  AutoStart.disable = () => new Promise((resolve, reject) => {
-    return runAppleScript(`delete login item ${JSON.stringify(appName)}`);
-  });
-  AutoStart.isEnabled = () => {
-    return runAppleScript('get the name of every login item').then(items => (items && items.indexOf(appName) >= 0)).catch(err => false);
-  };
+  AutoStart.enable = () => runAppleScript(`make login item at end with properties { path: ${JSON.stringify(execPath)}, name: ${JSON.stringify(appName)}, kind: "Application", hidden: true }`);
+  AutoStart.disable = () => runAppleScript(`delete login item ${JSON.stringify(appName)}`);
+  AutoStart.isEnabled = () => runAppleScript('get the name of every login item').then(items => (items && items.indexOf(appName) >= 0)).catch(err => false);
 
 } else if (process.platform == 'linux') {
 

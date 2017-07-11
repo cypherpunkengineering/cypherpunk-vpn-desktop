@@ -31,7 +31,7 @@ ipc.on('autostart-set', (event, enable) => {
     .catch(error => {
       console.error("Unable to write autostart configuration");
       event.sender.send('autostart-value', null);
-    })
+    });
 });
 
 // Catch navigation events from the window and use it to figure out login status
