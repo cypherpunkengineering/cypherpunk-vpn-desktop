@@ -49,6 +49,7 @@ function reconnectHandler(settings) {
   };
 }
 
+const CypherPlayIcon = getIconAsset('img/cypherplay');
 
 class Tray {
   electronTray = null;
@@ -179,7 +180,7 @@ class Tray {
       }
       if (this.state.settings.locationFlag === 'cypherplay') {
         locationName = cypherplayName;
-        locationFlag = null;
+        locationFlag = CypherPlayIcon;
         if (!cypherplayLocation) {
           locationName += " (calculating...)";
           connectEnabled = false;
@@ -231,6 +232,7 @@ class Tray {
           [
             {
               label: cypherplayName,
+              icon: CypherPlayIcon,
               enabled: !!cypherplayLocation,
               click: cypherplayLocation ? reconnectHandler({ location: cypherplayLocation, fastest: cypherplayLocation, locationFlag: 'cypherplay' }) : null
             },
