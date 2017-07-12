@@ -238,6 +238,7 @@ export default class AccountScreen extends DaemonAware(React.Component) {
             </div>
             <div className="pane" data-title="More">
               {/*<div className="setting"><ExternalLink href={`${WEBSITE_ROOT}/account/refer?user=${encodeURIComponent(this.state.account.account.email)}&secret=${encodeURIComponent(this.state.account.secret)}`}><div>Refer a Friend</div></ExternalLink></div>*/}
+              <div className="setting"><ExternalLink className="bug" href={`${WEBSITE_ROOT}/support/request/new`}>Report an Issue</ExternalLink></div>
               <div className="setting"><ExternalLink href={`${WEBSITE_ROOT}/support`}>Go to Help Center</ExternalLink></div>
               <div className="setting"><Link className="logout" to="/login/logout" tabIndex="0" onClick={() => analytics.event('Account', 'logout')}>Sign Out</Link></div>
             </div>
