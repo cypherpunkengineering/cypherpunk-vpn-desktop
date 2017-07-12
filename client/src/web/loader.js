@@ -1,33 +1,45 @@
 import 'semantic/components/dimmer';
 import 'semantic/components/loader';
 
-var loader = document.getElementById('load-screen');
-var loaderLabel = $(loader).find('div');
-var loading = true;
-
-loader.addEventListener('cancel', event => event.preventDefault());
-
-$(loader).dimmer({ closable: false });
-$(loader).dimmer('set dimmed');
-loader.showModal();
+let loader = null;
+let loaderLabel = null;
+let loading = true;
 
 export default class Loader {
   static show(text) {
-    var label = text || "Loading";
-    loaderLabel.text(label);
+    if (loaderLabel) loaderLabel.text(text || "Loading");
     if (!loading) {
       loading = true;
+      Loader.update();
+    }
+  }
+  static hide() {
+    if (loading) {
+      loading = false;
+      Loader.update();
+    }
+  }
+  static update() {
+    if (!loader) return;
+    if (loading) {
       $(loader).dimmer('show');
       if (!loader.open) {
         loader.showModal();
       }
+    } else {
+      if (loader.open) {
+        loader.close();
+      }
+      $(loader).dimmer('hide');
     }
-  }
-  static hide() {
-    $(loader).dimmer('hide');
-    if (loader.open) {
-      loader.close();
-    }
-    loading = false;
   }
 }
+
+function onDocumentReady() {
+  loader = document.getElementById('load-screen');
+  loader.addEventListener('cancel', event => event.preventDefault());
+  loaderLabel = $(loader).find('div');
+  Loader.update();
+}
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', onDocumentReady, false); else onDocumentReady();
