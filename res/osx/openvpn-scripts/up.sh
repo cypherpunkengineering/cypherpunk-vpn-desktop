@@ -4,7 +4,7 @@ trap "" HUP
 trap "" INT
 export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin"
 
-LEASEWATCHER_PLIST_PATH="/Library/LaunchDaemons/com.cypherpunk.privacy.leasewatcher.plist"
+LEASEWATCHER_PLIST_PATH="/usr/local/cypherpunk/etc/com.cypherpunk.privacy.leasewatcher.plist"
 
 trim() {
 	echo ${@}

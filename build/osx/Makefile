@@ -91,7 +91,7 @@ define do-stop-daemon
 	$(HUSH) sudo launchctl unload "/Library/LaunchDaemons/$(DAEMON_NS).plist" || true
 endef
 define do-stop-leasewatcher
-	$(HUSH) sudo launchctl unload "/Library/LaunchDaemons/$(LEASEWATCHER_NS).plist" || true
+	$(HUSH) sudo launchctl unload "/usr/local/cypherpunk/etc/$(LEASEWATCHER_NS).plist" || true
 endef
 
 start-daemon:
@@ -146,12 +146,12 @@ stage-client: client stage-daemon
 define DAEMON_MTREE
 #mtree
 Library/LaunchDaemons/$(DAEMON_NS).plist type=file mode=644
-Library/LaunchDaemons/$(LEASEWATCHER_NS).plist type=file mode=644
 usr/local/cypherpunk type=dir mode=755
 usr/local/cypherpunk/bin type=dir mode=755
 usr/local/cypherpunk/bin/$(DAEMON_FILENAME) type=file mode=755
 usr/local/cypherpunk/bin/$(OPENVPN_FILENAME) type=file mode=755
 usr/local/cypherpunk/etc type=dir mode=755
+usr/local/cypherpunk/etc/$(LEASEWATCHER_NS).plist type=file mode=644
 usr/local/cypherpunk/etc/pf.anchors type=dir mode=755
 $(subst +, ,$(subst $(SP),$(NL),$(patsubst $(ROOT)/res/osx/pf.anchors/%,usr/local/cypherpunk/etc/pf.anchors/%+type=file+mode=644,$(PF_ANCHORS))))
 usr/local/cypherpunk/etc/profiles type=dir mode=755
@@ -165,7 +165,7 @@ export DAEMON_MTREE
 $(STAGING)/daemon.tar.bz2: \
 	$(STAGING)/usr/local/cypherpunk/bin/$(DAEMON_FILENAME) \
 	$(STAGING)/Library/LaunchDaemons/$(DAEMON_NS).plist \
-	$(STAGING)/Library/LaunchDaemons/$(LEASEWATCHER_NS).plist \
+	$(STAGING)/usr/local/cypherpunk/etc/$(LEASEWATCHER_NS).plist \
 	$(STAGING)/usr/local/cypherpunk/bin/$(OPENVPN_FILENAME) \
 	$(OPENVPN_SCRIPTS:$(ROOT)/res/osx/openvpn-scripts/%=$(STAGING)/usr/local/cypherpunk/etc/scripts/%) \
 	$(PF_ANCHORS:$(ROOT)/res/osx/pf.anchors/%=$(STAGING)/usr/local/cypherpunk/etc/pf.anchors/%) \
@@ -176,7 +176,7 @@ $(STAGING)/daemon.tar.bz2: \
 
 stage-daemon: $(STAGING)/daemon.tar.bz2
 
-stage-leasewatcher: $(STAGING)/Library/LaunchDaemons/$(LEASEWATCHER_NS).plist
+stage-leasewatcher: $(STAGING)/usr/local/cypherpunk/etc/$(LEASEWATCHER_NS).plist
 
 $(STAGING)/usr/local/cypherpunk/bin/$(DAEMON_FILENAME): $(ROOT)/daemon/posix/out/$(DAEMON_FILENAME)
 	$(ECHO_STAGING)
@@ -234,7 +234,7 @@ install-daemon: stage-daemon
 	$(do-start-daemon)
 
 install-leasewatcher: stage-leasewatcher
-	$(HUSH) sudo cp -f "$(STAGING)/Library/LaunchDaemons/$(LEASEWATCHER_NS).plist" /Library/LaunchDaemons/
+	$(HUSH) sudo cp -f "$(STAGING)/usr/local/cypherpunk/etc/$(LEASEWATCHER_NS).plist" /usr/local/cypherpunk/etc/
 
 # Uninstalling from local machine
 
@@ -251,7 +251,7 @@ uninstall-daemon:
 
 uninstall-leasewatcher:
 	$(do-stop-leasewatcher)
-	$(HUSH) sudo rm -f "/Library/LaunchDaemons/$(LEASEWATCHER_NS).plist"
+	$(HUSH) sudo rm -f "/usr/local/cypherpunk/etc/$(LEASEWATCHER_NS).plist"
 
 # Final packages
 
