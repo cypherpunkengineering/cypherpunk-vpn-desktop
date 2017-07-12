@@ -1,8 +1,3 @@
-// While we use webpack's ProvidePlugin, there are apparently corner cases where
-// this is not called early enough, which can break Semantic UI components. Work
-// around it by explicitly installing these globals in this particular module.
-global.$ = global.jQuery = require('jquery');
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, browserHistory, hashHistory } from 'react-router';
