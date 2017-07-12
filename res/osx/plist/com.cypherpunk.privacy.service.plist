@@ -12,5 +12,7 @@
 	<true/>
 	<key>Umask</key>
 	<integer>022</integer>
+	<key>EnableTransactions</key>
+	<false/>
 </dict>
 </plist>
