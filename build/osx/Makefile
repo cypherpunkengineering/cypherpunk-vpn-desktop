@@ -205,7 +205,7 @@ $(STAGING)/Library/LaunchDaemons/$(DAEMON_NS).plist: $(ROOT)/res/osx/plist/$(DAE
 	$(ECHO_STAGING)
 	$(HUSH) mkdir -p $(dir $@)
 	$(HUSH) cp -p $< $@
-$(STAGING)/Library/LaunchDaemons/$(LEASEWATCHER_NS).plist: $(ROOT)/res/osx/plist/$(LEASEWATCHER_NS).plist
+$(STAGING)/usr/local/cypherpunk/etc/$(LEASEWATCHER_NS).plist: $(ROOT)/res/osx/plist/$(LEASEWATCHER_NS).plist
 	$(ECHO_STAGING)
 	$(HUSH) mkdir -p $(dir $@)
 	$(HUSH) cp -p $< $@
