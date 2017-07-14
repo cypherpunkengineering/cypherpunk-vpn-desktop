@@ -177,7 +177,7 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
   constructor(props) {
     super(props);
     this.daemonSubscribeState({
-      config: { locations: true, regions: true, countryNames: true, regionNames: true, regionOrder: true },
+      config: { locations: v => ({ locations: v, mapLocations: Object.assign({}, CACHED_COORDINATES, v) }), regions: true, countryNames: true, regionNames: true, regionOrder: true },
       settings: { location: true, locationFlag: true, favorites: v => ({ favorites: Array.toDict(v, f => f, f => true) }), lastConnected: true, overrideDNS: true, firewall: true },
       state: { state: v => ({ state: v, connectionState: simplifyConnectionState(v) }), connect: true, pingStats: true, bytesReceived: true, bytesSent: true },
     });
@@ -228,7 +228,7 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
           <Link className="left account page-link" to={panelOpen?"/main":"/account"} tabIndex={tabIndex} data-tooltip="My Account" data-position="bottom left"><RetinaImage src={AccountIcon}/></Link>
           <Link className="right settings page-link" to={panelOpen?"/main":"/configuration"} tabIndex={tabIndex} data-tooltip="Configuration" data-position="bottom right"><i className="settings icon"/></Link>
 
-          <WorldMap locations={Object.assign(CACHED_COORDINATES, this.state.locations)} location={(this.state.locationListOpen ? this.state.mapLocation : (this.state.locationFlag === 'cypherplay' ? 'cypherplay' : this.state.location)) || 'cypherplay'} className={classList({ "side": this.state.locationListOpen })}/>
+          <WorldMap locations={this.state.mapLocations} location={(this.state.locationListOpen ? this.state.mapLocation : (this.state.locationFlag === 'cypherplay' ? 'cypherplay' : this.state.location)) || 'cypherplay'} className={classList({ "side": this.state.locationListOpen })}/>
 
           <LocationList
             open={this.state.locationListOpen}
