@@ -443,7 +443,7 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
       font-size: 16px;
       text-transform: uppercase;
     }
-    .killswitch-warning {
+    .killswitch-warning, .error-status {
       [data-tooltip] {
         display: inline-block;
         width: 25px;
@@ -461,8 +461,13 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
           left: 25px;
           top: initial;
           margin-top: 29px;
-          white-space: normal;
+          white-space: pre-line;
         }
+      }
+    }
+    .error-status.critical {
+      [data-tooltip] {
+        color: #f66;
       }
     }
     .fadeInTransition(0.5s, ease-in, 0.3s);

@@ -179,7 +179,7 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
     this.daemonSubscribeState({
       config: { locations: v => ({ locations: v, mapLocations: Object.assign({}, CACHED_COORDINATES, v) }), regions: true, countryNames: true, regionNames: true, regionOrder: true },
       settings: { location: true, locationFlag: true, favorites: v => ({ favorites: Array.toDict(v, f => f, f => true) }), lastConnected: true, overrideDNS: true, firewall: true },
-      state: { state: v => ({ state: v, connectionState: simplifyConnectionState(v) }), connect: true, pingStats: true, bytesReceived: true, bytesSent: true },
+      state: { state: v => this.handleConnectionState(v), connect: true, pingStats: true, bytesReceived: true, bytesSent: true },
     });
   }
 
@@ -188,16 +188,30 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
     locationListOpen: false,
     locationListSelection: null,
     mapLocation: null,
+    lastError: null,
+  }
+  onError = error => {
+    this.setState({ lastError: error });
+  };
+
+  handleConnectionState(state) {
+    let result = { state, connectionState: simplifyConnectionState(state) };
+    if (state === 'CONNECTED') {
+      result.lastError = null;
+    }
+    return result;
   }
 
   componentDidMount() {
     super.componentDidMount();
     this.tabBlocker = function(e) { if (e.key === 'Tab') { e.preventDefault(); e.stopPropagation(); return false; } };
     this.dom.addEventListener('keydown', this.tabBlocker, false);
+    Application.on('error', this.onError);
   }
   componentWillUnmount() {
     super.componentWillUnmount();
     this.dom.removeEventListener('keydown', this.tabBlocker, false);
+    Application.removeListener('error', this.onError);
   }
   componentWillReceiveProps(props) {
     if (props.children && this.state.locationListOpen) {
@@ -210,7 +224,9 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
     let tabIndex = panelOpen ? "-1" : "0";
     let accountStatus = getAccountStatus();
     let connectionStatus = describeConnectionState(this.state.state);
-    if (this.state.state === 'DISCONNECTED' && this.state.firewall === 'on') {
+    if (this.state.lastError) {
+      connectionStatus = <span className={classList("error-status", { 'critical': this.state.lastError.critical })}>{connectionStatus} <span data-tooltip={`${this.state.lastError.message}\n\nError code: ${this.state.lastError.name}`} data-position="bottom right"><i className={(this.state.lastError.critical?'circle':'sign')+" warning fitted icon"}/></span></span>;
+    } else if (this.state.state === 'DISCONNECTED' && this.state.firewall === 'on') {
       connectionStatus = <span className="killswitch-warning">Killswitch Active <Link to="/configuration/firewall" data-tooltip="In order to preserve your privacy, your computer is being prevented from connecting to the internet. To regain connectivity, click here to access your settings." data-position="bottom right"><i class="info circle fitted icon"/></Link></span>;
     }
     switch (accountStatus) {
