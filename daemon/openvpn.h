@@ -44,9 +44,6 @@ public:
 	virtual ~OpenVPNProcess();
 
 public:
-	void CopySettings();
-	bool CompareSettings();
-
 	int StartManagementInterface();
 	void StopManagementInterface();
 	void SendManagementCommand(std::string cmd);

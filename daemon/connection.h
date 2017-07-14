@@ -163,7 +163,7 @@ public:
 	Connection(asio::io_service& io, ConnectionListener* listener);
 	~Connection();
 
-	void CopySettings(); // Saves necessary settings from g_settings
+	bool CopySettings(); // Saves necessary settings from g_settings, returns true if settings were changed
 
 	State GetState();
 	const char* GetStateString();

@@ -452,32 +452,47 @@ void Connection::OnOpenVPNExited(OpenVPNProcess* process, const asio::error_code
 	}
 }
 
-void Connection::CopySettings()
+bool Connection::CopySettings()
 {
-	_settings.clear();
+	JsonObject settings;
+	bool cypherplay;
+	JsonObject server;
+	std::string username, password;
+
 	for (auto name : g_connection_setting_names)
 	{
 		auto it = g_settings.map().find(name);
 		if (it != g_settings.map().end())
-			_settings[name] = JsonValue(it->second);
+			settings[name] = JsonValue(it->second);
 	}
-	_cypherplay = g_settings.locationFlag() == "cypherplay";
-	_server = g_settings.currentLocation();
+
+	cypherplay = g_settings.locationFlag() == "cypherplay";
+	server = g_settings.currentLocation();
 	try
 	{
 		// If the client has specified a new fastest server, we are allowed to switch to it here
-		if (_cypherplay && g_settings.fastest() != "" && g_settings.fastest() != g_settings.location())
+		if (cypherplay && g_settings.fastest() != "" && g_settings.fastest() != g_settings.location())
 		{
-			_server = g_config.locations().at(g_settings.fastest()).AsObject();
+			server = g_config.locations().at(g_settings.fastest()).AsObject();
 		}
 	}
 	catch (...) {}
 
 	const JsonObject& login = g_account.privacy();
-	_username = login.at("username").AsString();
-	_password = login.at("password").AsString();
+	username = login.at("username").AsString();
+	password = login.at("password").AsString();
+
+	bool changed = settings != _settings || cypherplay != _cypherplay || server != _server || username != _username || password != _password;
+
+	_settings = std::move(settings);
+	_cypherplay = cypherplay;
+	_server = std::move(server);
+	_username = std::move(username);
+	_password = std::move(password);
 
 	_needsReconnect = false;
+
+	return changed;
 }
 
 bool Connection::NeedsReconnect()
@@ -568,10 +583,6 @@ void Connection::Disconnect()
 
 void Connection::DoConnect()
 {
-	static int index = 0;
-	//index++; // FIXME: Just make GetAvailablePort etc. work properly instead
-
-
 	switch (_state)
 	{
 		case INTERRUPTED:
@@ -603,7 +614,9 @@ void Connection::DoConnect()
 		return;
 	}
 
-	CopySettings();
+	if (CopySettings())
+		_connection_attempts = 0;
+
 	_openvpn_process = std::make_shared<OpenVPNProcess>(_io, std::shared_ptr<OpenVPNListener>(shared_from_this(), this));
 
 	_last_openvpn_launch = clock::now();
@@ -642,7 +655,7 @@ void Connection::DoConnect()
 
 #if OS_WIN
 	args.push_back("--dev-node");
-	args.push_back(g_daemon->GetAvailableAdapter(index));
+	args.push_back(g_daemon->GetAvailableAdapter(0));
 #elif OS_OSX
 	args.push_back("--dev-node");
 	args.push_back("utun");
@@ -674,9 +687,7 @@ void Connection::DoConnect()
 
 	args.push_back("--config");
 
-	char profile_filename_tmp[32];
-	snprintf(profile_filename_tmp, sizeof(profile_filename_tmp), "profile%d.ovpn", index);
-	std::string profile_filename = GetPath(ProfileDir, EnsureExists, profile_filename_tmp);
+	std::string profile_filename = GetPath(ProfileDir, EnsureExists, "provile.ovpn");
 	{
 		std::ofstream f(profile_filename.c_str());
 		WriteOpenVPNProfile(f);
@@ -837,7 +848,8 @@ void Connection::WriteOpenVPNProfile(std::ostream& out)
 		std::string ipKey = "ov" + encryption;
 		ipKey[2] = std::toupper(ipKey[2]);
 		const auto& serverIPs = _server.at(ipKey).AsArray();
-		for (const auto& ip : serverIPs)
+		const auto& ip = serverIPs.at((_connection_attempts - 1) % serverIPs.size());
+		//for (const auto& ip : serverIPs)
 		{
 			out << "<connection>" << endl;
 			out << "  remote " << ip.AsString() << ' ' << remotePort << endl;
