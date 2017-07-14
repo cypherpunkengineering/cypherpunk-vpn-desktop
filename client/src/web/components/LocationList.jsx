@@ -28,12 +28,12 @@ export const Location = ({ location, className, selected = false, favorite = nul
         tag = 'FREE';
       }
       break;
-    case 'premium':
-      if (!location.authorized || !location.disabled) {
-        classes.push('premium');
-        tag = 'PREMIUM';
-      }
-      break;
+    //case 'premium':
+    //  if (!location.authorized || !location.disabled) {
+    //    classes.push('premium');
+    //    tag = 'PREMIUM';
+    //  }
+    //  break;
     case 'developer':
       classes.push('developer');
       tag = 'DEV';
