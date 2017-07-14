@@ -7,6 +7,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, browserHistory, hashHistory } from 'react-router';
 import { ipcRenderer, remote } from 'electron';
+import EventEmitter from 'events';
 import LoginScreen, * as Login from './components/LoginScreen';
 import MainScreen from './components/MainScreen';
 import ConfigurationScreen from './components/ConfigurationScreen';
@@ -55,10 +56,22 @@ function getTransition(diff) {
 
 let lastPath = null;
 
+global.Application = null;
+global.History = hashHistory;
+
 export const RootContainer = (props) => <TransitionGroup transition={getTransition} {...props}/>;
 
-export default class Application {
-  static init() {
+export default class ApplicationClass extends EventEmitter {
+  constructor() {
+    super();
+
+    this.on('error', function() {});
+
+    global.Application = this;
+    this.History = global.History;
+    this.History.listen((location, action) => this.onNavigation(location, action));
+    ipcRenderer.on('navigate', (event, location) => this.navigate(location));
+
     server.refreshSession = () => {
       if (!daemon.account.account.email || !daemon.account.account.token) {
         throw new Error("No stored account credentials found");
@@ -70,8 +83,8 @@ export default class Application {
     }
 
     // Listen for daemon state changes
-    daemon.on('state', Application.daemonStateChanged);
-    daemon.on('error', Application.daemonError);
+    daemon.on('state', state => this.daemonStateChanged(state));
+    daemon.on('error', error => this.daemonError(error));
 
     if (daemon.settings.enableAnalytics) {
       analytics.activate();
@@ -79,9 +92,10 @@ export default class Application {
 
     History.push('/login');
     // TODO: Later we'll probably want to run this at a different timing
-    Application.checkForUpdates();
+    this.checkForUpdates();
   }
-  static checkForUpdates() {
+
+  checkForUpdates() {
     server.get('/api/v1/app/versions' + (daemon.account.account && daemon.account.account.type === 'developer' ? '/developer' : '')).then(response => {
       var version = response.data[({ 'darwin':'macos', 'win32':'windows', 'linux':'debian' })[process.platform]];
       if (version !== undefined) {
@@ -101,7 +115,7 @@ export default class Application {
           messageSuffix += '\n\n' + version.description;
         }
         if (compareVersions(version.required, current) > 0) {
-          Application.showMessageBox({
+          this.showMessageBox({
             type: 'warning',
             title: "Update required",
             message: "In order to keep using Cypherpunk Privacy, a software update is required." + messageSuffix,
@@ -128,7 +142,7 @@ export default class Application {
               case 3: [ title, message ] = [ "Install update?", "An update is available; would you like to install it?" ]; break;
             }
             message += messageSuffix;
-            Application.showMessageBox({
+            this.showMessageBox({
               type: 'info',
               title,
               message,
@@ -145,7 +159,7 @@ export default class Application {
       }
     }).catch(err => console.warn("Update check failed:", err));
   }
-  static showMessageBox(options, callback) {
+  showMessageBox(options, callback) {
     if (process.platform === 'darwin') {
       // On macOS what would normally be the title should instead be the message, and the message should be the detail
       options.detail = options.message;
@@ -154,20 +168,20 @@ export default class Application {
     }
     return remote.dialog.showMessageBox(remote.getCurrentWindow(), options, callback);
   }
-  static navigate(location) {
-    Application.History.push(location);
+  navigate(location) {
+    History.push(location);
   }
-  static onNavigation(location, action) {
+  onNavigation(location, action) {
     if (lastPath !== location.pathname) {
       lastPath = location.pathname;
       analytics.screenview(lastPath);
     }
     ipcRenderer.send('navigate', location);
   }
-  static isLoggedIn() {
-    return Application.History.location.pathname.match(/^\/(?!login)./);
+  isLoggedIn() {
+    return History.location.pathname.match(/^\/(?!login)./);
   }
-  static daemonStateChanged(state) {
+  daemonStateChanged(state) {
     if (state.state) {
       switch (state.state) {
         case 'CONNECTED':
@@ -179,14 +193,11 @@ export default class Application {
       }
     }
   }
-  static daemonError(error) {
-    Application.showMessageBox({
-      title: ERROR_NAMES[error.name] || error.name,
-      message: error.message,
-      type: error.critical ? 'error' : 'warning',
-    });
+  daemonError(error) {
+    this.lastError = error;
+    this.emit('error', error);
   }
-  static render() {
+  render() {
     return (
       <Router history={window.History}>
         <Route path="/" component={RootContainer}>
@@ -223,10 +234,6 @@ export default class Application {
   }
 }
 
-// const store = configureStore();
-window.History = Application.History = hashHistory;
-hashHistory.listen((location, action) => Application.onNavigation(location, action));
-ipcRenderer.on('navigate', (event, location) => Application.navigate(location));
 
 // Add a simple handler for uncaught errors in promises (this will almost
 // entirely only be used by XHR promises).
@@ -253,10 +260,6 @@ $(window).focus(function(){
 });
 
 daemon.ready(() => {
-  daemon.once('state', state => {
-    Application.init();
-  });
-  daemon.post.get('state');
+  global.Application = new ApplicationClass();
+  ReactDOM.render(Application.render(), document.getElementById('root-container'));
 });
-
-ReactDOM.render(Application.render(), document.getElementById('root-container'));
