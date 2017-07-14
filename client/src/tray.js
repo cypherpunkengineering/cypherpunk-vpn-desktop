@@ -148,6 +148,7 @@ class Tray {
       case 'CONNECTED':
         return this.icons.connected;
       case 'DISCONNECTING':
+        return this.icons.connecting;
       case 'DISCONNECTED':
         if (this.state.settings.firewall === 'on') return this.icons.killswitch;
         // fallthrough
