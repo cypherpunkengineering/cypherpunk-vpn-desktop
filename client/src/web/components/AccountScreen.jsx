@@ -161,7 +161,7 @@ const AccountUserPane = ({ account, ...props }) => {
   let username, type, plan, expiration, renews = false;
   if (account.account) {
     username = account.account.email || '';
-    type = account.account.type;
+    type = account.account.type || 'free';
   }
   if (account.subscription) {
     plan = account.subscription.type || '';
@@ -169,7 +169,9 @@ const AccountUserPane = ({ account, ...props }) => {
     expiration = parseExpirationString(account.subscription.expiration);
   }
 
-  if (!type || type === 'free') {
+  let typeText = ACCOUNT_TYPE_NAMES[type];
+
+  if (type === 'free') {
     upgradeString = "Upgrade Now";
     upgradeURL = '/account/upgrade';
   }
@@ -200,16 +202,23 @@ const AccountUserPane = ({ account, ...props }) => {
     expirationString = SUBSCRIPTION_SCHEDULE_NAMES[plan];
   }
 
+  /*** PREVIEW ONLY ***/
+  if (type === 'free') {
+    typeText = "Preview Account";
+    expirationString = "Launching soon!";
+    upgradeURL = null;
+  }
+
   if (upgradeURL) {
     upgradeURL = `${WEBSITE_ROOT}${upgradeURL}?user=${encodeURIComponent(username)}&secret=${encodeURIComponent(account.secret)}`;
   }
   return (
     <div className="user pane" {...props}>
-      <AccountIllustration src={type==='free'?AccountBanner.free:AccountBanner.premium}/>
+      <AccountIllustration src={type === 'free' ? AccountBanner.free : AccountBanner.premium}/>
       <AccountUserField text={username}/>
       <AccountPlanField
         className={ACCOUNT_TYPE_NAMES.hasOwnProperty(type) ? type : null}
-        text={ACCOUNT_TYPE_NAMES[type]}
+        text={typeText}
         description={expirationString}
         descriptionClassName={expirationClassName}/>
       { upgradeURL ? <AccountUpgradeButton label={upgradeString} url={upgradeURL}/> : null }
