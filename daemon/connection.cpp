@@ -406,7 +406,14 @@ void Connection::SignalError(ErrorCode error, std::string message)
 		}
 	}
 	if (_listener) _listener->OnConnectionError(this, error, critical, std::move(message));
-	if (critical) Disconnect();
+	if (critical)
+	{
+		// Kill the currently running OpenVPN + trigger another connection attempt
+		if (_openvpn_process)
+			_openvpn_process->Shutdown();
+		else
+			_io.post(WEAK_CALLBACK(DoConnect));
+	}
 }
 
 void Connection::StartConnectionTimer(duration timeout)
