@@ -73,6 +73,8 @@ function setAccount(data) {
     }
     if (!data.account.confirmed) {
       History.push({ pathname: '/login/confirm', query: { email: daemon.account.account.email } });
+    } else if (data.account.type === 'invitation' || data.account.type === 'pending') { /*** PREVIEW ONLY ***/
+      History.push({ pathname: '/login/pending' });
     } else {
       return Promise.all([ refreshRegionList(), refreshLocationList() ]).then(() => {
         // TODO: Move to Application.onLoginSessionEstablished()
@@ -207,7 +209,8 @@ export class EmailStep extends Page {
     $(this.refs.email).prop('disabled', true).parent().addClass('loading');
     server.post('/api/v1/account/identify/email', { email: email }).then({
       200: response => History.push({ pathname: '/login/password', query: { email }}),
-      401: response => History.push({ pathname: '/login/register', query: { email }})
+      401: response => History.push({ pathname: '/login/register', query: { email }}),
+      402: response => History.push({ pathname: '/login/pending' }),
     }).catch(err => {
       if (!err.handled) {
         alert(err.message);
@@ -359,6 +362,18 @@ export class ConfirmationStep extends Page {
           <div className="desc">Awaiting email confirmation...</div>
           <div className="ui inline active large text loader" ref="loader"></div>
         </Page>
+    );
+  }
+}
+
+export class PendingStep extends Page {
+  static elements = [ WaitingPageBackground, PagePipe(), PageHeader(), BackLink({ key: 'back-from-pending', to: '/login/email' }) ];
+  render() {
+    return (
+      <Page className="login-pending">
+        <PageTitle><div className="text">Please wait a little longer!</div></PageTitle>
+        <div className="desc">Sorry, we are currently only offering limited previews via invitations only.<br/><br/>We'll let you know as soon as we launch, so please keep an eye on your inbox!</div>
+      </Page>
     );
   }
 }
