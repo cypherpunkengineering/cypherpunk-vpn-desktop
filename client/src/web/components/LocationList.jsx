@@ -177,7 +177,7 @@ export class LocationList extends DaemonAware(React.Component) {
         </div>
         <div ref="list" className="list" onMouseLeave={() => { this.props.onHover(this.props.selected || null); }}>
           <CypherPlayItem key="cypherplay" disabled={!this.state.fastest} selected={this.props.selected === 'cypherplay'} onMouseEnter={() => this.props.onHover('cypherplay')} onClick={this.state.fastest ? () => this.props.onClick('cypherplay:' + this.state.fastest) : null}/>
-          <FastestItem key="fastest" disabled={!this.state.fastest} location={this.state.fastest ? this.state.locations[this.state.fastest] : null} selected={false} onMouseEnter={this.state.fastest ? () => this.props.onHover(this.state.fastest) : null} onClick={this.state.fastest ? () => this.props.onClick(this.state.fastest) : null}/>
+          <FastestItem key="fastest" disabled={!this.state.fastest} location={this.state.fastest ? this.state.locations[this.state.fastest] : null} selected={false} onMouseEnter={this.state.fastest ? () => this.props.onHover(this.state.fastest) : null} onClick={this.state.fastest ? () => this.props.onClick(this.state.fastest) : null} ping={this.state.fastest && this.state.pingStats[this.state.fastest] || null}/>
           {
             Array.flatten(Object.mapToArray(grouping, (region, countries) => 
               [ <Header key={`header-${region}`} name={this.state.regionNames[region]}/> ]
