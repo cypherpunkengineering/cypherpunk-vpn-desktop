@@ -184,9 +184,9 @@ export class Logout extends Page {
   static elements = [];
   componentDidMount() {
     setImmediate(() => { // need to use setImmediate since we might modify History
-      daemon.post.disconnect(); // make sure we don't stay connected
       server.post('/api/v1/account/logout', null, { refreshSessionOnForbidden: false, catchAuthFailure: false })
         .catch(err => console.error("Error while logging out:", err))
+        .then(() => daemon.post.disconnect())
         .then(() => daemon.call.setAccount({ account: { email: daemon.account.account && daemon.account.account.email || '' } }))
         .then(() => daemon.call.applySettings({ enableAnalytics: false }))
         .then(() => analytics.deactivate())
