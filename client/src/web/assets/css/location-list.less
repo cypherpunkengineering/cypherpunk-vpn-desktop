@@ -32,8 +32,7 @@
     > .header {
       position: relative;
       line-height: 28px;
-      padding-top: 10px;
-      padding-left: @leftPadding;
+      padding: 10px 20px 0 @leftPadding;
       background: linear-gradient(7deg, rgba(0,0,0,0.3), transparent 50%);
       color: rgba(200,255,255,0.6);
       font-weight: 500;
@@ -41,6 +40,15 @@
       text-transform: uppercase;
       border-bottom: 2px solid rgba(80,255,255,0.07);
       margin-bottom: 4px;
+      > span {
+        position: absolute;
+        right: 20px;
+        bottom: 8px;
+        font-size: 10px;
+        font-weight: 400;
+        color: rgba(200,255,255,0.3);
+        line-height: 100%;
+      }
     }
     > .location {
       position: relative;

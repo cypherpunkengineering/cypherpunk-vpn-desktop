@@ -67,7 +67,7 @@ export const Location = ({ location, className, selected = false, favorite = nul
 }
 
 
-const Header = ({ name, count = null, ...props }) => <div className="header" data-count={count} {...props}>{name}</div>;
+const Header = ({ name, count = null, children = null, ...props }) => <div className="header" data-count={count} {...props}>{name}{children}</div>;
 const mapSorter = (mapper) => (a, b) => mapper(a).localeCompare(mapper(b));
 
 export function groupLocationsByRegion(locations, regions, regionOrder, countryNames) {
@@ -180,7 +180,7 @@ export class LocationList extends DaemonAware(React.Component) {
           <FastestItem key="fastest" disabled={!this.state.fastest} location={this.state.fastest ? this.state.locations[this.state.fastest] : null} selected={false} onMouseEnter={this.state.fastest ? () => this.props.onHover(this.state.fastest) : null} onClick={this.state.fastest ? () => this.props.onClick(this.state.fastest) : null} ping={this.state.fastest && this.state.pingStats[this.state.fastest] || null}/>
           {
             Array.flatten(Object.mapToArray(grouping, (region, countries) => 
-              [ <Header key={`header-${region}`} name={this.state.regionNames[region]}/> ]
+              [ <Header key={`header-${region}`} name={this.state.regionNames[region]}><span>Latency</span></Header> ]
                 .concat(Array.flatten(countries.map(c => c.locations.map(l =>
                   <Location
                     key={`location-${l.id}`}
