@@ -18,7 +18,8 @@ export default class Notification
         title = "Cypherpunk Privacy";
       }
       do {
-        if (!options.icon) options.icon = DEFAULT_NOTIFICATION_ICON;
+        // FIXME: MacOS displays the icon as a second image on High Sierra, figure out if it needs to be specified as another property or whether the app icon is fixed and unchangable
+        if (!options.icon && process.platform !== 'darwin') options.icon = DEFAULT_NOTIFICATION_ICON;
         // Make paths absolute
         ['badge','icon','image'].forEach(attr => {
           if (options[attr] && options[attr].indexOf(':') < 0 && !options[attr].startsWith('/')) {
