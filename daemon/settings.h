@@ -47,7 +47,7 @@ public:
 	JsonField(int, mtu, 1500)
 	JsonField(std::string, encryption, "default") // "none", "default", "strong" or "stealth"
 
-	JsonField(std::string, firewall, "off")
+	JsonField(std::string, firewall, "auto")
 	JsonField(bool, allowLAN, true)
 	JsonField(bool, blockIPv6, true)
 	JsonField(bool, overrideDNS, true)
