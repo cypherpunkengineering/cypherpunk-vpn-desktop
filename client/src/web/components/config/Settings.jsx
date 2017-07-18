@@ -144,7 +144,7 @@ export class LinkSetting extends Setting {
   render() {
     return (
       <SettingLine className={this.props.className} hidden={this.props.hidden} indented={this.props.indented} disabled={this.props.disabled}>
-        <Link to={this.props.to} tabIndex={this.props.disabled ? "-1" : "0"} onClick={!this.props.disabled && this.props.onClick} data-value={this.props.formatValue(daemon.settings[this.props.name])} ref="link">{this.props.label}{this.props.caption ? <small>{this.props.caption}</small> : null}</Link>
+        <Link to={this.props.to} tabIndex={this.props.disabled ? "-1" : "0"} onClick={this.props.disabled ? null : this.props.onClick} data-value={this.props.formatValue(daemon.settings[this.props.name])} ref="link">{this.props.label}{this.props.caption ? <small>{this.props.caption}</small> : null}</Link>
       </SettingLine>
     );
   }
