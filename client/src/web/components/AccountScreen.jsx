@@ -18,8 +18,6 @@ const AccountBanner = {
 };
 
 
-const WEBSITE_ROOT = 'https://cypherpunk.com';
-
 const ACCOUNT_TYPE_NAMES = {
   'free': "Trial Account",
   'premium': "Premium Account",
@@ -210,7 +208,7 @@ const AccountUserPane = ({ account, ...props }) => {
   }
 
   if (upgradeURL) {
-    upgradeURL = `${WEBSITE_ROOT}${upgradeURL}?user=${encodeURIComponent(username)}&secret=${encodeURIComponent(account.secret)}`;
+    upgradeURL = `${upgradeURL}?user=${encodeURIComponent(username)}&secret=${encodeURIComponent(account.secret)}`;
   }
   return (
     <div className="user pane" {...props}>
@@ -243,18 +241,18 @@ export default class AccountScreen extends DaemonAware(React.Component) {
           <div className="scrollable content">
             <AccountUserPane account={this.state.account}/>
             <div className="pane" data-title="Account Settings">
-              <div className="setting"><ExternalLink href={`${WEBSITE_ROOT}/account?user=${encodeURIComponent(this.state.account.account.email)}&secret=${encodeURIComponent(this.state.account.secret)}`}>Manage Account</ExternalLink></div>
+              <div className="setting"><ExternalLink href="/account" params={{ user: this.state.account.account.email, secret: this.state.account.secret }}>Manage Account</ExternalLink></div>
             </div>
             <div className="pane" data-title="More">
-              {/*<div className="setting"><ExternalLink href={`${WEBSITE_ROOT}/account/refer?user=${encodeURIComponent(this.state.account.account.email)}&secret=${encodeURIComponent(this.state.account.secret)}`}><div>Refer a Friend</div></ExternalLink></div>*/}
-              <div className="setting"><ExternalLink className="bug" href={`${WEBSITE_ROOT}/support/request/new`}>Report an Issue</ExternalLink></div>
-              <div className="setting"><ExternalLink href={`${WEBSITE_ROOT}/support`}>Go to Help Center</ExternalLink></div>
+              {/*<div className="setting"><ExternalLink href="/account/refer" params={{ user: this.state.account.account.email, secret: this.state.account.secret }}><div>Refer a Friend</div></ExternalLink></div>*/}
+              <div className="setting"><ExternalLink className="bug" href="/support/request/new">Report an Issue</ExternalLink></div>
+              <div className="setting"><ExternalLink href="/support">Go to Help Center</ExternalLink></div>
               <div className="setting"><Link className="logout" to="/login/logout" tabIndex="0" onClick={() => analytics.event('Account', 'logout')}>Sign Out</Link></div>
             </div>
             <div className="links footer">
-              <ExternalLink href={`${WEBSITE_ROOT}/terms-of-service`}>Terms of Service</ExternalLink>
-              <ExternalLink href={`${WEBSITE_ROOT}/privacy-policy`}>Privacy Policy</ExternalLink>
-              <ExternalLink href={`${WEBSITE_ROOT}/legal/license/desktop`}>License Information</ExternalLink>
+              <ExternalLink href="/terms-of-service">Terms of Service</ExternalLink>
+              <ExternalLink href="/privacy-policy">Privacy Policy</ExternalLink>
+              <ExternalLink href="/legal/license/desktop">License Information</ExternalLink>
             </div>
           </div>
         </PanelContent>
