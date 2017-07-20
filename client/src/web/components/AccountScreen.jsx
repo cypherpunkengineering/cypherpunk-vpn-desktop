@@ -201,7 +201,7 @@ const AccountUserPane = ({ account, ...props }) => {
   }
 
   /*** PREVIEW ONLY ***/
-  if (type === 'free') {
+  if (type === 'free' && plan === 'preview') {
     typeText = "Preview Account";
     expirationString = "Launching soon!";
     upgradeURL = null;
