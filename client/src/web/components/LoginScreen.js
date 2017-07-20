@@ -355,8 +355,8 @@ export class ConfirmationStep extends Page {
         ?
         <Page className="login-confirm">
           <PageTitle><div className="welcome">Setting up...</div><div className="text">{this.props.location.query.email}</div></PageTitle>
-          <div className="desc">
-            We haven't received your email confirmation yet.
+          <div className="desc" style={{ marginBottom: '2em' }}>
+            We haven't received your<br/>email confirmation yet.
           </div>
           <a className="button" tabIndex="0" onClick={() => this.onRetry()}><i className="refresh icon"/> Check again</a>
           <a className="button" tabIndex="0" onClick={() => this.onResend()}><i className="mail outline icon"/> Resend email</a>
@@ -364,7 +364,7 @@ export class ConfirmationStep extends Page {
         :
         <Page className="login-confirm">
           <PageTitle><div className="welcome">Setting up...</div><div className="text">{this.props.location.query.email}</div></PageTitle>
-          <div className="desc">Awaiting email confirmation...</div>
+          <div className="desc">Please check your email<br/>to confirm your account.</div>
           <div className="ui inline active large text loader" ref="loader"></div>
         </Page>
     );
