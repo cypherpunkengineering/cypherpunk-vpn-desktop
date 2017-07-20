@@ -20,7 +20,7 @@ export default class InternetSettings extends DaemonAware(React.Component) {
         <CheckboxSetting name="overrideDNS" className="advanced" hidden={!this.props.advanced} label="Use Existing DNS" on={false} off={true}/>
         <CheckboxSetting name="routeDefault" className="advanced" hidden={!this.props.advanced || daemon.account.account.type !== 'developer'} label="Use Split Tunneling" on={false} off={true}/>
         <CheckboxSetting name="exemptApple" className="advanced" hidden={!this.props.advanced || process.platform !== 'darwin'} label="Exempt Apple Services"/>
-        <CheckboxSetting name="optimizeDNS" className="advanced" hidden={!this.props.advanced || daemon.account.account.type !== 'developer'} disabled={!this.state.overrideDNS} label="Force CypherPlay&trade;"/>
+        <CheckboxSetting name="optimizeDNS" className="advanced" hidden={!this.props.advanced || (daemon.account.account.type !== 'developer' && daemon.account.account.type !== 'staff')} disabled={!this.state.overrideDNS} label="Force CypherPlay&trade;"/>
         {/*<CheckboxSetting name="allowLAN" className="advanced" hidden={!this.props.advanced} label="Always Allow LAN Traffic"/>*/}
       </div>
     );
