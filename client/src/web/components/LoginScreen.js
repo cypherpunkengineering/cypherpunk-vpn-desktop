@@ -8,6 +8,7 @@ import daemon from '../daemon.js';
 import server from '../server.js';
 import analytics from '../analytics.js';
 import { DEFAULT_REGION_DATA, classList } from '../util.js';
+import ExternalLink from './ExternalLink';
 const { session } = require('electron').remote;
 
 
@@ -270,8 +271,7 @@ export class PasswordStep extends Page {
           <input type="password" placeholder="Password" required autoFocus="true" ref="password" onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
           <i className="chevron right link icon" onClick={() => this.onSubmit()}></i>
         </div>
-        <a className="underline forgot link" tabIndex="0">Forgot password?</a>
-        {/*<Link className="back link" to="/login/email" tabIndex="0"><i className="undo icon"></i>Back</Link>*/}
+        <ExternalLink className="underline forgot link" href="/recover" params={{ email: this.props.location.query.email }} tabIndex="0">Forgot password?</ExternalLink>
       </Page>
     );
   }
