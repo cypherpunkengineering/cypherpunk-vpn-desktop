@@ -36,7 +36,7 @@ export default class PrivacyScreen extends DaemonAware(React.Component)  {
               <div className="setting">
                 <div className="ui left top radio checkbox">
                   <input type="radio" name="encryption" value="default" id="encryption-default"/>
-                  <label>Recommended Default
+                  <label>Balanced (Recommended)
                   <small>Good balance of speed and privacy.</small>
                   <div className="encryption-details">128-bit AES</div>
                   </label>
@@ -63,7 +63,7 @@ export default class PrivacyScreen extends DaemonAware(React.Component)  {
               <div className="setting">
                 <div className="ui left top radio checkbox">
                   <input type="radio" name="encryption" value="stealth" id="encryption-stealth"/>
-                  <label>Max Freedom
+                  <label>Max Stealth
                   <small>Anti-censorship for hostile networks.</small>
                   <div className="encryption-details">128-bit AES + XOR on HTTPS port</div>
                   </label>
