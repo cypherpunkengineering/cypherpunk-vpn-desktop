@@ -336,7 +336,12 @@ export class ConfirmationStep extends Page {
     this.setState({ timedOut: false });
   }
   onResend() {
-
+    server.post('/api/v1/account/recover/email', { email: this.props.location.query.email })
+      .then(() => {
+        this.onRetry();
+      }, err => {
+        Application.showMessageBox({ title: "Failed to resend", message: "An error occurred when attempting to resend the confirmation email. Please try logging in again, or restarting the app." });
+      });
   }
   componentDidMount() {
     this.beginPolling();
