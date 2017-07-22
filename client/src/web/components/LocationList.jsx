@@ -165,7 +165,7 @@ export class LocationList extends DaemonAware(React.Component) {
     }
   }
   onOpen() {
-    this.refreshLocationInterval = setInterval(() => refreshRegionsAndLocations().catch(() => {}), 10 * 1000); // 10 seconds
+    this.refreshLocationInterval = setInterval(() => { if (windowFocused) { refreshRegionsAndLocations().catch(() => {}); } }, 60 * 1000); // 60 seconds
   }
   onClose() {
     clearInterval(this.refreshLocationInterval);
