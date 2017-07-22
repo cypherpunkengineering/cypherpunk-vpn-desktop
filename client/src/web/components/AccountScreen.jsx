@@ -7,6 +7,7 @@ import { Subpanel, PanelContent } from './Panel';
 import daemon, { DaemonAware } from '../daemon';
 import RouteTransition from './Transition';
 import RetinaImage from './Image';
+import { refreshAccountIfNeeded } from './LoginScreen';
 import analytics from '../analytics';
 const { shell } = require('electron').remote;
 
@@ -231,6 +232,9 @@ export default class AccountScreen extends DaemonAware(React.Component) {
   }
   daemonAccountChanged(account) {
     this.setState({ account: Object.assign({}, daemon.account) });
+  }
+  componentWillMount() {
+    refreshAccountIfNeeded();
   }
   render() {
     return(
