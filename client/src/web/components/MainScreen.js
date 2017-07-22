@@ -15,6 +15,7 @@ import WorldMap from './WorldMap';
 import LocationList, { Location, CypherPlayItem } from './LocationList';
 import { Panel, PanelContent, PanelOverlay } from './Panel';
 import { getAccountStatus } from './AccountScreen';
+import { refreshAccountIfNeeded } from './LoginScreen';
 
 
 const CACHED_COORDINATES = {
@@ -192,12 +193,19 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
   }
   onError = error => {
     this.setState({ lastError: error });
-  };
+    if (error.name === 'AUTHENTICATION_FAILED') {
+      refreshAccountIfNeeded();
+    }
+  }
+  
 
   handleConnectionState(state) {
     let result = { state, connectionState: simplifyConnectionState(state) };
     if (state === 'CONNECTED') {
       result.lastError = null;
+    }
+    if (state !== this.state.state && state === 'DISCONNECTED') {
+      refreshAccountIfNeeded();
     }
     return result;
   }
