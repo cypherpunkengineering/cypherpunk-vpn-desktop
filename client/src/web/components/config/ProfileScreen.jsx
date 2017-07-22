@@ -47,7 +47,7 @@ export default class PrivacyScreen extends DaemonAware(React.Component)  {
                   <input type="radio" name="encryption" value="none" id="encryption-none"/>
                   <label>Max Speed
                   <small>Fastest speed by disabling encryption.</small>
-                  <div className="encryption-details" data-position="bottom left" data-tooltip="Your traffic will be sent unencrypted and could be intercepted by hostile parties."><i className="fitted warning sign icon"/> UNENCRYPTED</div>
+                  <div className="encryption-details" data-position="bottom left" data-tooltip="Your traffic will be sent without any additional encryption and could potentially be intercepted by hostile parties."><i className="fitted warning sign icon"/> UNENCRYPTED</div>
                   </label>
                 </div>
               </div>
