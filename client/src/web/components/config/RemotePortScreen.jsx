@@ -7,6 +7,10 @@ import { Subpanel, PanelContent } from '../Panel';
 import analytics from '../../analytics';
 
 const REMOTE_PORT_ALTERNATIVES = [ [ 'udp', [ 7133, 5060, 53 ] ], [ 'tcp', [ 7133, 5060, 53 ] ] ];
+const PROTOCOL_DESCRIPTIONS = {
+  'udp': "Usually gives the best speeds.",
+  'tcp': "Less likely to be blocked.",
+}
 
 export default class RemotePortScreen extends DaemonAware(React.Component)  {
   componentDidMount() {
@@ -37,6 +41,7 @@ export default class RemotePortScreen extends DaemonAware(React.Component)  {
             {
               REMOTE_PORT_ALTERNATIVES.map(([protocol, ports]) =>
                 <div className="pane" data-title={protocol.toUpperCase()} key={protocol}>
+                  <div className="setting description">{PROTOCOL_DESCRIPTIONS[protocol]}</div>
                   {
                     ports.map(port =>
                       <div className="setting" key={port}>
