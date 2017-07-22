@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { classList } from '../util';
 import daemon, { DaemonAware } from '../daemon';
 import { RetinaImage } from './Image';
+import { refreshRegionsAndLocations } from './LoginScreen';
 
 const CypherPlayIcon = { [1]: require('../assets/img/icon_cypherplay.png'), [2]: require('../assets/img/icon_cypherplay@2x.png') };
 
@@ -140,15 +141,34 @@ export class LocationList extends DaemonAware(React.Component) {
     });
     this.state.fastest = this.recalculateFastestServer(this.state);
   }
+  componentDidMount() {
+    super.componentDidMount();
+    if (this.props.open) this.onOpen();
+  }
   componentWillReceiveProps(props) {
-    if (props.open && !this.props.open) {
-      this.refs.list.scrollTop = 0;
+    if (props.hasOwnProperty('open')) {
+      if (props.open && !this.props.open) {
+        this.refs.list.scrollTop = 0;
+        this.onOpen();
+      } else if (!props.open && this.props.open) {
+        this.onClose();
+      }
     }
+  }
+  componentWillUnmount() {
+    super.componentWillUnmount();
+    if (this.props.open) this.onClose();
   }
   daemonDataChanged(state) {
     if (state.pingStats !== this.state.pingStats || state.locations !== this.state.locations) {
       return { fastest: this.recalculateFastestServer(state) };
     }
+  }
+  onOpen() {
+    this.refreshLocationInterval = setInterval(() => refreshRegionsAndLocations().catch(() => {}), 10 * 1000); // 10 seconds
+  }
+  onClose() {
+    clearInterval(this.refreshLocationInterval);
   }
   recalculateFastestServer(state) {
     const ping = l => (state.pingStats[l] && state.pingStats[l].replies > 0 && state.pingStats[l].average || 999);
