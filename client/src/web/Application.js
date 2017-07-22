@@ -252,6 +252,8 @@ window.addEventListener('unhandledrejection', function (event) {
   }
 });
 
+global.windowFocused = false;
+
 $(window).blur(function(){
   global.windowFocused = false;
   $('body').removeClass('is-focused');
