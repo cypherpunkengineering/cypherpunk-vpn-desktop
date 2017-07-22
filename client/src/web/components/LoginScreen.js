@@ -16,7 +16,7 @@ function nonEmpty(obj) {
   return (typeof obf === 'object' && obj && Object.keys(obj).length > 0) ? obj : null;
 }
 
-function refreshRegionList() {
+export function refreshRegionList() {
   var countryNames = nonEmpty(daemon.config.countryNames) || DEFAULT_REGION_DATA.countryNames;
   var regionNames = nonEmpty(daemon.config.regionNames) || Array.toDict(DEFAULT_REGION_DATA.regions, x => x[0], x => x[1]);
   var regionOrder = nonEmpty(daemon.config.regionOrder) || DEFAULT_REGION_DATA.regions.map(x => x[0]);
@@ -37,7 +37,7 @@ function refreshRegionList() {
   }).then(() => { countryNames, regionNames, regionOrder });
 }
 
-function refreshLocationList() {
+export function refreshLocationList() {
   return server.get('/api/v1/location/list/' + daemon.account.account.type).then(response => {
     var locations = response.data;
     Object.values(locations).forEach(l => {
@@ -60,13 +60,42 @@ function refreshLocationList() {
   });
 }
 
+
+let lastLocationRefresh = null;
+
+// Refresh regions and locations at the same time
+export function refreshRegionsAndLocations() {
+  lastLocationRefresh = new Date();
+  return Promise.all([ refreshRegionList(), refreshLocationList() ]);
+}
+
+// Refresh the location list, but only if some time has passed since the last refresh
+export function refreshRegionsAndLocationsIfNeeded() {
+  if (!lastLocationRefresh || new Date() - lastLocationRefresh > 60 * 1000) { // 1 minute
+    return refreshRegionsAndLocations();
+  }
+  return Promise.resolve();
+}
+
+
+let lastAccountRefresh = null;
+
 // Refresh the current account by querying the server
-function refreshAccount() {
+export function refreshAccount() {
+  lastAccountRefresh = new Date();
   return server.get('/api/v1/account/status').then(response => setAccount(response.data));
 }
 
+// Refresh the current account, but only if some time has passed since the last refresh
+export function refreshAccountIfNeeded() {
+  if (!lastAccountRefresh || new Date() - lastAccountRefresh > 5 * 60 * 1000) { // 5 minutes
+    return refreshAccount();
+  }
+  return Promise.resolve();
+}
+
 // Updates the application state after any new account data has been received
-function setAccount(data) {
+export function setAccount(data) {
   return daemon.call.setAccount(data).then(() => {
     if (data.account.type !== 'developer') {
       // switch off non-developer settings
@@ -77,7 +106,7 @@ function setAccount(data) {
     } else if (data.account.type === 'invitation' || data.account.type === 'pending') { /*** PREVIEW ONLY ***/
       History.push({ pathname: '/login/pending' });
     } else {
-      return Promise.all([ refreshRegionList(), refreshLocationList() ]).then(() => {
+      return refreshRegionsAndLocations().then(() => {
         // TODO: Move to Application.onLoginSessionEstablished()
         if (History.getCurrentLocation().pathname.startsWith('/login')) {
           History.push('/login/analytics');
