@@ -505,7 +505,7 @@ void CypherDaemon::NotifyChanges()
 
 	SendToAllClients(_rpc_client.BuildNotificationData("data", std::move(data)));
 
-	if (config.count("locations"))
+	if (config.count("locations") || ((state & STATE) && _state == INITIALIZED && _connection && _connection->GetState() == Connection::DISCONNECTED))
 		PingServers();
 
 	if (state & (STATE | CONNECT) || settings.count("firewall") || settings.count("allowLAN") || settings.count("overrideDNS"))
@@ -740,6 +740,9 @@ static inline const T& GetMember(const jsonrpc::Value::Struct& obj, const char* 
 
 void CypherDaemon::PingServers()
 {
+	if (_state != INITIALIZED || !_connection || _connection->GetState() != Connection::DISCONNECTED)
+		return;
+
 	static constexpr const auto PING_INTERVAL = std::chrono::minutes(5);
 	auto now = std::chrono::steady_clock::now();
 	_ping_timer.cancel();
