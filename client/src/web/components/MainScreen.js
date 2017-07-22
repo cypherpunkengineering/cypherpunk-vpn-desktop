@@ -201,7 +201,7 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
   onError = error => {
     this.setState({ lastError: error });
     if (error.name === 'AUTHENTICATION_FAILED') {
-      refreshAccountIfNeeded();
+      refreshAccountIfNeeded().catch(() => {});
     }
   }
   
@@ -212,7 +212,7 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
       result.lastError = null;
     }
     if (state !== this.state.state && state === 'DISCONNECTED') {
-      refreshAccountIfNeeded();
+      refreshAccountIfNeeded().catch(() => {});
     }
     return result;
   }

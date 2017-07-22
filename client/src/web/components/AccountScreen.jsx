@@ -234,7 +234,7 @@ export default class AccountScreen extends DaemonAware(React.Component) {
     this.setState({ account: Object.assign({}, daemon.account) });
   }
   componentWillMount() {
-    refreshAccountIfNeeded();
+    refreshAccountIfNeeded().catch(() => {});
   }
   render() {
     return(
