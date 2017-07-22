@@ -243,9 +243,9 @@ export class TransitionGroup extends React.Component {
         // Call callback with a { key: type } map of all current or pending transitions
         let allChildren = Object.assign(Object.mapValues(this.currentTransitions, (k, v) => v.type), this.pendingTransitions);
         if (Object.keys(allChildren).length > 0) {
-          console.log("getTransition in:", allChildren);
+          //console.log("getTransition in:", allChildren);
           result = this.props.transition(allChildren);
-          console.log("getTransition out:", result);
+          //console.log("getTransition out:", result);
           if (!result || typeof result === 'string') {
             result = { '*': result };
           }
@@ -291,16 +291,16 @@ export class TransitionGroup extends React.Component {
       let className = `${transitionName}-${type}`
       let activeClassName = `${className}-active`;
 
-      console.log(`Applying class ${className} to ${key}`);
+      //console.log(`Applying class ${className} to ${key}`);
       component.dom.classList.add(className);
       this.queueNextFrameCallback(key, () => {
-        console.log(`Applying class ${activeClassName} to ${key}`);
+        //console.log(`Applying class ${activeClassName} to ${key}`);
         component.dom.classList.add(activeClassName);
       });
       this.transitionTimeouts[key] = setTimeout(() => {
         delete this.transitionTimeouts[key];
         delete this.currentTransitions[key];
-        console.log(`Removing classes ${className} and ${activeClassName} from ${key}`);
+        //console.log(`Removing classes ${className} and ${activeClassName} from ${key}`);
         component.dom.classList.remove(className, activeClassName);
         if (this.pendingTransitions[key]) {
           // Queue a dummy function that appropriately triggers a new round of transitions
