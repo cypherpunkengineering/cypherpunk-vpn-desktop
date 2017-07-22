@@ -861,7 +861,12 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
 
   .login-register {
     .loader {
-      margin-top: 30px;
+      position: absolute;
+      left: 0;
+      top: auto;
+      right: 0;
+      bottom: 75px;
+      height: 50px !important;
     }
     .register {
       margin-top: 10px;
@@ -869,6 +874,25 @@ a[href^="http://"], a[href^="https://"], a[href^="ftp://"] { -webkit-user-drag: 
       font-size: 18px;
       font-weight: 500;
       line-height: 20px;
+      color: rgba(150,255,255,0.5);
+      .fadeInTransition(0.3s);
+    }
+    .license {
+      margin-top: 30px;
+      color: rgba(200,255,255,0.5);
+      .fadeInTransition(0.3s);
+      a {
+        .nondraggable;
+        transition: color 0.1s;
+      }
+    }
+    &.loading {
+      .register {
+        .fadeOutTransition(0.3s);
+      }
+      .license {
+        .fadeOutTransition(0.3s);
+      }
     }
   }
 

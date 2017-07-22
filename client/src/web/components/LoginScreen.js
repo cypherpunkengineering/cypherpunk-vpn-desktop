@@ -308,33 +308,33 @@ export class PasswordStep extends Page {
 
 export class RegisterStep extends Page {
   static elements = [ DefaultPageElements, BackLink({ key: 'back-from-register', to: '/login/email' }) ];
+  state = {
+    loading: false,
+  }
   onSubmit() {
-    var password = this.refs.password.value;
-    $(this.refs.password).prop('disabled', true);
-    $(this.refs.register).hide();
-    $(this.refs.loader).addClass('active');
+    let password = this.refs.password.value;
+    this.setState({ loading: true });
     server.post('/api/v1/account/register/signup', { email: this.props.location.query.email, password }).then(response => {
       return setAccount(response.data);
+      // will transition automatically
     }).catch(err => {
       if (!err.handled) {
         alert(err.message);
       }
-      $(this.refs.password).prop('disabled', false);
-      $(this.refs.register).show();
-      $(this.refs.loader).removeClass('active');
+      this.setState({ loading: false });
     });
   }
   render() {
     return(
-      <Page className="login-register">
+      <Page className={classList("login-register", { 'loading': this.state.loading })}>
         <PageTitle><div className="welcome">Welcome,</div><div className="text">{this.props.location.query.email}!</div></PageTitle>
         <div className="desc">Setting up your new account...</div>
         <div className="ui icon input">
-          <input type="password" placeholder="Choose a password" required autoFocus="true" ref="password" onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
+          <input type="password" placeholder="Choose a password" required autoFocus="true" ref="password" disabled={this.state.loading} onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
         </div>
         <a class="register link" ref="register" onClick={() => this.onSubmit()}>SIGN UP <i className="right chevron icon"/></a>
-        <div className="ui inline text loader" ref="loader"></div>
-        {/*<Link className="back link" to="/login/email" tabIndex="0"><i className="undo icon"></i>Back</Link>*/}
+        <div className="license">By signing up, you agree to our <ExternalLink href="/terms-of-service">Terms of Service</ExternalLink> and confirm that you have read our <ExternalLink href="/privacy-policy">Privacy Policy</ExternalLink>.</div>
+        <div className={classList("ui inline text loader", { 'active': this.state.loading })} ref="loader"></div>
       </Page>
     );
   }
