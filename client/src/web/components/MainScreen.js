@@ -15,7 +15,7 @@ import WorldMap from './WorldMap';
 import LocationList, { Location, CypherPlayItem } from './LocationList';
 import { Panel, PanelContent, PanelOverlay } from './Panel';
 import { getAccountStatus } from './AccountScreen';
-import { refreshAccountIfNeeded } from './LoginScreen';
+import { refreshAccountIfNeeded, refreshRegionsAndLocationsIfNeeded } from './LoginScreen';
 
 
 const CACHED_COORDINATES = {
@@ -191,6 +191,13 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
     mapLocation: null,
     lastError: null,
   }
+  onWindowFocus = () => {
+    refreshRegionsAndLocationsIfNeeded().catch(() => {});
+    this.refreshLocationsInterval = setInterval(() => { refreshRegionsAndLocationsIfNeeded().catch(() => {}); }, 10 * 60 * 1000);
+  }
+  onWindowBlur = () => {
+    clearInterval(this.refreshLocationsInterval);
+  }
   onError = error => {
     this.setState({ lastError: error });
     if (error.name === 'AUTHENTICATION_FAILED') {
@@ -215,11 +222,17 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
     this.tabBlocker = function(e) { if (e.key === 'Tab') { e.preventDefault(); e.stopPropagation(); return false; } };
     this.dom.addEventListener('keydown', this.tabBlocker, false);
     Application.on('error', this.onError);
+    window.addEventListener('focus', this.onWindowFocus);
+    window.addEventListener('blur', this.onWindowBlur);
+    if (windowFocused) this.onWindowFocus();
   }
   componentWillUnmount() {
     super.componentWillUnmount();
     this.dom.removeEventListener('keydown', this.tabBlocker, false);
     Application.removeListener('error', this.onError);
+    window.removeEventListener('focus', this.onWindowFocus);
+    window.removeEventListener('blur', this.onWindowBlur);
+    if (windowFocused) this.onWindowBlur();
   }
   componentWillReceiveProps(props) {
     if (props.children && this.state.locationListOpen) {
