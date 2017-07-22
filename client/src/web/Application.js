@@ -253,10 +253,12 @@ window.addEventListener('unhandledrejection', function (event) {
 });
 
 $(window).blur(function(){
+  global.windowFocused = false;
   $('body').removeClass('is-focused');
 });
 
 $(window).focus(function(){
+  global.windowFocused = true;
   $('body').addClass('is-focused');
 });
 
