@@ -336,7 +336,7 @@ export class ConfirmationStep extends Page {
     this.setState({ timedOut: false });
   }
   onResend() {
-    server.post('/api/v1/account/recover/email', { email: this.props.location.query.email })
+    server.post('/api/v1/account/confirm/resend', { email: this.props.location.query.email })
       .then(() => {
         this.onRetry();
       }, err => {
