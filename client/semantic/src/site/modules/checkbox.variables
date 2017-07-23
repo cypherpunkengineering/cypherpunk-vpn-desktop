@@ -63,7 +63,7 @@
 ;
 
 
-@toggleLaneWidth: 3rem;
+@toggleLaneWidth: 2.5rem;
 //@toggleHandleSize: 1.5rem;
 @toggleHandleSize: @20px; // FIXME: should match toggleLaneHeight below
 @toggleTransitionDuration: 0.2s;
