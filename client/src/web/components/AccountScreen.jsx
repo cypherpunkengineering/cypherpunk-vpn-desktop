@@ -14,8 +14,8 @@ const { shell } = require('electron').remote;
 import AccountIcon from '../assets/img/icon-account-big.svg';
 
 const AccountBanner = {
-  free: require('../assets/img/account_banner_free.png'),
-  premium: require('../assets/img/account_banner_premium.png'),
+  free: { [1]: require('../assets/img/account_banner_free.png'), [2]: require('../assets/img/account_banner_free@2x.png') },
+  premium: { [1]: require('../assets/img/account_banner_premium.png'), [2]: require('../assets/img/account_banner_premium@2x.png') },
 };
 
 
