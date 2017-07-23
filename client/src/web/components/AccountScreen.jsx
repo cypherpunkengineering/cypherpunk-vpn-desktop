@@ -24,8 +24,8 @@ const ACCOUNT_TYPE_NAMES = {
   'premium': "Premium Account",
   'family': "Family Account",
   'enterprise': "Enterprise Account",
-  'staff': "Staff",
-  'developer': "Developer",
+  'staff': "Staff Account",
+  'developer': "Developer Account",
   'expired': "Expired Account",
 };
 const SUBSCRIPTION_SCHEDULE_NAMES = {
