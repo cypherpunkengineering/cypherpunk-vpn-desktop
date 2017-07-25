@@ -310,6 +310,7 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
         alert("Connection failed; did you select a region?");
         daemon.post.get('state');
       });
+      this.setState({ lastError: null });
     } else {
       daemon.call.disconnect().catch(() => {
         daemon.post.get('state');
