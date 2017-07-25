@@ -80,6 +80,10 @@ function sendInternal(type, payload) {
   } else if (payload && typeof payload === 'object') {
     return new Promise((resolve, reject) => {
       let props = { t: type, v: 1, tid: trackingID, cid: clientID, ds: 'app', an: 'Cypherpunk Privacy', av: version, ul: language };
+      let uip = Application.ownIP;
+      if (uip) {
+        props.uip = uip;
+      }
       let now = new Date();
       queue.push({ type, time: now, payload: Object.assign(props, payload), resolve, reject });
       if (queue.length == 20) {
