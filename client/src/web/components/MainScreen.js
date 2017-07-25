@@ -15,7 +15,7 @@ import WorldMap from './WorldMap';
 import LocationList, { Location, CypherPlayItem } from './LocationList';
 import { Panel, PanelContent, PanelOverlay } from './Panel';
 import { getAccountStatus } from './AccountScreen';
-import { refreshAccountIfNeeded, refreshRegionsAndLocationsIfNeeded } from './LoginScreen';
+import { refreshAccountIfNeeded, refreshRegionsAndLocationsIfNeeded, refreshNetworkStatus } from './LoginScreen';
 
 
 const CACHED_COORDINATES = {
@@ -208,11 +208,16 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
 
   handleConnectionState(state) {
     let result = { state, connectionState: simplifyConnectionState(state) };
-    if (state === 'CONNECTED') {
-      result.lastError = null;
-    }
-    if (state !== this.state.state && state === 'DISCONNECTED') {
-      refreshAccountIfNeeded().catch(() => {});
+    if (state !== this.state.state) {
+      if (state === 'CONNECTED' || (state === 'CONNECTING' && this.state.state === 'DISCONNECTED')) {
+        result.lastError = null;
+      }
+      if (state === 'DISCONNECTED') {
+        refreshAccountIfNeeded().catch(() => {});
+      }
+      if (state === 'CONNECTED' || state === 'DISCONNECTED') {
+        refreshNetworkStatus().catch(() => {});
+      }
     }
     return result;
   }

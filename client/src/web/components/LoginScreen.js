@@ -98,6 +98,9 @@ let lastLocationRefresh = null;
 
 // Refresh regions and locations at the same time
 export function refreshRegionsAndLocations() {
+  // Refresh network status silently in the background as well
+  refreshNetworkStatusIfNeeded().catch(() => {});
+
   lastLocationRefresh = new Date();
   return Promise.all([ refreshRegionList(), refreshLocationList() ]);
 }
