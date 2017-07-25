@@ -181,6 +181,24 @@ export default class ApplicationClass extends EventEmitter {
   isLoggedIn() {
     return History.location.pathname.match(/^\/(?!login)./);
   }
+  get ownIP() {
+    return this._ownIP;
+  }
+  set ownIP(ip) {
+    if (ip !== this._ownIP) {
+      this._ownIP = ip;
+      this.emit('ipchange', { own: this._ownIP, vpn: this._vpnIP });
+    }
+  }
+  get vpnIP() {
+    return this._vpnIP;
+  }
+  set vpnIP(ip) {
+    if (ip !== this._vpnIP) {
+      this._vpnIP = ip;
+      this.emit('ipchange', { own: this._ownIP, vpn: this._vpnIP });
+    }
+  }
   daemonStateChanged(state) {
     if (state.state) {
       switch (state.state) {

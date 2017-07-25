@@ -61,6 +61,39 @@ export function refreshLocationList() {
 }
 
 
+let lastNetworkStatusRefresh = null;
+
+export function refreshNetworkStatus() {
+  let connectedState = daemon.state.state;
+  if (connectedState !== 'DISCONNECTED' && connectedState != 'CONNECTED') {
+    return Promise.reject(new Error("Can't call network status API while connecting or disconnecting"));
+  }
+  lastNetworkStatusRefresh = new Date();
+  return server.get('/api/v1/network/status').then(response => {
+    // Throw away if the connection state changed, not sure if public or anonymized IP
+    if (daemon.state.state !== connectedState) {
+      throw new Error('Connection state changed while fetching network status');
+    }
+    if (typeof response.data === 'object' && response.data.ip) {
+      if (connectedState === 'CONNECTED') {
+        Application.vpnIP = response.data.ip;
+      } else if (connectedState === 'DISCONNECTED') {
+        Application.ownIP = response.data.ip;
+      }
+      return response.data;
+    }
+    throw new Error('Bad data in network status response');
+  });
+}
+
+export function refreshNetworkStatusIfNeeded() {
+  if (!lastNetworkStatusRefresh || new Date() - lastNetworkStatusRefresh > 60 * 1000) { // 1 minute
+    return refreshNetworkStatus();
+  }
+  return Promise.resolve();
+}
+
+
 let lastLocationRefresh = null;
 
 // Refresh regions and locations at the same time
