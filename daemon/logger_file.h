@@ -48,6 +48,7 @@ public:
 	{
 		if (_file)
 		{
+			fflush(_file);
 			if (char* buf = new char[1024*1024])
 			{
 				if (FILE* f = daemon_fopen((_name + ".old").c_str(), "w"))
@@ -55,12 +56,18 @@ public:
 					size_t s = (fseek(_file, 0, SEEK_END), ftell(_file));
 					fseek(_file, 0, SEEK_SET);
 
+					size_t pos = ftell(_file);
+
 					while (s > 0)
 					{
 						size_t b = s > 1024 * 1024 ? 1024 * 1024 : s;
-						if (!fread(buf, b, 1, _file)) break;
-						if (!fwrite(buf, b, 1, f)) break;
-						s -= b;
+						// Windows moves the pointer even when reading, so always explicitly seek first
+						fseek(_file, -(long)s, SEEK_END);
+						size_t read = fread(buf, 1, b, _file);
+						if (!read) break;
+						size_t written = fwrite(buf, 1, read, f);
+						if (written != read) break;
+						s -= read;
 					}
 					if (!s)
 					{
