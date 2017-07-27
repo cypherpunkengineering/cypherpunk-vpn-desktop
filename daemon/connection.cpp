@@ -398,7 +398,7 @@ void Connection::SignalError(ErrorCode error, std::string message)
 		switch (error)
 		{
 		case TLS_HANDSHAKE_ERROR: message = "Unable to establish a secure connection to the selected server. We may be experiencing temporary network issues."; break;
-		case AUTHENTICATION_FAILED: message = "An authentication failure occurred while connecting. Your subscription may have expired, or we might be having temporary network issues."; break;
+		case AUTHENTICATION_FAILED: message = "An authentication failure occurred while connecting. You may have exceeded your device limit, or your subscription may have expired."; break;
 
 		case UNKNOWN_CRITICAL_ERROR: message = "An unknown critical error occurred while connecting."; break;
 		case UNKNOWN_ERROR: message = "An unknown error occurred while connecting."; break;
