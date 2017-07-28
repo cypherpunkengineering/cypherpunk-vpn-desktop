@@ -103,8 +103,11 @@ function runAsRoot(options) {
       p = p.then(() => exec('launchctl unload /Library/LaunchDaemons/com.cypherpunk.privacy.service.plist').catch(() => {}));
     }
     if (installDaemon) {
-      p = p.then(() => execFile('/usr/bin/tar', [ 'xyvpf', DAEMON_ARCHIVE, '-C', '/', ...DAEMON_PATH_WHITELIST ]));
-      p = p.then(() => execFile('/usr/bin/xattr', [ '-dr', 'com.apple.quarantine' ].concat(DAEMON_PATH_WHITELIST.map(d => '/' + d.slice(0,-1)))));
+      // Extract all files from the daemon archive, making sure to remove the quarantine flag from /usr/local/cypherpunk as well as any extracted files outside that directory
+      p = p.then(() =>
+            execFile('/usr/bin/tar', [ 'xyvpf', DAEMON_ARCHIVE, '-C', '/', ...DAEMON_PATH_WHITELIST ])
+            .then(stdout => stdout.split(/\r\n|[\n\r]/).filter(line => line.startsWith('x ')).map(file => '/' + f.slice(2)).filter(file => !file.startsWith('/usr/local/cypherpunk/')))
+            .then(files => execFile('/usr/bin/xattr', [ '-dr', 'com.apple.quarantine', '/usr/local/cypherpunk' ].concat(files))));
     }
     if (reloadPF) {
       p = p.then(() => exec('pfctl -q -f /etc/pf.conf'));
