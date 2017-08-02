@@ -17,6 +17,7 @@
 #include <string>
 
 #include <windows.h>
+#include <objbase.h>
 
 
 #define SERVICE_NAME             _T("CypherpunkPrivacyService")
@@ -26,7 +27,7 @@
 #else
 #define SERVICE_START_TYPE       SERVICE_AUTO_START
 #endif
-#define SERVICE_DEPENDENCIES     NULL // null-separated list
+#define SERVICE_DEPENDENCIES     _T("tap91337\0Dhcp\0\0") // null-separated list
 #define SERVICE_ACCOUNT          NULL // LocalSystem
 //#define SERVICE_ACCOUNT          _T("NT AUTHORITY\\LocalService")
 //#define SERVICE_ACCOUNT          _T("NT AUTHORITY\\NetworkService")
@@ -61,13 +62,33 @@ std::shared_ptr<Subprocess> Subprocess::Create(asio::io_service& io)
 	return std::make_shared<WinSubprocess>(io);
 }
 
+BOOL ThreadInitialize(bool main = false)
+{
+	int error;
+	if ((error = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED)))
+	{
+		printf("CoInitializeEx failed with error 0x%08x.\n", error);
+		return FALSE;
+	}
+	if (main)
+	{
+		if ((error = CoInitializeSecurity(NULL, -1, NULL, NULL, RPC_C_AUTHN_LEVEL_PKT, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE, NULL)))
+		{
+			printf("CoInitializeSecurity with error 0x%08x.\n", error);
+			return FALSE;
+		}
+	}
+	return TRUE;
+}
+
+
 
 class WinCypherDaemon : public CypherDaemon
 {
 public:
 	virtual int Run() override
 	{
-		if (win_get_tap_adapters().size() == 0)
+		if (win_get_tap_adapters(true).size() == 0)
 		{
 			LOG(CRITICAL) << "There are no installed TAP adapters on this machine!";
 			return -1;
@@ -102,7 +123,7 @@ public:
 	}
 	virtual std::string GetAvailableAdapter(int index) override
 	{
-		const auto& adapters = win_get_tap_adapters();
+		const auto& adapters = win_get_tap_adapters(true);
 		for (const auto& adapter : adapters)
 		{
 			// FIXME: Just return the first adapter for now; later improve to actually find an available one (see if they have a connected state?)
@@ -163,7 +184,7 @@ public:
 			} \
 		} while(false)
 
-		auto adapters = win_get_tap_adapters();
+		auto adapters = win_get_tap_adapters(true);
 
 		auto mode = g_settings.firewall();
 		if (!_connections.empty() && (mode == "on" || (_shouldConnect && mode == "auto")))
@@ -269,6 +290,9 @@ unsigned short GetPingIdentifier()
 
 static DWORD WINAPI ServiceWorkerThread(LPVOID lpParam)
 {
+	if (!ThreadInitialize())
+		return -1;
+
 	if (g_daemon)
 		return g_daemon->Run();
 	return -1;
@@ -767,6 +791,9 @@ static int ConsoleMain(int argc, TCHAR *argv[])
 
 int _tmain(int argc, TCHAR *argv[])
 {
+	if (!ThreadInitialize(true))
+		return 1;
+
 	InitPaths(argc > 0 ? convert<char>(argv[0]) : "./daemon.exe");
 
 	g_file_logger.Open(GetFile(LogDir, EnsureExists, "daemon.log"));

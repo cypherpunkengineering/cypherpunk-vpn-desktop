@@ -55,6 +55,7 @@ template<typename T> static inline T      ThrowLastErrorIfNonNull (T&&    result
 #define WIN_CHECK_IF_INVALID(api, args)    ThrowLastErrorIfInvalid    (api args, #api _D(, CURRENT_LOCATION))
 #define WIN_CHECK_ALWAYS(api, args)        CheckLastError             (api args, #api _D(, CURRENT_LOCATION))
 #define WIN_CHECK_RESULT(api, args)        CheckError                 (api args, #api _D(, CURRENT_LOCATION))
+#define WIN_CHECK_COM(ptr, fn, args)       CheckError                 (ptr->fn args, #fn _D(, CURRENT_LOCATION))
 
 #define PrintError(operation, error) LOG(ERROR) << #operation " failed: " << Error(error)
 #define PrintLastError(operation)   PLOG(ERROR) << #operation " failed: " << LastError
@@ -145,9 +146,12 @@ struct win_tap_adapter
 {
 	std::string guid;
 	uint64_t luid;
+	std::wstring adapter_name;
+	std::wstring connection_name;
+	bool is_custom_tap;
 };
 
-std::vector<win_tap_adapter> win_get_tap_adapters();
+std::vector<win_tap_adapter> win_get_tap_adapters(bool include_plain_tap = false);
 BOOL win_install_tap_adapter(int argc = 0, TCHAR **argv = NULL);
 BOOL win_uninstall_tap_adapters();
 

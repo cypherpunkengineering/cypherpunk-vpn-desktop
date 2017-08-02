@@ -14,6 +14,9 @@
 #include <iphlpapi.h>
 #include <rpc.h>
 
+#define _PRSHT_H_
+#include <netcon.h>
+
 #pragma comment (lib, "rpcrt4.lib")
 
 
@@ -27,6 +30,91 @@ void serialization::json_converter<JsonValue, GUID>::convert(JsonValue& dst, con
 	WIN_CHECK_RESULT(UuidToStringA, (&src, &str));
 	dst = std::string(reinterpret_cast<const char*>(str));
 	WIN_CHECK_RESULT(RpcStringFreeA, (&str));
+}
+
+
+template<class CLASS, class INTERFACE> HRESULT CoCreateInstance(LPUNKNOWN pUnkOuter, DWORD dwClsContext, INTERFACE** ppv)
+{ return ::CoCreateInstance(__uuidof(CLASS), pUnkOuter, dwClsContext, __uuidof(INTERFACE), (void**)ppv); }
+template<class CLASS, class INTERFACE> HRESULT CoCreateInstance(LPUNKNOWN pUnkOuter, INTERFACE** ppv)
+{ return ::CoCreateInstance(__uuidof(CLASS), pUnkOuter, CLSCTX_ALL, __uuidof(INTERFACE), (void**)ppv); }
+template<class CLASS, class INTERFACE> HRESULT CoCreateInstance(DWORD dwClsContext, INTERFACE** ppv)
+{ return ::CoCreateInstance(__uuidof(CLASS), NULL, dwClsContext, __uuidof(INTERFACE), (void**)ppv); }
+template<class CLASS, class INTERFACE> HRESULT CoCreateInstance(INTERFACE** ppv)
+{ return ::CoCreateInstance(__uuidof(CLASS), NULL, CLSCTX_ALL, __uuidof(INTERFACE), (void**)ppv); }
+template<class INTERFACE> HRESULT CoCreateInstance(const IID& rclsid, LPUNKNOWN pUnkOuter, DWORD dwClsContext, INTERFACE** ppv)
+{ return ::CoCreateInstance(rclsid, pUnkOuter, dwClsContext, __uuidof(INTERFACE), (void**)ppv); }
+template<class INTERFACE> HRESULT CoCreateInstance(const IID& rclsid, LPUNKNOWN pUnkOuter, INTERFACE** ppv)
+{ return ::CoCreateInstance(rclsid, pUnkOuter, CLSCTX_ALL, __uuidof(INTERFACE), (void**)ppv); }
+template<class INTERFACE> HRESULT CoCreateInstance(const IID& rclsid, DWORD dwClsContext, INTERFACE** ppv)
+{ return ::CoCreateInstance(rclsid, NULL, dwClsContext, __uuidof(INTERFACE), (void**)ppv); }
+template<class INTERFACE> HRESULT CoCreateInstance(const IID& rclsid, INTERFACE** ppv)
+{ return ::CoCreateInstance(rclsid, NULL, CLSCTX_ALL, __uuidof(INTERFACE), (void**)ppv); }
+
+template<class CLASS, class INTERFACE> INTERFACE* CoCreateInstance(LPUNKNOWN pUnkOuter, DWORD dwClsContext)
+{ INTERFACE* pv; WIN_CHECK_RESULT(CoCreateInstance, (__uuidof(CLASS), pUnkOuter, dwClsContext, __uuidof(INTERFACE), (void**)&pv)); return pv; }
+template<class CLASS, class INTERFACE> INTERFACE* CoCreateInstance(LPUNKNOWN pUnkOuter)
+{ INTERFACE* pv; WIN_CHECK_RESULT(CoCreateInstance, (__uuidof(CLASS), pUnkOuter, CLSCTX_ALL, __uuidof(INTERFACE), (void**)&pv)); return pv; }
+template<class CLASS, class INTERFACE> INTERFACE* CoCreateInstance(DWORD dwClsContext)
+{ INTERFACE* pv; WIN_CHECK_RESULT(CoCreateInstance, (__uuidof(CLASS), NULL, dwClsContext, __uuidof(INTERFACE), (void**)&pv)); return pv; }
+template<class CLASS, class INTERFACE> INTERFACE* CoCreateInstance()
+{ INTERFACE* pv; WIN_CHECK_RESULT(CoCreateInstance, (__uuidof(CLASS), NULL, CLSCTX_ALL, __uuidof(INTERFACE), (void**)&pv)); return pv; }
+template<class INTERFACE> INTERFACE* CoCreateInstance(const IID& rclsid, LPUNKNOWN pUnkOuter, DWORD dwClsContext)
+{ INTERFACE* pv; WIN_CHECK_RESULT(CoCreateInstance, (rclsid, pUnkOuter, dwClsContext, __uuidof(INTERFACE), (void**)&pv)); return pv; }
+template<class INTERFACE> INTERFACE* CoCreateInstance(const IID& rclsid, LPUNKNOWN pUnkOuter)
+{ INTERFACE* pv; WIN_CHECK_RESULT(CoCreateInstance, (rclsid, pUnkOuter, CLSCTX_ALL, __uuidof(INTERFACE), (void**)&pv)); return pv; }
+template<class INTERFACE> INTERFACE* CoCreateInstance(const IID& rclsid, DWORD dwClsContext)
+{ INTERFACE* pv; WIN_CHECK_RESULT(CoCreateInstance, (rclsid, NULL, dwClsContext, __uuidof(INTERFACE), (void**)&pv)); return pv; }
+template<class INTERFACE> INTERFACE* CoCreateInstance(const IID& rclsid)
+{ INTERFACE* pv; WIN_CHECK_RESULT(CoCreateInstance, (rclsid, NULL, CLSCTX_ALL, __uuidof(INTERFACE), (void**)&pv)); return pv; }
+
+template<class INTERFACE, class ORIGINAL = IUnknown> INTERFACE* com_cast(ORIGINAL* pUnknown)
+{ INTERFACE* pv; CheckError(pUnknown->QueryInterface(__uuidof(INTERFACE), (void**)&pv), "QueryInterface" _D(, CURRENT_LOCATION)); return pv; }
+
+
+template<typename First, typename... Args> struct GetLastType { typedef typename GetLastType<Args...>::TYPE TYPE; };
+template<typename Last> struct GetLastType<Last> { typedef Last TYPE; };
+
+template<class Interface, typename... FnArgs>
+struct ComReturnHelper
+{
+	Interface* p;
+	typedef decltype(*std::declval<typename GetLastType<FnArgs...>::TYPE>()) LastArg;
+	HRESULT(__stdcall Interface::*fn)(FnArgs...);
+	const char* name;
+#ifdef _DEBUG
+	const Location& loc;
+#endif
+	ComReturnHelper(Interface* p, HRESULT(__stdcall Interface::*fn)(FnArgs..., LastArg*) _D(, LOCATION_DECL)) : p(p), fn(fn) _D(loc(LOCATION_VAR)) {}
+	template<typename... Args> LastArg operator()(Args&&... args)
+	{
+		LastArg arg;
+		CheckError(p->fn(std::forward<Args>(args)..., &arg), name _D(, loc));
+		return arg;
+	}
+};
+
+template<class Interface, typename... Args>
+static inline ComReturnHelper<Interface, Args...> ComWrapCheckedReturnArg(Interface* p, HRESULT(__stdcall Interface::*fn)(Args...), const char* name _D(, LOCATION_DECL))
+{
+	return ComReturnHelper<Interface, Args...>(p, fn, name _D(, LOCATION_VAR));
+}
+
+
+
+template<class LastArg, class INTERFACE, typename... Args>
+static inline LastArg CheckCOMReturnLastArgument(INTERFACE* p, HRESULT (__stdcall INTERFACE::*fn)(Args..., LastArg*), const char* name _D(, LOCATION_DECL), Args&&... args)
+{
+	LastArg arg;
+	CheckError(p->*fn(std::forward<Args>(args)..., &arg), name _D(, LOCATION_VAR));
+	return arg;
+}
+
+
+template<class T> void SafeRelease(T*& p)
+{
+	IUnknown* u = p;
+	p->Release();
+	p = NULL;
 }
 
 
@@ -55,7 +143,7 @@ char HEX[256][4] = { 0 };
 
 
 
-std::vector<win_tap_adapter> win_get_tap_adapters()
+std::vector<win_tap_adapter> win_get_tap_adapters(bool include_plain_tap)
 {
 	std::vector<win_tap_adapter> result;
 
@@ -85,16 +173,100 @@ std::vector<win_tap_adapter> win_get_tap_adapters()
 	
 	for (auto address = addresses; address; address = address->Next)
 	{
-		if (address->Description && wcsstr(address->Description, L"TAP-Windows Adapter") != NULL)
+		if (address->Description && wcsstr(address->Description, L"Cypherpunk Privacy Virtual Network Adapter") != NULL)
 		{
 			win_tap_adapter adapter;
 			adapter.guid = address->AdapterName;
 			adapter.luid = address->Luid.Value;
+			adapter.adapter_name = address->Description;
+			adapter.connection_name = address->FriendlyName;
+			adapter.is_custom_tap = true;
 			result.push_back(std::move(adapter));
+		}
+	}
+	if (include_plain_tap)
+	{
+		for (auto address = addresses; address; address = address->Next)
+		{
+			if (address->Description && wcsstr(address->Description, L"TAP-Windows Adapter") != NULL)
+			{
+				win_tap_adapter adapter;
+				adapter.guid = address->AdapterName;
+				adapter.luid = address->Luid.Value;
+				adapter.adapter_name = address->Description;
+				adapter.connection_name = address->FriendlyName;
+				adapter.is_custom_tap = false;
+				result.push_back(std::move(adapter));
+			}
 		}
 	}
 
 	free(addresses);
+
+
+
+	try
+	{
+		auto nsm = CoCreateInstance<NetSharingManager, INetSharingManager>();
+		auto coll = ComWrapCheckedReturnArg(nsm, &INetSharingManager::get_EnumEveryConnection, "get_EnumEveryCollection", CURRENT_LOCATION)();
+
+		/*
+		INetSharingEveryConnectionCollection* coll = NULL;
+		WIN_CHECK_COM(nsm, get_EnumEveryConnection, (&coll));
+		IUnknown* u = NULL;
+		WIN_CHECK_COM(coll, get__NewEnum, (&u));
+		*/
+	}
+	catch (const Win32Exception& e)
+	{
+	}
+
+	INetSharingManager* nsm = NULL;
+	if (!(error = CoCreateInstance(__uuidof(NetSharingManager), NULL, CLSCTX_ALL, __uuidof(INetSharingManager), (void**)&nsm)))
+	{
+		INetSharingEveryConnectionCollection* coll = NULL;
+		if (!(error = nsm->get_EnumEveryConnection(&coll)))
+		{
+			IUnknown* u = NULL;
+			if (!(error = coll->get__NewEnum(&u)))
+			{
+				IEnumVARIANT* ev = NULL;
+				if (!(error = u->QueryInterface(&ev)))
+				{
+					VARIANT v;
+					VariantInit(&v);
+					while (!(error = ev->Next(1, &v, NULL)) && !found)
+					{
+						if (V_VT(&v) == VT_UNKNOWN)
+						{
+							INetConnection* nc = NULL;
+							if (!(error = V_UNKNOWN(&v)->QueryInterface(&nc)))
+							{
+								
+							}
+						}
+					}
+
+					SafeRelease(ev);
+				}
+				SafeRelease(u);
+			}
+			SafeRelease(coll);
+		}
+		SafeRelease(nsm);
+	}
+
+
+	
+
+
+
+
+
+
+
+
+
 
 	return std::move(result);
 }
@@ -116,29 +288,101 @@ static BOOL win_tap_install(LPTSTR cmdline)
 	return FALSE;
 }
 
-BOOL win_install_tap_adapter(int argc, TCHAR **argv)
+static win_tap_adapter win_tap_add(std::vector<win_tap_adapter>* existing = nullptr)
 {
-	if (argc >= 1) {
-		int count = 1;
-		try { count = std::stoi(argv[0]); }
-		catch (...) { return FALSE; }
-		auto adapters = win_get_tap_adapters();
-		if (adapters.size() >= count)
-			return TRUE;
-		count -= adapters.size();
-		while (count--)
+	std::vector<win_tap_adapter> local_existing;
+	if (!existing)
+	{
+		local_existing = win_get_tap_adapters(false);
+		existing = &local_existing;
+	}
+
+	if (win_tap_install(_T("tapinstall.exe install OemVista.inf tap91337")))
+	{
+		std::vector<win_tap_adapter> current = win_get_tap_adapters(false);
+		for (auto& adapter : current)
 		{
-			if (!win_tap_install(_T("tapinstall.exe install OemVista.inf tap0901")))
-				return FALSE;
+			if (std::find_if(existing->begin(), existing->end(), [&](const win_tap_adapter& a) { return a.guid == adapter.guid; }) == existing->end())
+			{
+				// Found first adapter which didn't previously exist; assume there are no others.
+				if (existing != &local_existing)
+				{
+					std::swap(current, *existing);
+				}
+				return std::move(adapter);
+			}
+		}
+	}
+	THROW_WIN32EXCEPTION(ERROR_DEV_NOT_EXIST, tapinstall.exe);
+}
+
+static BOOL win_tap_add2(std::vector<win_tap_adapter>* existing = nullptr)
+{
+	if (win_tap_install(_T("tapinstall.exe install OemVista.inf tap91337")))
+	{
+		if (existing)
+		{
+			auto adapters = win_get_tap_adapters(false);
+			std::vector<win_tap_adapter> added;
+			for (auto& adapter : adapters)
+			{
+				if (std::find_if(existing->begin(), existing->end(), [&](const win_tap_adapter& a) { return a.guid == adapter.guid; }) == existing->end())
+				{
+					// Adapter didn't already exist
+					LOG(INFO) << "Renaming \"" << adapter.connection_name << "\" to \"Cypherpunk Privacy\"";
+					added.push_back(std::move(adapter));
+				}
+			}
+			for (auto& adapter : added)
+			{
+				existing->push_back(std::move(adapter));
+			}
 		}
 		return TRUE;
 	}
-	return win_tap_install(_T("tapinstall.exe install OemVista.inf tap0901"));
+	return FALSE;
+}
+
+static BOOL win_tap_rename(const win_tap_adapter& adapter, PCWSTR name)
+{
+	// TODO: Either tweak registry or call netsh interface set interface name="{adapter.connection_name}" newname="Cypherpunk Privacy"
+
+
+
+	return TRUE;
+}
+
+BOOL win_install_tap_adapter(int argc, TCHAR **argv)
+{
+	auto existing = win_get_tap_adapters(false);
+	try
+	{
+		if (argc >= 1) {
+			int count = 1;
+			try { count = std::stoi(argv[0]); }
+			catch (...) { return FALSE; }
+			if ((int)existing.size() >= count)
+				return TRUE;
+			count -= (int)existing.size();
+			while (count--)
+			{
+				win_tap_rename(win_tap_add(&existing), L"Cypherpunk Privacy"); 
+			}
+			return TRUE;
+		}
+		win_tap_rename(win_tap_add(&existing), L"Cypherpunk Privacy");
+		return TRUE;
+	}
+	catch (const Win32Exception& e)
+	{
+		LOG(ERROR) << e;
+		return FALSE;
+	}
 }
 
 BOOL win_uninstall_tap_adapters()
 {
-	return win_tap_install(_T("tapinstall.exe remove tap0901"));
+	return win_tap_install(_T("tapinstall.exe remove tap91337"));
 }
 
 void win_get_ipv4_routing_table()
