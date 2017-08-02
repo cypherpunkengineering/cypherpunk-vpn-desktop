@@ -33,6 +33,47 @@ void serialization::json_converter<JsonValue, GUID>::convert(JsonValue& dst, con
 }
 
 
+template<class Interface = IUnknown, const IID* piid = &__uuidof(Interface)>
+class com_ptr
+{
+	Interface* ptr;
+private:
+	template<typename I2, const IID* piid2> friend class com_ptr;
+	void Reset(Interface* p = NULL) { if (ptr) ptr->Release(); ptr = p; }
+	Interface* GetWithAddRef() const { if (ptr) ptr->AddRef(); return ptr; }
+	template<typename I2, const IID* piid2> I2* GetWithQueryInterface() const { if (!ptr) return NULL; I2* p = NULL; WIN_CHECK_COM(ptr, QueryInterface, (*piid2, (void**)&p)); return p; }
+	com_ptr(Interface* ptr) noexcept : ptr(ptr) {}
+public:
+	com_ptr() : ptr(NULL) noexcept {}
+	com_ptr(const com_ptr& copy) : ptr(copy.GetWithAddRef()) {}
+	com_ptr(com_ptr&& move) noexcept : ptr(std::exchange(move.ptr, NULL)) {}
+	template<class I2, const IID* piid2> explicit com_ptr(const com_ptr<I2, piid2>& copy) : ptr(copy.GetWithQueryInterface<Interface, piid>()) {}
+	~com_ptr() { Reset(); }
+	com_ptr& operator=(const com_ptr& copy) { Reset(copy.GetWithAddRef()); return *this; }
+	com_ptr& operator=(com_ptr&& move) { Reset(std::exchange(move.ptr, NULL)); return *this; }
+
+	operator Interface*() const noexcept { return ptr; }
+	Interface* operator->() const noexcept { return ptr; }
+
+	Interface* release() noexcept { return std::exchange(ptr, NULL); }
+
+	static com_ptr wrap(Interface* ptr) noexcept { return com_ptr(ptr); }
+	template<class Class> static com_ptr create(IUnknown* outer = NULL, DWORD context = CLSCTX_ALL) { return create(__uuidof(Class), outer, context); }
+	template<class Class> static com_ptr create(DWORD context) { return create(__uuidof(Class), NULL, context); }
+	static com_ptr create(const IID& clsid, DWORD context) { return create(clsid, NULL, context); }
+	static com_ptr create(const IID& clsid, IUnknown* outer = NULL, DWORD context = CLSCTX_ALL) { Interface* p = NULL; WIN_CHECK_RESULT(CoCreateInstance, (clsid, outer, context, *piid, (void**)&p)); return com_ptr(p); }
+};
+
+template<class Class, class Interface>
+static inline com_ptr<Interface> com_create(IUnknown* outer = NULL, DWORD context = CLSCTX_ALL) { return com_ptr<Interface>::create<Class>(outer, context); }
+
+template<class Interface, class OriginalPtr> com_ptr<Interface> com_cast(OriginalPtr&& pUnknown)
+{ return com_ptr<Interface>(std::forward<OriginalPtr>(pUnknown)); }
+template<class Interface> com_ptr<Interface> com_cast(IUnknown* pUnknown)
+{ Interface* p = NULL; if (pUnknown) CheckError(pUnknown->QueryInterface<Interface>(&p), "QueryInterface" _D(, CURRENT_LOCATION)); return com_ptr<Interface>::wrap(p); }
+
+
+/*
 template<class CLASS, class INTERFACE> HRESULT CoCreateInstance(LPUNKNOWN pUnkOuter, DWORD dwClsContext, INTERFACE** ppv)
 { return ::CoCreateInstance(__uuidof(CLASS), pUnkOuter, dwClsContext, __uuidof(INTERFACE), (void**)ppv); }
 template<class CLASS, class INTERFACE> HRESULT CoCreateInstance(LPUNKNOWN pUnkOuter, INTERFACE** ppv)
@@ -66,38 +107,41 @@ template<class INTERFACE> INTERFACE* CoCreateInstance(const IID& rclsid, DWORD d
 { INTERFACE* pv; WIN_CHECK_RESULT(CoCreateInstance, (rclsid, NULL, dwClsContext, __uuidof(INTERFACE), (void**)&pv)); return pv; }
 template<class INTERFACE> INTERFACE* CoCreateInstance(const IID& rclsid)
 { INTERFACE* pv; WIN_CHECK_RESULT(CoCreateInstance, (rclsid, NULL, CLSCTX_ALL, __uuidof(INTERFACE), (void**)&pv)); return pv; }
-
-template<class INTERFACE, class ORIGINAL = IUnknown> INTERFACE* com_cast(ORIGINAL* pUnknown)
-{ INTERFACE* pv; CheckError(pUnknown->QueryInterface(__uuidof(INTERFACE), (void**)&pv), "QueryInterface" _D(, CURRENT_LOCATION)); return pv; }
-
+*/
 
 template<typename First, typename... Args> struct GetLastType { typedef typename GetLastType<Args...>::TYPE TYPE; };
 template<typename Last> struct GetLastType<Last> { typedef Last TYPE; };
+
+template<class Type, typename = void> struct com_ptr_wrapper { static Type wrap(Type&& t) noexcept { return t; } };
+template<class Type> struct com_ptr_wrapper<Type*, std::enable_if_t<std::is_base_of<IUnknown, Type>::value>> { static com_ptr<Type> wrap(Type*&& t) { return com_ptr<Type>::wrap(t); } };
 
 template<class Interface, typename... FnArgs>
 struct ComReturnHelper
 {
 	Interface* p;
-	typedef decltype(*std::declval<typename GetLastType<FnArgs...>::TYPE>()) LastArg;
-	HRESULT(__stdcall Interface::*fn)(FnArgs...);
+	typedef HRESULT(__stdcall Interface::*FnPtr)(FnArgs...);
+	typedef std::remove_reference_t<decltype(*std::declval<typename GetLastType<FnArgs...>::TYPE>())> LastArg;
+	FnPtr fn;
 	const char* name;
 #ifdef _DEBUG
 	const Location& loc;
 #endif
-	ComReturnHelper(Interface* p, HRESULT(__stdcall Interface::*fn)(FnArgs..., LastArg*) _D(, LOCATION_DECL)) : p(p), fn(fn) _D(loc(LOCATION_VAR)) {}
-	template<typename... Args> LastArg operator()(Args&&... args)
+	ComReturnHelper(Interface* p, FnPtr fn, const char* name _D(, LOCATION_DECL)) noexcept : p(p), fn(fn), name(name) _D(, loc(LOCATION_VAR)) {}
+	template<typename... Args> auto operator()(Args&&... args) -> decltype(com_ptr_wrapper<LastArg>::wrap(std::declval<LastArg>()))
 	{
 		LastArg arg;
-		CheckError(p->fn(std::forward<Args>(args)..., &arg), name _D(, loc));
-		return arg;
+		CheckError((p->*fn)(std::forward<Args>(args)..., &arg), name _D(, loc));
+		return com_ptr_wrapper<LastArg>::wrap(std::move(arg));
 	}
 };
 
-template<class Interface, typename... Args>
-static inline ComReturnHelper<Interface, Args...> ComWrapCheckedReturnArg(Interface* p, HRESULT(__stdcall Interface::*fn)(Args...), const char* name _D(, LOCATION_DECL))
+template<class InterfacePtr, class Interface = decltype(&*std::declval<InterfacePtr>()), typename... Args>
+static inline ComReturnHelper<Interface, Args...> ComWrapCheckedReturnArg(const InterfacePtr& p, HRESULT(__stdcall Interface::*fn)(Args...), const char* name _D(, LOCATION_DECL))
 {
 	return ComReturnHelper<Interface, Args...>(p, fn, name _D(, LOCATION_VAR));
 }
+
+#define WIN_CHECK_COM_OUTPUT_ARG(ptr, fn, args) (ComWrapCheckedReturnArg(ptr, &std::decay_t<decltype(*(ptr))>::fn, #fn _D(, CURRENT_LOCATION)) args)
 
 
 
@@ -207,61 +251,29 @@ std::vector<win_tap_adapter> win_get_tap_adapters(bool include_plain_tap)
 
 	try
 	{
-		auto nsm = CoCreateInstance<NetSharingManager, INetSharingManager>();
-		auto coll = ComWrapCheckedReturnArg(nsm, &INetSharingManager::get_EnumEveryConnection, "get_EnumEveryCollection", CURRENT_LOCATION)();
-
-		/*
-		INetSharingEveryConnectionCollection* coll = NULL;
-		WIN_CHECK_COM(nsm, get_EnumEveryConnection, (&coll));
-		IUnknown* u = NULL;
-		WIN_CHECK_COM(coll, get__NewEnum, (&u));
-		*/
+		auto nsm = com_create<NetSharingManager, INetSharingManager>();
+		auto coll = WIN_CHECK_COM_OUTPUT_ARG(nsm, get_EnumEveryConnection, ());
+		auto u = WIN_CHECK_COM_OUTPUT_ARG(coll, get__NewEnum, ());
+		auto ev = com_cast<IEnumVARIANT>(u);
+		VARIANT v;
+		VariantInit(&v);
+		while (!(error = ev->Next(1, &v, NULL)))
+		{
+			if (V_VT(&v) == VT_UNKNOWN)
+			{
+				try
+				{
+					auto nc = com_cast<INetConnection>(V_UNKNOWN(&v));
+				}
+				catch (const Win32Exception& e)
+				{
+				}
+			}
+		}
 	}
 	catch (const Win32Exception& e)
 	{
 	}
-
-	INetSharingManager* nsm = NULL;
-	if (!(error = CoCreateInstance(__uuidof(NetSharingManager), NULL, CLSCTX_ALL, __uuidof(INetSharingManager), (void**)&nsm)))
-	{
-		INetSharingEveryConnectionCollection* coll = NULL;
-		if (!(error = nsm->get_EnumEveryConnection(&coll)))
-		{
-			IUnknown* u = NULL;
-			if (!(error = coll->get__NewEnum(&u)))
-			{
-				IEnumVARIANT* ev = NULL;
-				if (!(error = u->QueryInterface(&ev)))
-				{
-					VARIANT v;
-					VariantInit(&v);
-					while (!(error = ev->Next(1, &v, NULL)) && !found)
-					{
-						if (V_VT(&v) == VT_UNKNOWN)
-						{
-							INetConnection* nc = NULL;
-							if (!(error = V_UNKNOWN(&v)->QueryInterface(&nc)))
-							{
-								
-							}
-						}
-					}
-
-					SafeRelease(ev);
-				}
-				SafeRelease(u);
-			}
-			SafeRelease(coll);
-		}
-		SafeRelease(nsm);
-	}
-
-
-	
-
-
-
-
 
 
 
