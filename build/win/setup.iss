@@ -130,6 +130,8 @@ Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Working
 
 [Registry]
 Root: HKCU; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "{#MyAppID}"; ValueData: """{app}\{#MyAppExeName}"" --background"; Flags: uninsdeletevalue
+; Remove accidental key from earlier version
+Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\Run"; ValueType: none; ValueName: "{#MyAppID}"; Flags: deletevalue;
 
 [InstallDelete]
 ;Type: filesandordirs; Name: "{app}"
