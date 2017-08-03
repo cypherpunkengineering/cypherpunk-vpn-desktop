@@ -108,6 +108,19 @@ begin
     RegQueryStringValue(HKLM, InnoSetupReg, 'DisplayVersion', S) or
     RegQueryStringValue(HKCU, InnoSetupReg, 'DisplayVersion', S);
 end;
+function IsPreviewUpgrade: Boolean;
+var
+  S: string;
+  InnoSetupReg: string;
+begin
+  InnoSetupReg :=
+    ExpandConstant(
+      'Software\Microsoft\Windows\CurrentVersion\Uninstall\{#SetupSetting("AppId")}_is1');
+  Result :=
+    (RegQueryStringValue(HKLM, InnoSetupReg, 'DisplayVersion', S) or
+     RegQueryStringValue(HKCU, InnoSetupReg, 'DisplayVersion', S)) and
+	(pos('0.9.0-preview', S) = 1);
+end;
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
@@ -122,6 +135,8 @@ Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\Run"; ValueType: 
 ;Type: filesandordirs; Name: "{app}"
 
 [Run]
+; Temporary item to clean up old generic TAP adapter from previous install
+Filename: "{app}\tap\tapinstall.exe"; Parameters: "remove tap0901"; WorkingDir: "{app}\tap"; Flags: runhidden skipifdoesntexist; StatusMsg: "Removing previous network adapter..."; Check: IsPreviewUpgrade
 Filename: "{app}\cypherpunk-privacy-service.exe"; Parameters: "addtap 1"; WorkingDir: "{app}"; Flags: runhidden; StatusMsg: "Installing network adapter..."
 Filename: "{app}\cypherpunk-privacy-service.exe"; Parameters: "install"; WorkingDir: "{app}"; Flags: runhidden; StatusMsg: "Installing background service..."
 Filename: "{app}\cypherpunk-privacy-service.exe"; Parameters: "start"; WorkingDir: "{app}"; Flags: runhidden; StatusMsg: "Starting background service..."
