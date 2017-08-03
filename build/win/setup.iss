@@ -85,6 +85,18 @@ procedure StopClient();
 begin
     Exec('taskkill.exe', ExpandConstant('/im {#MyAppExeName} /f'), ExpandConstant('{app}'), SW_HIDE, ewWaitUntilTerminated, ResultCode);
 end;
+function IsUpgrade: Boolean;
+var
+  S: string;
+  InnoSetupReg: string;
+begin
+  InnoSetupReg :=
+    ExpandConstant(
+      'Software\Microsoft\Windows\CurrentVersion\Uninstall\{#SetupSetting("AppId")}_is1');
+  Result :=
+    RegQueryStringValue(HKLM, InnoSetupReg, 'DisplayVersion', S) or
+    RegQueryStringValue(HKCU, InnoSetupReg, 'DisplayVersion', S);
+end;
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
