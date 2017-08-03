@@ -55,22 +55,33 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 ;Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce
 
 [Files]
-Source: "..\..\out\win\client\CypherpunkPrivacy-win32-ia32\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion overwritereadonly sign; BeforeInstall: StopClient
+; Directories
 Source: "..\..\out\win\client\CypherpunkPrivacy-win32-ia32\*"; DestDir: "{app}"; Flags: 32bit createallsubdirs overwritereadonly recursesubdirs
-Source: "..\..\out\win\daemon\Release\32\cypherpunk-privacy-service.exe"; DestDir: "{app}"; DestName: "cypherpunk-privacy-service.exe"; Flags: ignoreversion overwritereadonly sign; Check: not Is64BitInstallMode; BeforeInstall: StopService
-Source: "..\..\out\win\daemon\Release\64\cypherpunk-privacy-service.exe"; DestDir: "{app}"; DestName: "cypherpunk-privacy-service.exe"; Flags: ignoreversion overwritereadonly sign; Check: Is64BitInstallMode; BeforeInstall: StopService
 Source: "..\..\out\win\daemon\Release\32\openvpn\*"; DestDir: "{app}\openvpn"; Flags: ignoreversion recursesubdirs createallsubdirs overwritereadonly; Check: not Is64BitInstallMode
 Source: "..\..\out\win\daemon\Release\64\openvpn\*"; DestDir: "{app}\openvpn"; Flags: ignoreversion recursesubdirs createallsubdirs overwritereadonly; Check: Is64BitInstallMode
-Source: "..\..\out\win\daemon\Release\32\tap\*"; DestDir: "{app}\tap"; Flags: ignoreversion recursesubdirs createallsubdirs overwritereadonly; Check: not Is64BitInstallMode
-Source: "..\..\out\win\daemon\Release\64\tap\*"; DestDir: "{app}\tap"; Flags: ignoreversion recursesubdirs createallsubdirs overwritereadonly; Check: Is64BitInstallMode
+; Binaries
+Source: "..\..\out\win\client\CypherpunkPrivacy-win32-ia32\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion overwritereadonly sign; BeforeInstall: StopClient
 Source: "..\..\out\win\client\CypherpunkPrivacy-win32-ia32\*.exe"; DestDir: "{app}"; Flags: ignoreversion overwritereadonly sign
 Source: "..\..\out\win\client\CypherpunkPrivacy-win32-ia32\*.dll"; DestDir: "{app}"; Flags: ignoreversion overwritereadonly sign
+Source: "..\..\out\win\daemon\Release\32\cypherpunk-privacy-service.exe"; DestDir: "{app}"; DestName: "cypherpunk-privacy-service.exe"; Flags: ignoreversion overwritereadonly sign; Check: not Is64BitInstallMode; BeforeInstall: StopService
+Source: "..\..\out\win\daemon\Release\64\cypherpunk-privacy-service.exe"; DestDir: "{app}"; DestName: "cypherpunk-privacy-service.exe"; Flags: ignoreversion overwritereadonly sign; Check: Is64BitInstallMode; BeforeInstall: StopService
 Source: "..\..\out\win\daemon\Release\32\openvpn\*.exe"; DestDir: "{app}\openvpn"; Flags: ignoreversion overwritereadonly sign; Check: not Is64BitInstallMode
 Source: "..\..\out\win\daemon\Release\32\openvpn\*.dll"; DestDir: "{app}\openvpn"; Flags: ignoreversion overwritereadonly sign; Check: not Is64BitInstallMode
 Source: "..\..\out\win\daemon\Release\64\openvpn\*.exe"; DestDir: "{app}\openvpn"; Flags: ignoreversion overwritereadonly sign; Check: Is64BitInstallMode
 Source: "..\..\out\win\daemon\Release\64\openvpn\*.dll"; DestDir: "{app}\openvpn"; Flags: ignoreversion overwritereadonly sign; Check: Is64BitInstallMode
-Source: "..\..\out\win\daemon\Release\32\tap\*.exe"; DestDir: "{app}\tap"; Flags: ignoreversion overwritereadonly sign; Check: not Is64BitInstallMode
-Source: "..\..\out\win\daemon\Release\64\tap\*.exe"; DestDir: "{app}\tap"; Flags: ignoreversion overwritereadonly sign; Check: Is64BitInstallMode
+; TAP adapter files
+Source: "..\..\daemon\third_party\tuntap_win\32\OemVista.inf"; DestDir: "{app}\tap"; Flags: ignoreversion overwritereadonly; Check: not Is64BitInstallMode
+Source: "..\..\daemon\third_party\tuntap_win\32\tap91337.sys"; DestDir: "{app}\tap"; Flags: ignoreversion overwritereadonly; Check: not Is64BitInstallMode; OnlyBelowVersion: 10.0
+Source: "..\..\daemon\third_party\tuntap_win\32\tap91337.cat"; DestDir: "{app}\tap"; Flags: ignoreversion overwritereadonly; Check: not Is64BitInstallMode; OnlyBelowVersion: 10.0
+Source: "..\..\daemon\third_party\tuntap_win\32\10\tap91337.sys"; DestDir: "{app}\tap"; Flags: ignoreversion overwritereadonly; Check: not Is64BitInstallMode; MinVersion: 10.0
+Source: "..\..\daemon\third_party\tuntap_win\32\10\tap91337.cat"; DestDir: "{app}\tap"; Flags: ignoreversion overwritereadonly; Check: not Is64BitInstallMode; MinVersion: 10.0
+Source: "..\..\daemon\third_party\tuntap_win\32\tapinstall.exe"; DestDir: "{app}\tap"; Flags: ignoreversion overwritereadonly signonce; Check: not Is64BitInstallMode
+Source: "..\..\daemon\third_party\tuntap_win\64\OemVista.inf"; DestDir: "{app}\tap"; Flags: ignoreversion overwritereadonly; Check: Is64BitInstallMode
+Source: "..\..\daemon\third_party\tuntap_win\64\tap91337.sys"; DestDir: "{app}\tap"; Flags: ignoreversion overwritereadonly; Check: Is64BitInstallMode; OnlyBelowVersion: 10.0
+Source: "..\..\daemon\third_party\tuntap_win\64\tap91337.cat"; DestDir: "{app}\tap"; Flags: ignoreversion overwritereadonly; Check: Is64BitInstallMode; OnlyBelowVersion: 10.0
+Source: "..\..\daemon\third_party\tuntap_win\64\10\tap91337.sys"; DestDir: "{app}\tap"; Flags: ignoreversion overwritereadonly; Check: Is64BitInstallMode; MinVersion: 10.0
+Source: "..\..\daemon\third_party\tuntap_win\64\10\tap91337.cat"; DestDir: "{app}\tap"; Flags: ignoreversion overwritereadonly; Check: Is64BitInstallMode; MinVersion: 10.0
+Source: "..\..\daemon\third_party\tuntap_win\64\tapinstall.exe"; DestDir: "{app}\tap"; Flags: ignoreversion overwritereadonly signonce; Check: Is64BitInstallMode
 
 [PreCompile]
 ;Name: "build.bat"; Flags: abortonerror cmdprompt
