@@ -30,6 +30,12 @@ void serialization::json_converter<JsonValue, GUID>::convert(JsonValue& dst, con
 }
 
 
+template<typename T, typename D> std::unique_ptr<T, std::decay_t<D>> wrap_unique(T* ptr, D&& deleter)
+{
+	return std::unique_ptr<T, std::decay_t<D>>(ptr, std::forward<D>(deleter));
+}
+
+
 template<typename T> struct IP_LIST : public T
 {
 	typedef T NODE;
