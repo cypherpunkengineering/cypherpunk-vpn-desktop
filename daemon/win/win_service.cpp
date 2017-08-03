@@ -88,7 +88,7 @@ class WinCypherDaemon : public CypherDaemon
 public:
 	virtual int Run() override
 	{
-		if (win_get_tap_adapters().size() == 0)
+		if (win_get_tap_adapters(true).size() == 0)
 		{
 			LOG(CRITICAL) << "There are no installed TAP adapters on this machine!";
 			return -1;
@@ -123,7 +123,7 @@ public:
 	}
 	virtual std::string GetAvailableAdapter(int index) override
 	{
-		const auto& adapters = win_get_tap_adapters();
+		const auto& adapters = win_get_tap_adapters(true);
 		for (const auto& adapter : adapters)
 		{
 			// FIXME: Just return the first adapter for now; later improve to actually find an available one (see if they have a connected state?)
@@ -184,7 +184,7 @@ public:
 			} \
 		} while(false)
 
-		auto adapters = win_get_tap_adapters();
+		auto adapters = win_get_tap_adapters(true);
 
 		auto mode = g_settings.firewall();
 		if (!_connections.empty() && (mode == "on" || (_shouldConnect && mode == "auto")))

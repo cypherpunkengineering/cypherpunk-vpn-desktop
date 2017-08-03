@@ -145,9 +145,10 @@ struct win_tap_adapter
 {
 	std::string guid;
 	uint64_t luid;
+	bool is_custom_tap;
 };
 
-std::vector<win_tap_adapter> win_get_tap_adapters();
+std::vector<win_tap_adapter> win_get_tap_adapters(bool include_plain_tap = false);
 BOOL win_install_tap_adapter(int argc = 0, TCHAR **argv = NULL);
 BOOL win_uninstall_tap_adapters();
 

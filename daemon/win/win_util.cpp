@@ -61,7 +61,7 @@ char HEX[256][4] = { 0 };
 
 
 
-std::vector<win_tap_adapter> win_get_tap_adapters()
+std::vector<win_tap_adapter> win_get_tap_adapters(bool include_plain_tap)
 {
 	std::vector<win_tap_adapter> result;
 
@@ -91,12 +91,27 @@ std::vector<win_tap_adapter> win_get_tap_adapters()
 	
 	for (auto address = addresses; address; address = address->Next)
 	{
-		if (address->Description && wcsstr(address->Description, L"TAP-Windows Adapter") != NULL)
+		if (address->Description && wcsstr(address->Description, L"Cypherpunk Privacy Virtual Network Adapter") != NULL)
 		{
 			win_tap_adapter adapter;
 			adapter.guid = address->AdapterName;
 			adapter.luid = address->Luid.Value;
+			adapter.is_custom_tap = true;
 			result.push_back(std::move(adapter));
+		}
+	}
+	if (include_plain_tap)
+	{
+		for (auto address = addresses; address; address = address->Next)
+		{
+			if (address->Description && wcsstr(address->Description, L"TAP-Windows Adapter") != NULL)
+			{
+				win_tap_adapter adapter;
+				adapter.guid = address->AdapterName;
+				adapter.luid = address->Luid.Value;
+				adapter.is_custom_tap = false;
+				result.push_back(std::move(adapter));
+			}
 		}
 	}
 
@@ -122,29 +137,65 @@ static BOOL win_tap_install(LPTSTR cmdline)
 	return FALSE;
 }
 
+static win_tap_adapter win_tap_add(std::vector<win_tap_adapter>* existing = nullptr)
+{
+	std::vector<win_tap_adapter> local_existing;
+	if (!existing)
+	{
+		local_existing = win_get_tap_adapters(false);
+		existing = &local_existing;
+	}
+
+	if (win_tap_install(_T("tapinstall.exe install OemVista.inf tap91337")))
+	{
+		std::vector<win_tap_adapter> current = win_get_tap_adapters(false);
+		for (auto& adapter : current)
+		{
+			if (std::find_if(existing->begin(), existing->end(), [&](const win_tap_adapter& a) { return a.guid == adapter.guid; }) == existing->end())
+			{
+				// Found first adapter which didn't previously exist; assume there are no others.
+				if (existing != &local_existing)
+				{
+					std::swap(current, *existing);
+				}
+				return std::move(adapter);
+			}
+		}
+	}
+	THROW_WIN32EXCEPTION(ERROR_DEV_NOT_EXIST, tapinstall.exe);
+}
+
 BOOL win_install_tap_adapter(int argc, TCHAR **argv)
 {
-	if (argc >= 1) {
-		int count = 1;
-		try { count = std::stoi(argv[0]); }
-		catch (...) { return FALSE; }
-		auto adapters = win_get_tap_adapters();
-		if (adapters.size() >= count)
+	auto existing = win_get_tap_adapters(false);
+	try
+	{
+		if (argc >= 1) {
+			int count = 1;
+			try { count = std::stoi(argv[0]); }
+			catch (...) { return FALSE; }
+			if ((int)existing.size() >= count)
+				return TRUE;
+			count -= (int)existing.size();
+			while (count--)
+			{
+				win_tap_add(&existing);
+			}
 			return TRUE;
-		count -= adapters.size();
-		while (count--)
-		{
-			if (!win_tap_install(_T("tapinstall.exe install OemVista.inf tap0901")))
-				return FALSE;
 		}
+		win_tap_add(&existing);
 		return TRUE;
 	}
-	return win_tap_install(_T("tapinstall.exe install OemVista.inf tap0901"));
+	catch (const Win32Exception& e)
+	{
+		LOG(ERROR) << e;
+		return FALSE;
+	}
 }
 
 BOOL win_uninstall_tap_adapters()
 {
-	return win_tap_install(_T("tapinstall.exe remove tap0901"));
+	return win_tap_install(_T("tapinstall.exe remove tap91337"));
 }
 
 void win_get_ipv4_routing_table()
