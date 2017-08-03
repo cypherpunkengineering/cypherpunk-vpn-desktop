@@ -145,6 +145,8 @@ struct win_tap_adapter
 {
 	std::string guid;
 	uint64_t luid;
+	std::wstring adapter_name;
+	std::wstring connection_name;
 	bool is_custom_tap;
 };
 

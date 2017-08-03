@@ -14,6 +14,11 @@
 #include <iphlpapi.h>
 #include <rpc.h>
 
+#define _PRSHT_H_
+#include <netcon.h>
+
+#include "win_com.h"
+
 #pragma comment (lib, "rpcrt4.lib")
 
 
@@ -33,6 +38,13 @@ void serialization::json_converter<JsonValue, GUID>::convert(JsonValue& dst, con
 template<typename T, typename D> std::unique_ptr<T, std::decay_t<D>> wrap_unique(T* ptr, D&& deleter)
 {
 	return std::unique_ptr<T, std::decay_t<D>>(ptr, std::forward<D>(deleter));
+}
+
+
+STDAPI_(VOID) NcFreeNetconProperties(NETCON_PROPERTIES* pProps)
+{
+	static auto fn = (decltype(NcFreeNetconProperties)*)GetProcAddress(LoadLibrary(_T("netshell.dll")), "NcFreeNetconProperties");
+	fn(pProps);
 }
 
 
@@ -96,6 +108,8 @@ std::vector<win_tap_adapter> win_get_tap_adapters(bool include_plain_tap)
 			win_tap_adapter adapter;
 			adapter.guid = address->AdapterName;
 			adapter.luid = address->Luid.Value;
+			adapter.adapter_name = address->Description;
+			adapter.connection_name = address->FriendlyName;
 			adapter.is_custom_tap = true;
 			result.push_back(std::move(adapter));
 		}
@@ -109,6 +123,8 @@ std::vector<win_tap_adapter> win_get_tap_adapters(bool include_plain_tap)
 				win_tap_adapter adapter;
 				adapter.guid = address->AdapterName;
 				adapter.luid = address->Luid.Value;
+				adapter.adapter_name = address->Description;
+				adapter.connection_name = address->FriendlyName;
 				adapter.is_custom_tap = false;
 				result.push_back(std::move(adapter));
 			}
@@ -165,6 +181,49 @@ static win_tap_adapter win_tap_add(std::vector<win_tap_adapter>* existing = null
 	THROW_WIN32EXCEPTION(ERROR_DEV_NOT_EXIST, tapinstall.exe);
 }
 
+static bool win_tap_rename_connection(const win_tap_adapter& adapter, PCWSTR name)
+{
+	try
+	{
+		auto nsm = com_create<NetSharingManager, INetSharingManager>();
+		auto coll = WIN_CHECK_COM_OUTPUT(nsm, get_EnumEveryConnection, ());
+		auto u = WIN_CHECK_COM_OUTPUT(coll, get__NewEnum, ());
+		auto ev = com_cast<IEnumVARIANT>(u);
+		for (const auto& v : ev)
+		{
+			if (V_VT(&v) != VT_UNKNOWN)
+				continue;
+			com_ptr<INetConnection> connection;
+			try
+			{
+				auto nc = com_cast<INetConnection>(V_UNKNOWN(&v));
+				auto props = wrap_unique(WIN_CHECK_COM_OUTPUT(nc, GetProperties, ()), NcFreeNetconProperties);
+				char guid[64];
+				const auto& g = props->guidId;
+				sprintf(guid, "{%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X}", g.Data1, g.Data2, g.Data3, g.Data4[0], g.Data4[1], g.Data4[2], g.Data4[3], g.Data4[4], g.Data4[5], g.Data4[6], g.Data4[7]);
+				if (adapter.guid != guid) continue;
+				connection = std::move(nc);
+			}
+			catch (const Win32Exception& e)
+			{
+				LOG(WARNING) << "Error while iterating network connections: " << e;
+				continue;
+			}
+			if (connection->Rename(name))
+			{
+				LOG(WARNING) << "Failed to rename adapter " << adapter.guid << " to \"Cypherpunk Privacy\"";
+				return false;
+			}
+			return true;
+		}
+	}
+	catch (const Win32Exception& e)
+	{
+		LOG(WARNING) << "Error while accessing network connections: " << e;
+	}
+	return false;
+}
+
 BOOL win_install_tap_adapter(int argc, TCHAR **argv)
 {
 	auto existing = win_get_tap_adapters(false);
@@ -179,11 +238,11 @@ BOOL win_install_tap_adapter(int argc, TCHAR **argv)
 			count -= (int)existing.size();
 			while (count--)
 			{
-				win_tap_add(&existing);
+				win_tap_rename_connection(win_tap_add(&existing), L"Cypherpunk Privacy");
 			}
 			return TRUE;
 		}
-		win_tap_add(&existing);
+		win_tap_rename_connection(win_tap_add(&existing), L"Cypherpunk Privacy");
 		return TRUE;
 	}
 	catch (const Win32Exception& e)
