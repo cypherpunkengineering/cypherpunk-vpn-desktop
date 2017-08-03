@@ -27,7 +27,7 @@
 #else
 #define SERVICE_START_TYPE       SERVICE_AUTO_START
 #endif
-#define SERVICE_DEPENDENCIES     NULL // null-separated list
+#define SERVICE_DEPENDENCIES     _T("tap91337\0Dhcp\0\0") // null-separated list
 #define SERVICE_ACCOUNT          NULL // LocalSystem
 //#define SERVICE_ACCOUNT          _T("NT AUTHORITY\\LocalService")
 //#define SERVICE_ACCOUNT          _T("NT AUTHORITY\\NetworkService")
