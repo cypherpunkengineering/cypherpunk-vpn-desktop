@@ -93,6 +93,9 @@
     <ClInclude Include="win\win_subprocess.h">
       <Filter>Header Files\win</Filter>
     </ClInclude>
+    <ClInclude Include="win\win_com.h">
+      <Filter>Header Files\win</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="win\win_service.cpp">
