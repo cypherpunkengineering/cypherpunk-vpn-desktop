@@ -55,12 +55,13 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 ;Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce
 
 [Files]
+; Main binary (run first so StopClient is executed once)
+Source: "..\..\out\win\client\CypherpunkPrivacy-win32-ia32\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion overwritereadonly sign; BeforeInstall: StopClient
 ; Directories
 Source: "..\..\out\win\client\CypherpunkPrivacy-win32-ia32\*"; DestDir: "{app}"; Flags: 32bit createallsubdirs overwritereadonly recursesubdirs
 Source: "..\..\out\win\daemon\Release\32\openvpn\*"; DestDir: "{app}\openvpn"; Flags: ignoreversion recursesubdirs createallsubdirs overwritereadonly; Check: not Is64BitInstallMode
 Source: "..\..\out\win\daemon\Release\64\openvpn\*"; DestDir: "{app}\openvpn"; Flags: ignoreversion recursesubdirs createallsubdirs overwritereadonly; Check: Is64BitInstallMode
-; Binaries
-Source: "..\..\out\win\client\CypherpunkPrivacy-win32-ia32\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion overwritereadonly sign; BeforeInstall: StopClient
+; Other binaries
 Source: "..\..\out\win\client\CypherpunkPrivacy-win32-ia32\*.exe"; DestDir: "{app}"; Flags: ignoreversion overwritereadonly sign
 Source: "..\..\out\win\client\CypherpunkPrivacy-win32-ia32\*.dll"; DestDir: "{app}"; Flags: ignoreversion overwritereadonly sign
 Source: "..\..\out\win\daemon\Release\32\cypherpunk-privacy-service.exe"; DestDir: "{app}"; DestName: "cypherpunk-privacy-service.exe"; Flags: ignoreversion overwritereadonly sign; Check: not Is64BitInstallMode; BeforeInstall: StopService
