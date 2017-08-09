@@ -126,29 +126,44 @@ export const DaemonAware = (Base = React.Component) => class extends Base {
     this._daemon = {
       onDataChanged: data => {
         let combinedState = Object.assign({}, this.state);
+        let state = {};
         let changed = false;
+        let callbacks = [];
+
+        let applyDelta = (delta) => {
+          if (delta && typeof delta === 'object' && Object.keys(delta).length !== 0 && delta.constructor === Object) {
+            changed = true;
+            Object.assign(state, delta);
+            Object.assign(combinedState, state);
+          }
+        };
+
+        applyDelta(this.daemonDataChanged(data));
         Object.forEach(this._daemon.subscriptions, (category, keyMap) => {
           if (data.hasOwnProperty(category)) {
             changed = true;
-            let state = {};
             let values = data[category];
             if (typeof values === 'object' && values) {
               Object.forEach(keyMap, (key, mapper) => {
                 if (values.hasOwnProperty(key)) {
-                  Object.assign(state, mapper(values[key]));
+                  applyDelta(mapper(values[key]));
                 }
               });
             }
-            this.setState(state);
-            this['daemon' + category.charAt(0).toUpperCase() + category.slice(1) + 'Changed'](values); // deprecated
-            Object.assign(combinedState, state);
+            callbacks.push(this['daemon' + category.charAt(0).toUpperCase() + category.slice(1) + 'Changed'].bind(this, values));
           }
         });
+        this.setState(state);
+        let wasChanged = changed;
+        changed = false;
+        for (let cb of callbacks) {
+          applyDelta(cb(combinedState));
+        }
+        if (wasChanged) {
+          applyDelta(this.daemonStateApplied(state, combinedState));
+        }
         if (changed) {
-          let extra = this.daemonDataChanged(combinedState);
-          if (extra && typeof extra === 'object') {
-            this.setState(extra);
-          }
+          this.setState(state);
         }
       },
       subscriptions: { account: {}, config: {}, settings: {}, state: {} }
@@ -162,11 +177,12 @@ export const DaemonAware = (Base = React.Component) => class extends Base {
     if (super.componentWillUnmount) super.componentWillUnmount();
     daemon.removeListener('data', this._daemon.onDataChanged);
   }
-  daemonDataChanged(state) {} // TODO: Rename to daemonStateChanged
-  daemonAccountChanged(account) {}
-  daemonConfigChanged(config) {}
-  daemonSettingsChanged(settings) {}
-  daemonStateChanged(state) {}
+  daemonDataChanged(data) {} // TODO: Rename to daemonStateChanged
+  daemonAccountChanged(account, updatedState) {}
+  daemonConfigChanged(config, updatedState) {}
+  daemonSettingsChanged(settings, updatedState) {}
+  daemonStateChanged(state, updatedState) {}
+  daemonStateApplied(fields, updatedState) {} // Which changes to this.state have been applied as part of a subscription update?
 
   daemonSubscribeState(map) {
     let state = {};

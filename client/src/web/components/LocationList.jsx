@@ -159,8 +159,8 @@ export class LocationList extends DaemonAware(React.Component) {
     super.componentWillUnmount();
     if (this.props.open) this.onClose();
   }
-  daemonDataChanged(state) {
-    if (state.pingStats !== this.state.pingStats || state.locations !== this.state.locations) {
+  daemonStateApplied(fields, state) {
+    if (fields.hasOwnProperty('pingStats') || fields.hasOwnProperty('locations')) {
       return { fastest: this.recalculateFastestServer(state) };
     }
   }

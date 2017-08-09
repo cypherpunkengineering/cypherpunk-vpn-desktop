@@ -38,7 +38,7 @@ export class QuickPanel extends DaemonAware(React.Component) {
     sortOrder: 'geographical', // or 'bypingtime' or 'alphabetical'
     filterText: '',
   }
-  daemonDataChanged(state) {
+  daemonStateApplied(state) {
     let fastest = null, fastestUS = null, fastestUK = null;
     let locations = state.locations;
     Object.forEach(state.pingStats, (id, ping) => {
