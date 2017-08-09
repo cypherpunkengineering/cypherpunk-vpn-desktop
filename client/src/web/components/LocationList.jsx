@@ -71,6 +71,10 @@ export const Location = ({ location, className, selected = false, favorite = nul
 const Header = ({ name, count = null, children = null, ...props }) => <div className="header" data-count={count} {...props}>{name}{children}</div>;
 const mapSorter = (mapper) => (a, b) => mapper(a).localeCompare(mapper(b));
 
+function getPing(stats, name) {
+  return stats[name] && stats[name].replies > 0 && stats[name].average || 999;
+}
+
 export function groupLocationsByRegion(locations, regions, regionOrder, countryNames) {
   // note: javascript objects retain property order
   let result = {};
@@ -171,7 +175,7 @@ export class LocationList extends DaemonAware(React.Component) {
     clearInterval(this.refreshLocationInterval);
   }
   recalculateFastestServer(state) {
-    const ping = l => (state.pingStats[l] && state.pingStats[l].replies > 0 && state.pingStats[l].average || 999);
+    const ping = l => getPing(state.pingStats, l);
     const last = l => (state.lastConnected[l] || 0);
     let fastest = Object.values(this.state.locations)
       .filter(l => l.enabled && !l.disabled && l.region !== 'DEV')
