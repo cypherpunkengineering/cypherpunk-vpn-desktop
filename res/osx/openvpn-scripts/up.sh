@@ -52,22 +52,36 @@ else
 	# parse DNS servers from OpenVPN's foreign_option_* variables
 	nOptionIndex=1
 	nNameServerIndex=1
+	nWINSServerIndex=1
 	unset vForOptions
 	unset vDNS
 	unset vOptions
 	while vForOptions=foreign_option_$nOptionIndex; [ -n "${!vForOptions}" ]; do
-		{
+	{
 		vOptions[nOptionIndex-1]=${!vForOptions}
 		case ${vOptions[nOptionIndex-1]} in
 			*DNS*)
 				vDNS[nNameServerIndex-1]="$(trim "${vOptions[nOptionIndex-1]//dhcp-option DNS /}")"
 				let nNameServerIndex++
 				;;
+			*DOMAIN*)
+				domain="$(trim "${vOptions[nOptionIndex-1]//dhcp-option DOMAIN /}")"
+				;;
+			*WINS*)
+				vWINS[nWINSServerIndex-1]="$(trim "${vOptions[nOptionIndex-1]//dhcp-option WINS /}")"
+				let nWINSServerIndex++
+				;;
 		esac
 		let nOptionIndex++
-		}
+	}
 	done
 fi
+
+# set domain to a default value when no domain is being transmitted
+if [ "$domain" == "" ]; then
+	domain="openvpn"
+fi
+SEARCH_DOMAIN="${domain}"
 
 ipv6_disabled_services=""
 ipv6_disabled_services="$( disable_ipv6 )"
@@ -120,6 +134,20 @@ if [ "${USE_CYPHERPUNK_DNS}" = "true" ];then
 		readonly STATIC_SEARCH="$(trim "$( echo "${STATIC_DNS_CONFIG}" | sed -e 's/^.*SearchDomains[^{]*{[[:space:]]*\([^}]*\)[[:space:]]*}.*$/\1/g' )")"
 	fi
 
+	# check if static WINS config is present
+	STATIC_WINS_CONFIG="$( (scutil | sed -e 's/^[[:space:]]*[[:digit:]]* : //g' | tr '\n' ' ')<<- EOF
+		open
+		show Setup:/Network/Service/${PSID}/SMB
+		quit
+	EOF
+	)"
+	if echo "${STATIC_WINS_CONFIG}" | grep -q "WINSAddresses" ; then
+		readonly STATIC_WINS="$(trim "$( echo "${STATIC_WINS_CONFIG}" | sed -e 's/^.*WINSAddresses[^{]*{[[:space:]]*\([^}]*\)[[:space:]]*}.*$/\1/g' )")"
+	fi
+	if [ -n "${STATIC_WINS_CONFIG}" ] ; then
+		readonly STATIC_WORKGROUP="$(trim "$( echo "${STATIC_WINS_CONFIG}" | sed -e 's/^.*Workgroup : \([^[:space:]]*\).*$/\1/g' )")"
+	fi
+
 	# evaluate to use static DNS or dynamic DNS
 	if [ ${#vDNS[*]} -eq 0 ] ; then
 		DYN_DNS="false"
@@ -133,9 +161,31 @@ if [ "${USE_CYPHERPUNK_DNS}" = "true" ];then
 	fi
 	readonly DYN_DNS ALL_DNS
 
+	# evaluate to use static WINS or dynamic WINS
+	if [ ${#vWINS[*]} -eq 0 ] ; then
+		DYN_WINS="false"
+		ALL_WINS="${STATIC_WINS}"
+	elif [ -n "${STATIC_WINS}" ] ; then
+		DYN_WINS="false"
+		ALL_WINS="${STATIC_WINS}"
+	else
+		DYN_WINS="true"
+		ALL_WINS="$(trim "${vWINS[*]}")"
+	fi
+	readonly DYN_WINS ALL_WINS
+
 	# comment out lines below depending on above logic
 	if ! ${DYN_DNS} ; then
 		NO_DNS="#"
+	fi
+	if ! ${DYN_WINS} ; then
+		NO_WINS="#"
+	fi
+	if [ -z "${SEARCH_DOMAIN}" ] ; then
+		NO_SEARCH="#"
+	fi
+	if [ -z "${STATIC_WORKGROUP}" ] ; then
+		NO_WG="#"
 	fi
 	if [ -z "${ALL_DNS}" ] ; then
 		AGG_DNS="#"
@@ -212,13 +262,21 @@ if [ "${USE_CYPHERPUNK_DNS}" = "true" ];then
 
 		# set DNS "state"
 		d.init
+		${NO_DNS}d.add DomainName ${domain}
 		${NO_DNS}d.add ServerAddresses * ${vDNS[*]}
 		set State:/Network/Service/${PSID}/DNS
 
 		# set DNS "setup"
 		d.init
+		${NO_DNS}d.add DomainName ${domain}
 		${NO_DNS}d.add ServerAddresses * ${vDNS[*]}
 		set Setup:/Network/Service/${PSID}/DNS
+
+		# set SMB "state"
+		d.init
+		${NO_WG}d.add Workgroup ${STATIC_WORKGROUP}
+		${NO_WINS}d.add WINSAddresses * ${vWINS[*]}
+		set State:/Network/Service/${PSID}/SMB
 
 		# done
 		quit
