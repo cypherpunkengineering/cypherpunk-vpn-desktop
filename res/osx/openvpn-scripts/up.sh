@@ -148,18 +148,9 @@ if [ "${USE_CYPHERPUNK_DNS}" = "true" ];then
 		readonly STATIC_WORKGROUP="$(trim "$( echo "${STATIC_WINS_CONFIG}" | sed -e 's/^.*Workgroup : \([^[:space:]]*\).*$/\1/g' )")"
 	fi
 
-	# evaluate to use static DNS or dynamic DNS
-	if [ ${#vDNS[*]} -eq 0 ] ; then
-		DYN_DNS="false"
-		ALL_DNS="${STATIC_DNS}"
-	elif [ -n "${STATIC_DNS}" ] ; then
-		DYN_DNS="false"
-		ALL_DNS="${STATIC_DNS}"
-	else
-		DYN_DNS="true"
-		ALL_DNS="$(trim "${vDNS[*]}")"
-	fi
-	readonly DYN_DNS ALL_DNS
+	# always override DNS settings passed from OpenVPN
+	ALL_DNS="$(trim "${vDNS[*]}")"
+	readonly ALL_DNS
 
 	# evaluate to use static WINS or dynamic WINS
 	if [ ${#vWINS[*]} -eq 0 ] ; then
@@ -175,9 +166,6 @@ if [ "${USE_CYPHERPUNK_DNS}" = "true" ];then
 	readonly DYN_WINS ALL_WINS
 
 	# comment out lines below depending on above logic
-	if ! ${DYN_DNS} ; then
-		NO_DNS="#"
-	fi
 	if ! ${DYN_WINS} ; then
 		NO_WINS="#"
 	fi
@@ -186,9 +174,6 @@ if [ "${USE_CYPHERPUNK_DNS}" = "true" ];then
 	fi
 	if [ -z "${STATIC_WORKGROUP}" ] ; then
 		NO_WG="#"
-	fi
-	if [ -z "${ALL_DNS}" ] ; then
-		AGG_DNS="#"
 	fi
 fi
 
@@ -262,22 +247,22 @@ if [ "${USE_CYPHERPUNK_DNS}" = "true" ];then
 
 		# set DNS "state"
 		d.init
-		${NO_DNS}d.add DomainName ${domain}
-		${NO_DNS}d.add ServerAddresses * ${vDNS[*]}
+		d.add DomainName ${domain}
+		d.add ServerAddresses * ${ALL_DNS}
 		${NO_SEARCH}d.add SearchDomains * ${SEARCH_DOMAIN}
 		set State:/Network/Service/${PSID}/DNS
 
 		# set DNS "setup"
 		d.init
-		${NO_DNS}d.add DomainName ${domain}
-		${NO_DNS}d.add ServerAddresses * ${vDNS[*]}
+		d.add DomainName ${domain}
+		d.add ServerAddresses * ${ALL_DNS}
 		${NO_SEARCH}d.add SearchDomains * ${SEARCH_DOMAIN}
 		set Setup:/Network/Service/${PSID}/DNS
 
 		# set SMB "state"
 		d.init
 		${NO_WG}d.add Workgroup ${STATIC_WORKGROUP}
-		${NO_WINS}d.add WINSAddresses * ${vWINS[*]}
+		${NO_WINS}d.add WINSAddresses * ${ALL_WINS}
 		set State:/Network/Service/${PSID}/SMB
 
 		# done
