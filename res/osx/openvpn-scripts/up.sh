@@ -264,12 +264,14 @@ if [ "${USE_CYPHERPUNK_DNS}" = "true" ];then
 		d.init
 		${NO_DNS}d.add DomainName ${domain}
 		${NO_DNS}d.add ServerAddresses * ${vDNS[*]}
+		${NO_SEARCH}d.add SearchDomains * ${SEARCH_DOMAIN}
 		set State:/Network/Service/${PSID}/DNS
 
 		# set DNS "setup"
 		d.init
 		${NO_DNS}d.add DomainName ${domain}
 		${NO_DNS}d.add ServerAddresses * ${vDNS[*]}
+		${NO_SEARCH}d.add SearchDomains * ${SEARCH_DOMAIN}
 		set Setup:/Network/Service/${PSID}/DNS
 
 		# set SMB "state"
