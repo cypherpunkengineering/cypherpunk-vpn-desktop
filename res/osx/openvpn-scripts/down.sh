@@ -10,6 +10,7 @@ flushDNSCache()
 	/usr/bin/dscacheutil -flushcache 2>/dev/null
 	/usr/sbin/discoveryutil udnsflushcaches 2>/dev/null
 	/usr/sbin/discoveryutil mdnsflushcache 2>/dev/null
+	/usr/bin/killall -HUP mDNSResponder
 	set -e
 }
 
