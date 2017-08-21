@@ -42,7 +42,7 @@ RestartApplications=False
 CloseApplicationsFilter=*.exe,*.dll
 VersionInfoVersion={#MyAppNumericVersion}
 VersionInfoTextVersion={#MyAppVersion}
-MinVersion=0,6.0
+MinVersion=0,6.1
 #ifdef ENABLE_SIGNING
 SignTool=standard
 SignedUninstaller=yes
