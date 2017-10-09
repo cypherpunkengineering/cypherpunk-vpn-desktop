@@ -872,23 +872,22 @@ void Connection::WriteOpenVPNProfile(std::ostream& out)
 	}
 #endif
 
+	// Ignore ping settings pushed from the server.
+	out << "pull-filter ignore \"ping \"" << endl;
+	out << "pull-filter ignore \"ping-restart \"" << endl;
+	out << "pull-filter ignore \"ping-exit \"" << endl;
+
 	// Output DNS settings; these are done via dhcp-option switches,
 	// and depend on the "Use Cypherpunk DNS" and related settings.
 
 	// Tell OpenVPN to always ignore the pushed DNS (10.10.10.10),
 	// which is simply there as a sensible default for dumb clients.
-	out << "pull-filter ignore \"dhcp-option DOMAIN local\"" << endl;
 	out << "pull-filter ignore \"dhcp-option DNS 10.10.10.10\"" << endl;
 	out << "pull-filter ignore \"dhcp-option DNS 10.10.11.10\"" << endl;
 	out << "pull-filter ignore \"dhcp-option DNS 10.10.12.10\"" << endl;
 	out << "pull-filter ignore \"route 10.10.10.10 255.255.255.255\"" << endl;
 	out << "pull-filter ignore \"route 10.10.11.10 255.255.255.255\"" << endl;
 	out << "pull-filter ignore \"route 10.10.12.10 255.255.255.255\"" << endl;
-
-	// Ignore ping settings pushed from the server.
-	out << "pull-filter ignore \"ping \"" << endl;
-	out << "pull-filter ignore \"ping-restart \"" << endl;
-	out << "pull-filter ignore \"ping-exit \"" << endl;
 
 	if (g_settings.overrideDNS())
 	{
@@ -897,8 +896,12 @@ void Connection::WriteOpenVPNProfile(std::ostream& out)
 			+ (g_settings.blockMalware() ? 2 : 0)
 			+ (g_settings.optimizeDNS() || g_settings.locationFlag() == "cypherplay" ? 4 : 0);
 		std::string dns_string = std::to_string(dns_index);
-		// set domain name to push any prior DOMAIN out
-		out << "dhcp-option DOMAIN local" << endl;
+
+		// accept pushed DOMAIN setting (this pushed out any previously set domain)
+		// uncomment the following two lines to hardcode domain instead:
+		//out << "pull-filter ignore \"dhcp-option DOMAIN local\"" << endl;
+		//out << "dhcp-option DOMAIN local" << endl;
+
 		// simulate secondary/tertiary DNS servers in order to push any prior DNS out of the list
 		out << "dhcp-option DNS 10.10.10." << dns_string << endl;
 		out << "dhcp-option DNS 10.10.11." << dns_string << endl;
@@ -912,6 +915,11 @@ void Connection::WriteOpenVPNProfile(std::ostream& out)
 		if (g_settings.routeDefault())
 			out << "block-outside-dns" << endl;
 #endif
+	}
+	else
+	{
+		// ignore DOMAIN setting as well
+		out << "pull-filter ignore \"dhcp-option DOMAIN local\"" << endl;
 	}
 
 	// Include hardcoded certificate authority
