@@ -1,7 +1,7 @@
 {
   "name": "cypherpunk-vpn-desktop",
   "productName": "Cypherpunk Privacy",
-  "version": "0.9.0-preview",
+  "version": "0.9.9-proto",
   "description": "Desktop client for the Cypherpunk Privacy service",
   "private": true,
   "main": "main.js",
