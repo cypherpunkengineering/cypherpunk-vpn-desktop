@@ -25,11 +25,11 @@ export function refreshRegionList() {
       return daemon.call.applyConfig({ countryNames, regionNames, regionOrder });
     }
   }).then(() => {
-    return server.get('/api/v1/location/world').then(response => {
-      if (response.data.country) countryNames = Object.assign({}, countryNames, response.data.country);
-      if (response.data.region) regionNames = Object.assign({}, regionNames, response.data.region);
-      if (response.data.regionOrder) regionOrder = response.data.regionOrder;
-    }, err => {});
+    //return server.get('/api/v1/location/world').then(response => {
+    //  if (response.data.country) countryNames = Object.assign({}, countryNames, response.data.country);
+    //  if (response.data.region) regionNames = Object.assign({}, regionNames, response.data.region);
+    //  if (response.data.regionOrder) regionOrder = response.data.regionOrder;
+    //}, err => {});
   }).then(() => {
     if (countryNames !== daemon.config.countryNames || regionNames !== daemon.config.regionNames || regionOrder !== daemon.config.regionOrder) {
       return daemon.call.applyConfig({ countryNames, regionNames, regionOrder });
@@ -38,6 +38,41 @@ export function refreshRegionList() {
 }
 
 export function refreshLocationList() {
+  return server.get('https://privateinternetaccess.com/vpninfo/servers').then(response => {
+    let data = Object.filter(response.data, k => k !== 'web_ips' && k !== 'vpn_ports');
+    console.log(data);
+    let locations = {};
+    Object.forEach(data, (k, v) => {
+      locations[k] = {
+        authorized: true,
+        country: v.country,
+        enabled: true,
+        id: k,
+        level: 'free',
+        name: v.name,
+        region: DEFAULT_REGION_DATA.countryRegions[v.country],
+        dns: v.dns,
+        ping: v.ping,
+        ovUDP: v.openvpn_udp.best,
+        ovTCP: v.openvpn_tcp.best,
+      };
+      if (k in DEFAULT_REGION_DATA.locationCoordinates) {
+        Object.assign(locations[k], DEFAULT_REGION_DATA.locationCoordinates[k]);
+      }
+    });
+    let regions = Object.mapValues(Array.toMultiDict(Object.values(locations), s => s.region), (r,c) => Object.mapValues(Array.toMultiDict(c, l => l.country), (c,l) => l.map(m => m.id)));
+    let result = daemon.call.applyConfig({ regions: regions, locations: locations });
+    if (!locations[daemon.settings.location] || locations[daemon.settings.location].disabled) {
+      for (let l of Object.values(locations)) {
+        if (!l.disabled) {
+          result = result.then(() => daemon.call.applySettings({ location: l.id }));
+          break;
+        }
+      }
+    }
+    return result.then(() => locations);
+  }, err => {});
+
   return server.get('/api/v1/location/list/' + daemon.account.account.type).then(response => {
     var locations = response.data;
     Object.values(locations).forEach(l => {
@@ -64,6 +99,7 @@ export function refreshLocationList() {
 let lastNetworkStatusRefresh = null;
 
 export function refreshNetworkStatus() {
+  return Promise.resolve();
   let connectedState = daemon.state.state;
   if (connectedState !== 'DISCONNECTED' && connectedState != 'CONNECTED') {
     return Promise.reject(new Error("Can't call network status API while connecting or disconnecting"));
@@ -119,6 +155,12 @@ let lastAccountRefresh = null;
 // Refresh the current account by querying the server
 export function refreshAccount() {
   lastAccountRefresh = new Date();
+  if (daemon.account.account && daemon.account.account.email && daemon.account.privacy && daemon.account.privacy.username && daemon.account.privacy.password) {
+    return setAccount(Object.assign({}, daemon.account));
+  } else {
+    setImmediate(() => { History.push('/login/email'); });
+    return Promise.reject(Object.assign(new Error("not logged in"), { handled: true }));
+  }
   return server.get('/api/v1/account/status').then(response => setAccount(response.data));
 }
 
@@ -145,7 +187,8 @@ export function setAccount(data) {
       return refreshRegionsAndLocations().then(() => {
         // TODO: Move to Application.onLoginSessionEstablished()
         if (History.getCurrentLocation().pathname.startsWith('/login')) {
-          History.push('/login/analytics');
+          //History.push('/login/analytics');
+          History.push('/main');
         }
         if (daemon.settings.autoConnect) {
           daemon.post.connect();
@@ -218,6 +261,8 @@ export class Check extends Page {
           // ignore errors; 403 will still take us back to the login screen
         });
       } else {
+        History.push('/login/email');
+        return;
         // Need to login and/or fetch necessary data to continue
         refreshAccount().catch(err => {
           console.warn(err);
@@ -250,8 +295,9 @@ export class Logout extends Page {
   static elements = [];
   componentDidMount() {
     setImmediate(() => { // need to use setImmediate since we might modify History
-      server.post('/api/v1/account/logout', null, { refreshSessionOnForbidden: false, catchAuthFailure: false })
-        .catch(err => console.error("Error while logging out:", err))
+      //server.post('/api/v1/account/logout', null, { refreshSessionOnForbidden: false, catchAuthFailure: false })
+      //  .catch(err => console.error("Error while logging out:", err))
+      Promise.resolve()
         .then(() => daemon.post.disconnect())
         .then(() => daemon.call.setAccount({ account: { email: daemon.account.account && daemon.account.account.email || '' } }))
         .then(() => daemon.call.applySettings({ enableAnalytics: false }))
@@ -273,24 +319,25 @@ export class EmailStep extends Page {
   onSubmit() {
     var email = this.refs.email.value;
     $(this.refs.email).prop('disabled', true).parent().addClass('loading');
-    server.post('/api/v1/account/identify/email', { email: email }).then({
-      200: response => History.push({ pathname: '/login/password', query: { email }}),
-      401: response => History.push({ pathname: '/login/register', query: { email }}),
-      402: response => History.push({ pathname: '/login/pending' }),
-    }).catch(err => {
-      if (!err.handled) {
-        alert(err.message);
-        $(this.refs.email).prop('disabled', false).focus().select().parent().removeClass('loading');
-      }
-    });
+    setImmediate(() => { History.push({ pathname: '/login/password', query: { email } }) });
+    //server.post('/api/v1/account/identify/email', { email: email }).then({
+    //  200: response => History.push({ pathname: '/login/password', query: { email } }),
+    //  401: response => History.push({ pathname: '/login/register', query: { email } }),
+    //  402: response => History.push({ pathname: '/login/pending' }),
+    //}).catch(err => {
+    //  if (!err.handled) {
+    //    alert(err.message);
+    //    $(this.refs.email).prop('disabled', false).focus().select().parent().removeClass('loading');
+    //  }
+    //});
   }
   render() {
     return(
       <Page className="login-email">
         {DefaultPageTitle}
-        <div className="desc">Please input your email to begin.</div>
+        <div className="desc">Please input your username to begin.</div>
         <div className="ui icon input">
-          <input type="text" placeholder="Email" required autoFocus="true" ref="email" defaultValue={daemon.account.account ? daemon.account.account.email : ""} onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
+          <input type="text" placeholder="Username" required autoFocus="true" ref="email" defaultValue={daemon.account.account ? daemon.account.account.email : ""} onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
           <i className="search chevron right link icon" onClick={() => this.onSubmit()}></i>
         </div>
       </Page>
@@ -304,16 +351,21 @@ export class PasswordStep extends Page {
   onSubmit() {
     var password = this.refs.password.value;
     $(this.refs.password).prop('disabled', true).parent().addClass('loading');
-    server.post('/api/v1/account/authenticate/password', { password }).then({
-      200: response => setAccount(response.data),
-      401: response => { this.displayWrongPasswordMessage(); throw null; },
-    }).catch(err => {
-      if (err && !err.handled) {
-        alert(err.message);
-        console.dir(err);
-      }
-      $(this.refs.password).prop('disabled', false).focus().select().parent().removeClass('loading');
+    setAccount({
+      account: { confirmed: true, email: this.props.location.query.email, token: 'dummy', type: 'developer' },
+      privacy: { username: this.props.location.query.email, password: password },
+      subscription: { active: true, renewal: '', expiration: 0 },
     });
+    //server.post('/api/v1/account/authenticate/password', { password }).then({
+    //  200: response => setAccount(response.data),
+    //  401: response => { this.displayWrongPasswordMessage(); throw null; },
+    //}).catch(err => {
+    //  if (err && !err.handled) {
+    //    alert(err.message);
+    //    console.dir(err);
+    //  }
+    //  $(this.refs.password).prop('disabled', false).focus().select().parent().removeClass('loading');
+    //});
   }
   displayWrongPasswordMessage() {
     this.setState({ wrongPassword: setTimeout(() => this.hideWrongPasswordMessage(), 1000) });
@@ -336,7 +388,7 @@ export class PasswordStep extends Page {
           <input type="password" placeholder="Password" required autoFocus="true" ref="password" onKeyPress={e => { if (e.key == 'Enter') { this.onSubmit(); e.preventDefault(); } }} />
           <i className="chevron right link icon" onClick={() => this.onSubmit()}></i>
         </div>
-        <ExternalLink className="underline forgot link" href="/recover" params={{ email: this.props.location.query.email }} tabIndex="0">Forgot password?</ExternalLink>
+        <ExternalLink className="underline forgot link" href="https://www.privateinternetaccess.com/pages/reset-password" params={{ email: this.props.location.query.email }} tabIndex="0">Forgot password?</ExternalLink>
       </Page>
     );
   }
