@@ -36,9 +36,18 @@ export default class RemotePortScreen extends DaemonAware(React.Component)  {
     return(
       <Subpanel>
         <PanelContent>
-          <SecondaryTitlebar title="Remote Port" back="/configuration"/>
+          <SecondaryTitlebar title="Transport Protocol" back="/configuration"/>
           <div className="scrollable content" ref="root">
             {
+              REMOTE_PORT_ALTERNATIVES.map(([protocol, ports]) =>
+                <div className="setting" key={protocol}>
+                  <div className="ui left top radio checkbox">
+                    <input type="radio" name="remotePort" value={`${protocol}:0`} id={`remotePort-${protocol}-0`}/>
+                    <label>{protocol.toUpperCase()}<small>{PROTOCOL_DESCRIPTIONS[protocol]}</small></label>
+                  </div>
+                </div>
+              )
+              /*
               REMOTE_PORT_ALTERNATIVES.map(([protocol, ports]) =>
                 <div className="pane" data-title={protocol.toUpperCase()} key={protocol}>
                   <div className="setting description">{PROTOCOL_DESCRIPTIONS[protocol]}</div>
@@ -54,6 +63,7 @@ export default class RemotePortScreen extends DaemonAware(React.Component)  {
                   }
                 </div>
               )
+              */
             }
           </div>
         </PanelContent>

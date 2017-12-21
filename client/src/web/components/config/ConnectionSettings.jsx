@@ -16,9 +16,11 @@ export default class ConnectionSettings extends DaemonAware(React.Component) {
   }
   render() {
     return (
-      <div className="pane" data-title="Connection Settings">
-        <LinkSetting name="encryption" to="/configuration/privacy" label="Encryption" formatValue={v => ({ 'default': "Balanced", 'none': "Speed", 'strong': "Privacy", 'stealth': "Stealth" })[v]}/>
-        <LinkSetting name="remotePort" className="advanced" hidden={!this.props.advanced} disabled={this.state.encryption==='stealth'} to="/configuration/remoteport" label="Remote Port" formatValue={v => this.state.encryption === 'stealth' ? 'HTTPS' : v.replace(':', ' ').toUpperCase()}/>
+      <div className={classList("pane", "advanced", { 'hidden': !this.props.advanced })} data-title="Connection Settings">
+        {/*<LinkSetting name="encryption" to="/configuration/privacy" label="Encryption" formatValue={v => ({ 'default': "Balanced", 'none': "Speed", 'strong': "Privacy", 'stealth': "Stealth" })[v]}/>*/}
+        {
+          <LinkSetting name="remotePort" className="advanced" hidden={!this.props.advanced} disabled={this.state.encryption==='stealth'} to="/configuration/remoteport" label="Transport Protocol" formatValue={v => v.replace(/:.*/, '').toUpperCase()}/>
+        }
         <InputSetting name="localPort" className="advanced" hidden={!this.props.advanced} label="Local Port"/>
       </div>
     );
