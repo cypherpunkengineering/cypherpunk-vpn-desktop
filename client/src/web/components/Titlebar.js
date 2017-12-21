@@ -3,11 +3,11 @@ import { Router, Route, IndexRoute, IndexRedirect, Redirect, Link, createMemoryH
 import RetinaImage from './Image';
 import { classList } from '../util';
 
-import AccountIcon from '../assets/img/icon-account-big.svg';
+const AccountIcon = { [1]: require('../assets/img/pia_account_icon.png'), [2]: require('../assets/img/pia_account_icon@2x.png') };
 import SettingsIcon from '../assets/img/icon_settings.svg';
 
-const LogoText = require('../assets/img/logo_text.png');
-const LogoText2x = require('../assets/img/logo_text@2x.png');
+const LogoText = require('../assets/img/pia_logo_text_190.png');
+const LogoText2x = require('../assets/img/pia_logo_text_190@2x.png');
 
 
 // A little helper component to render the main title of the app.
@@ -83,7 +83,7 @@ export class MainTitlebar extends React.Component {
   render() {
     return(
       <Titlebar>
-        <Link className="account" to="/account" data-tooltip="My Account" data-inverted="" data-position="bottom left"><img src={AccountIcon}/></Link>
+        <Link className="account" to="/account" data-tooltip="My Account" data-inverted="" data-position="bottom left"><RetinaImage src={AccountIcon}/></Link>
         <Title/>
         <Link className="settings" to="/configuration" data-tooltip="Configuration" data-inverted="" data-position="bottom right"><img src={SettingsIcon} /></Link>
       </Titlebar>

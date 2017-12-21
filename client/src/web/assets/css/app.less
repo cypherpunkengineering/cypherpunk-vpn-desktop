@@ -264,6 +264,7 @@ a.external {
     img {
       opacity: 0.5;
       transition: opacity 0.2s linear;
+      margin-right: -8px;
       body.is-focused & { opacity: 0.9; }
     }
   }
@@ -323,6 +324,10 @@ a.external {
       left: 0;
       border-radius: 0 30px 30px 0;
       border-right: 2px solid @themeBorderColor;
+      img {
+        position: relative;
+        left: -2px;
+      }
     }
     &.right {
       right: 0;
@@ -706,14 +711,15 @@ a.external {
       text-align: left;
       font-size: 13px;
       margin: 1px 0 -8px 0;
-      color: #50aeb7;
+      color: #6ae38c;
       font-weight: 200;
       letter-spacing: 0.1em;
       line-height: 14px;
     }
     > .logo {
-      width: 200px;
-      margin-top: 13px;
+      width: 240px;
+      margin-top: 10px;
+      margin-right: -12px;
     }
     > .text {
       color: #fff;

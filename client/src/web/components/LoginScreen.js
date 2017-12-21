@@ -177,7 +177,7 @@ const AnalyticsPageBackground = PageBackground({ key: "bg-analytics", top: 60, s
 
 // Goes into the page itself
 const PageTitle = ({ key = "title", text = null, className = null, children, ...props } = {}) => <div key={key} className={classList('title', className)} {...props}>{text}{children}</div>;
-const DefaultPageTitle = <PageTitle><div className="welcome">Welcome to</div><img className="logo" src={require('../assets/img/logo_text.svg')} alt="Cypherpunk Privacy"/></PageTitle>;
+const DefaultPageTitle = <PageTitle><div className="welcome">Welcome to</div><RetinaImage className="logo" src={{ [1]: require('../assets/img/pia_logo_text_240.png'), [2]: require('../assets/img/pia_logo_text_240@2x.png') }} alt="Cypherpunk Privacy"/></PageTitle>;
 
 
 

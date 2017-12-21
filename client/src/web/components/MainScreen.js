@@ -22,7 +22,7 @@ const CACHED_COORDINATES = {
   'cypherplay': { lat: 30, long: 0, scale: 0.5 },
 };
 
-const AccountIcon = { [1]: require('../assets/img/account_icon.png'), [2]: require('../assets/img/account_icon@2x.png') };
+const AccountIcon = { [1]: require('../assets/img/pia_account_icon.png'), [2]: require('../assets/img/pia_account_icon@2x.png') };
 const CypherPlayIcon = { [1]: require('../assets/img/icon_cypherplay.png'), [2]: require('../assets/img/icon_cypherplay@2x.png') };
 
 
