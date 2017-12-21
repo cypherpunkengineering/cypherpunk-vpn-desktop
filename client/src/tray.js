@@ -231,13 +231,13 @@ class Tray {
         enabled: hasLocations,
         submenu:
           [
-            {
+            /*{
               label: cypherplayName,
               icon: CypherPlayIcon,
               enabled: !!cypherplayLocation,
               click: cypherplayLocation ? reconnectHandler({ location: cypherplayLocation, fastest: cypherplayLocation, locationFlag: 'cypherplay' }) : null
             },
-            { type: 'separator' }
+            { type: 'separator' }*/
           ].concat(
             Object.values(this.state.config.locations)
               .filter(s => !s.disabled)
