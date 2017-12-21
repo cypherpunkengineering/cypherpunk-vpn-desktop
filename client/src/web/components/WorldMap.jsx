@@ -96,7 +96,7 @@ export class WorldMap extends React.Component {
     let state = {}, update = false;
     if (props.locations !== this.props.locations) {
       state.locations = this.translateLocations(props.locations);
-      update = true;
+      //update = true;
     }
     if (props.location !== this.props.location || (!props.location && (props.lat !== this.props.lat || props.lon !== this.props.lon || props.scale !== this.props.scale))) {
       this.translateLocation(props, state);
