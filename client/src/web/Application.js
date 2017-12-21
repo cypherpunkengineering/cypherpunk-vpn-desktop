@@ -96,7 +96,7 @@ export default class ApplicationClass extends EventEmitter {
   }
 
   checkForUpdates() {
-    server.get('/api/v1/app/versions' + (daemon.account.account && daemon.account.account.type === 'developer' ? '/developer' : '')).then(response => {
+    if (false) server.get('/api/v1/app/versions' + (daemon.account.account && daemon.account.account.type === 'developer' ? '/developer' : '')).then(response => {
       var version = response.data[({ 'darwin':'macos', 'win32':'windows', 'linux':'debian' })[process.platform]];
       if (version !== undefined) {
         function downloadAndInstall() {
