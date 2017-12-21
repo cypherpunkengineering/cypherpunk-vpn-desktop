@@ -245,18 +245,18 @@ export default class AccountScreen extends DaemonAware(React.Component) {
           <div className="scrollable content">
             <AccountUserPane account={this.state.account}/>
             <div className="pane" data-title="Account Settings">
-              <div className="setting"><ExternalLink href="/account" params={{ user: this.state.account.account.email, secret: this.state.account.secret }}>Manage Account</ExternalLink></div>
+              <div className="setting"><ExternalLink href="https://www.privateinternetaccess.com/pages/client-sign-in">Manage Account</ExternalLink></div>
             </div>
             <div className="pane" data-title="More">
               {/*<div className="setting"><ExternalLink href="/account/refer" params={{ user: this.state.account.account.email, secret: this.state.account.secret }}><div>Refer a Friend</div></ExternalLink></div>*/}
-              <div className="setting"><ExternalLink className="bug" href="/support/request/new">Report an Issue</ExternalLink></div>
-              <div className="setting"><ExternalLink href="/support">Go to Help Center</ExternalLink></div>
+              <div className="setting"><ExternalLink className="bug" href="https://helpdesk.privateinternetaccess.com/hc/en-us/requests/new?ticket_form_id=296428">Report an Issue</ExternalLink></div>
+              <div className="setting"><ExternalLink href="https://www.privateinternetaccess.com/pages/contact-us">Go to Help Center</ExternalLink></div>
               <div className="setting"><Link className="logout" to="/login/logout" tabIndex="0" onClick={() => analytics.event('Account', 'logout')}>Sign Out</Link></div>
             </div>
             <div className="links footer">
-              <ExternalLink href="/terms-of-service">Terms of Service</ExternalLink>
-              <ExternalLink href="/privacy-policy">Privacy Policy</ExternalLink>
-              <ExternalLink href="/legal/license/desktop">License Information</ExternalLink>
+              <ExternalLink href="https://www.privateinternetaccess.com/pages/terms-of-service/">Terms of Service</ExternalLink>
+              <ExternalLink href="https://www.privateinternetaccess.com/pages/privacy-policy/">Privacy Policy</ExternalLink>
+              {/*<ExternalLink href="/legal/license/desktop">License Information</ExternalLink>*/}
             </div>
           </div>
         </PanelContent>
