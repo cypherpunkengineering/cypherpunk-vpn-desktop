@@ -157,7 +157,7 @@ class Tray {
     }
   }
   getToolTip() {
-    return "Cypherpunk Privacy";
+    return "Private Internet Access";
   }
   createMenuItems() {
     let result = {};

@@ -159,21 +159,21 @@ eventPromise(app, 'ready').then(() => {
         switch (state.state) {
           case 'CONNECTED':
             if (lastState === 'RECONNECTING' || lastState === 'STILL_RECONNECTING') {
-              new Notification("Reconnected to Cypherpunk network", { body: "You are once again safely connected to the Cypherpunk Privacy network." });
+              new Notification("Reconnected to PIA", { body: "You are once again safely connected to the Cypherpunk Privacy network." });
             } else {
-              new Notification("Connected to Cypherpunk network", { body: "You are now safely connected to the Cypherpunk Privacy network. Enjoy a more free internet!" });
+              new Notification("Connected to PIA", { body: "You are now safely connected to the Cypherpunk Privacy network. Enjoy a more free internet!" });
             }
             break;
           case 'RECONNECTING':
             if (lastState === 'CONNECTED') {
-              new Notification("Reconnecting to Cypherpunk network...", { body: "Your connection to the Cypherpunk network has been disrupted, please wait while we try to restore it..." });
+              new Notification("Reconnecting to PIA...", { body: "Your connection to PIA has been disrupted, please wait while we try to restore it..." });
             }
             break;
           case 'DISCONNECTED':
             if (daemon.settings.firewall == 'on') {
-              new Notification("Disconnected from Cypherpunk network", { body: "Reminder: Leak Protection is active, blocking your internet connection." });
+              new Notification("Disconnected from PIA", { body: "Reminder: The killswitch is active, blocking your internet connection." });
             } else {
-              new Notification("Disconnected from Cypherpunk network", { body: "You are now connecting directly to the internet." });
+              new Notification("Disconnected from PIA", { body: "You are now connecting directly to the internet." });
             }
             break;
         }
