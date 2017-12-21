@@ -63,6 +63,9 @@ function xhr(method, url, params, options = {}) {
     xhr.onload = function() {
       var data = this.response;
       if (typeof data === 'string' && data.length > 0 && data[0] == '{') {
+        console.log("response:", data);
+        data = data.replace(/[^}]*$/, '');
+        console.log("trimmed response:", data);
         try {
           data = JSON.parse(data);
         } catch (e) {}
