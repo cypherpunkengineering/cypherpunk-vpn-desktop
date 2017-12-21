@@ -247,6 +247,10 @@ void Connection::OnOpenVPNManagement(OpenVPNProcess* process, const asio::error_
 				"username \"" + id + "\" \"" + _username + "\"\n"
 				"password \"" + id + "\" \"" + _password + "\"");
 		}
+		else if (StartsWith(line, ">PASSWORD:Auth-Token:"))
+		{
+			_openvpn_auth_token = line.substr(21);
+		}
 		else if (StartsWith(line, ">PASSWORD:Verification Failed: "))
 			SignalError(AUTHENTICATION_FAILED);
 		else
@@ -713,7 +717,7 @@ void Connection::WriteOpenVPNProfile(std::ostream& out)
 	// Parse out protocol and remote port from remotePort setting
 	std::string protocol;
 	std::string remotePort;
-	if (g_settings.encryption() == "stealth")
+	if (false && g_settings.encryption() == "stealth")
 	{
 		protocol = "tcp";
 		remotePort = "443";
@@ -765,30 +769,37 @@ void Connection::WriteOpenVPNProfile(std::ostream& out)
 	out << "dev tun" << endl;
 	out << "proto " << protocol << endl;
 
+	/*
 	// MTU settings
-	const int mtu = g_settings.mtu();
+	const int mtu = 1500; // g_settings.mtu();
 	out << "tun-mtu " << mtu << endl;
 	//out << "fragment" << (mtu - 100) << endl;
 	out << "mssfix " << (mtu - 220) << endl;
+	*/
 
 	// Default connection settings
-	out << "ping 4" << endl;
-	out << "ping-exit 15" << endl;
+	//out << "ping 4" << endl;
+	//out << "ping-exit 15" << endl;
 	out << "resolv-retry 0" << endl;
 	out << "persist-remote-ip" << endl;
 	//out << "persist-tun" << endl;
 	out << "route-delay 0" << endl;
 	out << "remap-usr1 SIGTERM" << endl;
 	out << "tls-exit" << endl;
+	out << "reneg-sec 0" << endl;
+	out << "compress lzo" << endl;
 
 	// Default security settings
-	out << "tls-cipher TLS-ECDHE-RSA-WITH-AES-256-GCM-SHA384:TLS-ECDHE-RSA-WITH-AES-256-CBC-SHA256:TLS-ECDHE-RSA-WITH-AES-128-GCM-SHA256:TLS-ECDHE-RSA-WITH-AES-128-CBC-SHA256" << endl;
-	out << "auth SHA256" << endl;
-	out << "tls-version-min 1.2" << endl;
-	out << "remote-cert-eku \"TLS Web Server Authentication\"" << endl;
-	out << "verify-x509-name " << _server.at("ovHostname").AsString() << " name" << endl;
+	//out << "tls-cipher TLS-ECDHE-RSA-WITH-AES-256-GCM-SHA384:TLS-ECDHE-RSA-WITH-AES-256-CBC-SHA256:TLS-ECDHE-RSA-WITH-AES-128-GCM-SHA256:TLS-ECDHE-RSA-WITH-AES-128-CBC-SHA256" << endl;
+	out << "auth SHA1" << endl;
+	//out << "auth SHA256" << endl;
+	//out << "tls-version-min 1.2" << endl;
+	out << "tls-client" << endl;
+	//out << "remote-cert-eku \"TLS Web Server Authentication\"" << endl;
+	out << "remote-cert-tls server" << endl;
+	//out << "verify-x509-name " << _server.at("ovHostname").AsString() << " name" << endl;
 	out << "auth-user-pass" << endl;
-	out << "ncp-disable" << endl;
+	//out << "ncp-disable" << endl;
 
 	// Default route setting
 	if (g_settings.routeDefault())
@@ -813,6 +824,7 @@ void Connection::WriteOpenVPNProfile(std::ostream& out)
 
 	// Overridden encryption settings
 	const auto& encryption = g_settings.encryption();
+	/*
 	if (encryption == "stealth")
 	{
 		out << "cipher AES-128-GCM" << endl;
@@ -830,6 +842,8 @@ void Connection::WriteOpenVPNProfile(std::ostream& out)
 	{
 		out << "cipher AES-128-GCM" << endl;
 	}
+	*/
+	out << "cipher BF-CBC" << endl;
 
 	if (protocol == "udp")
 	{
@@ -852,6 +866,10 @@ void Connection::WriteOpenVPNProfile(std::ostream& out)
 	}
 	else
 	{
+		auto remote = SplitToVector((protocol == "udp") ? _server.at("ovUDP").AsString() : _server.at("ovTCP").AsString(), ':', 1);
+		out << "remote " << remote[0] << ' ' << /*"1198"*/ remote[1] << endl;
+
+		/*
 		std::string ipKey = "ov" + encryption;
 		ipKey[2] = std::toupper(ipKey[2]);
 		const auto& serverIPs = _server.at(ipKey).AsArray();
@@ -862,6 +880,7 @@ void Connection::WriteOpenVPNProfile(std::ostream& out)
 			out << "  remote " << ip.AsString() << ' ' << remotePort << endl;
 			out << "</connection>" << endl;
 		}
+		*/
 	}
 
 	// Extra routes; currently only used by the "exempt Apple services" setting
@@ -871,6 +890,19 @@ void Connection::WriteOpenVPNProfile(std::ostream& out)
 		out << "route 17.0.0.0 255.0.0.0 net_gateway" << endl;
 	}
 #endif
+
+	if (!g_settings.routeDefault())
+	{
+		out << "pull-filter ignore \"redirect-gateway \"" << endl;
+	}
+
+	if (!g_settings.overrideDNS())
+	{
+		out << "pull-filter ignore \"dhcp-option DNS \"" << endl;
+		out << "pull-filter ignore \"dhcp-option DOMAIN local\"" << endl;
+	}
+
+	/*
 
 	// Ignore ping settings pushed from the server.
 	out << "pull-filter ignore \"ping \"" << endl;
@@ -921,6 +953,7 @@ void Connection::WriteOpenVPNProfile(std::ostream& out)
 		// ignore DOMAIN setting as well
 		out << "pull-filter ignore \"dhcp-option DOMAIN local\"" << endl;
 	}
+	*/
 
 	// Include hardcoded certificate authority
 	out << "<ca>" << endl;

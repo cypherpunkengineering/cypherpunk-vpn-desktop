@@ -142,6 +142,8 @@ private:
 	std::shared_ptr<OpenVPNProcess> _openvpn_process;
 	std::shared_ptr<Subprocess> _stunnel_process;
 
+	std::string _openvpn_auth_token;
+
 private:
 	virtual void OnOpenVPNStdOut(OpenVPNProcess* process, const asio::error_code& error, std::string line) override;
 	virtual void OnOpenVPNStdErr(OpenVPNProcess* process, const asio::error_code& error, std::string line) override;

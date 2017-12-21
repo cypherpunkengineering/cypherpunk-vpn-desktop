@@ -761,7 +761,8 @@ void CypherDaemon::PingServers()
 					continue;
 			}
 			catch (...) {}
-			pinger->Add(p.first, p.second.AsStruct().at("ovDefault").AsArray().at(0).AsString());
+			//pinger->Add(p.first, p.second.AsStruct().at("ovDefault").AsArray().at(0).AsString());
+			pinger->Add(p.first, SplitToVector(p.second.AsStruct().at("ping").AsString(), ':', 1)[0]);
 		}
 		catch (...) {}
 	}

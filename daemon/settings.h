@@ -39,8 +39,8 @@ public:
 	bool WriteToDisk() const;
 	void Reset(bool deleteAllValues = true);
 
-	JsonField(std::string, remotePort, "udp:7133")
-	JsonField(std::string, location, "tokyodev") // FIXME: don't hardcode
+	JsonField(std::string, remotePort, "udp:0")
+	JsonField(std::string, location, "us_atlanta") // FIXME: don't hardcode
 	JsonField(std::string, locationFlag, "") // "cypherplay", "fastest", "fastest-us", "fastest-uk" or empty
 	JsonField(std::string, fastest, "") // a cached fastest server which the daemon may switch to when (re)connecting if locationFlag is being used
 	JsonField(int, localPort, 0)
