@@ -40,7 +40,7 @@ export default class ApplicationSettings extends React.Component {
   }
   render() {
     return(
-      <div className="pane" data-title="App Settings">
+      <div className="pane" data-title="Application">
         <div className="setting">
           <div className="ui toggle checkbox" ref="runOnStartup">
             <input type="checkbox" name="runonstartup" id="runonstartup" onChange={event => this.onAutoStartSettingClicked(event)}/>

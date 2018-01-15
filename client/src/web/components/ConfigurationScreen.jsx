@@ -12,8 +12,9 @@ import { classList } from '../util';
 
 import ApplicationSettings from './config/ApplicationSettings';
 import PrivacySettings from './config/PrivacySettings';
-import ConnectionSettings from './config/ConnectionSettings';
 import InternetSettings from './config/InternetSettings';
+import ConnectionSettings from './config/ConnectionSettings';
+import EncryptionSettings from './config/EncryptionSettings';
 
 import { CheckboxSetting, LinkSetting } from './config/Settings';
 
@@ -53,7 +54,8 @@ export default class ConfigurationScreen extends DaemonAware(React.Component) {
             <PrivacySettings advanced={this.state.showAdvancedSettings}/>
             <InternetSettings advanced={this.state.showAdvancedSettings}/>
             <ConnectionSettings advanced={this.state.showAdvancedSettings}/>
-            <div className="pane advanced" data-title="Advanced Settings">
+            <EncryptionSettings advanced={this.state.showAdvancedSettings}/>
+            <div className="pane advanced" data-title="Advanced">
               <CheckboxSetting name="showAdvancedSettings" className="advanced" label="Show Advanced Settings"/>
             </div>
             <div className="pane">

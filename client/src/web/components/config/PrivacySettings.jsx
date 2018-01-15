@@ -16,7 +16,7 @@ export default class PrivacySettings extends DaemonAware(React.Component) {
   }
   render() {
     return(
-      <div className="pane" data-title="Privacy Settings">
+      <div className="pane" data-title="Privacy">
         {/*<CheckboxSetting name="blockMalware" disabled={!this.state.overrideDNS} label="Block Malware"/>
         <CheckboxSetting name="blockAds" disabled={!this.state.overrideDNS} label="Block Ads &amp; Trackers"/>*/}
         <CheckmarkSetting className="group" label="DNS Leak Protection" checked={this.state.overrideDNS}/>
