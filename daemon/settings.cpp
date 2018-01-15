@@ -42,44 +42,8 @@ bool Settings::WriteToDisk() const
 
 
 
-static const JsonArray g_certificate_authorities {
-	// Cypherpunk CA
-	(JsonValue) JsonArray {
-		"-----BEGIN CERTIFICATE-----",
-		"MIIFjzCCA3egAwIBAgIJAJ4lkFo9v0L1MA0GCSqGSIb3DQEBDQUAMF4xCzAJBgNV",
-		"BAYTAklTMSIwIAYDVQQKDBlDeXBoZXJwdW5rIFBhcnRuZXJzLCBTbGYuMSswKQYD",
-		"VQQDDCJDeXBoZXJwdW5rIFByaXZhY3kgTmV0d29yayBSb290IENBMB4XDTE3MDcx",
-		"MDA3NDgyMloXDTM3MDcwNTA3NDgyMlowXjELMAkGA1UEBhMCSVMxIjAgBgNVBAoM",
-		"GUN5cGhlcnB1bmsgUGFydG5lcnMsIFNsZi4xKzApBgNVBAMMIkN5cGhlcnB1bmsg",
-		"UHJpdmFjeSBOZXR3b3JrIFJvb3QgQ0EwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAw",
-		"ggIKAoICAQDHff48dzt7LoHGWuXLDxb+L54wOKFwdb+O1zhoWgBznk0sBoNi29eM",
-		"/4WSibUkRLEPdNcgRZX/RXxsfT/e4sXPT2jOLNPAlTCb3iOvsH7rfgantBbkXO1k",
-		"mRzBFhpSe+yekBFoOa3g+qG+XqtuLCHMqkHF1XkFBAlgFD1MoCugadTyxdr7X+Y7",
-		"wK1G0C+ZcgyMn6u7U9uZ+JHMkyMAzYA/r0OQOIZjBeojWb/0aVcv00u01CxC4rdO",
-		"WxxjukEQ9nA8MGCKOeO8XrBAdK+l5d3tWqovSMp7NEvkSepGrEVuQDwrkgwAdnAL",
-		"WaqjBARL/eYXWZ7QaSO3yVu5fI5O/kx8POvPP+si8pJ6TDbiGMKarJNc6cf15dTB",
-		"UEVyurgtDLIykYM+hyAqqGzR5Ct6zTvKRCAh47NhJDjS2qeccRSKxppFGcqHMAYJ",
-		"dmbfs6SemosAl05aZKcj4ScHLq8Q6z4Vq8KSEdfMy3gWqOCwg7q26Y12gn43sMz/",
-		"M9tOq57LT9BJPLMADk65NspKhHS0+pafgDlEre6xVgO/Hn0t7dAvxtvQuW3oTASE",
-		"V7qbtoPpxt2s+smTxD0nfFkYS6ixHkr7NrihBehL5t6laNVitAtjfwn9dNk8clR4",
-		"H1o0T8CMCsSwBlFrAfvI7Teth3VA5ASCHNsLiaIRW4Gim1afuAXLQwIDAQABo1Aw",
-		"TjAdBgNVHQ4EFgQU2y/+YPH5bONje+Z56e0hST9AK5swHwYDVR0jBBgwFoAU2y/+",
-		"YPH5bONje+Z56e0hST9AK5swDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQ0FAAOC",
-		"AgEAduneV4ubBycREfc2hpmNCZC3heKYQZCMHrzkdHLMa/XTwXEo3tNvJcs88l4F",
-		"YsWYbRYQP13SAI3Ff07c02uENYDyMvcmy6q3Z2jiqJ02CVkDNcN/Nd3YREtuk2D5",
-		"8UWbGvhsER+JTW3/9zec3baG2I45ipcU+YLOkEjiyQpKA7OI8C4FppGWjVaL3kGO",
-		"a08ryOrIvyTyPxxVFmXHIyUfWAKtSGzJvmhpWpX0kF7rQGULZ46Lfy76Td2xtQdE",
-		"sxn0aIUqAk3iBV6zT4vN4L/oA4kfY7DxGRJwAUNK8Zk/kObLtwGaGiqrG/3W5N40",
-		"qf2fOrsofbBdSZDZjFLZcsJYtSYStAdPuGO3wB91ar8XAgAdrhe+tYpI+k0Kat/i",
-		"Cxbh1WoFSnCISDH3xhU0tP5fvOF2WXOcfe67eFbiQyOkDpbO/Cd6d74lnsxNpmaw",
-		"NazjFUObdvcucta2wFj3FhpCFQGnSlcUQsT0BS6X+rSgmY+hZ37D4HbziRHFiN4Q",
-		"e97IXZopkPpTonFrvVZkFYXWSJdx6odjaNPXrhWH2SwBhCAWGpmypGay2j79sPAJ",
-		"0OxQxuLLkR9hloTAwoQY/2gGYLBs/YLRRVtfKN24r/sXnKDFwojaIti4yr5IfQKL",
-		"h6fMBiAAKE7CWJG+Y1NQrwPkrJT5QhpjpSL9V1orCUfW/pU=",
-		"-----END CERTIFICATE-----",
-	},
-	// PIA ECDSA-256k1
-	(JsonValue) JsonArray {
+static const JsonObject g_certificate_authorities {
+	{ "ECDSA-256k1", (JsonValue) JsonArray {
 		"-----BEGIN CERTIFICATE-----",
 		"MIIEHTCCA8KgAwIBAgIJALJnZBxsuxbRMAoGCCqGSM49BAMEMIHoMQswCQYDVQQG",
 		"EwJVUzELMAkGA1UECBMCQ0ExEzARBgNVBAcTCkxvc0FuZ2VsZXMxIDAeBgNVBAoT",
@@ -105,9 +69,8 @@ static const JsonArray g_certificate_authorities {
 		"Qeq8/d6uWFdJ0gi17DACIQCysjd6+CBR5YcTHxeSkF7IvvbVTO2axvXhbv8fIsQx",
 		"Qw==",
 		"-----END CERTIFICATE-----",
-	},
-	// PIA ECDSA-256
-	(JsonValue)JsonArray {
+	} },
+	{ "ECDSA-256r1", (JsonValue)JsonArray {
 		"-----BEGIN CERTIFICATE-----",
 		"MIIEHjCCA8WgAwIBAgIJANBplv/w3alWMAoGCCqGSM49BAMEMIHoMQswCQYDVQQG",
 		"EwJVUzELMAkGA1UECBMCQ0ExEzARBgNVBAcTCkxvc0FuZ2VsZXMxIDAeBgNVBAoT",
@@ -133,9 +96,8 @@ static const JsonArray g_certificate_authorities {
 		"Mt/nr2amk53mHfIrE4gkMAIgWzZRIJ4XzcXy0i4crrPrMIx8CYP8EQfvLI4rsVPg",
 		"RP8=",
 		"-----END CERTIFICATE-----",
-	},
-	// PIA ECDSA-521
-	(JsonValue) JsonArray {
+	} },
+	{ "ECDSA-521", (JsonValue)JsonArray {
 		"-----BEGIN CERTIFICATE-----",
 		"MIIEpzCCBAigAwIBAgIJAKbEcZk5BSQwMAoGCCqGSM49BAMEMIHoMQswCQYDVQQG",
 		"EwJVUzELMAkGA1UECBMCQ0ExEzARBgNVBAcTCkxvc0FuZ2VsZXMxIDAeBgNVBAoT",
@@ -163,9 +125,8 @@ static const JsonArray g_certificate_authorities {
 		"HT4Stz531yJ3j3gm6JuWqDpqmMX4dToCQgH83DbGDvpx97wJtG1i+yg9GXhzmyYM",
 		"4RCsSuLgT98WTwZXnoPUyh/Qbgiihnjkg/F6v7vvMi8P6AbTKwixmCyZtA==",
 		"-----END CERTIFICATE-----",
-	},
-	// PIA RSA-2048
-	(JsonValue) JsonArray {
+	} },
+	{ "RSA-2048", (JsonValue)JsonArray {
 		"-----BEGIN CERTIFICATE-----",
 		"MIIFqzCCBJOgAwIBAgIJAKZ7D5Yv87qDMA0GCSqGSIb3DQEBDQUAMIHoMQswCQYD",
 		"VQQGEwJVUzELMAkGA1UECBMCQ0ExEzARBgNVBAcTCkxvc0FuZ2VsZXMxIDAeBgNV",
@@ -199,9 +160,8 @@ static const JsonArray g_certificate_authorities {
 		"1wiqdteqFXkTYoSDctgKMiZ6GdocK9nMroQipIQtpnwd4yBDWIyC6Bvlkrq5TQUt",
 		"YDQ8z9v+DMO6iwyIDRiU",
 		"-----END CERTIFICATE-----",
-	},
-	// PIA RSA-3072
-	(JsonValue) JsonArray {
+	} },
+	{ "RSA-3072", (JsonValue)JsonArray {
 		"-----BEGIN CERTIFICATE-----",
 		"MIIGqzCCBROgAwIBAgIJAL2eMgp0qeyCMA0GCSqGSIb3DQEBDQUAMIHoMQswCQYD",
 		"VQQGEwJVUzELMAkGA1UECBMCQ0ExEzARBgNVBAcTCkxvc0FuZ2VsZXMxIDAeBgNV",
@@ -240,9 +200,8 @@ static const JsonArray g_certificate_authorities {
 		"ceaLeH73I0HclfCeMUW/FQpxL83UM8QcOoSe+Z+3YQc87/z7KESTLzcVuB/caZjY",
 		"00uYIdq+89LCaymtg4kEe805OO6y9vEqaIEqzpvwUw==",
 		"-----END CERTIFICATE-----",
-	},
-	// PIA RSA-4096
-	(JsonValue)JsonArray {
+	} },
+	{ "RSA-4096", (JsonValue)JsonArray {
 		"-----BEGIN CERTIFICATE-----",
 		"MIIHqzCCBZOgAwIBAgIJAJ0u+vODZJntMA0GCSqGSIb3DQEBDQUAMIHoMQswCQYD",
 		"VQQGEwJVUzELMAkGA1UECBMCQ0ExEzARBgNVBAcTCkxvc0FuZ2VsZXMxIDAeBgNV",
@@ -286,9 +245,8 @@ static const JsonArray g_certificate_authorities {
 		"8jO5+0LdJ6VyOs/Hd4w52alDW/MFySDZSfQHMTIc30hLBJ8OnCEIvluVQQ2UQvoW",
 		"+no177N9L2Y+M9TcTA62ZyMXShHQGeh20rb4kK8f+iFX8NxtdHVSkxMEFSfDDyQ=",
 		"-----END CERTIFICATE-----",
-	},
-	// PIA unknown
-	(JsonValue)JsonArray {
+	} },
+	{ "default", (JsonValue)JsonArray {
 		"-----BEGIN CERTIFICATE-----",
 		"MIID2jCCA0OgAwIBAgIJAOtqMkR2JSXrMA0GCSqGSIb3DQEBBQUAMIGlMQswCQYD",
 		"VQQGEwJVUzELMAkGA1UECBMCT0gxETAPBgNVBAcTCENvbHVtYnVzMSAwHgYDVQQK",
@@ -312,10 +270,14 @@ static const JsonArray g_certificate_authorities {
 		"fsKHi1jAS9tNP2E+DCZiWcM/5Y7/XKS/6KvrPQT90nM5klK9LfNvS+kFabMmMBe2",
 		"llQlzAzFiIfabACTQn84QLeLOActKhK8hFJy2Gy6",
 		"-----END CERTIFICATE-----",
-	},
+	} },
 };
 
-const JsonArray& Config::certificateAuthorities() const
+const JsonArray& Config::certificateAuthority(const std::string& type) const
+{
+	return g_certificate_authorities.at(type).AsArray();
+}
+const JsonObject& Config::certificateAuthorities() const
 {
 	return g_certificate_authorities;
 }

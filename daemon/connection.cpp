@@ -714,60 +714,10 @@ void Connection::WriteOpenVPNProfile(std::ostream& out)
 {
 	using namespace std;
 
-	// Parse out protocol and remote port from remotePort setting
-	std::string protocol;
-	std::string remotePort;
-	if (false && g_settings.encryption() == "stealth")
-	{
-		protocol = "tcp";
-		remotePort = "443";
-	}
-	else
-	{
-		auto both = SplitToVector(g_settings.remotePort(), ':', 1);
-		protocol = std::move(both[0]);
-		if (protocol == "tcp")
-			protocol = "tcp-client";
-		else if (protocol != "udp")
-		{
-			LOG(WARNING) << "Unrecognized 'remotePort' protocol '" << protocol << "', defaulting to 'udp'";
-			protocol = "udp";
-		}
-		if (both.size() == 2)
-		{
-			remotePort = std::move(both[1]);
-			if (remotePort == "auto")
-				remotePort = "7133";
-			else
-			{
-				try
-				{
-					size_t pos;
-					unsigned long port = std::stoul(remotePort, &pos);
-					if (pos != remotePort.size())
-					{
-						LOG(WARNING) << "Failed to fully parse 'remotePort' port '" << remotePort << "', using '" << port << "'";
-						remotePort = std::to_string(port);
-					}
-				}
-				catch (...)
-				{
-					LOG(WARNING) << "Unrecognized 'remotePort' port '" << remotePort << "', defaulting to '7133'";
-					remotePort = "7133";
-				}
-			}
-		}
-	}
-
-	if (use_stunnel)
-	{
-		protocol = "tcp";
-	}
-
 	// Basic settings
 	out << "client" << endl;
 	out << "dev tun" << endl;
-	out << "proto " << protocol << endl;
+	out << "proto " << (g_settings.protocol() == "tcp" ? "tcp-client" : "udp") << endl;
 
 	/*
 	// MTU settings
@@ -788,11 +738,10 @@ void Connection::WriteOpenVPNProfile(std::ostream& out)
 	out << "tls-exit" << endl;
 	out << "reneg-sec 0" << endl;
 	out << "compress lzo" << endl;
+	out << "pia-signal-settings" << endl;
 
 	// Default security settings
 	//out << "tls-cipher TLS-ECDHE-RSA-WITH-AES-256-GCM-SHA384:TLS-ECDHE-RSA-WITH-AES-256-CBC-SHA256:TLS-ECDHE-RSA-WITH-AES-128-GCM-SHA256:TLS-ECDHE-RSA-WITH-AES-128-CBC-SHA256" << endl;
-	out << "auth SHA1" << endl;
-	//out << "auth SHA256" << endl;
 	//out << "tls-version-min 1.2" << endl;
 	out << "tls-client" << endl;
 	//out << "remote-cert-eku \"TLS Web Server Authentication\"" << endl;
@@ -822,30 +771,10 @@ void Connection::WriteOpenVPNProfile(std::ostream& out)
 	else
 		out << "lport " << g_settings.localPort() << endl;
 
-	// Overridden encryption settings
-	const auto& encryption = g_settings.encryption();
-	/*
-	if (encryption == "stealth")
-	{
-		out << "cipher AES-128-GCM" << endl;
-		out << "scramble obfuscate cypherpunk-xor-key" << endl;
-	}
-	else if (encryption == "strong")
-	{
-		out << "cipher AES-256-GCM" << endl;
-	}
-	else if (encryption == "none")
-	{
-		out << "cipher none" << endl;
-	}
-	else // encryption == "default"
-	{
-		out << "cipher AES-128-GCM" << endl;
-	}
-	*/
-	out << "cipher BF-CBC" << endl;
+	out << "cipher " << g_settings.cipher() << endl;
+	out << "auth " << g_settings.auth() << endl;
 
-	if (protocol == "udp")
+	if (g_settings.protocol() == "udp")
 	{
 		// Always try to send the server a courtesy exit notification in UDP mode
 		out << "explicit-exit-notify" << endl;
@@ -856,32 +785,11 @@ void Connection::WriteOpenVPNProfile(std::ostream& out)
 
 
 	// Connection remotes; must come after generic connection settings
-	if (use_stunnel)
-	{
-		// stunnel mode
-		out << "<connection>" << endl;
-		out << "  remote 127.0.0.1 9336" << endl;
-		out << "</connection>" << endl;
-		out << "route 185.176.52.35 255.255.255.255 net_gateway" << endl;
-	}
+	auto remote = SplitToVector((g_settings.protocol() == "udp") ? _server.at("ovUDP").AsString() : _server.at("ovTCP").AsString(), ':', 1);
+	if (g_settings.remotePort() == 0)
+		out << "remote " << remote[0] << ' ' << remote[1] << endl;
 	else
-	{
-		auto remote = SplitToVector((protocol == "udp") ? _server.at("ovUDP").AsString() : _server.at("ovTCP").AsString(), ':', 1);
-		out << "remote " << remote[0] << ' ' << /*"1198"*/ remote[1] << endl;
-
-		/*
-		std::string ipKey = "ov" + encryption;
-		ipKey[2] = std::toupper(ipKey[2]);
-		const auto& serverIPs = _server.at(ipKey).AsArray();
-		const auto& ip = serverIPs.at((_connection_attempts - 1) % serverIPs.size());
-		//for (const auto& ip : serverIPs)
-		{
-			out << "<connection>" << endl;
-			out << "  remote " << ip.AsString() << ' ' << remotePort << endl;
-			out << "</connection>" << endl;
-		}
-		*/
-	}
+		out << "remote " << remote[0] << ' ' << g_settings.remotePort() << endl;
 
 	// Extra routes; currently only used by the "exempt Apple services" setting
 #if OS_OSX
@@ -955,11 +863,10 @@ void Connection::WriteOpenVPNProfile(std::ostream& out)
 	}
 	*/
 
-	// Include hardcoded certificate authority
+	// Include desired certificate authority (indicated to the server via --pia-signal-settings)
 	out << "<ca>" << endl;
-	for (auto& ca : g_config.certificateAuthorities())
-		for (auto& line : ca.AsArray())
-			out << line.AsString() << endl;
+	for (auto& line : g_config.certificateAuthority(g_settings.serverCertificate()))
+		out << line.AsString() << endl;
 	out << "</ca>" << endl;
 }
 

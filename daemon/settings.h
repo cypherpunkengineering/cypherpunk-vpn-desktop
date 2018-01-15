@@ -14,7 +14,8 @@ public:
 	JsonField(JsonObject, regionNames, {});
 	JsonField(JsonArray, regionOrder, {});
 
-	const JsonArray& certificateAuthorities() const;
+	const JsonArray& certificateAuthority(const std::string& type) const;
+	const JsonObject& certificateAuthorities() const;
 };
 extern Config g_config;
 
@@ -39,13 +40,16 @@ public:
 	bool WriteToDisk() const;
 	void Reset(bool deleteAllValues = true);
 
-	JsonField(std::string, remotePort, "udp:0")
+	JsonField(std::string, protocol, "udp")
+	JsonField(int, remotePort, 0) // 0 (auto), 53, 1194, 8080, 9021
 	JsonField(std::string, location, "us_atlanta") // FIXME: don't hardcode
 	JsonField(std::string, locationFlag, "") // "cypherplay", "fastest", "fastest-us", "fastest-uk" or empty
 	JsonField(std::string, fastest, "") // a cached fastest server which the daemon may switch to when (re)connecting if locationFlag is being used
 	JsonField(int, localPort, 0)
 	JsonField(int, mtu, 1500)
-	JsonField(std::string, encryption, "default") // "none", "default", "strong" or "stealth"
+	JsonField(std::string, cipher, "AES-128-GCM")
+	JsonField(std::string, auth, "none")
+	JsonField(std::string, serverCertificate, "RSA-2048")
 
 	JsonField(std::string, firewall, "auto")
 	JsonField(bool, allowLAN, true)
