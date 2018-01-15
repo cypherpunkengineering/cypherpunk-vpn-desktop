@@ -8,11 +8,15 @@
 
 
 static const std::string g_connection_setting_names[] = {
+	"protocol",
 	"remotePort",
 	"location",
 	"localPort",
 	"mtu",
 	"encryption",
+	"cipher",
+	"auth",
+	"serverCertificate",
 	"overrideDNS",
 	"optimizeDNS",
 	"blockAds",
