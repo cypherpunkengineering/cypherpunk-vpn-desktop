@@ -260,7 +260,7 @@ class Tray {
     if (!items) items = this.createMenuItems();
 
     let template = [
-      { label: "Cypherpunk Privacy", id: 'main', submenu: [
+      { label: "Private Internet Access", id: 'main', submenu: [
         { role: 'about' },
         { type: 'separator' },
         { label: this.state.loggedIn ? "Sign Out" : "Sign In", click: navigateHandler(this.state.loggedIn ? '/login/logout' : '/login/email') },

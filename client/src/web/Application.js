@@ -119,7 +119,7 @@ export default class ApplicationClass extends EventEmitter {
           this.showMessageBox({
             type: 'warning',
             title: "Update required",
-            message: "In order to keep using Cypherpunk Privacy, a software update is required." + messageSuffix,
+            message: "In order to keep using Private Internet Access, a software update is required." + messageSuffix,
             buttons: [ version.url ? "Download" : "Go to download page", "Quit" ],
             defaultId : 0,
             cancelId: 1,

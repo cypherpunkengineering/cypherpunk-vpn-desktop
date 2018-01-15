@@ -16,7 +16,7 @@ export default class ShareScreen extends React.Component  {
           <SecondaryTitlebar title="Share" back="/account"/>
           <div className="content" ref="root">
             <div className="pane" style={{ padding: '1em', fontSize: '16px' }}>
-              Like Cypherpunk Privacy?<br/>
+              Like Private Internet Access?<br/>
               Please share with your friends!
             </div>
             <div className="share pane">

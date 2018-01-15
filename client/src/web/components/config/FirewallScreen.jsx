@@ -33,7 +33,7 @@ export default class FirewallScreen extends DaemonAware(React.Component) {
           <SecondaryTitlebar title="Internet Killswitch" back="/configuration"/>
           <div className="scrollable content" ref="root">
             <div className="pane" style={{ padding: '1em', color: 'rgba(220,255,255,0.5)' }}>
-              Prevent accidental privacy leaks by disabling all internet connectivity if you are disconnected from the Cypherpunk Privacy Network.
+              Prevent accidental privacy leaks by disabling all internet connectivity if you are disconnected from the PIA network.
             </div>
             <div className="pane">
               <div className="setting">
@@ -58,7 +58,7 @@ export default class FirewallScreen extends DaemonAware(React.Component) {
                 <div className="ui left top radio checkbox">
                   <input type="radio" name="firewall" value="on" id="firewall-on"/>
                   <label>Always On
-                  <small>Only allow internet access through the Cypherpunk Privacy Network.</small>
+                  <small>Only allow internet access through the PIA network.</small>
                   <small style={{ marginTop: '20px', /*borderTop: '1px solid rgba(255,255,255,0.25)', paddingTop: '10px',*/ marginBottom: '5px' }}><i class="warning sign icon"></i>WARNING:</small>
                   <small>You will not be able to access the internet while disconnected!</small>
                   </label>

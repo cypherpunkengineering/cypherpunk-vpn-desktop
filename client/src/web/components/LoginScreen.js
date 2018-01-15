@@ -220,7 +220,7 @@ const AnalyticsPageBackground = PageBackground({ key: "bg-analytics", top: 60, s
 
 // Goes into the page itself
 const PageTitle = ({ key = "title", text = null, className = null, children, ...props } = {}) => <div key={key} className={classList('title', className)} {...props}>{text}{children}</div>;
-const DefaultPageTitle = <PageTitle><div className="welcome">Welcome to</div><RetinaImage className="logo" src={{ [1]: require('../assets/img/pia_logo_text_240.png'), [2]: require('../assets/img/pia_logo_text_240@2x.png') }} alt="Cypherpunk Privacy"/></PageTitle>;
+const DefaultPageTitle = <PageTitle><div className="welcome">Welcome to</div><RetinaImage className="logo" src={{ [1]: require('../assets/img/pia_logo_text_240.png'), [2]: require('../assets/img/pia_logo_text_240@2x.png') }} alt="Private Internet Access"/></PageTitle>;
 
 
 
@@ -515,7 +515,7 @@ export class AnalyticsStep extends Page {
     return (
       <Page className="login-analytics" top={260}>
         <div className="desc">
-          Share anonymized analytics about your VPN connections to help make Cypherpunk Privacy faster and more reliable?
+          Share anonymized analytics about your VPN connections to help make Private Internet Access faster and more reliable?
         </div>
         <button className="allow" onClick={e => { this.onAllow(); e.preventDefault(); }}>Allow</button>
         <a className="disallow" onClick={() => this.onDisallow()}>Don't allow</a>

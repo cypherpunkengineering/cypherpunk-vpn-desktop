@@ -84,7 +84,7 @@ function connectToDaemon(timeout = 2000) {
         eventPromise(daemon, 'up'),
         eventPromise(daemon, 'data'),
       ]),
-      Promise.delay(timeout).then(() => { throw new Error("Unable to connect to the Cypherpunk Privacy background service; please try reinstalling the application."); }),
+      Promise.delay(timeout).then(() => { throw new Error("Unable to connect to the PIA background service; please try reinstalling the application."); }),
     ]);
   }
   return daemonPromise;
@@ -159,9 +159,9 @@ eventPromise(app, 'ready').then(() => {
         switch (state.state) {
           case 'CONNECTED':
             if (lastState === 'RECONNECTING' || lastState === 'STILL_RECONNECTING') {
-              new Notification("Reconnected to PIA", { body: "You are once again safely connected to the Cypherpunk Privacy network." });
+              new Notification("Reconnected to PIA", { body: "You are once again safely connected to the PIA network." });
             } else {
-              new Notification("Connected to PIA", { body: "You are now safely connected to the Cypherpunk Privacy network. Enjoy a more free internet!" });
+              new Notification("Connected to PIA", { body: "You are now safely connected to the PIA network. Enjoy a more free internet!" });
             }
             break;
           case 'RECONNECTING':
@@ -190,7 +190,7 @@ eventPromise(app, 'ready').then(() => {
   if (err) {
     dialog.showErrorBox(
       err.name !== "Error" && err.name || "Initialization Error",
-      err.message || ("An unexpected error happened while launching Cypherpunk Privacy:\n\n" + (err.stack || require('util').inspect(err)))
+      err.message || ("An unexpected error happened while launching Private Internet Access:\n\n" + (err.stack || require('util').inspect(err)))
     );
     return exit(1);
   }
@@ -200,7 +200,7 @@ eventPromise(app, 'ready').then(() => {
 
 function createMainWindow() {
   window = new BrowserWindow({
-    title: 'Cypherpunk Privacy',
+    title: 'Private Internet Access',
     //icon: icon,
     backgroundColor: '#163238',
     show: false,
@@ -230,7 +230,7 @@ function createMainWindow() {
       window.hide();
       onHideWindow();
       if (!displayedHideNotification) {
-        displayedHideNotification = new Notification({ body: "Cypherpunk Privacy will keep running in the background - control it from the system tray.", tray: true, force: true }).success;
+        displayedHideNotification = new Notification({ body: "Private Internet Access will keep running in the background - control it from the system tray.", tray: true, force: true }).success;
       }
     }
   });

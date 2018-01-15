@@ -6,7 +6,7 @@ const DEFAULT_NOTIFICATION_ICON = `assets/img/icon_128.png`;
 
 export default class Notification
 {
-  constructor(title = "Cypherpunk Privacy", options = {}) {
+  constructor(title = "Private Internet Access", options = {}) {
     this.success = true;
 
     if (!options.force && (!daemon || !daemon.settings.showNotifications)) {
@@ -15,7 +15,7 @@ export default class Notification
       delete options.force;
       if (typeof(title) !== 'string') {
         options = Object.assign(title, options);
-        title = "Cypherpunk Privacy";
+        title = "Private Internet Access";
       }
       do {
         // FIXME: MacOS displays the icon as a second image on High Sierra, figure out if it needs to be specified as another property or whether the app icon is fixed and unchangable

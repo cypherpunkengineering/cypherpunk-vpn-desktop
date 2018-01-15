@@ -14,7 +14,7 @@ const LogoText2x = require('../assets/img/pia_logo_text_190@2x.png');
 
 export const Title = ({ component = 'div', left = "Cypherpunk", right = "Privacy", className, ...props } = {}) => {
   const ActualComponent = component;
-  return <ActualComponent className={classList('cp title', className)} {...props}><RetinaImage src={{ 1: LogoText, 2: LogoText2x }} alt="Cypherpunk Privacy"/></ActualComponent>;
+  return <ActualComponent className={classList('cp title', className)} {...props}><RetinaImage src={{ 1: LogoText, 2: LogoText2x }} alt="Private Internet Access"/></ActualComponent>;
 }
 
 
