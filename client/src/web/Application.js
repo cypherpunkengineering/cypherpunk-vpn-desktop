@@ -15,8 +15,9 @@ import EmailScreen from './components/account/EmailScreen';
 import ShareScreen from './components/account/ShareScreen';
 import ProfileScreen from './components/config/ProfileScreen';
 import TrustedNetworksScreen from './components/config/TrustedNetworksScreen';
-import RemotePortScreen from './components/config/RemotePortScreen';
 import FirewallScreen from './components/config/FirewallScreen';
+import { ProtocolScreen, RemotePortScreen } from './components/config/ConnectionSettings';
+import { CipherScreen, AuthScreen, CertificateScreen } from './components/config/EncryptionSettings';
 import HelpScreen from './components/account/HelpScreen';
 import PasswordScreen from './components/account/PasswordScreen';
 import AccountScreen from './components/AccountScreen';
@@ -238,7 +239,11 @@ export default class ApplicationClass extends EventEmitter {
               <Route path="privacy" component={ProfileScreen}/>
               <Route path="firewall" component={FirewallScreen}/>
               <Route path="trustednetworks" component={TrustedNetworksScreen}/>
+              <Route path="protocol" component={ProtocolScreen}/>
               <Route path="remoteport" component={RemotePortScreen}/>
+              <Route path="cipher" component={CipherScreen}/>
+              <Route path="auth" component={AuthScreen}/>
+              <Route path="certificate" component={CertificateScreen}/>
             </Route>
             <Route path="/account" component={AccountScreen}>
               <Route path="email" component={EmailScreen}/>
