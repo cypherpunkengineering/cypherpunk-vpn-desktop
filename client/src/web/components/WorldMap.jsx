@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { classList } from '../util';
 
-import WorldMapImage from '../assets/img/worldmap_2000.png';
+import WorldMapImage from '../assets/img/worldmap_2000_2.png';
 const MAP_SIZE = 2000;
 const LONG_OFFSET = 11;
 
