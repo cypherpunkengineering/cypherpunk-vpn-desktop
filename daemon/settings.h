@@ -41,7 +41,7 @@ public:
 	void Reset(bool deleteAllValues = true);
 
 	JsonField(std::string, protocol, "udp")
-	JsonField(int, remotePort, 0) // 0 (auto), 53, 1194, 8080, 9021
+	JsonField(int, remotePort, 0) // 0 (auto), 53, 1194, 8080, 9201
 	JsonField(std::string, location, "us_atlanta") // FIXME: don't hardcode
 	JsonField(std::string, locationFlag, "") // "cypherplay", "fastest", "fastest-us", "fastest-uk" or empty
 	JsonField(std::string, fastest, "") // a cached fastest server which the daemon may switch to when (re)connecting if locationFlag is being used

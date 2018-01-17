@@ -23,7 +23,7 @@ export const RemotePortScreen = (props) => (
     <Item value={53}>53</Item>
     <Item value={1194}>1194</Item>
     <Item value={8080}>8080</Item>
-    <Item value={9021}>9021</Item>
+    <Item value={9201}>9201</Item>
   </SelectScreen>
 );
 
