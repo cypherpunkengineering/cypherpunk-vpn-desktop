@@ -54,9 +54,9 @@ export default class ConnectionSettings extends DaemonAware(React.Component) {
     return (
       <div className={classList("pane", "advanced", { 'hidden': !this.props.advanced })} data-title="Encryption">
         {/*<LinkSetting name="encryption" className="advanced" to="/configuration/privacy" label="Encryption" formatValue={v => ({ 'default': "Balanced", 'none': "Speed", 'strong': "Privacy", 'stealth': "Stealth" })[v]}/>*/}
-        <LinkSetting name="cipher" className="advanced" to="/configuration/cipher" label="Data Encryption"/>
-        <LinkSetting name="auth" className="advanced indented" to="/configuration/auth" label="Data Authentication" disabled={isGCM} hidden={isGCM} formatValue={v => this.state.cipher.endsWith('GCM') ? 'none' : v} />
-        <LinkSetting name="serverCertificate" className="advanced" to="/configuration/certificate" label="Handshake"/>
+        <LinkSetting name="cipher" className="" to="/configuration/cipher" label="Data Encryption"/>
+        <LinkSetting name="auth" className=" indented" to="/configuration/auth" label="Data Authentication" disabled={isGCM} hidden={isGCM} formatValue={v => this.state.cipher.endsWith('GCM') ? 'none' : v} />
+        <LinkSetting name="serverCertificate" className="" to="/configuration/certificate" label="Handshake"/>
       </div>
     );
   }

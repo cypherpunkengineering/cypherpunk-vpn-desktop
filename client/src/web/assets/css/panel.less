@@ -244,15 +244,15 @@
   color: #fff;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(-39deg, #033, #255);
+  background: linear-gradient(-39deg, #121, #555 50%);
 
   .titlebar {
     flex: 0 0 auto;
     text-align: center;
     z-index: 4;
     &.secondary {
-      background: linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.1)) !important;
-      border-bottom: 2px solid #255;
+      background: linear-gradient(to bottom, #232, #353) !important;
+      border-bottom: 2px solid #343;
     }
   }
 
@@ -264,7 +264,8 @@
       overflow-x: hidden;
       overflow-y: auto;
       &::-webkit-scrollbar-thumb {
-        background: rgba(220, 245, 255, 0.3);
+        background: rgba(255,255,255,0.5);
+        border-radius: 0;
       }
     }
 
@@ -278,7 +279,7 @@
     }
 
     .pane {
-      background: rgba(255,255,255,0.16);
+      background: linear-gradient(to bottom, rgba(255,255,255,0.25), rgba(255,255,255,0.16) 50px);
       position: relative;
 
       &[data-title]:before {
@@ -287,7 +288,9 @@
         display: block;
         width: 100%;
         padding: 10px 15px 2px;
-        color: @cpYellowDark;
+        color: white;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        font-weight: 500;
       }
       + .pane {
         margin-top: 10px;
@@ -302,6 +305,14 @@
         pointer-events: none;
       }
 
+      @separatorLine: linear-gradient(to bottom, rgba(255,255,255,0.2) 1px, transparent 1px);
+      @hoverHighlight: linear-gradient(to left, rgba(255,255,255,0.1), transparent);
+      @advancedShade: linear-gradient(to right, rgba(128,96,0,0.2), transparent 50%);
+
+      &.advanced {
+        background: linear-gradient(to bottom, rgba(255,255,255,0.25), rgba(255,255,255,0.16) 50px), @advancedShade;
+      }
+
       .setting {
         width: 100%;
         min-height: @lineHeight;
@@ -310,7 +321,8 @@
         justify-content: space-between;
         font-size: 16px;
         position: relative;
-        color: rgba(255,255,255,0.75);
+        color: #ddd;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
         cursor: pointer;
 
         > * {
@@ -591,14 +603,6 @@
         }
 
         &.advanced {
-          background-color: rgba(64,48,0,0.2);
-          color: rgba(240,240,220,0.75);
-          > a, > .ui.checkbox > label {
-            margin-left: 10px !important;
-          }
-          > .ui.dropdown + label, > select + label, > .ui.input + label {
-            margin-left: @leftPadding + 10px !important;
-          }
           &::before {
             content: '';
             position: absolute;
@@ -616,14 +620,20 @@
         }
 
         &:not(.hidden) ~ .setting {
-          background-image+: linear-gradient(to bottom, rgba(255,255,255,0.2) 1px, transparent 1px);
-          &:hover {
-            background-image: linear-gradient(to bottom, rgba(255,255,255,0.2) 1px, transparent 1px), linear-gradient(to left, rgba(255,255,255,0.1), transparent);
+          background-image: @separatorLine;
+          &:hover { background-image: @separatorLine, @hoverHighlight; }
+          &.advanced {
+            background-image: @separatorLine, @advancedShade !important;
+            &:hover { background-image: @separatorLine, @hoverHighlight, @advancedShade !important; }
           }
         }
         &:hover {
-          background-image+: linear-gradient(to left, rgba(255,255,255,0.1), transparent);
+          background-image: @hoverHighlight;
           color: white !important;
+        }
+        &.advanced {
+          background-image: @advancedShade !important;
+          &:hover { background-image: @hoverHighlight, @advancedShade !important; }
         }
 
         // Mini-settings packed very close to each other without gridlines in-between
@@ -631,13 +641,13 @@
           margin-top: -15px;
           background-image: none;
           &:hover {
-            background-image: linear-gradient(to left, rgba(255,255,255,0.1), transparent);
+            background-image: @hoverHighlight;
           }
         }
       }
 
       &.advanced {
-        background: rgba(255,192,128,0.16);
+        //background: rgba(255,192,128,0.16);
         &[data-title]::before {
           padding-left: 25px;
         }
@@ -655,7 +665,7 @@
           pointer-events: none;
         }
         .setting.advanced {
-          background-color: transparent;
+          //background-color: transparent;
           &::before {
             background: none;
             border-left: none;
@@ -664,6 +674,17 @@
           &:first-child::before {
             border-top: none;
           }
+        }
+      }
+
+      &.advanced > .setting, > .setting.advanced {
+        //background-color: rgba(64,48,0,0.2);
+        color: #ddc;
+        > a, > .ui.checkbox > label {
+          margin-left: 10px !important;
+        }
+        > .ui.dropdown + label, > select + label, > .ui.input + label {
+          margin-left: @leftPadding + 10px !important;
         }
       }
 
