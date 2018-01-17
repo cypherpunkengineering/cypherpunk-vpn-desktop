@@ -1,0 +1,28 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/app/main.js",
+            "stopOnEntry": false,
+            "args": [ "--", "--debug" ],
+            "cwd": "${workspaceFolder}/app",
+            "preLaunchTask": "build",
+            "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
+            "runtimeArgs": [ "${workspaceFolder}/app" ],
+            "env": { "NODE_ENV" : "development" },
+            "console": "internalConsole",
+            "internalConsoleOptions": "openOnSessionStart",
+            "outputCapture": "std",
+            "sourceMaps": true,
+            "localRoot": "${workspaceFolder}/src/",
+            "remoteRoot": "${workspaceFolder}/app/",
+            "outFiles": [ "${workspaceFolder}/app/**/*.js" ],
+            "windows": {
+                "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd"
+            }
+        }
+    ]
+}

@@ -162,13 +162,13 @@ gulp.task('build-app-packagejson', function() {
  * will run in the Electron main process (in the app/ directory).  
  */
 gulp.task('build-main', ['build-main-assets'], function() {
-  var p = gulp.src(['src/**/*.js', '!src/web', '!src/web/**/*', '!src/assets', '!src/assets/**/*'])
+  var p = gulp.src(['src/**/*.js', '!src/web', '!src/web/**/*', '!src/assets', '!src/assets/**/*'], { base: 'src' })
     .pipe(newer('app'));
   if (process.env.NODE_ENV !== 'production')
     p = p.pipe(sourcemaps.init());
   p = p.pipe(babel());
   if (process.env.NODE_ENV !== 'production')
-    p = p.pipe(sourcemaps.write('.'));
+    p = p.pipe(sourcemaps.write());
   return p.pipe(gulp.dest('app'));
 });
 gulp.task('build-main-assets', function() {
