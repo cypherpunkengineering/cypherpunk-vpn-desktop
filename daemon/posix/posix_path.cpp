@@ -18,11 +18,13 @@ std::string g_daemon_path;
 
 static bool g_is_installed = false;
 
+static const char* INSTALLATION_PREFIX = "/usr/local/cypherpunk/";
+
 
 void InitPaths(std::string argv0)
 {
 	g_argv0 = std::move(argv0);
-	if (g_argv0.compare(0, 22, "/usr/local/cypherpunk/") == 0)
+	if (g_argv0.compare(0, 22, INSTALLATION_PREFIX) == 0)
 		g_is_installed = true;
 	size_t last_slash = g_argv0.find_last_of(PATH_SEPARATOR);
 	if (last_slash != std::string::npos)
@@ -56,8 +58,8 @@ std::string GetPredefinedFile(PredefinedFile file, EnsureExistsTag ensure_path_e
 	case ConfigFile: return GetPath(SettingsDir, ensure_path_exists, "config.json");
 	case AccountFile: return GetPath(SettingsDir, ensure_path_exists, "account.json");
 	case SettingsFile: return GetPath(SettingsDir, ensure_path_exists, "settings.json");
-	case DaemonPortFile: return g_is_installed ? GetPath(BaseDir, "var", ensure_path_exists, "daemon.lock") : GetPath(g_daemon_path, "daemon.lock");
-	case LocalSocketFile: return g_is_installed ? GetPath(BaseDir, "var", ensure_path_exists, "daemon.socket") : GetPath(g_daemon_path, "daemon.socket");
+	case DaemonPortFile: return GetPath(INSTALLATION_PREFIX, "var", ensure_path_exists, "daemon.lock");
+	case LocalSocketFile: return GetPath(INSTALLATION_PREFIX, "var", ensure_path_exists, "daemon.socket");
 	default:
 		LOG(ERROR) << "Unknown file";
 		return std::string();
@@ -68,7 +70,7 @@ std::string GetPredefinedDirectory(PredefinedDirectory dir)
 {
 	switch (dir)
 	{
-	case BaseDir: return g_is_installed ? "/usr/local/cypherpunk" : (g_daemon_path + "/../../..");
+	case BaseDir: return g_is_installed ? INSTALLATION_PREFIX : (g_daemon_path + "/../../..");
 	case ScriptsDir: return g_is_installed
 		? GetPath(BaseDir, "etc", "scripts")
 		: GetPath(BaseDir, "res",
