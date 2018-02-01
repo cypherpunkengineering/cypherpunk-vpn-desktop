@@ -32,7 +32,7 @@ public:
 
 class WinSubprocess : public Subprocess
 {
-	asio::windows::basic_object_handle<> _handle;
+	asio::windows::object_handle _handle;
 	Win32Handle _job;
 	DWORD _id;
 	bool _signaled;
@@ -295,7 +295,7 @@ private:
 			}
 
 			// Need more data.
-			size_t bytes_to_read = asio::read_size_helper(buffer, 65536);
+			size_t bytes_to_read = read_size_helper(buffer, 65536);
 			buffer.commit(SyncReadSome(handle, buffer.prepare(bytes_to_read), error));
 			if (error)
 				return 0;
@@ -304,8 +304,8 @@ private:
 	static size_t SyncReadSome(Win32Handle& handle, asio::streambuf::mutable_buffers_type& buffers, asio::error_code& error)
 	{
 		asio::mutable_buffer buffer = buffers;
-		void* data = asio::detail::buffer_cast_helper(buffer);
-		DWORD bytes_to_read = (DWORD)asio::detail::buffer_size_helper(buffer);
+		void* data = buffer.data();
+		DWORD bytes_to_read = (DWORD)buffer.size();
 		DWORD bytes_read = 0;
 		if (ReadFile(handle, data, bytes_to_read, &bytes_read, NULL))
 		{
