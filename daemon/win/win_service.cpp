@@ -1,5 +1,6 @@
 #include "config.h"
 
+#include "client_multiplexer.h"
 #include "client_websocket.h"
 #include "daemon.h"
 #include "logger.h"
@@ -89,7 +90,9 @@ class WinCypherDaemon : public CypherDaemon
 public:
 	WinCypherDaemon()
 	{
-		SetClientInterface(std::make_shared<WebSocketClientInterface>(_io));
+		auto i = std::make_shared<ClientInterfaceMultiplexer>(_io);
+		i->InitializeClientInterface<WebSocketClientInterface>(_io);
+		SetClientInterface(std::move(i));
 	}
 
 	virtual int Run() override

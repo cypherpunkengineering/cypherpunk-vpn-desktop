@@ -1,5 +1,6 @@
 #include "config.h"
 
+#include "client_multiplexer.h"
 #include "client_websocket.h"
 #include "daemon.h"
 #include "logger.h"
@@ -62,7 +63,9 @@ public:
 		_signals.add(SIGTERM);		
 		_signals.async_wait(THIS_CALLBACK(OnSignal));
 
-		SetClientInterface(std::make_shared<WebSocketClientInterface>(_io));
+		auto client_interface = std::make_shared<ClientInterfaceMultiplexer>(_io);
+		client_interface->InitializeClientInterface<WebSocketClientInterface>(_io);
+		SetClientInterface(std::move(client_interface));
 	}
 	virtual void OnBeforeRun() override
 	{
