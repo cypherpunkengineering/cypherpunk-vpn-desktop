@@ -698,11 +698,12 @@ void CypherDaemon::PingServers()
 			try
 			{
 				auto it = _ping_stats.find(p.first);
-				if (it == _ping_stats.end())
-					continue;
-				const auto& ping = it->second.AsStruct();
-				if (ping.at("lastChecked").AsDouble() >= cutoff.count())
-					continue;
+				if (it != _ping_stats.end())
+				{
+					const auto& ping = it->second.AsStruct();
+					if (ping.at("lastChecked").AsDouble() >= cutoff.count())
+						continue;
+				}
 			}
 			catch (...) {}
 			//pinger->Add(p.first, p.second.AsStruct().at("ovDefault").AsArray().at(0).AsString());
