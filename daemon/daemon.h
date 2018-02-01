@@ -8,7 +8,7 @@
 #include "connection.h"
 #include "openvpn.h"
 #include "settings.h"
-#include "websocketpp.h"
+#include "client.h"
 
 #include <asio.hpp>
 
@@ -41,11 +41,8 @@ extern unsigned short GetPingIdentifier();
 	std::map<std::string, std::string> ips;
 };*/
 
-class CypherDaemon : public ConnectionListener
+class CypherDaemon : public ClientInterfaceListener, public ConnectionListener
 {
-	static const int DEFAULT_RPC_PORT = 9337;
-	static const int DEFAULT_OPENVPN_PORT_BASE = 9338;
-
 public:
 	CypherDaemon();
 
@@ -66,6 +63,9 @@ public:
 	};
 	typedef void PingCallback(std::vector<PingResult> results);
 
+protected:
+	void SetClientInterface(std::shared_ptr<ClientInterface> client_interface);
+
 public:
 	// The main entrypoint of the daemon; should block for the duration of the daemon.
 	virtual int Run();
@@ -83,18 +83,15 @@ public:
 	virtual void OnSettingsChanged(const char* name);
 
 protected:
-	typedef websocketpp::connection_hdl ClientConnection;
-	typedef std::set<ClientConnection, std::owner_less<ClientConnection>> ClientConnectionList;
-	typedef std::map<ClientConnection, bool, std::owner_less<ClientConnection>> ClientConnectionMap;
 
-	void SendToClient(ClientConnection con, const std::shared_ptr<jsonrpc::FormattedData>& data);
+	void SendToClient(ClientConnectionHandle client, const std::shared_ptr<jsonrpc::FormattedData>& data);
 	void SendToAllClients(const std::shared_ptr<jsonrpc::FormattedData>& data);
 	void SendErrorToAllClients(std::string name, bool critical, std::string message);
-	void OnFirstClientConnected();
-	void OnClientConnected(ClientConnection c);
-	void OnClientDisconnected(ClientConnection c);
-	void OnLastClientDisconnected();
-	void OnReceiveMessage(ClientConnection con, WebSocketServer::message_ptr msg);
+	virtual void OnFirstClientConnected(ClientInterface*) override;
+	virtual void OnClientConnected(ClientInterface*, ClientConnectionHandle client) override;
+	virtual void OnClientDisconnected(ClientInterface*, ClientConnectionHandle client) override;
+	virtual void OnLastClientDisconnected(ClientInterface*) override;
+	virtual void OnClientMessageReceived(ClientInterface*, ClientConnectionHandle client, const std::string& message) override;
 	void OnStateChanged(unsigned int state_changed_flags);
 
 	virtual void OnConnectionStateChanged(Connection* connection, Connection::State state) override;
@@ -133,8 +130,8 @@ protected:
 	void DoShutdown();
 
 	asio::io_service _io;
-	WebSocketServer _ws_server;
-	ClientConnectionList _connections;
+	std::shared_ptr<ClientInterface> _client_interface;
+	ClientConnectionList _client_connections;
 	jsonrpc::JsonFormatHandler _json_handler;
 	JsonRPCDispatcher _dispatcher;
 	JsonRPCClient _rpc_client;

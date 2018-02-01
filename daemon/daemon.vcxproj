@@ -129,6 +129,8 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
+    <ClInclude Include="client.h" />
+    <ClInclude Include="client_websocket.h" />
     <ClInclude Include="config.h" />
     <ClInclude Include="connection.h" />
     <ClInclude Include="daemon.h" />

@@ -78,44 +78,17 @@ int CypherDaemon::Run()
 
 	_connection = std::make_shared<Connection>(_io, this);
 
-	int port;
 	try
 	{
-		_ws_server.init_asio(&_io);
-		_ws_server.set_reuse_addr(true);
-		try
-		{
-			_ws_server.listen(asio::ip::tcp::endpoint(asio::ip::address::from_string("127.0.0.1"), 9337));
-		}
-		catch (...)
-		{
-			// Debug builds can't run on anything but 9337; fail.
-			if (!IsInstalled()) throw;
-
-			// Failed to open default port 9337, use any port instead
-			_ws_server.listen(asio::ip::tcp::endpoint(asio::ip::address::from_string("127.0.0.1"), 0));
-		}
-		_ws_server.start_accept();
-
-		asio::error_code ec;
-		auto endpoint = _ws_server.get_local_endpoint(ec);
-		asio::detail::throw_error(ec, "get_local_endpoint");
-		port = endpoint.port();
+		LOG(INFO) << "Listening for clients...";
+		_client_interface->Listen();
 	}
 	catch (const std::exception& e)
 	{
-		LOG(ERROR) << "Unable to open a listening port: " << e;
+		LOG(ERROR) << "Unable to open client interface: " << e;
 		return 1;
 	}
 
-	AutoDeleteFile port_file(GetFile(DaemonPortFile), "w");
-	if (!port_file || fprintf(port_file, "%d", port) < 0)
-	{
-		LOG(ERROR) << "Unable to write port file";
-		return 1;
-	}
-	fflush(port_file);
-	LOG(INFO) << "Listening on port " << port;
 
 	_state = INITIALIZED;
 	int result = 0;
@@ -124,7 +97,7 @@ int CypherDaemon::Run()
 
 	try
 	{
-		_ws_server.run(); // internally calls _io.run()
+		_io.run();
 	}
 	catch (const std::exception& e)
 	{
@@ -167,22 +140,25 @@ void CypherDaemon::DoShutdown()
 	// as it may not have received the CONNECT state change notification.
 	NotifyChanges();
 
-	// 2. Disconnect all clients
-	if (!_connections.empty())
+	// 2. Stop the client interface from listening
+	LOG(INFO) << "Stopping client interface...";
+	_client_interface->Stop();
+
+	// 3. Disconnect all clients
+	if (!_client_connections.empty())
 	{
-		LOG(INFO) << "Disconnecting all clients";
-		for (auto& c : _connections)
+		LOG(INFO) << "Disconnecting all clients...";
+		for (auto& c : _client_connections)
 		{
-			_ws_server.pause_reading(c);
-			_ws_server.close(c, websocketpp::close::status::going_away, "");
+			_client_interface->Disconnect(c);
 		}
 		return; // OnLastClientDisconnected will call DoShutdown again
 	}
 
-	// 3. Finally, kill the message loop
-	LOG(INFO) << "Stopping message loop";
-	if (!_ws_server.stopped())
-		_ws_server.stop();
+	// 4. Finally, kill the message loop
+	LOG(INFO) << "Stopping message loop...";
+	if (!_io.stopped())
+		_io.stop();
 }
 
 void CypherDaemon::OnConnectionStateChanged(Connection* connection, Connection::State state)
@@ -223,16 +199,16 @@ void CypherDaemon::OnConnectionError(Connection* connection, Connection::ErrorCo
 	SendErrorToAllClients(EnumToString(error), critical, std::move(message));
 }
 
-void CypherDaemon::SendToClient(ClientConnection connection, const std::shared_ptr<jsonrpc::FormattedData>& data)
+void CypherDaemon::SendToClient(ClientConnectionHandle client, const std::shared_ptr<jsonrpc::FormattedData>& data)
 {
 	LOG(DEBUG) << "Sending RPC message: " << std::string(data->GetData(), data->GetSize());
-	_ws_server.send(connection, data->GetData(), data->GetSize(), websocketpp::frame::opcode::TEXT);
+	_client_interface->Send(client, data->GetData(), data->GetSize());
 }
 
 void CypherDaemon::SendToAllClients(const std::shared_ptr<jsonrpc::FormattedData>& data)
 {
-	for (auto& c : _connections)
-		SendToClient(c, data);
+	for (auto& client : _client_connections)
+		SendToClient(client, data);
 }
 
 void CypherDaemon::SendErrorToAllClients(std::string name, bool critical, std::string message)
@@ -244,7 +220,7 @@ void CypherDaemon::SendErrorToAllClients(std::string name, bool critical, std::s
 	SendToAllClients(_rpc_client.BuildNotificationData("error", std::move(desc)));
 }
 
-void CypherDaemon::OnFirstClientConnected()
+void CypherDaemon::OnFirstClientConnected(ClientInterface*)
 {
 	// If the kill-switch is set to always on, trigger it when the first client connects
 	if (g_settings.firewall() == "on")
@@ -252,8 +228,12 @@ void CypherDaemon::OnFirstClientConnected()
 	PingServers();
 }
 
-void CypherDaemon::OnClientConnected(ClientConnection c)
+void CypherDaemon::OnClientConnected(ClientInterface*, ClientConnectionHandle c)
 {
+	LOG(INFO) << "Client " << c << " connected";
+
+	_client_connections.insert(c);
+
 	JsonObject data;
 	data["version"] = JsonString(VERSION);
 	data["config"] = MakeConfigObject();
@@ -263,12 +243,14 @@ void CypherDaemon::OnClientConnected(ClientConnection c)
 	SendToClient(c, _rpc_client.BuildNotificationData("data", std::move(data)));
 }
 
-void CypherDaemon::OnClientDisconnected(ClientConnection c)
+void CypherDaemon::OnClientDisconnected(ClientInterface*, ClientConnectionHandle c)
 {
+	LOG(INFO) << "Client " << c << " disconnected";
 
+	_client_connections.erase(c);
 }
 
-void CypherDaemon::OnLastClientDisconnected()
+void CypherDaemon::OnLastClientDisconnected(ClientInterface*)
 {
 	if (_shouldConnect)
 	{
@@ -290,12 +272,12 @@ void CypherDaemon::OnLastClientDisconnected()
 		_io.post([this]() { DoShutdown(); });
 }
 
-void CypherDaemon::OnReceiveMessage(ClientConnection connection, WebSocketServer::message_ptr msg)
+void CypherDaemon::OnClientMessageReceived(ClientInterface*, ClientConnectionHandle client, const std::string& message)
 {
-	LOG(DEBUG) << "Received RPC message: " << msg->get_payload();
+	LOG(DEBUG) << "Received RPC message: " << message;
 	try
 	{
-		auto response = _json_handler.CreateReader(msg->get_payload())->GetResponse();
+		auto response = _json_handler.CreateReader(message)->GetResponse();
 		return; // this was a response to a previous server->client call; our work is done
 	}
 	catch (const jsonrpc::Fault&) {}
@@ -303,7 +285,7 @@ void CypherDaemon::OnReceiveMessage(ClientConnection connection, WebSocketServer
 	auto writer = _json_handler.CreateWriter();
 	try
 	{
-		auto request = _json_handler.CreateReader(msg->get_payload())->GetRequest();
+		auto request = _json_handler.CreateReader(message)->GetRequest();
 		auto response = _dispatcher.Invoke(request.GetMethodName(), request.GetParameters(), request.GetId());
 		try
 		{
@@ -311,7 +293,7 @@ void CypherDaemon::OnReceiveMessage(ClientConnection connection, WebSocketServer
 			// Special case: the 'get' method responds with a separate notification
 			if (request.GetMethodName() == "get")
 			{
-				SendToClient(connection, _rpc_client.BuildNotificationData("data", response.GetResult()));
+				SendToClient(client, _rpc_client.BuildNotificationData("data", response.GetResult()));
 				return;
 			}
 			if (response.GetId().IsBoolean() && response.GetId().AsBoolean() == false)
@@ -330,7 +312,7 @@ void CypherDaemon::OnReceiveMessage(ClientConnection connection, WebSocketServer
 	}
 	auto data = writer->GetData();
 	if (data->GetSize() > 0)
-		SendToClient(connection, data);
+		SendToClient(client, data);
 }
 
 int CypherDaemon::GetAvailablePort(int hint)

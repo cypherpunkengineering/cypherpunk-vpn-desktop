@@ -1,5 +1,6 @@
 #include "config.h"
 
+#include "client_websocket.h"
 #include "daemon.h"
 #include "logger.h"
 #include "logger_file.h"
@@ -86,6 +87,11 @@ BOOL ThreadInitialize(bool main = false)
 class WinCypherDaemon : public CypherDaemon
 {
 public:
+	WinCypherDaemon()
+	{
+		SetClientInterface(std::make_shared<WebSocketClientInterface>(_io));
+	}
+
 	virtual int Run() override
 	{
 		if (win_get_tap_adapters(true).size() == 0)
@@ -187,7 +193,7 @@ public:
 		auto adapters = win_get_tap_adapters(true);
 
 		auto mode = g_settings.firewall();
-		if (!_connections.empty() && (mode == "on" || (_shouldConnect && mode == "auto")))
+		if (!_client_connections.empty() && (mode == "on" || (_shouldConnect && mode == "auto")))
 		{
 			try
 			{

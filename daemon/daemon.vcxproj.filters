@@ -96,6 +96,12 @@
     <ClInclude Include="win\win_com.h">
       <Filter>Header Files\win</Filter>
     </ClInclude>
+    <ClInclude Include="client.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client_websocket.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="win\win_service.cpp">

@@ -1,5 +1,6 @@
 #include "config.h"
 
+#include "client_websocket.h"
 #include "daemon.h"
 #include "logger.h"
 #include "logger_file.h"
@@ -60,6 +61,8 @@ public:
 		_signals.add(SIGINT);
 		_signals.add(SIGTERM);		
 		_signals.async_wait(THIS_CALLBACK(OnSignal));
+
+		SetClientInterface(std::make_shared<WebSocketClientInterface>(_io));
 	}
 	virtual void OnBeforeRun() override
 	{
@@ -87,7 +90,7 @@ public:
 	virtual void ApplyFirewallSettings() override
 	{
 		auto mode = g_settings.firewall();
-		if (!_connections.empty() && (mode == "on" || (_shouldConnect && mode == "auto")))
+		if (!_client_connections.empty() && (mode == "on" || (_shouldConnect && mode == "auto")))
 		{
 #if OS_OSX
 			firewall_set_anchor_enabled("100.killswitch", true);
