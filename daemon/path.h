@@ -11,7 +11,7 @@ enum PredefinedDirectory
 	ProfileDir,		// Directory where temporary OpenVPN profile files are written
 	ScriptsDir,		// Directory where OpenVPN hook scripts are
 	SettingsDir,	// Directory where daemon and connection settings are read/written
-#ifdef WIN32
+#if OS_WIN
 	TapDriverDir,
 #endif
 };
@@ -24,7 +24,7 @@ enum PredefinedFile
 	AccountFile,
 	SettingsFile,
 	DaemonPortFile,
-#ifdef WIN32
+#if OS_WIN
 	TapInstallExecutable,
 #endif
 };

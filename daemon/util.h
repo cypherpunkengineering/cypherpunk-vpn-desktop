@@ -24,6 +24,9 @@ class noncopyable
 protected:
 	constexpr noncopyable() noexcept = default;
 	~noncopyable() noexcept = default;
+	noncopyable(noncopyable&&) = default;
+	noncopyable& operator=(noncopyable&&) = default;
+private:
 	noncopyable(const noncopyable&) = delete;
 	noncopyable& operator=(const noncopyable&) = delete;
 };
@@ -33,6 +36,9 @@ class nonmovable
 protected:
 	constexpr nonmovable() noexcept = default;
 	~nonmovable() noexcept = default;
+	nonmovable(const nonmovable&) = default;
+	nonmovable& operator=(const nonmovable&) = default;
+private:
 	nonmovable(nonmovable&&) = delete;
 	nonmovable& operator=(const nonmovable&&) = delete;
 };
@@ -59,6 +65,7 @@ static inline sentry<CB> finally(const CB& callback) { return { std::move(callba
 
 //#define SCOPE_EXIT const auto& CONCAT(__scope_exit,__LINE__) = scope_callback_helper() * [&]()
 #define FINALLY(block) auto&& CONCAT(__scope_exit,__LINE__) = finally([&]() noexcept { block }); (void)CONCAT(__scope_exit,__LINE__);
+#define CLEANUP FINALLY
 
 
 class SystemException : public std::system_error, public DebugLocation
@@ -100,6 +107,10 @@ static inline std::ostream& operator<<(std::ostream& os, const std::exception& e
 	while (end > what && (isspace(end[-1]) || end[-1] == '.')) end--;
 	os.write(what, end - what);
 	return os;
+}
+static inline std::ostream& operator<<(std::ostream& os, const std::error_code& error)
+{
+	return os << error.message();
 }
 
 

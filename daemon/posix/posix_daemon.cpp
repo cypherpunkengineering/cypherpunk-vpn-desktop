@@ -1,12 +1,12 @@
 #include "config.h"
 
-#include "posix.h"
 #include "daemon.h"
 #include "logger.h"
 #include "logger_file.h"
 #include "openvpn.h"
 #include "path.h"
 
+#include "posix.h"
 #include "posix_subprocess.h"
 
 #include <algorithm>
