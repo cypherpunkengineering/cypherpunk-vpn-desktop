@@ -65,7 +65,7 @@ public:
 		_signals.async_wait(THIS_CALLBACK(OnSignal));
 
 		auto client_interface = std::make_shared<ClientInterfaceMultiplexer>(_io);
-		//client_interface->InitializeClientInterface<PosixLocalSocketClientInterface>(_io);
+		client_interface->InitializeClientInterface<PosixLocalSocketClientInterface>(_io);
 		client_interface->InitializeClientInterface<WebSocketClientInterface>(_io);
 		SetClientInterface(std::move(client_interface));
 	}
