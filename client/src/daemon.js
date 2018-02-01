@@ -205,6 +205,64 @@ if (!debugBuild) { // installed build
   } catch(e) {}
 }
 
+
+const net = require('net');
+class RawSocketAdaptor {
+  static CONNECTING = 0;
+  static OPEN = 1;
+  static CLOSING = 2;
+  static CLOSED = 3;
+  constructor(url) {
+    this.readyState = RawSocketAdaptor.CONNECTING;
+    this._client = net.connect(url, () => {
+      this.buffer = null;
+      this.readyState = RawSocketAdaptor.OPEN;
+      if (this.onopen) this.onopen();
+    });
+    this._client.on('data', (data) => {
+      this._buffer = this._buffer ? Buffer.concat([this._buffer, data]) : Buffer.isBuffer(data) ? data : Buffer.from(data);
+      while (this._buffer.length >= 4) {
+        let length = this._buffer.readUInt32LE(0);
+        if (this._buffer.length < 4 + length) break;
+        let msg = this._buffer.toString('utf8', 4, 4 + length);
+        this._buffer = this._buffer.slice(4 + length);
+        if (this.onmessage) this.onmessage({ data: msg });
+      }
+    });
+    this._client.on('end', () => {
+      console.log("Daemon pipe ended");
+    });
+    this._client.on('close', () => {
+      this._buffer = null;
+      this.readyState = RawSocketAdaptor.CLOSED;
+      if (this.onclose) this.onclose();
+    });
+    this._client.on('error', (error) => {
+      if (this.onerror) this.onerror(error);
+    });
+  }
+  send(msg) {
+    let length = Buffer.byteLength(msg, 'utf8');
+    let buffer = Buffer.allocUnsafe(4 + length);
+    buffer.writeUInt32LE(length, 0);
+    buffer.write(msg, 4, 'utf8');
+    this._client.write(buffer);
+  }
+  close() {
+    this.readyState = RawSocketAdaptor.CLOSING;
+    this._client.destroy();
+  }
+}
+
+ws = new WebSocketImpl(RawSocketAdaptor, {
+  url: process.platform == 'win32' ? '\\\\.\\pipe\\CypherpunkPrivacyService' : '/usr/local/cypherpunk/var/daemon.socket',
+  onerror,
+  onopen,
+  oncall,
+  onpost,
+});
+
+/*
 ws = new WebSocketImpl(WebSocket, {
   url: `ws://127.0.0.1:${port}/`,
   onerror: onerror,
@@ -212,6 +270,7 @@ ws = new WebSocketImpl(WebSocket, {
   oncall: oncall,
   onpost: onpost,
 });
+*/
 
 rpc = new RPC(ws);
 
