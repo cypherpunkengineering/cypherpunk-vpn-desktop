@@ -1,56 +1,60 @@
-const { app } = require('electron');
+setImmediate(() => {
 
-// Define global objects (easy to access from browser process too)
-global.daemon = null;
-global.window = null;
-global.tray = null;
-global.location = {};
-global.loggedIn = false;
-global.exiting = false;
+  const { app } = require('electron');
 
-global.args = {
-  debug: false,
-  showWindowOnStart: true,
-  apiHost: 'api.cypherpunk.com',
-};
+  // Define global objects (easy to access from browser process too)
+  global.daemon = null;
+  global.window = null;
+  global.tray = null;
+  global.location = {};
+  global.loggedIn = false;
+  global.exiting = false;
 
-global.exit = function exit(code) {
-  return new Promise((resolve, reject) => {
-    exiting = true;
-    app.exit(code);
-    // intentionally doesn't resolve
+  global.args = {
+    debug: false,
+    showWindowOnStart: true,
+    apiHost: 'api.cypherpunk.com',
+  };
+
+  global.exit = function exit(code) {
+    return new Promise((resolve, reject) => {
+      exiting = true;
+      app.exit(code);
+      // intentionally doesn't resolve
+    });
+  };
+
+  process.on('uncaughtException', function(err) {
+    console.log('Uncaught exception:', err);
+    app.exit(1);
   });
-};
+  process.on('unhandledrejection', function (err, promise) {
+    console.log('Unhandled rejection:', err, promise);
+  });
 
-process.on('uncaughtException', function(err) {
-  console.log('Uncaught exception:', err);
-  app.exit(1);
-});
-process.on('unhandledrejection', function (err, promise) {
-  console.log('Unhandled rejection:', err, promise);
-});
-
-{
-  let a = process.argv.slice(1);
-  while (a.length) {
-    switch (a.shift()) {
-      case '--debug': args.debug = true; break;
-      case '--background': args.showWindowOnStart = false; break;
-      case '--test-api': args.apiHost = 'test-api.cypherpunk.engineering'; break;
+  {
+    let a = process.argv.slice(1);
+    while (a.length) {
+      switch (a.shift()) {
+        case '--debug': args.debug = true; break;
+        case '--background': args.showWindowOnStart = false; break;
+        case '--test-api': args.apiHost = 'test-api.cypherpunk.engineering'; break;
+      }
     }
   }
-}
 
-if (process.platform !== 'darwin' && app.makeSingleInstance((argv, cwd) => {
-  console.log("Attempted to start second instance: ", argv, cwd);
-  if (window) {
-    window.show();
-    window.focus();
+  if (process.platform !== 'darwin' && app.makeSingleInstance((argv, cwd) => {
+    console.log("Attempted to start second instance: ", argv, cwd);
+    if (window) {
+      window.show();
+      window.focus();
+    }
+    return true;
+  })) {
+    exiting = true;
+    app.exit(0);
+  } else {
+    require('./app.js');
   }
-  return true;
-})) {
-  exiting = true;
-  app.exit(0);
-} else {
-  require('./app.js');
-}
+
+});
