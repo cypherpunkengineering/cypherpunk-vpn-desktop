@@ -84,7 +84,7 @@ public:
 			LOG(ERROR) << "Unable to write port file";
 			if (port != 9337)
 			{
-				throw std::exception("Unable to write port file");
+				throw std::system_error(std::make_error_code(std::errc::io_error), "Unable to write port file");
 			}
 		}
 		fflush(_port_file);
