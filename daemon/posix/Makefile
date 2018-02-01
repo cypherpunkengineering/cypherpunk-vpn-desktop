@@ -31,7 +31,6 @@ UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
 	LIBS += -lpthread
 endif
-$(info $(LIBS))
 ifeq ($(UNAME_S),Darwin)
 	GDB ?= lldb
 endif
