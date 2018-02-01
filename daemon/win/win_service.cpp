@@ -11,6 +11,7 @@
 #include "win.h"
 #include "win_firewall.h"
 #include "win_subprocess.h"
+#include "win_client_named_pipe.h"
 
 #include <cstdio>
 #include <tchar.h>
@@ -91,6 +92,7 @@ public:
 	WinCypherDaemon()
 	{
 		auto i = std::make_shared<ClientInterfaceMultiplexer>(_io);
+		i->InitializeClientInterface<WinNamedPipeClientInterface>(_io);
 		i->InitializeClientInterface<WebSocketClientInterface>(_io);
 		SetClientInterface(std::move(i));
 	}

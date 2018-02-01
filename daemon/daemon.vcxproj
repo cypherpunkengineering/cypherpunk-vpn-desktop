@@ -143,6 +143,7 @@
     <ClInclude Include="path.h" />
     <ClInclude Include="ping.h" />
     <ClInclude Include="posix\posix.h" />
+    <ClInclude Include="posix\posix_client_local_socket.h" />
     <ClInclude Include="posix\posix_subprocess.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="serialization.h" />
@@ -152,6 +153,7 @@
     <ClInclude Include="version.h" />
     <ClInclude Include="websocketpp.h" />
     <ClInclude Include="win\win.h" />
+    <ClInclude Include="win\win_client_named_pipe.h" />
     <ClInclude Include="win\win_com.h" />
     <ClInclude Include="win\win_firewall.h" />
     <ClInclude Include="win\win_subprocess.h" />

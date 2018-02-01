@@ -94,6 +94,7 @@ std::string GetPredefinedFile(PredefinedFile file, EnsureExistsTag ensure_path_e
 	case AccountFile: return GetPath(SettingsDir, ensure_path_exists, "account.json");
 	case SettingsFile: return GetPath(SettingsDir, ensure_path_exists, "settings.json");
 	case DaemonPortFile: return GetPath(BaseDir, "daemon.lock");
+	case LocalSocketFile: return "\\\\.\\pipe\\CypherpunkPrivacyService";
 	case TapInstallExecutable: return GetPath(TapDriverDir, ensure_path_exists, "tapinstall.exe");
 	default:
 		LOG(ERROR) << "Unknown file";

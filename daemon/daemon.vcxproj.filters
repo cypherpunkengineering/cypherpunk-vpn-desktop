@@ -102,6 +102,12 @@
     <ClInclude Include="client_websocket.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="win\win_client_named_pipe.h">
+      <Filter>Header Files\win</Filter>
+    </ClInclude>
+    <ClInclude Include="posix\posix_client_local_socket.h">
+      <Filter>Header Files\posix</Filter>
+    </ClInclude>
     <ClInclude Include="client_multiplexer.h">
       <Filter>Header Files</Filter>
     </ClInclude>

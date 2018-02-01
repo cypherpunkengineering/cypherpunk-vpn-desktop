@@ -9,6 +9,7 @@
 #include "path.h"
 
 #include "posix.h"
+#include "posix_client_local_socket.h"
 #include "posix_subprocess.h"
 
 #include <algorithm>
@@ -64,6 +65,7 @@ public:
 		_signals.async_wait(THIS_CALLBACK(OnSignal));
 
 		auto client_interface = std::make_shared<ClientInterfaceMultiplexer>(_io);
+		//client_interface->InitializeClientInterface<PosixLocalSocketClientInterface>(_io);
 		client_interface->InitializeClientInterface<WebSocketClientInterface>(_io);
 		SetClientInterface(std::move(client_interface));
 	}

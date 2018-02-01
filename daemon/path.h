@@ -24,6 +24,7 @@ enum PredefinedFile
 	AccountFile,
 	SettingsFile,
 	DaemonPortFile,
+	LocalSocketFile,
 #if OS_WIN
 	TapInstallExecutable,
 #endif

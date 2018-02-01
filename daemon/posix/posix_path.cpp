@@ -57,6 +57,7 @@ std::string GetPredefinedFile(PredefinedFile file, EnsureExistsTag ensure_path_e
 	case AccountFile: return GetPath(SettingsDir, ensure_path_exists, "account.json");
 	case SettingsFile: return GetPath(SettingsDir, ensure_path_exists, "settings.json");
 	case DaemonPortFile: return g_is_installed ? GetPath(BaseDir, "var", ensure_path_exists, "daemon.lock") : GetPath(g_daemon_path, "daemon.lock");
+	case LocalSocketFile: return g_is_installed ? GetPath(BaseDir, "var", ensure_path_exists, "daemon.socket") : GetPath(g_daemon_path, "daemon.socket");
 	default:
 		LOG(ERROR) << "Unknown file";
 		return std::string();
