@@ -23,8 +23,8 @@
 #include <objbase.h>
 
 
-#define SERVICE_NAME             _T("CypherpunkPrivacyService")
-#define SERVICE_DISPLAY_NAME     _T("Cypherpunk Privacy Background Service")
+#define SERVICE_NAME             _T("PrivateInternetAccessService")
+#define SERVICE_DISPLAY_NAME     _T("Private Internet Access Background Service")
 #ifdef _DEBUG
 #define SERVICE_START_TYPE       SERVICE_DEMAND_START
 #else
