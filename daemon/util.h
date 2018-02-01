@@ -264,11 +264,17 @@ template<class T>
 struct static_pointer_cast_if_needed_t<T, T> { static std::shared_ptr<T> call(const std::shared_ptr<T>& p) { return p; } static std::shared_ptr<T> call(std::shared_ptr<T>&& p) { return std::move(p); } };
 
 
+// Return the type of the current class.
+#define THIS_TYPE std::decay_t<decltype(*this)>
+
+// Return a member function pointer.
+#define THIS_FUNCTION(name) &THIS_TYPE::name
+
 // Return a shared_ptr to 'this' obtained from shared_from_this().
-#define SHARED_THIS static_pointer_cast_if_needed_t<std::decay_t<decltype(*this)>, std::decay_t<decltype(*(this->shared_from_this().get()))>>::call(this->shared_from_this())
+#define SHARED_THIS static_pointer_cast_if_needed_t<THIS_TYPE, std::decay_t<decltype(*(this->shared_from_this().get()))>>::call(this->shared_from_this())
 
 // Wrap a member function so that it carries a shared_ptr obtained from shared_from_this().
-#define SHARED_CALLBACK(name) ::bind_this(&std::decay_t<decltype(*this)>::name, SHARED_THIS)
+#define SHARED_CALLBACK(name) ::bind_this(THIS_FUNCTION(name), SHARED_THIS)
 
 // Wrap a 'this'-bound lambda so it also carries a shared_ptr reference to 'this', keeping the object alive.
 #define SHARED_LAMBDA(lambda) ::bind_ptr_to_lambda(SHARED_THIS, lambda)
@@ -277,16 +283,16 @@ struct static_pointer_cast_if_needed_t<T, T> { static std::shared_ptr<T> call(co
 #define SHARED_MEMBER(name) std::shared_ptr<decltype(name)>(SHARED_THIS, &name)
 
 // Return a weak_ptr to 'this' obtained from shared_from_this().
-#define WEAK_THIS std::weak_ptr<std::decay_t<decltype(*this)>>(SHARED_THIS)
+#define WEAK_THIS std::weak_ptr<THIS_TYPE>(SHARED_THIS)
 
 // Wrap a member function so that it carries a weak_ptr obtained from shared_from_this(), optionally returning a fallback value if the pointer has expired.
-#define WEAK_CALLBACK(name, ...) ::weak_bind_this(&std::decay_t<decltype(*this)>::name, WEAK_THIS ,## __VA_ARGS__)
+#define WEAK_CALLBACK(name, ...) ::weak_bind_this(THIS_FUNCTION(name), WEAK_THIS ,## __VA_ARGS__)
 
 // Wrap a 'this'-bound lambda so it also carries a weak_ptr reference to this, and only invokes after successfully locking the weak_ptr.
 #define WEAK_LAMBDA(lambda, ...) ::bind_ptr_to_lambda(WEAK_THIS, lambda ,## __VA_ARGS__)
 
 // Return a naked member function callback bound to 'this', without lifetime management
-#define THIS_CALLBACK(name) ::bind_this(&std::decay_t<decltype(*this)>::name, this)
+#define THIS_CALLBACK(name) ::bind_this(THIS_FUNCTION(name), this)
 
 
 
