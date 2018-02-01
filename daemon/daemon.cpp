@@ -31,31 +31,9 @@ unsigned short ServerPingerThinger::_global_sequence_number = 0;
 
 using namespace std::placeholders;
 
-
-class AutoDeleteFile
-{
-	FILE* _file;
-	std::string _name;
-public:
-	AutoDeleteFile(std::string path, const char* mode) : _file(NULL), _name(std::move(path))
-	{
-		_file = daemon_fopen(_name.c_str(), mode);
-	}
-	~AutoDeleteFile()
-	{
-		if (_file)
-		{
-			daemon_unlink(_name.c_str());
-			daemon_fclose(_file);
-		}
-	}
-	operator FILE*() const { return _file; }
-	bool operator !() const { return !_file; }
-};
-
-
 CypherDaemon::CypherDaemon()
-	: _rpc_client(_json_handler)
+	: _io(1)
+	, _rpc_client(_json_handler)
 	, _state(STARTING)
 	, _shouldConnect(false)
 	, _needsReconnect(false)
@@ -66,37 +44,17 @@ CypherDaemon::CypherDaemon()
 
 }
 
+void CypherDaemon::SetClientInterface(std::shared_ptr<ClientInterface> client_interface)
+{
+	auto old = std::exchange(_client_interface, std::move(client_interface));
+	if (old) old->SetListener(nullptr);
+	_client_interface->SetListener(this);
+}
+
+
 int CypherDaemon::Run()
 {
 	LOG(INFO) << "Running CypherDaemon version v" VERSION " built on " __TIMESTAMP__;
-
-	_ws_server.set_message_handler(std::bind(&CypherDaemon::OnReceiveMessage, this, _1, _2));
-	_ws_server.set_open_handler([this](ClientConnection c) {
-		bool first = _connections.empty();
-		_connections.insert(c);
-		if (first) OnFirstClientConnected();
-		OnClientConnected(c);
-	});
-	_ws_server.set_close_handler([this](ClientConnection c) {
-		try
-		{
-			_connections.erase(c);
-		}
-		catch (...) {}
-		OnClientDisconnected(c);
-		if (_connections.empty()) OnLastClientDisconnected();
-	});
-
-	{
-		using namespace websocketpp::log;
-		_ws_server.clear_access_channels(alevel::all);
-		_ws_server.clear_error_channels(elevel::all);
-		_ws_server.set_error_channels(elevel::fatal | elevel::rerror | elevel::warn);
-#ifdef _DEBUG
-		_ws_server.set_access_channels(alevel::access_core);
-		_ws_server.set_error_channels(elevel::info | elevel::library);
-#endif
-	}
 
 	{
 		auto& d = _dispatcher;

@@ -125,3 +125,38 @@ static inline std::string GetFile(PredefinedFile file, EnsureExistsTag t = DontE
 {
 	return GetPredefinedFile(file, t);
 }
+
+class AutoDeleteFile
+{
+	FILE* _file;
+	std::string _name;
+public:
+	AutoDeleteFile() : _file(NULL)
+	{
+	}
+	AutoDeleteFile(std::string path, const char* mode = "w") : _file(NULL)
+	{
+		Open(std::move(path), mode);
+	}
+	~AutoDeleteFile()
+	{
+		Close();
+	}
+	void Open(std::string path, const char* mode = "w")
+	{
+		Close();
+		_name = std::move(path);
+		_file = daemon_fopen(_name.c_str(), mode);
+	}
+	void Close()
+	{
+		if (_file)
+		{
+			daemon_unlink(_name.c_str());
+			daemon_fclose(_file);
+			_file = NULL;
+		}
+	}
+	operator FILE*() const { return _file; }
+	bool operator !() const { return !_file; }
+};
