@@ -1,5 +1,7 @@
 #pragma once
 
+#include "config.h"
+
 #include "client.h"
 #include "path.h"
 #include "util.h"

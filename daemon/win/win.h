@@ -1,6 +1,7 @@
 #pragma once
 
 #include "config.h"
+
 #include "daemon.h"
 #include "debug.h"
 #include "logger.h"
