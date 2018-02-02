@@ -25,15 +25,21 @@
     height: 10px;
     border-radius: 10px;
     transform: translate(-50%,-50%);
-    background: none;
-    border: 2px solid #686;
-    transition: box-shadow 1.2s, background 1.2s, border-color 1.2s;
+    background: fade(#686, 50%);
+    background-clip: content-box;
+    border: 2px solid transparent /*fade(#686, 25%)*/;
+    transition: box-shadow, background-color, border-color;
+    transition-duration: 1s;
     &.selected {
       z-index: 5;
       box-shadow: 0 0 50px 10px #6f6;
-      background: rgba(255,255,255,0.75);
+      background: rgba(255,255,255,0.75) !important;
       border-color: #4a4;
+      transition-duration: 0.5s;
     }
+  }
+  &.side.point {
+    background: #686;
   }
   .marker {
     position: absolute;
