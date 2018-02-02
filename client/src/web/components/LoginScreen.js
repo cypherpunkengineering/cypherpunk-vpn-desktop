@@ -55,6 +55,7 @@ export function refreshLocationList() {
         ping: v.ping,
         ovUDP: v.openvpn_udp.best,
         ovTCP: v.openvpn_tcp.best,
+        portForward: v.port_forward || false,
       };
       if (k in DEFAULT_REGION_DATA.locationCoordinates) {
         Object.assign(locations[k], DEFAULT_REGION_DATA.locationCoordinates[k]);

@@ -17,6 +17,7 @@ export default class InternetSettings extends DaemonAware(React.Component) {
   render() {
     return(
       <div className={classList("pane", "advanced", { 'hidden': !this.props.advanced })} data-title="Internet">
+        <CheckboxSetting name="requestPortForward" className="" hidden={!this.props.advanced} label="Request Port Forwarding" caption="Not available on all regions"/>
         <CheckboxSetting name="overrideDNS" className="" hidden={!this.props.advanced} label="Use Existing DNS" on={false} off={true}/>
         <CheckboxSetting name="routeDefault" className="" hidden={!this.props.advanced || daemon.account.account.type !== 'developer'} label="Use Split Tunneling" on={false} off={true}/>
         <CheckboxSetting name="exemptApple" className="" hidden={!this.props.advanced || process.platform !== 'darwin'} label="Exempt Apple Services"/>

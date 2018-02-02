@@ -17,6 +17,8 @@ import { Panel, PanelContent, PanelOverlay } from './Panel';
 import { getAccountStatus } from './AccountScreen';
 import { refreshAccountIfNeeded, refreshRegionsAndLocationsIfNeeded, refreshNetworkStatus } from './LoginScreen';
 
+import { clipboard } from 'electron';
+
 function makeNormalRequest({ method = 'GET', protocol = 'https:', host, port = 443, path = '/', data = null, type = 'json' }) {
   console.log("makeNormalRequest", arguments[0]);
   return new Promise((resolve, reject) => {
@@ -91,6 +93,43 @@ function makeTunneledRequest({ method = 'GET', protocol = 'https', host, port = 
     req.end();
   });
 }
+
+let pendingGetIPRequest = null;
+function makeGetIPRequest() {
+  if (pendingGetIPRequest) return pendingGetIPRequest;
+  let makeRequest = daemon.state.state === 'CONNECTED' ? makeTunneledRequest : makeNormalRequest;
+  return pendingGetIPRequest = makeRequest({
+    protocol: 'https:',
+    host: 'www.privateinternetaccess.com',
+    port: 443,
+    path: '/api/client/status',
+  }).then(r => {
+    pendingGetIPRequest = null;
+    return r;
+  }, e => {
+    pendingGetIPRequest = null;
+    throw e;
+  });
+}
+
+let pendingPortForwardRequest = null;
+function makePortForwardRequest() {
+  if (pendingPortForwardRequest) return pendingPortForwardRequest;
+  let client_id = crypto.createHash('sha256').update(daemon.account.account.email + ':DEBUG', 'utf8').digest('hex');
+  return pendingPortForwardRequest = makeTunneledRequest({
+    protocol: 'http:',
+    host: '209.222.18.222',
+    port: 2000,
+    path: `/?client_id=${client_id}`,
+  }).then(r => {
+    pendingPortForwardRequest = null;
+    return r;
+  }, e => {
+    pendingPortForwardRequest = null;
+    throw e;
+  });
+}
+
 
 const CACHED_COORDINATES = {
   'cypherplay': { lat: 30, long: 0, scale: 0.5 },
@@ -247,13 +286,33 @@ function describeConnectionState(state) {
   }
 }
 
+const BulletLoader = ({ className, ...props }) => (
+  <span className={classList(className, "bullet-loader")} {...props}><span>•</span><span>•</span><span>•</span></span>
+);
+
+const CopyInfoButton = ({ clickable = true, text, label, hidden = false, pending = false, error = false, icon, className, ...props }) => {
+  if (hidden || pending || error) clickable = false;
+  if (hidden || error) pending = false;
+  return (
+    <div
+      title={clickable ? "Click to copy" : null}
+      onClick={clickable ? () => clipboard.writeText(text.toString()) : null}
+      className={classList(className, { clickable, hidden, error })}
+      {...props}
+      >
+      <span>{label}</span>
+      <span><i className={`${icon} icon`}/>{pending ? <BulletLoader/> : text}</span>
+    </div>
+  );
+};
+
 
 export default class ConnectScreen extends DaemonAware(React.Component) {
   constructor(props) {
     super(props);
     this.daemonSubscribeState({
       config: { locations: v => ({ locations: v, mapLocations: Object.assign({}, CACHED_COORDINATES, v) }), regions: true, countryNames: true, regionNames: true, regionOrder: true },
-      settings: { location: true, locationFlag: true, favorites: v => ({ favorites: Array.toDict(v, f => f, f => true) }), lastConnected: true, overrideDNS: true, firewall: true },
+      settings: { location: true, locationFlag: true, favorites: v => ({ favorites: Array.toDict(v, f => f, f => true) }), lastConnected: true, overrideDNS: true, firewall: true, requestPortForward: true, forwardedPort: true },
       state: { state: v => this.handleConnectionState(v), connect: true, pingStats: true, bytesReceived: true, bytesSent: true },
     });
   }
@@ -283,6 +342,10 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
   handleConnectionState(state) {
     let result = { state, connectionState: simplifyConnectionState(state) };
     if (state !== this.state.state) {
+      if (state !== 'CONNECTED') {
+        result.activePortForward = false;
+        daemon.post.applySettings({ forwardedPort: 0 });
+      }
       if (state === 'CONNECTED' || (state === 'CONNECTING' && this.state.state === 'DISCONNECTED')) {
         result.lastError = null;
       }
@@ -291,6 +354,33 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
       }
       if (state === 'CONNECTED' || state === 'DISCONNECTED') {
         refreshNetworkStatus().catch(() => {});
+        makeGetIPRequest().then(response => {
+          this.setState({ publicIP: response.ip });
+        }, err => {
+          this.setState({ publicIP: null });
+          console.error(err);
+        });
+      } else {
+        result.publicIP = null;
+      }
+      if (state === 'CONNECTED') {
+        if (this.state.requestPortForward && !this.state.activePortForward) {
+          let location = this.state.locations && this.state.locations[this.state.location];
+          if (location && location.portForward) {
+            makePortForwardRequest().then(response => {
+              if (response.port) {
+                daemon.post.applySettings({ forwardedPort: response.port });
+                this.setState({ activePortForward: 'active' });
+              }
+              console.log(response);
+            }, err => {
+              console.error(err);
+              this.setState({ activePortForward: 'unavailable' });
+            });
+          } else {
+            result.activePortForward = 'unavailable';
+          }
+        }
       }
     }
     return result;
@@ -370,6 +460,11 @@ export default class ConnectScreen extends DaemonAware(React.Component) {
 
           <div className={classList("location-selector", { "hidden": this.state.locationListOpen })} onClick={() => this.handleLocationClick()}>
             { this.state.locationFlag === 'cypherplay' ? <CypherPlayItem hideTag={true}/> : <Location location={this.state.locations[this.state.location]} hideTag={true}/> }
+          </div>
+
+          <div className="ip-info">
+            <CopyInfoButton label="IP Address" icon="sitemap" text={this.state.publicIP} pending={!this.state.publicIP || !this.state.connectionState.includes('connected')}/>
+            <CopyInfoButton label="Port" icon="mail forward" text={this.state.activePortForward === 'active' ? this.state.forwardedPort : <i className="ban icon"/>} hidden={!this.state.requestPortForward || this.state.connectionState.includes('disconnect')} pending={!this.state.activePortForward} error={this.state.activePortForward === 'unavailable' || (this.state.activePortForward === 'active' && !this.state.forwardedPort)}/>
           </div>
 
         </PanelContent>
