@@ -17,6 +17,80 @@ import { Panel, PanelContent, PanelOverlay } from './Panel';
 import { getAccountStatus } from './AccountScreen';
 import { refreshAccountIfNeeded, refreshRegionsAndLocationsIfNeeded, refreshNetworkStatus } from './LoginScreen';
 
+function makeNormalRequest({ method = 'GET', protocol = 'https:', host, port = 443, path = '/', data = null, type = 'json' }) {
+  console.log("makeNormalRequest", arguments[0]);
+  return new Promise((resolve, reject) => {
+    let xhr = new XMLHttpRequest();
+    xhr.open(method, `${protocol.replace(/:+$/,'')}://${host}:${port}${path}`, true);
+    xhr.onload = function() {
+      if (this.status !== 200) {
+        return reject(new Error('Request failed with status code ' + this.status));
+      }
+      if (type === 'json') {
+        try {
+          resolve(JSON.parse(this.response));
+        } catch (e) {
+          reject(e);
+        }
+      } else {
+        resolve(this.response);
+      }
+    };
+    xhr.onerror = function() {
+      reject(new Error("Server connection failed"));
+    };
+    xhr.onabort = function() {
+      reject(new Error("Server call aborted"));
+    };
+    xhr.send(data);
+  });
+}
+
+// Need to use the Node https module to make requests directly on the tunnel IP (i.e. when not default-routed)
+import http from 'http';
+import https from 'https';
+import crypto from 'crypto';
+
+function makeTunneledRequest({ method = 'GET', protocol = 'https', host, port = 443, path = '/', data = null, type = 'json' }) {
+  console.log("makeTunneledRequest", arguments[0]);
+  return new Promise((resolve, reject) => {
+    if (daemon.state.state !== 'CONNECTED' || !daemon.state.tunnelIP) {
+      return reject(new Error('Unable to make tunneled request; not connected'));
+    }
+    let responseData = '';
+    let req = (protocol.startsWith('https') ? https : http).request({
+      method,
+      host,
+      port,
+      path,
+      localAddress: daemon.state.tunnelIP,
+    }, (res) => {
+      if (res.statusCode !== 200) {
+        res.resume();
+        return reject(new Error('Request failed with status code ' + res.statusCode));
+      }
+      res.setEncoding('utf8');
+      res.on('data', chunk => { responseData += chunk; });
+      res.on('end', () => {
+        if (type === 'json') {
+          console.log(responseData);
+          try {
+            resolve(JSON.parse(responseData));
+          } catch (e) {
+            reject(e);
+          }
+        } else {
+          resolve(responseData);
+        }
+      })
+    });
+    req.on('error', e => {
+      reject(e);
+    });
+    if (data) req.write(data);
+    req.end();
+  });
+}
 
 const CACHED_COORDINATES = {
   'cypherplay': { lat: 30, long: 0, scale: 0.5 },
