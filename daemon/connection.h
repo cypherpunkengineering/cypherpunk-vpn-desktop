@@ -123,6 +123,10 @@ private:
 	State _state;
 	OpenVPNState _openvpn_state;
 
+	// OpenVPN state variables (last seen)
+	std::string _tunnel_ip, _tunnel_ipv6, _remote_ip, _local_ip;
+	int _remote_port, _local_port;
+
 	// Connection attempt counter (1 on first OpenVPN process, reset on successful connection)
 	unsigned int _connection_attempts;
 
@@ -170,6 +174,23 @@ public:
 	State GetState();
 	const char* GetStateString();
 	bool NeedsReconnect();
+
+	// Get the local IP address on the tunnel interface.
+	const std::string& GetTunnelIP() const { return _tunnel_ip; }
+	// Get the local IPv6 address of the tunnel interface.
+	const std::string& GetTunnelIPv6() const { return _tunnel_ip; }
+	// Get the remote IP address of the VPN connection.
+	const std::string& GetRemoteIP() const { return _remote_ip; }
+	// Get the remote port of the VPN connection.
+	int GetRemotePort() const { return _remote_port; }
+	// Get the remote endpoint of the VPN connection.
+	std::string GetRemoteEndpoint() const { return _remote_ip.empty() ? std::string() : _remote_port ? streamstring() << _remote_ip << ':' << _remote_port : _remote_ip; }
+	// Get the local IP address of the VPN connection.
+	const std::string& GetLocalIP() const { return _local_ip; }
+	// Get the local port of the VPN connection.
+	int GetLocalPort() const { return _local_port; }
+	// Get the remote endpoint of the VPN connection.
+	std::string GetLocalEndpoint() const { return _local_ip.empty() ? std::string() : _local_port ? streamstring() << _local_ip << ':' << _local_port : _local_ip; }
 
 	bool Connect(bool force); // Saves any necessary settings from g_daemon, returns false if already connected to the right server
 	void Disconnect(); // Begin disconnecting; once disconnected, can reconnect 

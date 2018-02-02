@@ -480,6 +480,21 @@ JsonObject CypherDaemon::MakeStateObject(int flags)
 	if (flags & STATE)
 	{
 		state["state"] = (_state == INITIALIZED) ? _connection->GetStateString() : GetStateString(_state);
+		if (_state == INITIALIZED && _connection->GetState() == Connection::CONNECTED)
+		{
+			auto tunnelIP = _connection->GetTunnelIP();
+			auto tunnelIPv6 = _connection->GetTunnelIPv6();
+			auto remoteEndpoint = _connection->GetRemoteEndpoint();
+			auto localEndpoint = _connection->GetLocalEndpoint();
+			if (!tunnelIP.empty())
+				state["tunnelIP"] = JsonValue(std::move(tunnelIP));
+			else if (!tunnelIPv6.empty())
+				state["tunnelIP"] = JsonValue(std::move(tunnelIPv6));
+			if (!remoteEndpoint.empty())
+				state["remoteEndpoint"] = JsonValue(std::move(remoteEndpoint));
+			if (!localEndpoint.empty())
+				state["localEndpoint"] = JsonValue(std::move(localEndpoint));
+		}
 	}
 	if (flags & NEEDSRECONNECT)
 	{

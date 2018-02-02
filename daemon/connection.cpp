@@ -219,10 +219,28 @@ void Connection::OnOpenVPNManagement(OpenVPNProcess* process, const asio::error_
 		auto params = SplitToVector(line, ',');
 		if (params.size() < 2) { LOG(WARNING) << "Unrecognized OpenVPN state"; return; }
 
-		std::string description, local_ip, remote_ip;
-		if (params.size() >= 3) description = std::move(params[2]);
-		if (params.size() >= 4) local_ip = std::move(params[3]);
-		if (params.size() >= 5) remote_ip = std::move(params[4]);
+		std::string description, tunnel_ip, remote_ip, remote_port, local_ip, local_port, tunnel_ipv6;
+		switch (params.size())
+		{
+		default:
+		case 9: tunnel_ipv6 = std::move(params[8]); // fallthrough
+		case 8:  local_port = std::move(params[7]); // fallthrough
+		case 7:  local_ip   = std::move(params[6]); // fallthrough
+		case 6: remote_port = std::move(params[5]); // fallthrough
+		case 5: remote_ip   = std::move(params[4]); // fallthrough
+		case 4: tunnel_ip   = std::move(params[3]); // fallthrough
+		case 3: description = std::move(params[2]); // fallthrough
+		case 2: case 1: case 0: break;
+		}
+
+		// Perform any state change tests here
+
+		if (!tunnel_ip  .empty()) _tunnel_ip   = std::move(tunnel_ip  );
+		if (!tunnel_ipv6.empty()) _tunnel_ipv6 = std::move(tunnel_ipv6);
+		if (!remote_ip  .empty()) _remote_ip   = std::move(remote_ip  );
+		if (! local_ip  .empty())  _local_ip   = std::move( local_ip  );
+		if (!remote_port.empty()) try { size_t pos; unsigned long value = std::stoul(remote_port, &pos); if (pos == remote_port.size() && value <= INT32_MAX) _remote_port = (int)value; } catch(...) {}
+		if (! local_port.empty()) try { size_t pos; unsigned long value = std::stoul( local_port, &pos); if (pos ==  local_port.size() && value <= INT32_MAX)  _local_port = (int)value; } catch(...) {}
 
 		OpenVPNState state;
 		if (!EnumFromString("OPENVPN_" + params[1], state)) { LOG(WARNING) << "Unrecognized OpenVPN state: " << params[1]; return; }
