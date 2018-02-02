@@ -113,6 +113,14 @@ static inline std::ostream& operator<<(std::ostream& os, const std::error_code& 
 	return os << error.message();
 }
 
+class streamstring
+{
+	std::ostringstream _str;
+public:
+	operator std::string() const { return _str.str(); }
+	template<typename T> streamstring& operator<<(T&& var) { _str << std::forward<T>(var); return *this; }
+};
+
 
 template<typename IT, typename SEP, typename CB>
 static inline size_t SplitToIterators(const IT& begin, const IT& end, const SEP& sep, int max_splits, const CB& cb)
