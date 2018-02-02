@@ -795,6 +795,12 @@ void Connection::WriteOpenVPNProfile(std::ostream& out)
 		out << "ifconfig-ipv6 fd25::1/64 ::1" << endl;
 		out << "route-ipv6 ::/0 ::1" << endl;
 	}
+	else
+	{
+		// Add a default route with much a worse metric, so traffic can still
+		// be routed on the tunnel opt-in by binding to the tunnel interface.
+		out << "route 0.0.0.0 0.0.0.0 vpn_gateway 1000" << endl;
+	}
 
 	// Local port setting
 	if (g_settings.localPort() == 0)
