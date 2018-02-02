@@ -650,6 +650,13 @@ void Connection::DoConnect()
 	if (CopySettings())
 		_connection_attempts = 0;
 
+	_tunnel_ip.clear();
+	_remote_ip.clear();
+	_remote_port = 0;
+	_local_ip.clear();
+	_local_port = 0;
+	_tunnel_ipv6.clear();
+
 	_openvpn_process = std::make_shared<OpenVPNProcess>(_io, std::shared_ptr<OpenVPNListener>(shared_from_this(), this));
 
 	_last_openvpn_launch = clock::now();
