@@ -130,6 +130,7 @@
 
   <ItemGroup>
     <ClInclude Include="client.h" />
+    <ClInclude Include="client_local_socket.h" />
     <ClInclude Include="client_multiplexer.h" />
     <ClInclude Include="client_websocket.h" />
     <ClInclude Include="config.h" />
