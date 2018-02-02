@@ -553,7 +553,9 @@ bool Connection::NeedsReconnect()
 		else if (b != g_settings.map().end())
 			goto mismatch;
 	}
-	if (_server != g_settings.currentLocation())
+	// Only compare region IDs, not individual server settings
+	//if (_server != g_settings.currentLocation())
+	if (_server["id"] != g_settings.location())
 		goto mismatch;
 	if (_cypherplay != (g_settings.locationFlag() == "cypherplay"))
 		goto mismatch;
