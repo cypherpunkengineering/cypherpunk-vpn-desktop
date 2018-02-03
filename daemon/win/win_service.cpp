@@ -159,7 +159,8 @@ public:
 		allow_client,
 		allow_daemon,
 		allow_openvpn,
-		allow_cypherpunk_dns,
+		allow_pia_dns1,
+		allow_pia_dns2,
 		allow_localhost_ipv4,
 		allow_localhost_ipv6,
 		allow_dhcp_ipv4,
@@ -204,13 +205,13 @@ public:
 			{
 				if (g_settings.allowLAN())
 				{
-					TURN_ON(allow_lan_ipv4_1,         AllowIPRangeFilter<Outgoing, IPv4>("192.168.0.0", 16));
-					TURN_ON(allow_lan_ipv4_2,         AllowIPRangeFilter<Outgoing, IPv4>("172.16.0.0", 13));
-					TURN_ON(allow_lan_ipv4_3,         AllowIPRangeFilter<Outgoing, IPv4>("10.0.0.0", 8));
-					TURN_ON(allow_lan_ipv4_multicast, AllowIPRangeFilter<Outgoing, IPv4>("224.0.0.0", 4));
-					TURN_ON(allow_lan_ipv6,           AllowIPRangeFilter<Outgoing, IPv6>("fc00::", 7));
-					TURN_ON(allow_lan_ipv6_linklocal, AllowIPRangeFilter<Outgoing, IPv6>("fe80::", 10));
-					TURN_ON(allow_lan_ipv6_multicast, AllowIPRangeFilter<Outgoing, IPv6>("ff00::", 8));
+					TURN_ON(allow_lan_ipv4_1,         AllowIPRangeFilter<Outgoing, IPv4>("192.168.0.0", 16, 8));
+					TURN_ON(allow_lan_ipv4_2,         AllowIPRangeFilter<Outgoing, IPv4>("172.16.0.0", 13, 8));
+					TURN_ON(allow_lan_ipv4_3,         AllowIPRangeFilter<Outgoing, IPv4>("10.0.0.0", 8, 8));
+					TURN_ON(allow_lan_ipv4_multicast, AllowIPRangeFilter<Outgoing, IPv4>("224.0.0.0", 4, 8));
+					TURN_ON(allow_lan_ipv6,           AllowIPRangeFilter<Outgoing, IPv6>("fc00::", 7, 8));
+					TURN_ON(allow_lan_ipv6_linklocal, AllowIPRangeFilter<Outgoing, IPv6>("fe80::", 10, 8));
+					TURN_ON(allow_lan_ipv6_multicast, AllowIPRangeFilter<Outgoing, IPv6>("ff00::", 8, 8));
 				}
 				else
 				{
@@ -252,7 +253,8 @@ public:
 				TURN_ON(allow_client,         AllowAppFilter<Outgoing, IPv4>(GetFile(ClientExecutable)));
 				TURN_ON(allow_daemon,         AllowAppFilter<Outgoing, IPv4>(GetFile(DaemonExecutable)));
 				TURN_ON(allow_openvpn,        AllowAppFilter<Outgoing, IPv4>(GetFile(OpenVPNExecutable)));
-				TURN_ON(allow_cypherpunk_dns, AllowIPRangeFilter<Outgoing, IPv4>("10.10.8.0", 21, 14));
+				TURN_ON(allow_pia_dns1,       AllowIPRangeFilter<Outgoing, IPv4>("209.222.18.222", 32, 14));
+				TURN_ON(allow_pia_dns2,       AllowIPRangeFilter<Outgoing, IPv4>("209.222.18.218", 32, 14));
 				TURN_ON(allow_localhost_ipv4, AllowLocalHostFilter<Outgoing, IPv4>());
 				TURN_ON(allow_localhost_ipv6, AllowLocalHostFilter<Outgoing, IPv6>());
 				TURN_ON(allow_dhcp_ipv4,      AllowDHCPFilter<IPv4>());
