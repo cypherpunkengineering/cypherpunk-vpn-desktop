@@ -111,32 +111,6 @@ public:
 		fw.UninstallProvider();
 	}
 
-	virtual int Run() override
-	{
-		try
-		{
-			FWEngine fw;
-			fw.InstallProvider();
-		}
-		catch (const Win32Exception& e)
-		{
-			LOG(ERROR) << "Failed to install firewall provider: " << e;
-		}
-		// TEMPORARY WORKAROUND: we don't remember what rules we might have applied
-		// in an earlier session, so delete all rules.
-		try
-		{
-			FWEngine fw;
-			FWTransaction tx(fw);
-			fw.RemoveAllFilters();
-			tx.Commit();
-		}
-		catch (const Win32Exception& e)
-		{
-			LOG(ERROR) << "Failed to wipe firewall rules on startup: " << e;
-		}
-		return CypherDaemon::Run();
-	}
 	virtual std::string GetAvailableAdapter(int index) override
 	{
 		const auto& adapters = win_get_tap_adapters(true);
@@ -184,57 +158,55 @@ public:
 	{
 		FWEngine fw;
 		FWTransaction tx(fw);
-
-		int success = 0, error = 0;
+		size_t success = 0, error = 0;
 
 #define TURN_ON(name, ...) \
 		do { \
 			if (_filters[name] == zero_guid) { \
-				_filters[name] = fw.AddFilter(__VA_ARGS__); success++; \
+				try { _filters[name] = fw.AddFilter(__VA_ARGS__); success++; } \
+				catch (const Win32Exception& e) { error++; LOG(ERROR) << "Unable to add firewall rule " << name << ": " << e; throw; } \
 			} \
 		} while(false)
-#define TURN_OFF(idx) \
+#define TURN_OFF(name) \
 		do { \
-			if (_filters[idx] != zero_guid) { \
-				try { fw.RemoveFilter(_filters[idx]); success++; _filters[idx] = zero_guid; } \
-				catch (const Win32Exception& e) { error++; LOG(ERROR) << "Unable to remove firewall rule #" << idx << ": " << e; } \
+			if (_filters[name] != zero_guid) { \
+				try { fw.RemoveFilter(_filters[name]); success++; _filters[name] = zero_guid; } \
+				catch (const Win32Exception& e) { error++; LOG(ERROR) << "Unable to remove firewall rule " << name << ": " << e; } \
 			} \
 		} while(false)
+#define TURN_ON_OR_OFF(name, condition, ...) if (condition) TURN_ON(name, __VA_ARGS__); else TURN_OFF(name)
 
-		auto adapters = win_get_tap_adapters(true);
-
-		auto mode = g_settings.firewall();
-		if (!_client_connections.empty() && (mode == "on" || (_shouldConnect && mode == "auto")))
+		try
 		{
-			try
+			// Initialize firewall provider if necessary.
+			if (fw.InstallProvider())
+				success += fw.RemoveAllFilters();
+
+			auto adapters = win_get_tap_adapters(true);
+
+			auto mode = g_settings.firewall();
+			bool killswitched = !_client_connections.empty() && (mode == "on" || (_shouldConnect && mode == "auto"));
+
+			// Protect against DNS leaks if we're using PIA DNS servers
+			const bool blockDNS = g_settings.overrideDNS();
+			TURN_ON_OR_OFF(block_dns_ipv4, blockDNS, BlockDNSFilter<IPv4>());
+			TURN_ON_OR_OFF(block_dns_ipv6, blockDNS, BlockDNSFilter<IPv6>());
+			TURN_ON_OR_OFF(allow_pia_dns1, blockDNS, AllowIPRangeFilter<Outgoing, IPv4>("209.222.18.222", 32, 14));
+			TURN_ON_OR_OFF(allow_pia_dns2, blockDNS, AllowIPRangeFilter<Outgoing, IPv4>("209.222.18.218", 32, 14));
+
+			// Whitelist LAN ranges if we're killswitched but need to access the LAN
+			const bool allowLAN = killswitched && g_settings.allowLAN();
+			TURN_ON_OR_OFF(allow_lan_ipv4_1,         allowLAN, AllowIPRangeFilter<Outgoing, IPv4>("192.168.0.0", 16, 8));
+			TURN_ON_OR_OFF(allow_lan_ipv4_2,         allowLAN, AllowIPRangeFilter<Outgoing, IPv4>("172.16.0.0", 13, 8));
+			TURN_ON_OR_OFF(allow_lan_ipv4_3,         allowLAN, AllowIPRangeFilter<Outgoing, IPv4>("10.0.0.0", 8, 8));
+			TURN_ON_OR_OFF(allow_lan_ipv4_multicast, allowLAN, AllowIPRangeFilter<Outgoing, IPv4>("224.0.0.0", 4, 8));
+			TURN_ON_OR_OFF(allow_lan_ipv6,           allowLAN, AllowIPRangeFilter<Outgoing, IPv6>("fc00::", 7, 8));
+			TURN_ON_OR_OFF(allow_lan_ipv6_linklocal, allowLAN, AllowIPRangeFilter<Outgoing, IPv6>("fe80::", 10, 8));
+			TURN_ON_OR_OFF(allow_lan_ipv6_multicast, allowLAN, AllowIPRangeFilter<Outgoing, IPv6>("ff00::", 8, 8));
+
+			// Whitelist all TAP adapters (TODO: whitelist only the one we're using?
+			if (killswitched)
 			{
-				if (g_settings.allowLAN())
-				{
-					TURN_ON(allow_lan_ipv4_1,         AllowIPRangeFilter<Outgoing, IPv4>("192.168.0.0", 16, 8));
-					TURN_ON(allow_lan_ipv4_2,         AllowIPRangeFilter<Outgoing, IPv4>("172.16.0.0", 13, 8));
-					TURN_ON(allow_lan_ipv4_3,         AllowIPRangeFilter<Outgoing, IPv4>("10.0.0.0", 8, 8));
-					TURN_ON(allow_lan_ipv4_multicast, AllowIPRangeFilter<Outgoing, IPv4>("224.0.0.0", 4, 8));
-					TURN_ON(allow_lan_ipv6,           AllowIPRangeFilter<Outgoing, IPv6>("fc00::", 7, 8));
-					TURN_ON(allow_lan_ipv6_linklocal, AllowIPRangeFilter<Outgoing, IPv6>("fe80::", 10, 8));
-					TURN_ON(allow_lan_ipv6_multicast, AllowIPRangeFilter<Outgoing, IPv6>("ff00::", 8, 8));
-				}
-				else
-				{
-					for (int i = first_lan_filter; i <= last_lan_filter; i++)
-						TURN_OFF(i);
-				}
-
-				if (g_settings.overrideDNS())
-				{
-					TURN_ON(block_dns_ipv4, BlockDNSFilter<IPv4>());
-					TURN_ON(block_dns_ipv6, BlockDNSFilter<IPv6>());
-				}
-				else
-				{
-					TURN_OFF(block_dns_ipv4);
-					TURN_OFF(block_dns_ipv6);
-				}
-
 				std::set<uint64_t> tap_filters_to_remove;
 				for (auto& p : _tap_filters)
 					tap_filters_to_remove.insert(p.first);
@@ -254,43 +226,42 @@ public:
 					fw.RemoveFilter(_tap_filters.at(luid));
 					success++;
 				}
-
-				TURN_ON(allow_client,         AllowAppFilter<Outgoing, IPv4>(GetFile(ClientExecutable)));
-				TURN_ON(allow_daemon,         AllowAppFilter<Outgoing, IPv4>(GetFile(DaemonExecutable)));
-				TURN_ON(allow_openvpn,        AllowAppFilter<Outgoing, IPv4>(GetFile(OpenVPNExecutable)));
-				TURN_ON(allow_pia_dns1,       AllowIPRangeFilter<Outgoing, IPv4>("209.222.18.222", 32, 14));
-				TURN_ON(allow_pia_dns2,       AllowIPRangeFilter<Outgoing, IPv4>("209.222.18.218", 32, 14));
-				TURN_ON(allow_localhost_ipv4, AllowLocalHostFilter<Outgoing, IPv4>());
-				TURN_ON(allow_localhost_ipv6, AllowLocalHostFilter<Outgoing, IPv6>());
-				TURN_ON(allow_dhcp_ipv4,      AllowDHCPFilter<IPv4>());
-				TURN_ON(allow_dhcp_ipv6,      AllowDHCPFilter<IPv6>());
-				TURN_ON(block_ipv4,           BlockAllFilter<Outgoing, IPv4>());
-				TURN_ON(block_ipv6,           BlockAllFilter<Outgoing, IPv6>());
-
-				if (success) tx.Commit();
-				return;
 			}
+
+			TURN_ON_OR_OFF(allow_client,         killswitched, AllowAppFilter<Outgoing, IPv4>(GetFile(ClientExecutable)));
+			TURN_ON_OR_OFF(allow_daemon,         killswitched, AllowAppFilter<Outgoing, IPv4>(GetFile(DaemonExecutable)));
+			TURN_ON_OR_OFF(allow_openvpn,        killswitched, AllowAppFilter<Outgoing, IPv4>(GetFile(OpenVPNExecutable)));
+			TURN_ON_OR_OFF(allow_localhost_ipv4, killswitched, AllowLocalHostFilter<Outgoing, IPv4>());
+			TURN_ON_OR_OFF(allow_localhost_ipv6, killswitched, AllowLocalHostFilter<Outgoing, IPv6>());
+			TURN_ON_OR_OFF(allow_dhcp_ipv4,      killswitched, AllowDHCPFilter<IPv4>());
+			TURN_ON_OR_OFF(allow_dhcp_ipv6,      killswitched, AllowDHCPFilter<IPv6>());
+			TURN_ON_OR_OFF(block_ipv4,           killswitched, BlockAllFilter<Outgoing, IPv4>());
+			TURN_ON_OR_OFF(block_ipv6,           killswitched, BlockAllFilter<Outgoing, IPv6>());
+		}
+		catch (const Win32Exception& e)
+		{
+			LOG(ERROR) << "Failed to apply firewall rules: " << e;
+			error++;
+		}
+
+		if (!error)
+		{
+			tx.Commit();
+		}
+		else
+		{
+			tx.Abort();
+
+			// Disable all rules
+			try { success += fw.RemoveAllFilters(); }
 			catch (const Win32Exception& e)
 			{
-				LOG(ERROR) << "Unable to apply firewall rule: " << e;
-				error++;
+				LOG(WARNING) << "Unable to remove all firewall rules: " << e;
 			}
-		}
-		// Firewall is either off, or there was an error applying rules
 
-		// We use a transaction but remove in reverse just in case, so the block filters get removed first
-		for (auto& p : _tap_filters)
-		{
-			try { fw.RemoveFilter(p.second); }
-			catch (const Win32Exception& e) { error++; LOG(ERROR) << "Unable to remove firewall rule for adapter" << p.first << ": " << e; }
-		}
-		_tap_filters.clear();
-		for (int i = max_filter - 1; i >= 0; i--)
-			TURN_OFF(i);
+			_tap_filters.clear();
+			memset(_filters, 0, sizeof(_filters));
 
-		if (success) tx.Commit();
-		if (error)
-		{
 			_io.post([this]() {
 				SendErrorToAllClients("FIREWALL_FAILURE", false, "Unable to activate killswitch; you will not be protected in case of accidental disconnections.");
 				g_settings.firewall("off");
