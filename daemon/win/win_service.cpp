@@ -128,10 +128,6 @@ public:
 		}
 		return CypherDaemon::Run();
 	}
-	virtual int GetAvailablePort(int hint) override
-	{
-		return hint;
-	}
 	virtual std::string GetAvailableAdapter(int index) override
 	{
 		const auto& adapters = win_get_tap_adapters(true);

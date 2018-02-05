@@ -320,11 +320,6 @@ void CypherDaemon::OnClientMessageReceived(ClientInterface*, ClientConnectionHan
 		SendToClient(client, data);
 }
 
-int CypherDaemon::GetAvailablePort(int hint)
-{
-	return hint;
-}
-
 static inline const char* GetStateString(CypherDaemon::State state)
 {
 	switch (state)

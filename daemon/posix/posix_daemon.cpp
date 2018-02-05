@@ -77,17 +77,6 @@ public:
 	{
 
 	}
-	virtual int GetAvailablePort(int hint) override
-	{
-		return hint;
-		//popen("netstat -a -n");
-		for (int i = hint; ; i++)
-		{
-			if (1) // /* port i not in use */
-				return i;
-		}
-		throw "unable to find an available port";
-	}
 	virtual std::string GetAvailableAdapter(int index) override
 	{
 		throw "not implemented";
