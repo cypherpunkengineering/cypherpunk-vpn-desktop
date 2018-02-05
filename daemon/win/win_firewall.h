@@ -25,7 +25,7 @@ class FWEngine : public TypedWin32Handle<FWEngine>
 public:
 	FWEngine();
 
-	void InstallProvider();
+	bool InstallProvider();
 	void UninstallProvider();
 
 	FWFilter& AddFilter(FWFilter& filter);

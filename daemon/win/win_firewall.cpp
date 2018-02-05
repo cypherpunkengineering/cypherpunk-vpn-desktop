@@ -56,8 +56,9 @@ FWEngine::FWEngine()
 	WIN_CHECK_RESULT(FwpmEngineOpen, (NULL, RPC_C_AUTHN_DEFAULT, NULL, NULL, &_handle));
 }
 
-void FWEngine::InstallProvider()
+bool FWEngine::InstallProvider()
 {
+	bool result = false;
 	// Ensure our WFP provider exists
 	try
 	{
@@ -70,6 +71,7 @@ void FWEngine::InstallProvider()
 		if (e.value() != FWP_E_PROVIDER_NOT_FOUND)
 			throw;
 		WIN_CHECK_RESULT(FwpmProviderAdd, (_handle, &g_wfp_provider, NULL));
+		result = true;
 	}
 	// Ensure our WFP sublayer exists
 	try
@@ -83,7 +85,9 @@ void FWEngine::InstallProvider()
 		if (e.value() != FWP_E_SUBLAYER_NOT_FOUND)
 			throw;
 		WIN_CHECK_RESULT(FwpmSubLayerAdd, (_handle, &g_wfp_sublayer, NULL));
+		result = true;
 	}
+	return result;
 }
 
 void FWEngine::UninstallProvider()
