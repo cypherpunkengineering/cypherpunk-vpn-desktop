@@ -175,7 +175,7 @@ public:
 	GUID _filters[max_filter];
 	std::map<uint64_t, GUID> _tap_filters;
 
-	virtual void ApplyFirewallSettings() override
+	virtual void ApplyFirewallSettings() noexcept override
 	{
 		FWEngine fw;
 		FWTransaction tx(fw);

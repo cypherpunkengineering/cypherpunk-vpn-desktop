@@ -93,19 +93,29 @@ int CypherDaemon::Run()
 	_state = INITIALIZED;
 	int result = 0;
 
-	OnBeforeRun();
-
-	try
+	try { OnBeforeRun(); }
+	catch (const std::exception& e)
 	{
-		_io.run();
+		LOG(ERROR) << "Exception thrown before main loop: " << e;
+		_state = EXITED;
+		return 2;
 	}
+
+	ApplyFirewallSettings();
+
+	try { _io.run(); }
 	catch (const std::exception& e)
 	{
 		LOG(ERROR) << "Exception thrown in main loop: " << e;
-		result = 1;
+		result = 3;
 	}
 
-	OnAfterRun();
+	try { OnAfterRun(); }
+	catch (const std::exception& e)
+	{
+		LOG(ERROR) << "Exception thrown after main loop: " << e;
+		result = 4;
+	}
 
 	_state = EXITED;
 
@@ -222,9 +232,7 @@ void CypherDaemon::SendErrorToAllClients(std::string name, bool critical, std::s
 
 void CypherDaemon::OnFirstClientConnected(ClientInterface*)
 {
-	// If the kill-switch is set to always on, trigger it when the first client connects
-	if (g_settings.firewall() == "on")
-		ApplyFirewallSettings();
+	ApplyFirewallSettings();
 	PingServers();
 }
 
@@ -263,10 +271,7 @@ void CypherDaemon::OnLastClientDisconnected(ClientInterface*)
 	_ping_timer.cancel();
 	_next_ping_scheduled = false;
 
-	// If the kill-switch is set to always on, trigger it here so it can be disabled when
-	// the last client disconnects (this also happens above inside OnStateChanged(STATE))
-	if (g_settings.firewall() == "on")
-		ApplyFirewallSettings();
+	ApplyFirewallSettings();
 
 	if (_state == EXITING)
 		_io.post([this]() { DoShutdown(); });
@@ -448,7 +453,7 @@ void CypherDaemon::NotifyChanges()
 	if (config.count("locations") || ((state & STATE) && _state == INITIALIZED && _connection && _connection->GetState() == Connection::DISCONNECTED))
 		PingServers();
 
-	if (state & (STATE | CONNECT) || settings.count("firewall") || settings.count("allowLAN") || settings.count("overrideDNS"))
+	if (state & (STATE | CONNECT) || settings.count("firewall") || settings.count("allowLAN") || settings.count("overrideDNS") || settings.count("blockIPv6") || settings.count("routeDefault"))
 		ApplyFirewallSettings();
 }
 

@@ -92,7 +92,7 @@ public:
 	{
 		throw "not implemented";
 	}
-	virtual void ApplyFirewallSettings() override
+	virtual void ApplyFirewallSettings() noexcept override
 	{
 		auto mode = g_settings.firewall();
 		if (!_client_connections.empty() && (mode == "on" || (_shouldConnect && mode == "auto")))
