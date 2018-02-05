@@ -97,13 +97,22 @@ public:
 		SetClientInterface(std::move(i));
 	}
 
-	virtual int Run() override
+	virtual void OnBeforeRun() override
 	{
 		if (win_get_tap_adapters(true).size() == 0)
 		{
 			LOG(CRITICAL) << "There are no installed TAP adapters on this machine!";
-			return -1;
+			THROW_WIN32EXCEPTION(ERROR_NOT_FOUND, win_get_tap_adapters);
 		}
+	}
+	virtual void OnAfterRun() override
+	{
+		FWEngine fw;
+		fw.UninstallProvider();
+	}
+
+	virtual int Run() override
+	{
 		try
 		{
 			FWEngine fw;
