@@ -189,7 +189,7 @@ public:
 			bool killswitched = !_client_connections.empty() && (mode == "on" || (_shouldConnect && mode == "auto"));
 
 			// Protect against DNS leaks if we're using PIA DNS servers
-			const bool blockDNS = g_settings.overrideDNS();
+			const bool blockDNS = !_client_connections.empty() && (_shouldConnect || mode == "auto") && g_settings.overrideDNS();
 			TURN_ON_OR_OFF(block_dns_ipv4, blockDNS, BlockDNSFilter<IPv4>());
 			TURN_ON_OR_OFF(block_dns_ipv6, blockDNS, BlockDNSFilter<IPv6>());
 			TURN_ON_OR_OFF(allow_pia_dns1, blockDNS, AllowIPRangeFilter<Outgoing, IPv4>("209.222.18.222", 32, 14));
