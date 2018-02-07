@@ -108,6 +108,7 @@ public:
 	virtual void OnAfterRun() override
 	{
 		FWEngine fw;
+		fw.RemoveAllFilters();
 		fw.UninstallProvider();
 	}
 
